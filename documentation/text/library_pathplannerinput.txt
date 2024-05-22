@@ -1,0 +1,23 @@
+<h1>Default PathPlanner Input Bus</h1>
+<h3>Library</h3>
+<span style="font-family: Courier New">MPSV / Default PathPlanner Input Bus</span>
+
+
+<h3>Description</h3>
+Construct a default input bus for the PathPlanner. All values are set to zero.
+
+
+<h2>Output Ports</h2>
+<h3>pathPlannerInput</h3>
+A bus, which defines the input for the path planner. The elements of the bus are given in the table below.
+<table>
+<tr><th>Element</th><th width="200">Data Type</th><th>Description</th></tr>
+<tr><td style="font-family: Courier New;">initialPose</td><td style="font-family: Courier New;">double [3]</td><td>Initial pose given as {x,y,psi}.</td></tr>
+<tr><td style="font-family: Courier New;">finalPose</td><td style="font-family: Courier New;">double [3]</td><td>Final pose given as {x,y,psi}.</td></tr>
+<tr><td style="font-family: Courier New;">originOldToNew</td><td style="font-family: Courier New;">double [2]</td><td>Translation between two consecutive problems. If the origin of the previous problem is different to the origin of the new problem, then the tree must be transformed during a warm start. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).</td></tr>
+<tr><td style="font-family: Courier New;">samplingBoxCenterPose</td><td style="font-family: Courier New;">double [3]</td><td>Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.</td></tr>
+<tr><td style="font-family: Courier New;">samplingBoxDimension</td><td style="font-family: Courier New;">double [2]</td><td>Dimension of the sampling box along major and minor axes of the box.</td></tr>
+<tr><td style="font-family: Courier New;">numStaticObstacles</td><td style="font-family: Courier New;">uint16</td><td>The number of static obstacles in range [0,1000].</td></tr>
+<tr><td style="font-family: Courier New;">numVerticesPerStaticObstacle</td><td style="font-family: Courier New;">uint8 [1000]</td><td>The number of vertices for each static obstacle in range [3,20].</td></tr>
+<tr><td style="font-family: Courier New;">verticesStaticObstacles</td><td style="font-family: Courier New;">double [2][20][1000]</td><td>Vertex data of the static obstacles.</td></tr>
+</table>

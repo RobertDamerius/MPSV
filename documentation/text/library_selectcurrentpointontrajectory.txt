@@ -1,0 +1,58 @@
+<h1>Select Current Point On Trajectory</h1>
+<h3>Library</h3>
+<span style="font-family: Courier New">MPSV / Select Current Point On Trajectory</span>
+
+
+<h3>Description</h3>
+Select the current point on a given trajectory for a given timepoint.
+An arbitrary time source can be selected by the user.
+However, all times must be given in seconds and must be monotonically increasing.
+
+
+<h2>Input Ports</h2>
+<h3>timeNow</h3>
+The current timepoint to be used to query the point on the given trajectory.
+
+
+<h3>trajectoryStartTimepoint</h3>
+The timepoint that indicates the first data point of the trajectory.
+
+
+<h3>trajectorySampletime</h3>
+The temporal distance between two points of the trajectory.
+
+
+<h3>trajectoryNumPoints</h3>
+The number of points to be considered from the trajectoryData matrix.
+
+
+<h3>trajectoryData</h3>
+A 12-by-1000 matrix containing 1000 points of the trajectory, where each point represents the state-input-vector [x; y; psi; u; v; r; X; Y; N; Xc; Yc; Nc].
+
+
+<h2>Output Ports</h2>
+<h3>success</h3>
+True if timeNow lies within the temporal range of the trajectory and a point can be selected, false otherwise.
+
+
+<h3>currentPoint</h3>
+A bus containing the linear interpolated state values and the zero-order hold input values. The elements of the bus are given in the table below.
+<table>
+<tr><th>Element</th><th width="200">Data Type</th><th>Description</th></tr>
+<tr><td style="font-family: Courier New;">stateInterpolated.positionNorth</td><td style="font-family: Courier New;">double</td><td>The north position (x) in meters.</td></tr>
+<tr><td style="font-family: Courier New;">stateInterpolated.positionEast</td><td style="font-family: Courier New;">double</td><td>The east position (y) in meters.</td></tr>
+<tr><td style="font-family: Courier New;">stateInterpolated.orientationYaw</td><td style="font-family: Courier New;">double</td><td>The heading angle in radians.</td></tr>
+<tr><td style="font-family: Courier New;">stateInterpolated.velocityU</td><td style="font-family: Courier New;">double</td><td>The body-fixed surge velocity in meters per second.</td></tr>
+<tr><td style="font-family: Courier New;">stateInterpolated.velocityV</td><td style="font-family: Courier New;">double</td><td>The body-fixed sway velocity in meters per second.</td></tr>
+<tr><td style="font-family: Courier New;">stateInterpolated.velocityR</td><td style="font-family: Courier New;">double</td><td>The angular velocity in radians per second.</td></tr>
+<tr><td style="font-family: Courier New;">stateInterpolated.tauX</td><td style="font-family: Courier New;">double</td><td>The longitudinal force in x-direction of the body frame in Newton.</td></tr>
+<tr><td style="font-family: Courier New;">stateInterpolated.tauY</td><td style="font-family: Courier New;">double</td><td>The lateral force in y-direction of the body frame in Newton.</td></tr>
+<tr><td style="font-family: Courier New;">stateInterpolated.tauN</td><td style="font-family: Courier New;">double</td><td>The torque around the z-axis of the body frame in N*m.</td></tr>
+<tr><td style="font-family: Courier New;">controlInputZeroOrderHold.commandedTauX</td><td style="font-family: Courier New;">double</td><td>The commanded longitudinal force in x-direction of the body frame in Newton.</td></tr>
+<tr><td style="font-family: Courier New;">controlInputZeroOrderHold.commandedTauY</td><td style="font-family: Courier New;">double</td><td>The commanded lateral force in y-direction of the body frame in Newton.</td></tr>
+<tr><td style="font-family: Courier New;">controlInputZeroOrderHold.commandedTauN</td><td style="font-family: Courier New;">double</td><td>The commanded torque around the z-axis of the body frame in N*m.</td></tr>
+</table>
+
+
+<h3>remainingTrajectoryDuration</h3>
+Time from timeNow to the end of the trajectory.

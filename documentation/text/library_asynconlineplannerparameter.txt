@@ -1,0 +1,60 @@
+<h1>Default AsyncOnlinePlanner Parameter Bus</h1>
+<h3>Library</h3>
+<span style="font-family: Courier New">MPSV / Default AsyncOnlinePlanner Parameter Bus</span>
+
+
+<h3>Description</h3>
+Construct a default parameter bus for the AsyncOnlinePlanner. All values are set to zero.
+
+
+<h2>Output Ports</h2>
+<h3>asyncOnlinePlannerParameter</h3>
+A bus, which defines the parameter for the asynchronous online planner. The elements of the bus are given in the table below.
+<table>
+<tr><th>Element</th><th width="200">Data Type</th><th>Description</th></tr>
+<tr><td style="font-family: Courier New;">timestamp</td><td style="font-family: Courier New;">double</td><td>The user-defined timestamp that indicates the parameters to be used. This parameter set is only applied, if this value changes.</td></tr>
+<tr><td style="font-family: Courier New;">timeoutInput</td><td style="font-family: Courier New;">double</td><td>Timeout in seconds for the input data.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.geometry.collisionCheckMaxPositionDeviation</td><td style="font-family: Courier New;">double</td><td>Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 meters.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.geometry.collisionCheckMaxAngleDeviation</td><td style="font-family: Courier New;">double</td><td>Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.geometry.numPolygonsVehicleShape</td><td style="font-family: Courier New;">uint8</td><td>Number of convex polygons that represent the vehicle shape in range [1,10].</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.geometry.numVerticesVehicleShape</td><td style="font-family: Courier New;">uint8 [10]</td><td>Number of vertices of a convex polygon of the vehicle shape in range [3,20].</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.geometry.verticesVehicleShape</td><td style="font-family: Courier New;">double [10][20][10]</td><td>Vertex data of the vehicle shape.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.geometry.numSkeletalPoints</td><td style="font-family: Courier New;">uint8</td><td>Number of skeletal points in range [1,10].</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.geometry.skeletalPoints</td><td style="font-family: Courier New;">double [2][10]</td><td>Skeletal points (b-frame) at which the cost map is to be evaluated. All points must be inside the vehicle shape.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.costMap.modBreakpoints</td><td style="font-family: Courier New;">int32</td><td>A modulo factor (> 0) that indicates when to calculate the cost using the objective function and when to do bilinear interpolation.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.costMap.resolution</td><td style="font-family: Courier New;">double</td><td>Resolution (> 1e-3) of the grid map (dimension of one cell).</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.costMap.distanceScale</td><td style="font-family: Courier New;">double</td><td>Scale factor (>= 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.costMap.distanceDecay</td><td style="font-family: Courier New;">double</td><td>Decay factor (> 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.metric.weightPsi</td><td style="font-family: Courier New;">double</td><td>Weighting for heading angle (psi) in distance metric function.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.metric.weightSway</td><td style="font-family: Courier New;">double</td><td>Weighting for sway movement (heading angle with respect to perpenticular direction of movement).</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.model.matF</td><td style="font-family: Courier New;">double [36]</td><td>3-by-12 coefficient matrix (row-major order) of model nu_dot = F*n(nu) + B*tau.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.model.matB</td><td style="font-family: Courier New;">double [9]</td><td>3-by-3 input matrix B (row-major order) of model nu_dot = F*n(nu) + B*tau.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.model.vecTimeconstantsXYN</td><td style="font-family: Courier New;">double [3]</td><td>Timeconstants {TX, TY, TN} for input force dynamics.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.model.vecTimeconstantsInput</td><td style="font-family: Courier New;">double [3]</td><td>Timeconstants {Tf1, Tf2, Tf3} for input filter dynamics.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.model.satXYN</td><td style="font-family: Courier New;">double [3]</td><td>Absolute elliptical saturation value for input vector u of model nu_dot = A*nu + f(nu) + B*tau.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.pathPlanner.periodGoalSampling</td><td style="font-family: Courier New;">uint32</td><td>Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.motionPlanner.samplingRangePosition</td><td style="font-family: Courier New;">double</td><td>Range in meters for sampling the position around a given path.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.motionPlanner.samplingRangeAngle</td><td style="font-family: Courier New;">double</td><td>Range in radians for sampling the angle around a given path.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.motionPlanner.periodGoalSampling</td><td style="font-family: Courier New;">uint32</td><td>Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.motionPlanner.sampletime</td><td style="font-family: Courier New;">double</td><td>Sampletime to be used for fixed-step trajectory simulation.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.motionPlanner.maxPositionOvershoot</td><td style="font-family: Courier New;">double</td><td>Maximum position overshoot due to dynamic motion between two states. This value is used to remove obstacles outside the area of interest.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.motionPlanner.maxInputPathLength</td><td style="font-family: Courier New;">double</td><td>Maximum length (> 0) of the input path (x,y only). The input path is trimmed to ensure this maximum length. The trimmed pose may be interpolated.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.motionPlanner.controller.maxRadiusX</td><td style="font-family: Courier New;">double</td><td>Maximum look-ahead distance for longitudinal distance during pose control.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.motionPlanner.controller.maxRadiusY</td><td style="font-family: Courier New;">double</td><td>Maximum look-ahead distance for lateral distance during pose control.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.motionPlanner.controller.maxRadiusPsi</td><td style="font-family: Courier New;">double</td><td>Maximum look-ahead distance for angular distance during pose control.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.motionPlanner.controller.minRadiusPosition</td><td style="font-family: Courier New;">double</td><td>Minimum look-ahead distance for position during pose control. The radius is limited by the guidance law according to nearby obstacles but is never lower than this value.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.motionPlanner.controller.vecTimeconstantsFlatStates</td><td style="font-family: Courier New;">double [9]</td><td>Timeconstants for flat states {Tu, Tv, Tr, Tu_dot, Tv_dot, Tr_dot, Tu_dotdot, Tv_dotdot, Tr_dotdot}.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.motionPlanner.controller.matK</td><td style="font-family: Courier New;">double [36]</td><td>3-by-12 control gain matrix (row-major order) for pose control (state controller using underlying velocity controller based on feedback-linearization).</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.motionPlanner.controller.satUVR</td><td style="font-family: Courier New;">double [3]</td><td>Absolute elliptical saturation value for velocity commands (u,v,r) from pose controller to underlying velocity controller.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.motionPlanner.regionOfAttraction.rangePose</td><td style="font-family: Courier New;">double [3]</td><td>Pose box constraints for the region of attraction.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.motionPlanner.regionOfAttraction.rangeUVR</td><td style="font-family: Courier New;">double [3]</td><td>Velocity box constraints for the region of attraction.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.motionPlanner.regionOfAttraction.rangeXYN</td><td style="font-family: Courier New;">double [3]</td><td>The force range {dX,dY,dN}. A given force must be in this range {[-dX,dX],[-dY,dY],[-dN,dN]} to be in the region of attraction.</td></tr>
+<tr><td style="font-family: Courier New;">onlinePlanner.predictInitialStateOnReset</td><td style="font-family: Courier New;">bool</td><td>True if the initial state should be predicted by the expected computation time after a reset of the online planner (e.g. the first solve).</td></tr>
+<tr><td style="font-family: Courier New;">onlinePlanner.maxComputationTimePathOnReset</td><td style="font-family: Courier New;">double</td><td>Maximum computation time in seconds for path planning after a reset.</td></tr>
+<tr><td style="font-family: Courier New;">onlinePlanner.maxComputationTimeMotionOnReset</td><td style="font-family: Courier New;">double</td><td>Maximum computation time in seconds for motion planning after a reset.</td></tr>
+<tr><td style="font-family: Courier New;">onlinePlanner.maxComputationTimePath</td><td style="font-family: Courier New;">double</td><td>Maximum computation time in seconds for path planning.</td></tr>
+<tr><td style="font-family: Courier New;">onlinePlanner.maxComputationTimeMotion</td><td style="font-family: Courier New;">double</td><td>Maximum computation time in seconds for motion planning.</td></tr>
+<tr><td style="font-family: Courier New;">onlinePlanner.additionalAheadPlanningTime</td><td style="font-family: Courier New;">double</td><td>Additional time added to the estimated computation time in seconds to obtain the future timepoint from where to start the next planning problem. This value must be greater than zero.</td></tr>
+<tr><td style="font-family: Courier New;">onlinePlanner.additionalTrajectoryDuration</td><td style="font-family: Courier New;">double</td><td>Additional time added to the ahead planning time (= execution time + additional ahead planning time) to obtain the minimum time duration of a trajectory. This value must be greater than zero.</td></tr>
+<tr><td style="font-family: Courier New;">onlinePlanner.timeKeepPastTrajectory</td><td style="font-family: Courier New;">double</td><td>Time in seconds to keep from a past trajectory. The past data of the previous trajectory is inserted at the beginning of a new solution. Inserting past data helps to handle imperfect time synchronization between this trajectory generator and the user of the trajectory data.</td></tr>
+</table>

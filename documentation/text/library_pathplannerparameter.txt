@@ -1,0 +1,30 @@
+<h1>Default PathPlanner Parameter Bus</h1>
+<h3>Library</h3>
+<span style="font-family: Courier New">MPSV / Default PathPlanner Parameter Bus</span>
+
+
+<h3>Description</h3>
+Construct a default parameter bus for the PathPlanner. All values are set to zero.
+
+
+<h2>Output Ports</h2>
+<h3>pathPlannerParameter</h3>
+A bus, which defines the parameter for the path planner. The elements of the bus are given in the table below.
+<table>
+<tr><th>Element</th><th width="200">Data Type</th><th>Description</th></tr>
+<tr><td style="font-family: Courier New;">costMap.modBreakpoints</td><td style="font-family: Courier New;">int32</td><td>A modulo factor (> 0) that indicates when to calculate the cost using the cost function and when to do linear interpolation.</td></tr>
+<tr><td style="font-family: Courier New;">costMap.resolution</td><td style="font-family: Courier New;">double</td><td>Resolution (> 1e-3) of the grid map (dimension of one cell).</td></tr>
+<tr><td style="font-family: Courier New;">costMap.distanceScale</td><td style="font-family: Courier New;">double</td><td>Scale factor (>= 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).</td></tr>
+<tr><td style="font-family: Courier New;">costMap.distanceDecay</td><td style="font-family: Courier New;">double</td><td>Decay factor (> 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).</td></tr>
+<tr><td style="font-family: Courier New;">geometry.collisionCheckMaxPositionDeviation</td><td style="font-family: Courier New;">double</td><td>Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 meters.</td></tr>
+<tr><td style="font-family: Courier New;">geometry.collisionCheckMaxAngleDeviation</td><td style="font-family: Courier New;">double</td><td>Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree.</td></tr>
+<tr><td style="font-family: Courier New;">geometry.numSkeletalPoints</td><td style="font-family: Courier New;">uint8</td><td>Number of skeletal points in range [1,10].</td></tr>
+<tr><td style="font-family: Courier New;">geometry.skeletalPoints</td><td style="font-family: Courier New;">double [2][10]</td><td>Skeletal points (b-frame) at which the cost map is to be evaluated. All points must be inside the vehicle shape.</td></tr>
+<tr><td style="font-family: Courier New;">geometry.numPolygonsVehicleShape</td><td style="font-family: Courier New;">uint8</td><td>Number of convex polygons that represent the vehicle shape in range [1,10].</td></tr>
+<tr><td style="font-family: Courier New;">geometry.numVerticesVehicleShape</td><td style="font-family: Courier New;">uint8 [10]</td><td>Number of vertices of a convex polygon of the vehicle shape in range [3,20].</td></tr>
+<tr><td style="font-family: Courier New;">geometry.verticesVehicleShape</td><td style="font-family: Courier New;">double [2][20][10]</td><td>Vertex data of the vehicle shape.</td></tr>
+<tr><td style="font-family: Courier New;">metric.weightPsi</td><td style="font-family: Courier New;">double</td><td>Weighting for yaw angle in distance metric function.</td></tr>
+<tr><td style="font-family: Courier New;">metric.weightSway</td><td style="font-family: Courier New;">double</td><td>Weighting for sway movement (heading angle with respect to perpenticular direction of movement).</td></tr>
+<tr><td style="font-family: Courier New;">pathPlanner.periodGoalSampling</td><td style="font-family: Courier New;">uint32</td><td>Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.</td></tr>
+<tr><td style="font-family: Courier New;">pathPlanner.maxComputationTime</td><td style="font-family: Courier New;">double</td><td>The maximum computation time in seconds allowed before leaving the iteration loop.</td></tr>
+</table>

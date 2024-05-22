@@ -1,0 +1,49 @@
+    <center><object width="40%" data="../img/icon.svg" type="image/svg+xml"></object></center>
+    <br>
+
+<h1>MPSV</h1>
+    The <b>M</b>otion <b>P</b>lanner for <b>S</b>urface <b>V</b>ehicles solves motion planning problems for fully actuated surface vehicles with non-linear dynamics in an environment with non-convex non-moving obstacles.
+    The method is based on the RRT* algorithm.
+    The problem is decomposed into two sequential problems in which first a feasible path is searched for and then a collision-free trajectory is calculated based on the path found.
+    An example is shown in the following figure.
+
+    <br><br>
+    <center><object width="80%" data="../img/Overview.svg" type="image/svg+xml"></object></center>
+
+
+<h2>Planning Levels</h2>
+    The API of MPSV consists of several planning levels that are shown in the following image.
+    <br><br>
+    <center><object width="30%" data="../img/PlanningLevels.svg" type="image/svg+xml"></object></center>
+
+    <b>PathPlanner</b>
+    <ul>
+    <li>find path from initial pose to final pose</li>
+    <li>RRT* with fixed number of nodes and warm start capabilities</li>
+    </ul>
+
+    <b>MotionPlanner</b>
+    <ul>
+    <li>find trajectory from initial state/input to final pose around a given path</li>
+    <li>RRT* with fixed number of nodes</li>
+    <li>internal control system based on feedback linearization to generate dynamically feasible trajectory</li>
+    </ul>
+
+    <b>SequentialPlanner</b>
+    <ul>
+    <li>combine path and motion planner in sequential manner</li>
+    <li>path from path planner is used as guidance for the motion planner</li>
+    </ul>
+
+    <b>OnlinePlanner</b>
+    <ul>
+    <li>continuously solve sequential planning problems</li>
+    <li>solves motion planning problems for a future timepoint</li>
+    <li>merges solution trajectory seamless with a previous solution</li>
+    </ul>
+
+    <b>AsyncOnlinePlanner</b>
+    <ul>
+    <li>run the online planner in a separate thread</li>
+    <li>results are obtained via polling or callback</li>
+    </ul>
