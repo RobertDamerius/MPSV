@@ -280,10 +280,12 @@ class VehicleSimulator {
             }
 
             // Simulate step by step
+            double h2 = sampletime / 2.0;
+            double h6 = sampletime / 6.0;
             double c, s, dx, dy, scale;
             std::array<double,3> targetPose, forcedResponse, allocationModel, deltaPose, uvrCommand, tmp, compensation, uTau;
             std::array<double,9> J, S0, S1, z;
-            std::array<double,12> xuTmp;
+            std::array<double,12> xuTmp, k1, k2, k3, k4;
             double uv, ur, vr, uu, vv, rr, uuu, vvv, rrr;
             uint32_t k = 0;
             uint32_t kmin = static_cast<uint32_t>(std::max(minNumSimulationSteps, static_cast<uint32_t>(1)));
@@ -425,22 +427,146 @@ class VehicleSimulator {
 
 
                 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                // Non-linear Model
+                // Non-linear Model: numerical integration via RK4
                 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                // Predict xu for the next step using the non-linear model and the explicit forward euler method
-                xuTmp = xu;
-                xu[0] += sampletime * (c*xuTmp[3] - s*xuTmp[4]);
-                xu[1] += sampletime * (s*xuTmp[3] + c*xuTmp[4]);
-                xu[2] += sampletime * (xuTmp[5]);
-                xu[3] += sampletime * (forcedResponse[0]);
-                xu[4] += sampletime * (forcedResponse[1]);
-                xu[5] += sampletime * (forcedResponse[2]);
-                xu[6] += sampletime * (allocationModel[0]);
-                xu[7] += sampletime * (allocationModel[1]);
-                xu[8] += sampletime * (allocationModel[2]);
-                xu[9] += sampletime * ((uTau[0] - xuTmp[9]) * invTf123[0]);
-                xu[10] += sampletime * ((uTau[1] - xuTmp[10]) * invTf123[1]);
-                xu[11] += sampletime * ((uTau[2] - xuTmp[11]) * invTf123[2]);
+                // RK4: k1
+                k1[0]  = c*xu[3] - s*xu[4];
+                k1[1]  = s*xu[3] + c*xu[4];
+                k1[2]  = xu[5];
+                k1[3]  = forcedResponse[0];
+                k1[4]  = forcedResponse[1];
+                k1[5]  = forcedResponse[2];
+                k1[6]  = allocationModel[0];
+                k1[7]  = allocationModel[1];
+                k1[8]  = allocationModel[2];
+                k1[9]  = (uTau[0] - xu[9]) * invTf123[0];
+                k1[10] = (uTau[1] - xu[10]) * invTf123[1];
+                k1[11] = (uTau[2] - xu[11]) * invTf123[2];
+
+                // RK4: k2
+                xuTmp[0]  = xu[0]  + h2 * k1[0];
+                xuTmp[1]  = xu[1]  + h2 * k1[1];
+                xuTmp[2]  = xu[2]  + h2 * k1[2];
+                xuTmp[3]  = xu[3]  + h2 * k1[3];
+                xuTmp[4]  = xu[4]  + h2 * k1[4];
+                xuTmp[5]  = xu[5]  + h2 * k1[5];
+                xuTmp[6]  = xu[6]  + h2 * k1[6];
+                xuTmp[7]  = xu[7]  + h2 * k1[7];
+                xuTmp[8]  = xu[8]  + h2 * k1[8];
+                xuTmp[9]  = xu[9]  + h2 * k1[9];
+                xuTmp[10] = xu[10] + h2 * k1[10];
+                xuTmp[11] = xu[11] + h2 * k1[11];
+                c = std::cos(xuTmp[2]);
+                s = std::sin(xuTmp[2]);
+                uv = xuTmp[3] * xuTmp[4];
+                ur = xuTmp[3] * xuTmp[5];
+                vr = xuTmp[4] * xuTmp[5];
+                uu = xuTmp[3] * xuTmp[3];
+                vv = xuTmp[4] * xuTmp[4];
+                rr = xuTmp[5] * xuTmp[5];
+                uuu = uu * xuTmp[3];
+                vvv = vv * xuTmp[4];
+                rrr = rr * xuTmp[5];
+                k2[0]  = c*xuTmp[3] - s*xuTmp[4];
+                k2[1]  = s*xuTmp[3] + c*xuTmp[4];
+                k2[2]  = xuTmp[5];
+                k2[3]  =  F[0]*xuTmp[3] +  F[1]*xuTmp[4] +  F[2]*xuTmp[5] +  F[3]*vr +  F[4]*ur +  F[5]*uv +  F[6]*uu +  F[7]*vv +  F[8]*rr +  F[9]*uuu + F[10]*vvv + F[11]*rrr + B[0]*xuTmp[6] + B[1]*xuTmp[7] + B[2]*xuTmp[8];
+                k2[4]  = F[12]*xuTmp[3] + F[13]*xuTmp[4] + F[14]*xuTmp[5] + F[15]*vr + F[16]*ur + F[17]*uv + F[18]*uu + F[19]*vv + F[20]*rr + F[21]*uuu + F[22]*vvv + F[23]*rrr + B[3]*xuTmp[6] + B[4]*xuTmp[7] + B[5]*xuTmp[8];
+                k2[5]  = F[24]*xuTmp[3] + F[25]*xuTmp[4] + F[26]*xuTmp[5] + F[27]*vr + F[28]*ur + F[29]*uv + F[30]*uu + F[31]*vv + F[32]*rr + F[33]*uuu + F[34]*vvv + F[35]*rrr + B[6]*xuTmp[6] + B[7]*xuTmp[7] + B[8]*xuTmp[8];
+                k2[6]  = (xuTmp[9]  - xuTmp[6]) * invTXYN[0];
+                k2[7]  = (xuTmp[10] - xuTmp[7]) * invTXYN[1];
+                k2[8]  = (xuTmp[11] - xuTmp[8]) * invTXYN[2];
+                k2[9]  = (uTau[0] - xuTmp[9]) * invTf123[0];
+                k2[10] = (uTau[1] - xuTmp[10]) * invTf123[1];
+                k2[11] = (uTau[2] - xuTmp[11]) * invTf123[2];
+
+                // RK4: k3
+                xuTmp[0]  = xu[0]  + h2 * k2[0];
+                xuTmp[1]  = xu[1]  + h2 * k2[1];
+                xuTmp[2]  = xu[2]  + h2 * k2[2];
+                xuTmp[3]  = xu[3]  + h2 * k2[3];
+                xuTmp[4]  = xu[4]  + h2 * k2[4];
+                xuTmp[5]  = xu[5]  + h2 * k2[5];
+                xuTmp[6]  = xu[6]  + h2 * k2[6];
+                xuTmp[7]  = xu[7]  + h2 * k2[7];
+                xuTmp[8]  = xu[8]  + h2 * k2[8];
+                xuTmp[9]  = xu[9]  + h2 * k2[9];
+                xuTmp[10] = xu[10] + h2 * k2[10];
+                xuTmp[11] = xu[11] + h2 * k2[11];
+                c = std::cos(xuTmp[2]);
+                s = std::sin(xuTmp[2]);
+                uv = xuTmp[3] * xuTmp[4];
+                ur = xuTmp[3] * xuTmp[5];
+                vr = xuTmp[4] * xuTmp[5];
+                uu = xuTmp[3] * xuTmp[3];
+                vv = xuTmp[4] * xuTmp[4];
+                rr = xuTmp[5] * xuTmp[5];
+                uuu = uu * xuTmp[3];
+                vvv = vv * xuTmp[4];
+                rrr = rr * xuTmp[5];
+                k3[0]  = c*xuTmp[3] - s*xuTmp[4];
+                k3[1]  = s*xuTmp[3] + c*xuTmp[4];
+                k3[2]  = xuTmp[5];
+                k3[3]  =  F[0]*xuTmp[3] +  F[1]*xuTmp[4] +  F[2]*xuTmp[5] +  F[3]*vr +  F[4]*ur +  F[5]*uv +  F[6]*uu +  F[7]*vv +  F[8]*rr +  F[9]*uuu + F[10]*vvv + F[11]*rrr + B[0]*xuTmp[6] + B[1]*xuTmp[7] + B[2]*xuTmp[8];
+                k3[4]  = F[12]*xuTmp[3] + F[13]*xuTmp[4] + F[14]*xuTmp[5] + F[15]*vr + F[16]*ur + F[17]*uv + F[18]*uu + F[19]*vv + F[20]*rr + F[21]*uuu + F[22]*vvv + F[23]*rrr + B[3]*xuTmp[6] + B[4]*xuTmp[7] + B[5]*xuTmp[8];
+                k3[5]  = F[24]*xuTmp[3] + F[25]*xuTmp[4] + F[26]*xuTmp[5] + F[27]*vr + F[28]*ur + F[29]*uv + F[30]*uu + F[31]*vv + F[32]*rr + F[33]*uuu + F[34]*vvv + F[35]*rrr + B[6]*xuTmp[6] + B[7]*xuTmp[7] + B[8]*xuTmp[8];
+                k3[6]  = (xuTmp[9]  - xuTmp[6]) * invTXYN[0];
+                k3[7]  = (xuTmp[10] - xuTmp[7]) * invTXYN[1];
+                k3[8]  = (xuTmp[11] - xuTmp[8]) * invTXYN[2];
+                k3[9]  = (uTau[0] - xuTmp[9]) * invTf123[0];
+                k3[10] = (uTau[1] - xuTmp[10]) * invTf123[1];
+                k3[11] = (uTau[2] - xuTmp[11]) * invTf123[2];
+
+                // RK4: k4
+                xuTmp[0]  = xu[0]  + sampletime * k3[0];
+                xuTmp[1]  = xu[1]  + sampletime * k3[1];
+                xuTmp[2]  = xu[2]  + sampletime * k3[2];
+                xuTmp[3]  = xu[3]  + sampletime * k3[3];
+                xuTmp[4]  = xu[4]  + sampletime * k3[4];
+                xuTmp[5]  = xu[5]  + sampletime * k3[5];
+                xuTmp[6]  = xu[6]  + sampletime * k3[6];
+                xuTmp[7]  = xu[7]  + sampletime * k3[7];
+                xuTmp[8]  = xu[8]  + sampletime * k3[8];
+                xuTmp[9]  = xu[9]  + sampletime * k3[9];
+                xuTmp[10] = xu[10] + sampletime * k3[10];
+                xuTmp[11] = xu[11] + sampletime * k3[11];
+                c = std::cos(xuTmp[2]);
+                s = std::sin(xuTmp[2]);
+                uv = xuTmp[3] * xuTmp[4];
+                ur = xuTmp[3] * xuTmp[5];
+                vr = xuTmp[4] * xuTmp[5];
+                uu = xuTmp[3] * xuTmp[3];
+                vv = xuTmp[4] * xuTmp[4];
+                rr = xuTmp[5] * xuTmp[5];
+                uuu = uu * xuTmp[3];
+                vvv = vv * xuTmp[4];
+                rrr = rr * xuTmp[5];
+                k4[0]  = c*xuTmp[3] - s*xuTmp[4];
+                k4[1]  = s*xuTmp[3] + c*xuTmp[4];
+                k4[2]  = xuTmp[5];
+                k4[3]  =  F[0]*xuTmp[3] +  F[1]*xuTmp[4] +  F[2]*xuTmp[5] +  F[3]*vr +  F[4]*ur +  F[5]*uv +  F[6]*uu +  F[7]*vv +  F[8]*rr +  F[9]*uuu + F[10]*vvv + F[11]*rrr + B[0]*xuTmp[6] + B[1]*xuTmp[7] + B[2]*xuTmp[8];
+                k4[4]  = F[12]*xuTmp[3] + F[13]*xuTmp[4] + F[14]*xuTmp[5] + F[15]*vr + F[16]*ur + F[17]*uv + F[18]*uu + F[19]*vv + F[20]*rr + F[21]*uuu + F[22]*vvv + F[23]*rrr + B[3]*xuTmp[6] + B[4]*xuTmp[7] + B[5]*xuTmp[8];
+                k4[5]  = F[24]*xuTmp[3] + F[25]*xuTmp[4] + F[26]*xuTmp[5] + F[27]*vr + F[28]*ur + F[29]*uv + F[30]*uu + F[31]*vv + F[32]*rr + F[33]*uuu + F[34]*vvv + F[35]*rrr + B[6]*xuTmp[6] + B[7]*xuTmp[7] + B[8]*xuTmp[8];
+                k4[6]  = (xuTmp[9]  - xuTmp[6]) * invTXYN[0];
+                k4[7]  = (xuTmp[10] - xuTmp[7]) * invTXYN[1];
+                k4[8]  = (xuTmp[11] - xuTmp[8]) * invTXYN[2];
+                k4[9]  = (uTau[0] - xuTmp[9]) * invTf123[0];
+                k4[10] = (uTau[1] - xuTmp[10]) * invTf123[1];
+                k4[11] = (uTau[2] - xuTmp[11]) * invTf123[2];
+
+                // Predicted state according to RK4
+                xu[0]  += h6 * (k1[0]  + 2.0*(k2[0]  + k3[0])  + k4[0]);
+                xu[1]  += h6 * (k1[1]  + 2.0*(k2[1]  + k3[1])  + k4[1]);
+                xu[2]  += h6 * (k1[2]  + 2.0*(k2[2]  + k3[2])  + k4[2]);
+                xu[3]  += h6 * (k1[3]  + 2.0*(k2[3]  + k3[3])  + k4[3]);
+                xu[4]  += h6 * (k1[4]  + 2.0*(k2[4]  + k3[4])  + k4[4]);
+                xu[5]  += h6 * (k1[5]  + 2.0*(k2[5]  + k3[5])  + k4[5]);
+                xu[6]  += h6 * (k1[6]  + 2.0*(k2[6]  + k3[6])  + k4[6]);
+                xu[7]  += h6 * (k1[7]  + 2.0*(k2[7]  + k3[7])  + k4[7]);
+                xu[8]  += h6 * (k1[8]  + 2.0*(k2[8]  + k3[8])  + k4[8]);
+                xu[9]  += h6 * (k1[9]  + 2.0*(k2[9]  + k3[9])  + k4[9]);
+                xu[10] += h6 * (k1[10] + 2.0*(k2[10] + k3[10]) + k4[10]);
+                xu[11] += h6 * (k1[11] + 2.0*(k2[11] + k3[11]) + k4[11]);
 
                 // xu contains (xk,uk), copy them to the trajectory
                 xu[2] = mpsv::math::SymmetricalAngle(xu[2]);
@@ -464,13 +590,13 @@ class VehicleSimulator {
             std::copy(initialStateAndInput.begin(), initialStateAndInput.begin() + 9, predictedState.begin());
 
             // Simulate step by step
+            double h2 = sampletime / 2.0;
+            double h6 = sampletime / 6.0;
             double c, s;
             double uv, ur, vr, uu, vv, rr, uuu, vvv, rrr;
-            std::array<double,9> x;
+            std::array<double,9> x, k1, k2, k3, k4;
             for(uint32_t k = 0; k != numSimulationSteps; ++k){
-                // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                // Calculation of useful model terms
-                // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                // RK4: k1
                 x = predictedState;
                 c = std::cos(x[2]);
                 s = std::sin(x[2]);
@@ -483,19 +609,119 @@ class VehicleSimulator {
                 uuu = uu * x[3];
                 vvv = vv * x[4];
                 rrr = rr * x[5];
+                k1[0] = (c*x[3] - s*x[4]);
+                k1[1] = (s*x[3] + c*x[4]);
+                k1[2] = (x[5]);
+                k1[3] = ( F[0]*x[3] +  F[1]*x[4] +  F[2]*x[5] +  F[3]*vr +  F[4]*ur +  F[5]*uv +  F[6]*uu +  F[7]*vv +  F[8]*rr +  F[9]*uuu + F[10]*vvv + F[11]*rrr + B[0]*x[6] + B[1]*x[7] + B[2]*x[8]);
+                k1[4] = (F[12]*x[3] + F[13]*x[4] + F[14]*x[5] + F[15]*vr + F[16]*ur + F[17]*uv + F[18]*uu + F[19]*vv + F[20]*rr + F[21]*uuu + F[22]*vvv + F[23]*rrr + B[3]*x[6] + B[4]*x[7] + B[5]*x[8]);
+                k1[5] = (F[24]*x[3] + F[25]*x[4] + F[26]*x[5] + F[27]*vr + F[28]*ur + F[29]*uv + F[30]*uu + F[31]*vv + F[32]*rr + F[33]*uuu + F[34]*vvv + F[35]*rrr + B[6]*x[6] + B[7]*x[7] + B[8]*x[8]);
+                k1[6] = (initialStateAndInput[9]  - x[6]) * invTXYN[0];
+                k1[7] = (initialStateAndInput[10] - x[7]) * invTXYN[1];
+                k1[8] = (initialStateAndInput[11] - x[8]) * invTXYN[2];
 
-                // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                // Non-linear Model (explicit forward euler method)
-                // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                predictedState[0] += sampletime * (c*x[3] - s*x[4]);
-                predictedState[1] += sampletime * (s*x[3] + c*x[4]);
-                predictedState[2] += sampletime * (x[5]);
-                predictedState[3] += sampletime * ( F[0]*x[3] +  F[1]*x[4] +  F[2]*x[5] +  F[3]*vr +  F[4]*ur +  F[5]*uv +  F[6]*uu +  F[7]*vv +  F[8]*rr +  F[9]*uuu + F[10]*vvv + F[11]*rrr + B[0]*x[6] + B[1]*x[7] + B[2]*x[8]);
-                predictedState[4] += sampletime * (F[12]*x[3] + F[13]*x[4] + F[14]*x[5] + F[15]*vr + F[16]*ur + F[17]*uv + F[18]*uu + F[19]*vv + F[20]*rr + F[21]*uuu + F[22]*vvv + F[23]*rrr + B[3]*x[6] + B[4]*x[7] + B[5]*x[8]);
-                predictedState[5] += sampletime * (F[24]*x[3] + F[25]*x[4] + F[26]*x[5] + F[27]*vr + F[28]*ur + F[29]*uv + F[30]*uu + F[31]*vv + F[32]*rr + F[33]*uuu + F[34]*vvv + F[35]*rrr + B[6]*x[6] + B[7]*x[7] + B[8]*x[8]);
-                predictedState[6] += sampletime * (initialStateAndInput[9]  - x[6]) * invTXYN[0];
-                predictedState[7] += sampletime * (initialStateAndInput[10] - x[7]) * invTXYN[1];
-                predictedState[8] += sampletime * (initialStateAndInput[11] - x[8]) * invTXYN[2];
+                // RK4: k2
+                x[0] = predictedState[0] + h2 * k1[0];
+                x[1] = predictedState[1] + h2 * k1[1];
+                x[2] = predictedState[2] + h2 * k1[2];
+                x[3] = predictedState[3] + h2 * k1[3];
+                x[4] = predictedState[4] + h2 * k1[4];
+                x[5] = predictedState[5] + h2 * k1[5];
+                x[6] = predictedState[6] + h2 * k1[6];
+                x[7] = predictedState[7] + h2 * k1[7];
+                x[8] = predictedState[8] + h2 * k1[8];
+                c = std::cos(x[2]);
+                s = std::sin(x[2]);
+                uv = x[3] * x[4];
+                ur = x[3] * x[5];
+                vr = x[4] * x[5];
+                uu = x[3] * x[3];
+                vv = x[4] * x[4];
+                rr = x[5] * x[5];
+                uuu = uu * x[3];
+                vvv = vv * x[4];
+                rrr = rr * x[5];
+                k2[0] = (c*x[3] - s*x[4]);
+                k2[1] = (s*x[3] + c*x[4]);
+                k2[2] = (x[5]);
+                k2[3] = ( F[0]*x[3] +  F[1]*x[4] +  F[2]*x[5] +  F[3]*vr +  F[4]*ur +  F[5]*uv +  F[6]*uu +  F[7]*vv +  F[8]*rr +  F[9]*uuu + F[10]*vvv + F[11]*rrr + B[0]*x[6] + B[1]*x[7] + B[2]*x[8]);
+                k2[4] = (F[12]*x[3] + F[13]*x[4] + F[14]*x[5] + F[15]*vr + F[16]*ur + F[17]*uv + F[18]*uu + F[19]*vv + F[20]*rr + F[21]*uuu + F[22]*vvv + F[23]*rrr + B[3]*x[6] + B[4]*x[7] + B[5]*x[8]);
+                k2[5] = (F[24]*x[3] + F[25]*x[4] + F[26]*x[5] + F[27]*vr + F[28]*ur + F[29]*uv + F[30]*uu + F[31]*vv + F[32]*rr + F[33]*uuu + F[34]*vvv + F[35]*rrr + B[6]*x[6] + B[7]*x[7] + B[8]*x[8]);
+                k2[6] = (initialStateAndInput[9]  - x[6]) * invTXYN[0];
+                k2[7] = (initialStateAndInput[10] - x[7]) * invTXYN[1];
+                k2[8] = (initialStateAndInput[11] - x[8]) * invTXYN[2];
+
+                // RK4: k3
+                x[0] = predictedState[0] + h2 * k2[0];
+                x[1] = predictedState[1] + h2 * k2[1];
+                x[2] = predictedState[2] + h2 * k2[2];
+                x[3] = predictedState[3] + h2 * k2[3];
+                x[4] = predictedState[4] + h2 * k2[4];
+                x[5] = predictedState[5] + h2 * k2[5];
+                x[6] = predictedState[6] + h2 * k2[6];
+                x[7] = predictedState[7] + h2 * k2[7];
+                x[8] = predictedState[8] + h2 * k2[8];
+                c = std::cos(x[2]);
+                s = std::sin(x[2]);
+                uv = x[3] * x[4];
+                ur = x[3] * x[5];
+                vr = x[4] * x[5];
+                uu = x[3] * x[3];
+                vv = x[4] * x[4];
+                rr = x[5] * x[5];
+                uuu = uu * x[3];
+                vvv = vv * x[4];
+                rrr = rr * x[5];
+                k3[0] = (c*x[3] - s*x[4]);
+                k3[1] = (s*x[3] + c*x[4]);
+                k3[2] = (x[5]);
+                k3[3] = ( F[0]*x[3] +  F[1]*x[4] +  F[2]*x[5] +  F[3]*vr +  F[4]*ur +  F[5]*uv +  F[6]*uu +  F[7]*vv +  F[8]*rr +  F[9]*uuu + F[10]*vvv + F[11]*rrr + B[0]*x[6] + B[1]*x[7] + B[2]*x[8]);
+                k3[4] = (F[12]*x[3] + F[13]*x[4] + F[14]*x[5] + F[15]*vr + F[16]*ur + F[17]*uv + F[18]*uu + F[19]*vv + F[20]*rr + F[21]*uuu + F[22]*vvv + F[23]*rrr + B[3]*x[6] + B[4]*x[7] + B[5]*x[8]);
+                k3[5] = (F[24]*x[3] + F[25]*x[4] + F[26]*x[5] + F[27]*vr + F[28]*ur + F[29]*uv + F[30]*uu + F[31]*vv + F[32]*rr + F[33]*uuu + F[34]*vvv + F[35]*rrr + B[6]*x[6] + B[7]*x[7] + B[8]*x[8]);
+                k3[6] = (initialStateAndInput[9]  - x[6]) * invTXYN[0];
+                k3[7] = (initialStateAndInput[10] - x[7]) * invTXYN[1];
+                k3[8] = (initialStateAndInput[11] - x[8]) * invTXYN[2];
+
+                // RK4: k4
+                x[0] = predictedState[0] + sampletime * k3[0];
+                x[1] = predictedState[1] + sampletime * k3[1];
+                x[2] = predictedState[2] + sampletime * k3[2];
+                x[3] = predictedState[3] + sampletime * k3[3];
+                x[4] = predictedState[4] + sampletime * k3[4];
+                x[5] = predictedState[5] + sampletime * k3[5];
+                x[6] = predictedState[6] + sampletime * k3[6];
+                x[7] = predictedState[7] + sampletime * k3[7];
+                x[8] = predictedState[8] + sampletime * k3[8];
+                c = std::cos(x[2]);
+                s = std::sin(x[2]);
+                uv = x[3] * x[4];
+                ur = x[3] * x[5];
+                vr = x[4] * x[5];
+                uu = x[3] * x[3];
+                vv = x[4] * x[4];
+                rr = x[5] * x[5];
+                uuu = uu * x[3];
+                vvv = vv * x[4];
+                rrr = rr * x[5];
+                k4[0] = (c*x[3] - s*x[4]);
+                k4[1] = (s*x[3] + c*x[4]);
+                k4[2] = (x[5]);
+                k4[3] = ( F[0]*x[3] +  F[1]*x[4] +  F[2]*x[5] +  F[3]*vr +  F[4]*ur +  F[5]*uv +  F[6]*uu +  F[7]*vv +  F[8]*rr +  F[9]*uuu + F[10]*vvv + F[11]*rrr + B[0]*x[6] + B[1]*x[7] + B[2]*x[8]);
+                k4[4] = (F[12]*x[3] + F[13]*x[4] + F[14]*x[5] + F[15]*vr + F[16]*ur + F[17]*uv + F[18]*uu + F[19]*vv + F[20]*rr + F[21]*uuu + F[22]*vvv + F[23]*rrr + B[3]*x[6] + B[4]*x[7] + B[5]*x[8]);
+                k4[5] = (F[24]*x[3] + F[25]*x[4] + F[26]*x[5] + F[27]*vr + F[28]*ur + F[29]*uv + F[30]*uu + F[31]*vv + F[32]*rr + F[33]*uuu + F[34]*vvv + F[35]*rrr + B[6]*x[6] + B[7]*x[7] + B[8]*x[8]);
+                k4[6] = (initialStateAndInput[9]  - x[6]) * invTXYN[0];
+                k4[7] = (initialStateAndInput[10] - x[7]) * invTXYN[1];
+                k4[8] = (initialStateAndInput[11] - x[8]) * invTXYN[2];
+
+                // Predicted state according to RK4
+                predictedState[0] += h6 * (k1[0] + 2.0*(k2[0] + k3[0]) + k4[0]);
+                predictedState[1] += h6 * (k1[1] + 2.0*(k2[1] + k3[1]) + k4[1]);
+                predictedState[2] += h6 * (k1[2] + 2.0*(k2[2] + k3[2]) + k4[2]);
+                predictedState[3] += h6 * (k1[3] + 2.0*(k2[3] + k3[3]) + k4[3]);
+                predictedState[4] += h6 * (k1[4] + 2.0*(k2[4] + k3[4]) + k4[4]);
+                predictedState[5] += h6 * (k1[5] + 2.0*(k2[5] + k3[5]) + k4[5]);
+                predictedState[6] += h6 * (k1[6] + 2.0*(k2[6] + k3[6]) + k4[6]);
+                predictedState[7] += h6 * (k1[7] + 2.0*(k2[7] + k3[7]) + k4[7]);
+                predictedState[8] += h6 * (k1[8] + 2.0*(k2[8] + k3[8]) + k4[8]);
             }
             predictedState[2] = mpsv::math::SymmetricalAngle(predictedState[2]);
             return predictedState;
@@ -516,9 +742,11 @@ class VehicleSimulator {
             std::copy(initialStateAndInput.begin(), initialStateAndInput.begin() + 9, predictedState.begin());
 
             // Simulate step by step
+            double h2 = sampletime / 2.0;
+            double h6 = sampletime / 6.0;
             double c, s;
             double uv, ur, vr, uu, vv, rr, uuu, vvv, rrr;
-            std::array<double,9> x;
+            std::array<double,9> x, k1, k2, k3, k4;
             trajectory.clear();
             if(numSimulationSteps >= maxNumSimulationSteps){
                 return false;
@@ -526,7 +754,7 @@ class VehicleSimulator {
             numSimulationSteps = std::max(numSimulationSteps, static_cast<uint32_t>(1));
             trajectory.reserve(numSimulationSteps);
             for(uint32_t k = 0; k != numSimulationSteps; ++k){
-                // Calculation of useful model terms
+                // RK4: k1
                 x = predictedState;
                 c = std::cos(x[2]);
                 s = std::sin(x[2]);
@@ -539,19 +767,122 @@ class VehicleSimulator {
                 uuu = uu * x[3];
                 vvv = vv * x[4];
                 rrr = rr * x[5];
+                k1[0] = (c*x[3] - s*x[4]);
+                k1[1] = (s*x[3] + c*x[4]);
+                k1[2] = (x[5]);
+                k1[3] = ( F[0]*x[3] +  F[1]*x[4] +  F[2]*x[5] +  F[3]*vr +  F[4]*ur +  F[5]*uv +  F[6]*uu +  F[7]*vv +  F[8]*rr +  F[9]*uuu + F[10]*vvv + F[11]*rrr + B[0]*x[6] + B[1]*x[7] + B[2]*x[8]);
+                k1[4] = (F[12]*x[3] + F[13]*x[4] + F[14]*x[5] + F[15]*vr + F[16]*ur + F[17]*uv + F[18]*uu + F[19]*vv + F[20]*rr + F[21]*uuu + F[22]*vvv + F[23]*rrr + B[3]*x[6] + B[4]*x[7] + B[5]*x[8]);
+                k1[5] = (F[24]*x[3] + F[25]*x[4] + F[26]*x[5] + F[27]*vr + F[28]*ur + F[29]*uv + F[30]*uu + F[31]*vv + F[32]*rr + F[33]*uuu + F[34]*vvv + F[35]*rrr + B[6]*x[6] + B[7]*x[7] + B[8]*x[8]);
+                k1[6] = (initialStateAndInput[9]  - x[6]) * invTXYN[0];
+                k1[7] = (initialStateAndInput[10] - x[7]) * invTXYN[1];
+                k1[8] = (initialStateAndInput[11] - x[8]) * invTXYN[2];
 
-                // Non-linear Model (explicit forward euler method)
-                predictedState[0] += sampletime * (c*x[3] - s*x[4]);
-                predictedState[1] += sampletime * (s*x[3] + c*x[4]);
-                predictedState[2] += mpsv::math::SymmetricalAngle(sampletime * (x[5]));
-                predictedState[3] += sampletime * ( F[0]*x[3] +  F[1]*x[4] +  F[2]*x[5] +  F[3]*vr +  F[4]*ur +  F[5]*uv +  F[6]*uu +  F[7]*vv +  F[8]*rr +  F[9]*uuu + F[10]*vvv + F[11]*rrr + B[0]*x[6] + B[1]*x[7] + B[2]*x[8]);
-                predictedState[4] += sampletime * (F[12]*x[3] + F[13]*x[4] + F[14]*x[5] + F[15]*vr + F[16]*ur + F[17]*uv + F[18]*uu + F[19]*vv + F[20]*rr + F[21]*uuu + F[22]*vvv + F[23]*rrr + B[3]*x[6] + B[4]*x[7] + B[5]*x[8]);
-                predictedState[5] += sampletime * (F[24]*x[3] + F[25]*x[4] + F[26]*x[5] + F[27]*vr + F[28]*ur + F[29]*uv + F[30]*uu + F[31]*vv + F[32]*rr + F[33]*uuu + F[34]*vvv + F[35]*rrr + B[6]*x[6] + B[7]*x[7] + B[8]*x[8]);
-                predictedState[6] += sampletime * (initialStateAndInput[9]  - x[6]) * invTXYN[0];
-                predictedState[7] += sampletime * (initialStateAndInput[10] - x[7]) * invTXYN[1];
-                predictedState[8] += sampletime * (initialStateAndInput[11] - x[8]) * invTXYN[2];
+                // RK4: k2
+                x[0] = predictedState[0] + h2 * k1[0];
+                x[1] = predictedState[1] + h2 * k1[1];
+                x[2] = predictedState[2] + h2 * k1[2];
+                x[3] = predictedState[3] + h2 * k1[3];
+                x[4] = predictedState[4] + h2 * k1[4];
+                x[5] = predictedState[5] + h2 * k1[5];
+                x[6] = predictedState[6] + h2 * k1[6];
+                x[7] = predictedState[7] + h2 * k1[7];
+                x[8] = predictedState[8] + h2 * k1[8];
+                c = std::cos(x[2]);
+                s = std::sin(x[2]);
+                uv = x[3] * x[4];
+                ur = x[3] * x[5];
+                vr = x[4] * x[5];
+                uu = x[3] * x[3];
+                vv = x[4] * x[4];
+                rr = x[5] * x[5];
+                uuu = uu * x[3];
+                vvv = vv * x[4];
+                rrr = rr * x[5];
+                k2[0] = (c*x[3] - s*x[4]);
+                k2[1] = (s*x[3] + c*x[4]);
+                k2[2] = (x[5]);
+                k2[3] = ( F[0]*x[3] +  F[1]*x[4] +  F[2]*x[5] +  F[3]*vr +  F[4]*ur +  F[5]*uv +  F[6]*uu +  F[7]*vv +  F[8]*rr +  F[9]*uuu + F[10]*vvv + F[11]*rrr + B[0]*x[6] + B[1]*x[7] + B[2]*x[8]);
+                k2[4] = (F[12]*x[3] + F[13]*x[4] + F[14]*x[5] + F[15]*vr + F[16]*ur + F[17]*uv + F[18]*uu + F[19]*vv + F[20]*rr + F[21]*uuu + F[22]*vvv + F[23]*rrr + B[3]*x[6] + B[4]*x[7] + B[5]*x[8]);
+                k2[5] = (F[24]*x[3] + F[25]*x[4] + F[26]*x[5] + F[27]*vr + F[28]*ur + F[29]*uv + F[30]*uu + F[31]*vv + F[32]*rr + F[33]*uuu + F[34]*vvv + F[35]*rrr + B[6]*x[6] + B[7]*x[7] + B[8]*x[8]);
+                k2[6] = (initialStateAndInput[9]  - x[6]) * invTXYN[0];
+                k2[7] = (initialStateAndInput[10] - x[7]) * invTXYN[1];
+                k2[8] = (initialStateAndInput[11] - x[8]) * invTXYN[2];
+
+                // RK4: k3
+                x[0] = predictedState[0] + h2 * k2[0];
+                x[1] = predictedState[1] + h2 * k2[1];
+                x[2] = predictedState[2] + h2 * k2[2];
+                x[3] = predictedState[3] + h2 * k2[3];
+                x[4] = predictedState[4] + h2 * k2[4];
+                x[5] = predictedState[5] + h2 * k2[5];
+                x[6] = predictedState[6] + h2 * k2[6];
+                x[7] = predictedState[7] + h2 * k2[7];
+                x[8] = predictedState[8] + h2 * k2[8];
+                c = std::cos(x[2]);
+                s = std::sin(x[2]);
+                uv = x[3] * x[4];
+                ur = x[3] * x[5];
+                vr = x[4] * x[5];
+                uu = x[3] * x[3];
+                vv = x[4] * x[4];
+                rr = x[5] * x[5];
+                uuu = uu * x[3];
+                vvv = vv * x[4];
+                rrr = rr * x[5];
+                k3[0] = (c*x[3] - s*x[4]);
+                k3[1] = (s*x[3] + c*x[4]);
+                k3[2] = (x[5]);
+                k3[3] = ( F[0]*x[3] +  F[1]*x[4] +  F[2]*x[5] +  F[3]*vr +  F[4]*ur +  F[5]*uv +  F[6]*uu +  F[7]*vv +  F[8]*rr +  F[9]*uuu + F[10]*vvv + F[11]*rrr + B[0]*x[6] + B[1]*x[7] + B[2]*x[8]);
+                k3[4] = (F[12]*x[3] + F[13]*x[4] + F[14]*x[5] + F[15]*vr + F[16]*ur + F[17]*uv + F[18]*uu + F[19]*vv + F[20]*rr + F[21]*uuu + F[22]*vvv + F[23]*rrr + B[3]*x[6] + B[4]*x[7] + B[5]*x[8]);
+                k3[5] = (F[24]*x[3] + F[25]*x[4] + F[26]*x[5] + F[27]*vr + F[28]*ur + F[29]*uv + F[30]*uu + F[31]*vv + F[32]*rr + F[33]*uuu + F[34]*vvv + F[35]*rrr + B[6]*x[6] + B[7]*x[7] + B[8]*x[8]);
+                k3[6] = (initialStateAndInput[9]  - x[6]) * invTXYN[0];
+                k3[7] = (initialStateAndInput[10] - x[7]) * invTXYN[1];
+                k3[8] = (initialStateAndInput[11] - x[8]) * invTXYN[2];
+
+                // RK4: k4
+                x[0] = predictedState[0] + sampletime * k3[0];
+                x[1] = predictedState[1] + sampletime * k3[1];
+                x[2] = predictedState[2] + sampletime * k3[2];
+                x[3] = predictedState[3] + sampletime * k3[3];
+                x[4] = predictedState[4] + sampletime * k3[4];
+                x[5] = predictedState[5] + sampletime * k3[5];
+                x[6] = predictedState[6] + sampletime * k3[6];
+                x[7] = predictedState[7] + sampletime * k3[7];
+                x[8] = predictedState[8] + sampletime * k3[8];
+                c = std::cos(x[2]);
+                s = std::sin(x[2]);
+                uv = x[3] * x[4];
+                ur = x[3] * x[5];
+                vr = x[4] * x[5];
+                uu = x[3] * x[3];
+                vv = x[4] * x[4];
+                rr = x[5] * x[5];
+                uuu = uu * x[3];
+                vvv = vv * x[4];
+                rrr = rr * x[5];
+                k4[0] = (c*x[3] - s*x[4]);
+                k4[1] = (s*x[3] + c*x[4]);
+                k4[2] = (x[5]);
+                k4[3] = ( F[0]*x[3] +  F[1]*x[4] +  F[2]*x[5] +  F[3]*vr +  F[4]*ur +  F[5]*uv +  F[6]*uu +  F[7]*vv +  F[8]*rr +  F[9]*uuu + F[10]*vvv + F[11]*rrr + B[0]*x[6] + B[1]*x[7] + B[2]*x[8]);
+                k4[4] = (F[12]*x[3] + F[13]*x[4] + F[14]*x[5] + F[15]*vr + F[16]*ur + F[17]*uv + F[18]*uu + F[19]*vv + F[20]*rr + F[21]*uuu + F[22]*vvv + F[23]*rrr + B[3]*x[6] + B[4]*x[7] + B[5]*x[8]);
+                k4[5] = (F[24]*x[3] + F[25]*x[4] + F[26]*x[5] + F[27]*vr + F[28]*ur + F[29]*uv + F[30]*uu + F[31]*vv + F[32]*rr + F[33]*uuu + F[34]*vvv + F[35]*rrr + B[6]*x[6] + B[7]*x[7] + B[8]*x[8]);
+                k4[6] = (initialStateAndInput[9]  - x[6]) * invTXYN[0];
+                k4[7] = (initialStateAndInput[10] - x[7]) * invTXYN[1];
+                k4[8] = (initialStateAndInput[11] - x[8]) * invTXYN[2];
+
+                // Predicted state according to RK4
+                predictedState[0] += h6 * (k1[0] + 2.0*(k2[0] + k3[0]) + k4[0]);
+                predictedState[1] += h6 * (k1[1] + 2.0*(k2[1] + k3[1]) + k4[1]);
+                predictedState[2] += h6 * (k1[2] + 2.0*(k2[2] + k3[2]) + k4[2]);
+                predictedState[3] += h6 * (k1[3] + 2.0*(k2[3] + k3[3]) + k4[3]);
+                predictedState[4] += h6 * (k1[4] + 2.0*(k2[4] + k3[4]) + k4[4]);
+                predictedState[5] += h6 * (k1[5] + 2.0*(k2[5] + k3[5]) + k4[5]);
+                predictedState[6] += h6 * (k1[6] + 2.0*(k2[6] + k3[6]) + k4[6]);
+                predictedState[7] += h6 * (k1[7] + 2.0*(k2[7] + k3[7]) + k4[7]);
+                predictedState[8] += h6 * (k1[8] + 2.0*(k2[8] + k3[8]) + k4[8]);
 
                 // Add new trajectory entry
+                predictedState[2] = mpsv::math::SymmetricalAngle(predictedState[2]);
                 trajectory.push_back({predictedState[0], predictedState[1], predictedState[2], predictedState[3], predictedState[4], predictedState[5], predictedState[6], predictedState[7], predictedState[8], initialStateAndInput[9], initialStateAndInput[10], initialStateAndInput[11]});
             }
             return true;

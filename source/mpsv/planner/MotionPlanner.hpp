@@ -174,6 +174,7 @@ class MotionPlanner {
             // Reset tree and check feasibility
             state.idxSolutionNode = tree.ClearAndSetRoot(mpsv::planner::MotionPlannerTreeNode(state.initialStateAndInput));
             state.closestDistanceToGoal = mpsv::math::DistanceMetricSE2(state.initialStateAndInput, state.finalPose, parameter.metric.weightPsi);
+            state.goalReached = (state.closestDistanceToGoal < epsDistanceMetric);
             state.isFeasible = !parameter.geometry.vehicleShape.CheckCollisionPose(dataIn.staticObstacles, state.initialStateAndInput); // initial pose must not collide for the problem to be feasible
 
             // Set initial path (initial pose) and trajectory (empty)

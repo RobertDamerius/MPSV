@@ -155,11 +155,13 @@ class PathPlanner {
             if(!state.isFeasible){
                 state.idxSolutionNode = tree.ClearAndSetRoot(mpsv::planner::PathPlannerTreeNode(state.initialPose));
                 state.closestDistanceToGoal = mpsv::math::DistanceMetricSE2(state.initialPose, state.finalPose, parameter.metric.weightPsi);
+                state.goalReached = (state.closestDistanceToGoal < epsDistanceMetric);
             }
             else{
                 if(forceColdStart || !WarmStart(dataIn.originOldToNew, dataIn.staticObstacles)){
                     state.idxSolutionNode = tree.ClearAndSetRoot(mpsv::planner::PathPlannerTreeNode(state.initialPose));
                     state.closestDistanceToGoal = mpsv::math::DistanceMetricSE2(state.initialPose, state.finalPose, parameter.metric.weightPsi);
+                    state.goalReached = (state.closestDistanceToGoal < epsDistanceMetric);
                     tree.ResetRandomNumberCounter();
                 }
             }
@@ -449,7 +451,6 @@ class PathPlanner {
             // Step 5: Find closest node to new goal
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             // Set default state values
-            state.goalReached = false;
             state.outOfNodes = false;
             state.closestDistanceToGoal = std::numeric_limits<double>::infinity();
             state.idxSolutionNode = 0;
@@ -465,9 +466,7 @@ class PathPlanner {
             }
 
             // Check if solution was found
-            if(state.closestDistanceToGoal < epsDistanceMetric){
-                state.goalReached = true;
-            }
+            state.goalReached = (state.closestDistanceToGoal < epsDistanceMetric);
             return true;
         }
 
