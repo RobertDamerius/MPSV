@@ -107,50 +107,50 @@ $(shell $(MKDIR) $(DIRECTORY_BUILD) $(addprefix $(DIRECTORY_BUILD), $(DIRECTORY_
 all: $(PRODUCT)
 
 apps:
-    @echo "Building benchmark"
-    @make --no-print-directory app=benchmark
-    @echo ""
-    @echo "Building pathplanning"
-    @make --no-print-directory app=pathplanning
-    @echo ""
-    @echo "Building motionplanning"
-    @make --no-print-directory app=motionplanning
-    @echo ""
-    @echo "Building sequentialplanning"
-    @make --no-print-directory app=sequentialplanning
-    @echo ""
-    @echo "Building onlineplanning"
-    @make --no-print-directory app=onlineplanning
-    @echo ""
-    @echo "Building asynconlineplanning"
-    @make --no-print-directory app=asynconlineplanning
-    @echo ""
-    @echo "Building asynconlineplanning2"
-    @make --no-print-directory app=asynconlineplanning2
+	@echo "Building benchmark"
+	@make --no-print-directory app=benchmark
+	@echo ""
+	@echo "Building pathplanning"
+	@make --no-print-directory app=pathplanning
+	@echo ""
+	@echo "Building motionplanning"
+	@make --no-print-directory app=motionplanning
+	@echo ""
+	@echo "Building sequentialplanning"
+	@make --no-print-directory app=sequentialplanning
+	@echo ""
+	@echo "Building onlineplanning"
+	@make --no-print-directory app=onlineplanning
+	@echo ""
+	@echo "Building asynconlineplanning"
+	@make --no-print-directory app=asynconlineplanning
+	@echo ""
+	@echo "Building asynconlineplanning2"
+	@make --no-print-directory app=asynconlineplanning2
 
 clean:
-    @$(RM) $(DIRECTORY_BUILD)
-    @echo "Clean: Done."
+	@$(RM) $(DIRECTORY_BUILD)
+	@echo "Clean: Done."
 
 $(PRODUCT): $(OBJECTS_ALL)
-    @printf "$(LINK_MESSAGE)"
-    @$(LINK_COMMAND)
+	@printf "$(LINK_MESSAGE)"
+	@$(LINK_COMMAND)
 
 $(DIRECTORY_BUILD)%.o: %.c
 $(DIRECTORY_BUILD)%.o: %.c $(DIRECTORY_BUILD)%.d
-    @printf "[C]    > $<\n"
-    @$(CC) $(INCLUDE_PATHS) $(CC_FLAGS) $(DEP_FLAGS) -o $@ -c $< $(CC_SYMBOLS)
-    @$(POSTCOMPILE)
+	@printf "[C]    > $<\n"
+	@$(CC) $(INCLUDE_PATHS) $(CC_FLAGS) $(DEP_FLAGS) -o $@ -c $< $(CC_SYMBOLS)
+	@$(POSTCOMPILE)
 
 $(DIRECTORY_BUILD)%.o: %.cpp
 $(DIRECTORY_BUILD)%.o: %.cpp $(DIRECTORY_BUILD)%.d
-    @printf "[CPP]  > $<\n"
-    @$(CPP) $(INCLUDE_PATHS) $(CPP_FLAGS) $(DEP_FLAGS) -o $@ -c $< $(CC_SYMBOLS)
-    @$(POSTCOMPILE)
+	@printf "[CPP]  > $<\n"
+	@$(CPP) $(INCLUDE_PATHS) $(CPP_FLAGS) $(DEP_FLAGS) -o $@ -c $< $(CC_SYMBOLS)
+	@$(POSTCOMPILE)
 
 $(DIRECTORY_BUILD)%.o: %.bin
-    @printf "[BIN]  > $<\n"
-    @$(LD) -r -b binary -o $@ $<
+	@printf "[BIN]  > $<\n"
+	@$(LD) -r -b binary -o $@ $<
 
 $(DIRECTORY_BUILD)%.d: ;
 .PRECIOUS: $(DIRECTORY_BUILD)%.d
