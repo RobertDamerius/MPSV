@@ -21,6 +21,9 @@ layoutNavBar = [
     SimpleDoc.NavEntry(SimpleDoc.NavEntryType.link, 'Default AsyncOnlinePlanner Input Bus', 'library_asynconlineplannerinput.html');
     SimpleDoc.NavEntry(SimpleDoc.NavEntryType.link, 'Default AsyncOnlinePlanner Parameter Bus', 'library_asynconlineplannerparameter.html');
     SimpleDoc.NavEntry(SimpleDoc.NavEntryType.link, 'Default AsyncOnlinePlanner Output Bus', 'library_asynconlineplanneroutput.html');
+    SimpleDoc.NavEntry(SimpleDoc.NavEntryType.link, 'Serialize AsyncOnlinePlanner Input Bus', 'library_serializeasynconlineplannerinput.html');
+    SimpleDoc.NavEntry(SimpleDoc.NavEntryType.link, 'Serialize AsyncOnlinePlanner Parameter Bus', 'library_serializeasynconlineplannerparameter.html');
+    SimpleDoc.NavEntry(SimpleDoc.NavEntryType.link, 'Deserialize AsyncOnlinePlanner Output Bus', 'library_deserializeasynconlineplanneroutput.html');
     SimpleDoc.NavEntry(SimpleDoc.NavEntryType.link, 'Select Current Point On Trajectory', 'library_selectcurrentpointontrajectory.html');
 ];
 

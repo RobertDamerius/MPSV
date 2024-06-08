@@ -1,0 +1,21 @@
+<h1>Serialize AsyncOnlinePlanner Input Bus</h1>
+<h3>Library</h3>
+<span style="font-family: Courier New">MPSV / Serialize AsyncOnlinePlanner Input Bus</span>
+
+
+<h3>Description</h3>
+Serialize an AsyncOnlinePlanner input bus to a binary representation.
+
+
+<h2>Input Ports</h2>
+<h3>asyncOnlinePlannerInput</h3>
+The input bus for the asynchronous online planner, which is constructed via the <a href="library_asynconlineplannerinput.html">Default AsyncOnlinePlanner Input Bus</a> block.
+
+
+<h2>Output Ports</h2>
+<h3>bytes</h3>
+Array of uint8 values representing the bytes of the serialized bus.
+
+
+<h3>length</h3>
+Number of bytes representing the serialized data.

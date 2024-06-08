@@ -40,16 +40,12 @@ void MPSV_WrapperAsynchronousOnlinePlanner::ReadFromInput(SerializationAsynchron
     plannerInput.samplingBoxDimension  = input->data.samplingBoxDimension;
     plannerInput.staticObstacles.clear();
     bool validStaticObstacles = (input->data.numStaticObstacles <= input->data.numVerticesPerStaticObstacle.size());
-    if(validStaticObstacles){
-        for(size_t p = 0; (p < static_cast<size_t>(input->data.numStaticObstacles)); ++p){
-            validStaticObstacles = (input->data.numVerticesPerStaticObstacle[p] > 2) && (input->data.numVerticesPerStaticObstacle[p] <= input->data.verticesStaticObstacles[p].size());
-            if(!validStaticObstacles){
-                break;
-            }
-            std::vector<std::array<double,2>> vertices(input->data.verticesStaticObstacles[p].begin(), input->data.verticesStaticObstacles[p].begin() + input->data.numVerticesPerStaticObstacle[p]);
-            plannerInput.staticObstacles.push_back(mpsv::geometry::StaticObstacle(vertices));
-            plannerInput.staticObstacles.back().EnsureCorrectVertexOrder();
-        }
+    for(size_t p = 0; (p < static_cast<size_t>(input->data.numStaticObstacles)) && validStaticObstacles; ++p){
+        validStaticObstacles &= (input->data.numVerticesPerStaticObstacle[p] > 2) && (input->data.numVerticesPerStaticObstacle[p] <= input->data.verticesStaticObstacles[p].size());
+        std::vector<std::array<double,2>> vertices(input->data.numVerticesPerStaticObstacle[p]);
+        std::transform(input->data.verticesStaticObstacles[p].begin(), input->data.verticesStaticObstacles[p].begin() + input->data.numVerticesPerStaticObstacle[p], vertices.begin(), [](std::array<float,2>& f){ return std::array<double,2>({static_cast<double>(f[0]), static_cast<double>(f[1])}); });
+        plannerInput.staticObstacles.push_back(mpsv::geometry::StaticObstacle(vertices));
+        validStaticObstacles &= plannerInput.staticObstacles.back().EnsureCorrectVertexOrder();
     }
 
     // if there're errors make whole input invalid (set timestampt o NaN)
@@ -136,31 +132,31 @@ void MPSV_WrapperAsynchronousOnlinePlanner::ReadFromParameter(SerializationAsync
 }
 
 void MPSV_WrapperAsynchronousOnlinePlanner::WriteToOutput(SerializationAsynchronousOnlinePlannerOutputUnion* output){
+    output->data.timestamp                                 = plannerOutput.timestamp;
     output->data.timestampInput                            = plannerOutput.timestampInput;
     output->data.timestampParameter                        = plannerOutput.timestampParameter;
+    output->data.threadState                               = static_cast<uint8_t>(plannerOutput.threadState);
     output->data.timeoutInput                              = static_cast<uint8_t>(plannerOutput.timeoutInput);
     output->data.validInput                                = static_cast<uint8_t>(plannerOutput.validInput);
     output->data.validParameter                            = static_cast<uint8_t>(plannerOutput.validParameter);
-    output->data.threadState                               = static_cast<uint8_t>(plannerOutput.threadState);
-    output->data.timestamp                                 = plannerOutput.timestamp;
+    output->data.performedReset                            = static_cast<uint8_t>(plannerOutput.performedReset);
+    output->data.error                                     = static_cast<uint8_t>(plannerOutput.error);
     output->data.originLLA                                 = plannerOutput.originLLA;
 
     // trajectory
-    output->data.numTrajectoryPoints = std::min(plannerOutput.trajectory.size(), output->data.trajectory.size());
-    for(uint32_t k = 0; k < output->data.numTrajectoryPoints; ++k){
+    output->data.numTrajectoryPoints                       = static_cast<uint16_t>(std::min(plannerOutput.trajectory.size(), output->data.trajectory.size()));
+    output->data.trajectoryShrinked                        = static_cast<uint8_t>(plannerOutput.trajectory.size() > output->data.trajectory.size());
+    output->data.sampletime                                = plannerOutput.sampletime;
+    for(uint16_t k = 0; k < output->data.numTrajectoryPoints; ++k){
         output->data.trajectory[k] = plannerOutput.trajectory[k];
     }
 
-    output->data.sampletime                                = plannerOutput.sampletime;
-    output->data.performedReset                            = static_cast<uint8_t>(plannerOutput.performedReset);
-    output->data.error                                     = static_cast<uint8_t>(plannerOutput.error);
-
     // pathPlanner.path
-    output->data.pathPlanner.numPoses = std::min(plannerOutput.pathPlanner.path.size(), output->data.pathPlanner.path.size());
-    for(uint32_t k = 0; k < output->data.pathPlanner.numPoses; ++k){
+    output->data.pathPlanner.numPoses                      = static_cast<uint16_t>(std::min(plannerOutput.pathPlanner.path.size(), output->data.pathPlanner.path.size()));
+    output->data.pathPlanner.pathShrinked                  = static_cast<uint8_t>(plannerOutput.pathPlanner.path.size() > output->data.pathPlanner.path.size());
+    for(uint16_t k = 0; k < output->data.pathPlanner.numPoses; ++k){
         output->data.pathPlanner.path[k] = plannerOutput.pathPlanner.path[k];
     }
-
     output->data.pathPlanner.goalReached                   = static_cast<uint8_t>(plannerOutput.pathPlanner.goalReached);
     output->data.pathPlanner.isFeasible                    = static_cast<uint8_t>(plannerOutput.pathPlanner.isFeasible);
     output->data.pathPlanner.outOfNodes                    = static_cast<uint8_t>(plannerOutput.pathPlanner.outOfNodes);
@@ -169,12 +165,11 @@ void MPSV_WrapperAsynchronousOnlinePlanner::WriteToOutput(SerializationAsynchron
     output->data.pathPlanner.cost                          = plannerOutput.pathPlanner.cost;
 
     // motionPlanner.referencePath
-    output->data.motionPlanner.numPoses = std::min(plannerOutput.motionPlanner.referencePath.size(), output->data.motionPlanner.referencePath.size());
-    for(uint32_t k = 0; k < output->data.motionPlanner.numPoses; ++k){
+    output->data.motionPlanner.numPoses                    = static_cast<uint16_t>(std::min(plannerOutput.motionPlanner.referencePath.size(), output->data.motionPlanner.referencePath.size()));
+    output->data.motionPlanner.referencePathShrinked       = static_cast<uint8_t>(plannerOutput.motionPlanner.referencePath.size() > output->data.motionPlanner.referencePath.size());
+    for(uint16_t k = 0; k < output->data.motionPlanner.numPoses; ++k){
         output->data.motionPlanner.referencePath[k] = plannerOutput.motionPlanner.referencePath[k];
     }
-
-    output->data.motionPlanner.startingTimepoint           = plannerOutput.motionPlanner.startingTimepoint;
     output->data.motionPlanner.goalReached                 = static_cast<uint8_t>(plannerOutput.motionPlanner.goalReached);
     output->data.motionPlanner.isFeasible                  = static_cast<uint8_t>(plannerOutput.motionPlanner.isFeasible);
     output->data.motionPlanner.outOfNodes                  = static_cast<uint8_t>(plannerOutput.motionPlanner.outOfNodes);

@@ -12,17 +12,18 @@
 #pragma pack(push, 1)
 union SerializationAsynchronousOnlinePlannerInputUnion {
     struct SerializationAsynchronousOnlinePlannerInputStruct {
-        uint8_t enable;                                                                 // Non-zero if the asynchronous online planner should be enabled, zero if the planner should go into standby mode.
-        uint8_t reset;                                                                  // Non-zero if the asynchronous online planner should be reset. A reset is ensured to be performed before the next internal solve operation of the planner.
         double timestamp;                                                               // Monotonically increasing timestamp in seconds (arbitrary time origin defined by the user) indicating the initial timepoint corresponding to @ref initialStateAndInput.
+        uint8_t enable:1;                                                               // Bit 0: non-zero if the asynchronous online planner should be enabled, zero if the planner should go into standby mode.
+        uint8_t reset:1;                                                                // Bit 1: non-zero if the asynchronous online planner should be reset. A reset is ensured to be performed before the next internal solve operation of the planner.
+        uint8_t reserved:6;                                                             // Bit 2-7: reserved, always zero.
         std::array<double,3> originLLA;                                                 // Geographical origin to which this input belongs to, given as {lat,lon,alt}.
         std::array<double,12> initialStateAndInput;                                     // Initial state and input given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
         std::array<double,3> finalPose;                                                 // The final pose given as {x,y,psi}.
         std::array<double,3> samplingBoxCenterPose;                                     // Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
         std::array<double,2> samplingBoxDimension;                                      // Dimension of the sampling box along major and minor axes of the box.
-        uint16_t numStaticObstacles;                                                    // The number of static obstacles in range [0,1000].
-        std::array<uint8_t,1000> numVerticesPerStaticObstacle;                          // The number of vertices for each static obstacle in range [3,20].
-        std::array<std::array<std::array<double,2>,20>,1000> verticesStaticObstacles;   // Vertex data of the static obstacles.
+        uint16_t numStaticObstacles;                                                    // The number of static obstacles in range [0,400].
+        std::array<uint8_t,400> numVerticesPerStaticObstacle;                           // The number of vertices for each static obstacle in range [3,20].
+        std::array<std::array<std::array<float,2>,20>,400> verticesStaticObstacles;     // Vertex data of the static obstacles.
     } data;
     uint8_t bytes[sizeof(SerializationAsynchronousOnlinePlannerInputUnion::SerializationAsynchronousOnlinePlannerInputStruct)];
 };
@@ -91,7 +92,8 @@ union SerializationAsynchronousOnlinePlannerParameterUnion {
             } motionPlanner;
         } sequentialPlanner;
         struct {
-            uint8_t predictInitialStateOnReset;                                            // [OnlinePlanner] Non-zero if the initial state should be predicted by the expected computation time after a reset of the online planner (e.g. the first solve).
+            uint8_t predictInitialStateOnReset:1;                                          // [OnlinePlanner] Bit 0: non-zero if the initial state should be predicted by the expected computation time after a reset of the online planner (e.g. the first solve).
+            uint8_t reserved:7;                                                            // [OnlinePlanner] Bit 1-7: reserved, always zero.
             double maxComputationTimePathOnReset;                                          // [OnlinePlanner] Maximum computation time in seconds for path planning after a reset.
             double maxComputationTimeMotionOnReset;                                        // [OnlinePlanner] Maximum computation time in seconds for motion planning after a reset.
             double maxComputationTimePath;                                                 // [OnlinePlanner] Maximum computation time in seconds for path planning.
@@ -112,36 +114,40 @@ union SerializationAsynchronousOnlinePlannerParameterUnion {
 #pragma pack(push, 1)
 union SerializationAsynchronousOnlinePlannerOutputUnion {
     struct SerializationAsynchronousOnlinePlannerOutputStruct {
+        double timestamp;                                          // Monotonically increasing timestamp in seconds (arbitrary time origin defined by the user) indicating the initial timepoint of the @ref trajectory.
         double timestampInput;                                     // The user-defined timestamp of the corresponding input data that has been used to compute the solution. The default value is quiet_NaN.
         double timestampParameter;                                 // The user-defined timestamp of the corresponding parameter data that has been used to compute the solution. The default value is quiet_NaN.
-        uint8_t timeoutInput;                                      // Non-zero if the given input data timed out, zero otherwise.
-        uint8_t validInput;                                        // Non-zero if the given input data is valid, zero otherwise.
-        uint8_t validParameter;                                    // Non-zero if the given parameter data is valid, zero otherwise.
-        uint8_t threadState;                                       // The state of the planning thread (0: offline, 1: standby, 2: running).
-        double timestamp;                                          // Monotonically increasing timestamp in seconds (arbitrary time origin defined by the user) indicating the initial timepoint of the @ref trajectory.
+        uint8_t threadState:2;                                     // Bit 0-1: the state of the planning thread (0: offline, 1: standby, 2: running).
+        uint8_t timeoutInput:1;                                    // Bit 2: non-zero if the given input data timed out, zero otherwise.
+        uint8_t validInput:1;                                      // Bit 3: non-zero if the given input data is valid, zero otherwise.
+        uint8_t validParameter:1;                                  // Bit 4: non-zero if the given parameter data is valid, zero otherwise.
+        uint8_t performedReset:1;                                  // Bit 5: non-zero if reset has been performed, zero otherwise.
+        uint8_t error:1;                                           // Bit 6: non-zero if path or motion planner reported an error, e.g. not feasible or out of nodes, zero otherwise. This value is equal to (!pathPlanner.isFeasible || pathPlanner.outOfNodes || !motionPlanner.isFeasible || motionPlanner.outOfNodes).
+        uint8_t trajectoryShrinked:1;                              // Bit 7: non-zero if trajectory has been shrinked to fit to the memory size.
         std::array<double,3> originLLA;                            // Geographical origin to which this outputs belongs to, given as {lat,lon,alt}.
-        uint32_t numTrajectoryPoints;                              // The number of points inside the trajectory.
-        std::array<std::array<double,12>,1000> trajectory;         // Resulting trajectory, where each element is given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state and input is not inserted. The actual length of the trajectory is given by numTrajectoryPoints.
+        uint16_t numTrajectoryPoints;                              // The number of points inside the trajectory.
+        std::array<std::array<double,12>,500> trajectory;          // Resulting trajectory, where each element is given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state and input is not inserted. The actual length of the trajectory is given by numTrajectoryPoints.
         double sampletime;                                         // The sampletime of the trajectory data in seconds.
-        uint8_t performedReset;                                    // Non-zero if reset has been performed, zero otherwise.
-        uint8_t error;                                             // Non-zero if path or motion planner reported an error, e.g. not feasible or out of nodes, zero otherwise. This value is equal to (!pathPlanner.isFeasible || pathPlanner.outOfNodes || !motionPlanner.isFeasible || motionPlanner.outOfNodes).
         struct {
-            uint32_t numPoses;                                     // [PathPlanner] The number of poses representing the path, e.g. the length of the path.
-            std::array<std::array<double,3>,1000> path;            // [PathPlanner] Resulting path of the internal path planning problem, where each pose is given as {x,y,psi}. The actual length of the path is given by numPoses.
-            uint8_t goalReached;                                   // [PathPlanner] Non-zero if goal is reached, zero otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-            uint8_t isFeasible;                                    // [PathPlanner] Non-zero if problem is feasible, zero otherwise. The problem is not feasible, if the initial pose already collides with static obstacles.
-            uint8_t outOfNodes;                                    // [PathPlanner] Non-zero if all nodes are within the solution path and no new nodes can be sampled and added to the tree.
+            uint16_t numPoses;                                     // [PathPlanner] The number of poses representing the path, e.g. the length of the path.
+            std::array<std::array<double,3>,100> path;             // [PathPlanner] Resulting path of the internal path planning problem, where each pose is given as {x,y,psi}. The actual length of the path is given by numPoses.
+            uint8_t goalReached:1;                                 // [PathPlanner] Bit 0: non-zero if goal is reached, zero otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
+            uint8_t isFeasible:1;                                  // [PathPlanner] Bit 1: non-zero if problem is feasible, zero otherwise. The problem is not feasible, if the initial pose already collides with static obstacles.
+            uint8_t outOfNodes:1;                                  // [PathPlanner] Bit 2: non-zero if all nodes are within the solution path and no new nodes can be sampled and added to the tree.
+            uint8_t pathShrinked:1;                                // [PathPlanner] Bit 3: non-zero if path has been shrinked to fit to the memory size.
+            uint8_t reserved:4;                                    // [PathPlanner] Bit 4-7: reserved, always zero.
             uint32_t numberOfPerformedIterations;                  // [PathPlanner] The total number of iterations that have been performed since the latest prepare step.
             double timestampOfComputationUTC;                      // [PathPlanner] Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
             double cost;                                           // [PathPlanner] The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
         } pathPlanner;
         struct {
-            uint32_t numPoses;                                     // [MotionPlanner] The number of poses representing the reference path, e.g. the length of the reference path.
-            std::array<std::array<double,3>,1000> referencePath;   // [MotionPlanner] Resulting reference path of the internal motion planning problem, where each pose is given as {x,y,psi}. The actual length of the reference path is given by numPoses.
-            double startingTimepoint;                              // [MotionPlanner] The starting timepoint of the internal motion planner trajectory (arbitrary time origin defined by the user, same as @ref timestamp).
-            uint8_t goalReached;                                   // [MotionPlanner] Non-zero if goal is reached, zero otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-            uint8_t isFeasible;                                    // [MotionPlanner] Non-zero if problem is feasible, zero otherwise. The problem is not feasible, if the initial pose already collides with static obstacles.
-            uint8_t outOfNodes;                                    // [MotionPlanner] Non-zero if all nodes are within the solution path and no new nodes can be sampled and added to the tree.
+            uint16_t numPoses;                                     // [MotionPlanner] The number of poses representing the reference path, e.g. the length of the reference path.
+            std::array<std::array<double,3>,100> referencePath;    // [MotionPlanner] Resulting reference path of the internal motion planning problem, where each pose is given as {x,y,psi}. The actual length of the reference path is given by numPoses.
+            uint8_t goalReached:1;                                 // [MotionPlanner] Bit 0: non-zero if goal is reached, zero otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
+            uint8_t isFeasible:1;                                  // [MotionPlanner] Bit 1: non-zero if problem is feasible, zero otherwise. The problem is not feasible, if the initial pose already collides with static obstacles.
+            uint8_t outOfNodes:1;                                  // [MotionPlanner] Bit 2: non-zero if all nodes are within the solution path and no new nodes can be sampled and added to the tree.
+            uint8_t referencePathShrinked:1;                       // [MotionPlanner] Bit 3: non-zero if referencePath has been shrinked to fit to the memory size.
+            uint8_t reserved:4;                                    // [MotionPlanner] Bit 4-7: reserved, always zero.
             uint32_t numberOfPerformedIterations;                  // [MotionPlanner] The total number of iterations that have been performed since the latest prepare step.
             double timestampOfComputationUTC;                      // [MotionPlanner] Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
             double cost;                                           // [MotionPlanner] The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.

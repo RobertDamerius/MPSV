@@ -21,7 +21,7 @@
 <li class="linav"><a href="index.html">Overview</a></li>
 <li class="linone"></li>
 <li class="litext">SIMULINK LIBRARY</li>
-<li class="linav_active"><a href="library_pathplanner.html">PathPlanner</a></li>
+<li class="linav"><a href="library_pathplanner.html">PathPlanner</a></li>
 <li class="linav"><a href="library_pathplannerinput.html">Default PathPlanner Input Bus</a></li>
 <li class="linav"><a href="library_pathplannerparameter.html">Default PathPlanner Parameter Bus</a></li>
 <li class="linav"><a href="library_pathplanneroutput.html">Default PathPlanner Output Bus</a></li>
@@ -30,47 +30,34 @@
 <li class="linav"><a href="library_asynconlineplannerparameter.html">Default AsyncOnlinePlanner Parameter Bus</a></li>
 <li class="linav"><a href="library_asynconlineplanneroutput.html">Default AsyncOnlinePlanner Output Bus</a></li>
 <li class="linav"><a href="library_serializeasynconlineplannerinput.html">Serialize AsyncOnlinePlanner Input Bus</a></li>
-<li class="linav"><a href="library_serializeasynconlineplannerparameter.html">Serialize AsyncOnlinePlanner Parameter Bus</a></li>
+<li class="linav_active"><a href="library_serializeasynconlineplannerparameter.html">Serialize AsyncOnlinePlanner Parameter Bus</a></li>
 <li class="linav"><a href="library_deserializeasynconlineplanneroutput.html">Deserialize AsyncOnlinePlanner Output Bus</a></li>
 <li class="linav"><a href="library_selectcurrentpointontrajectory.html">Select Current Point On Trajectory</a></li>
 </ul>
 
 </div>
 <div class="content">
-<h1>PathPlanner</h1>
+<h1>Serialize AsyncOnlinePlanner Parameter Bus</h1>
 <h3>Library</h3>
-<span style="font-family: Courier New">MPSV / PathPlanner</span>
+<span style="font-family: Courier New">MPSV / Serialize AsyncOnlinePlanner Parameter Bus</span>
 
 
 <h3>Description</h3>
-Solve the path planning problem.
-The computation time to be used by the planner is set via the parameter input.
-For all kinds of timestamps, an arbitrary time source can be selected by the user.
-However, all times must be given in seconds and must be monotonically increasing.
+Serialize an AsyncOnlinePlanner parameter bus to a binary representation.
 
 
 <h2>Input Ports</h2>
-<h3>pathPlannerInput</h3>
-The input bus for the path planner, which is constructed via the <a href="library_pathplannerinput.html">Default PathPlanner Input Bus</a> block.
-
-
-<h3>pathPlannerParameter</h3>
-The parameter bus for the path planner, which is constructed via the <a href="library_pathplannerparameter.html">Default PathPlanner Parameter Bus</a> block.
+<h3>asyncOnlinePlannerParameter</h3>
+The parameter bus for the asynchronous online planner, which is constructed via the <a href="library_asynconlineplannerparameter.html">Default AsyncOnlinePlanner Parameter Bus</a> block.
 
 
 <h2>Output Ports</h2>
-<h3>pathPlannerOutput</h3>
-The output bus of the path planner, which is constructed via the <a href="library_pathplanneroutput.html">Default PathPlanner Output Bus</a> block.
+<h3>bytes</h3>
+Array of uint8 values representing the bytes of the serialized bus.
 
 
-<h2>Block Parameters</h2>
-The following table shows all block parameters.
-<table>
-    <tr><th>Parameter Name</th><th>Description</th></tr>
-    <tr><td style="font-family: Courier New;">maxNumNodes</td><td>Maximum number of nodes to be used in the tree.</td></tr>
-    <tr><td style="font-family: Courier New;">maxNumSamples</td><td>Maximum number of random samples to be generated in advance.</td></tr>
-    <tr><td style="font-family: Courier New;">SampleTime</td><td>Sampletime.</td></tr>
-</table>
+<h3>length</h3>
+Number of bytes representing the serialized data.
 
 </div>
 </div>

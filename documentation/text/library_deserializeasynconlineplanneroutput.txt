@@ -1,0 +1,24 @@
+<h1>Deserialize AsyncOnlinePlanner Output Bus</h1>
+<h3>Library</h3>
+<span style="font-family: Courier New">MPSV / Deserialize AsyncOnlinePlanner Output Bus</span>
+
+
+<h3>Description</h3>
+Deserialize an AsyncOnlinePlanner output bus from a binary representation.
+
+
+<h2>Input Ports</h2>
+<h3>bytes</h3>
+Array of uint8 values representing the bytes of the serialized bus.
+
+
+<h3>length</h3>
+Number of bytes representing the serialized data.
+
+
+<h2>Output Ports</h2>
+<h3>success</h3>
+A boolean value that indicates, whether the deserialization was successful or not.
+
+<h3>asyncOnlinePlannerOutput</h3>
+The output bus of the asynchronous online planner, which is constructed via the <a href="library_asynconlineplanneroutput.html">Default AsyncOnlinePlanner Output Bus</a> block.

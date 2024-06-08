@@ -27,7 +27,7 @@ The number of points to be considered from the trajectoryData matrix.
 
 
 <h3>trajectoryData</h3>
-A 12-by-1000 matrix containing 1000 points of the trajectory, where each point represents the state-input-vector [x; y; psi; u; v; r; X; Y; N; Xc; Yc; Nc].
+A 12-by-500 matrix containing 500 points of the trajectory, where each point represents the state-input-vector [x; y; psi; u; v; r; X; Y; N; Xc; Yc; Nc].
 
 
 <h2>Output Ports</h2>
