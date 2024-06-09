@@ -72,6 +72,7 @@
 #include <mpsv_planner_SequentialPlannerInput.hpp>
 #include <mpsv_planner_SequentialPlannerOutput.hpp>
 #include <mpsv_planner_SequentialPlannerParameterSet.hpp>
+#include <mpsv_planner_Serialization.hpp>
 
 /* Sampler */
 #include <mpsv_sampler_HaltonSequence.hpp>

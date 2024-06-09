@@ -81,6 +81,7 @@
         "source_location": "cpp",
         "charconv": "cpp",
         "format": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "forward_list": "cpp"
     }
 }
