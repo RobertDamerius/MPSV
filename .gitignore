@@ -14,6 +14,9 @@ apps/asynconlineplanning/asynconlineplanning.exe
 apps/asynconlineplanning2/asynconlineplanning2
 apps/asynconlineplanning2/asynconlineplanning2.exe
 apps/asynconlineplanning2/data*
+apps/mpsv/mpsv
+apps/mpsv/mpsv.exe
+apps/mpsv/protocol
 slprj
 *_sfun.mexa64
 *_sfun.mexw64

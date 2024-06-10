@@ -4,6 +4,7 @@ This directory contains several example applications that show how to use the di
 
 | App                  | Description                                                                                                    |
 | :------------------- | :------------------------------------------------------------------------------------------------------------- |
+| mpsv                 | standalone application for the asynchronous online planner                                                     |
 | benchmark            | runs several test functions and algorithms of MPSV and measures execution times                                |
 | pathplanning         | solves one path planning problem for a limited execution time                                                  |
 | motionplanning       | solves one motion planning problem for a limited execution time                                                |

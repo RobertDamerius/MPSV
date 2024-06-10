@@ -27,12 +27,12 @@ The directory structure of this repository is as follows.
 
 | File / Directory   | Description                                                                                                    |
 | :----------------- | :------------------------------------------------------------------------------------------------------------- |
-| apps               | contains example applications                                                                                  |
+| apps               | contains example applications and a standalone application                                                     |
 | documentation      | contains the documentation that has been created with [SimpleDoc](https://github.com/RobertDamerius/SimpleDoc) |
 | matlab             | contains the MATLAB/Simulink library "MPSV" (**>= R2023b**) and Simulink examples                              |
 | source             | contains the header-only library (C++)                                                                         |
 | LICENSE            | license information                                                                                            |
-| Makefile           | used to build example applications                                                                             |
+| Makefile           | used to build example applications and the standalone application                                              |
 | README.md          | this file                                                                                                      |
 
 
@@ -86,6 +86,15 @@ make apps
 
 ## Examples (MATLAB/Simulink)
 Example models for Simulink are located at [matlab/examples/](matlab/examples/).
+
+
+## Standalone Application
+The standalone application can be used to outsource the planning problem to an external program.
+The data transfer between the standalone application and a user program is done via UDP.
+The application is located at [apps/mpsv](apps/mpsv/) and is compiled with
+```
+make app=mpsv
+```
 
 
 ## Publication

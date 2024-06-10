@@ -1,0 +1,24 @@
+{
+    "network": {
+        "localPort": 31416,
+        "destinationAddress": [127,0,0,1],
+        "destinationPort": 27183,
+        "interfaceAddress": [0,0,0,0],
+        "deviceName": "",
+        "socketPriority": 6,
+        "allowBroadcast": false,
+        "socketErrorRetryTimeMs": 1000,
+        "receiverThreadPriority": 99
+    },
+    "planner": {
+        "pathMaxNumNodes": 200,
+        "pathMaxNumSamples": 1000000,
+        "motionMaxNumNodes": 200,
+        "motionMaxNumSamples": 1000000,
+        "threadPriorityPlanner": 98,
+        "threadPriorityUpdater": 99,
+        "ompNumThreads": -1,
+        "ompDynamic": -1,
+        "updatePeriod": 1.0
+    }
+}
