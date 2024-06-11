@@ -9,6 +9,9 @@ int main(int argc, char** argv){
     (void) WSAStartup(MAKEWORD(2, 2), &wsadata);
     #endif
 
+    // set file mode creation mask (all users, groups, etc. are allowed to read/write data that is created by this application)
+    umask(0000);
+
     // run the main application
     mainApplication.Run(argc, argv);
 
