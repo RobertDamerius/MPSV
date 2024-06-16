@@ -54,10 +54,11 @@ class VehicleSimulator {
          * @param[in] matB 3-by-3 non-singular input matrix B (row-major order) of model nu_dot = F*n(nu) + B*tau.
          * @param[in] vecTimeconstantsXYN Timeconstants {TX, TY, TN} for input force dynamics.
          * @param[in] vecTimeconstantsInput Timeconstants {Tf1, Tf2, Tf3} for input filter dynamics.
-         * @param[in] satXYN Absolute elliptical saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
+         * @param[in] lowerLimitXYN Lower saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
+         * @param[in] upperLimitXYN Upper saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
          * @return True if all input values and precalculated values are finite, false otherwise.
          */
-        bool SetModel(std::array<double,36> matF, std::array<double,9> matB, std::array<double,3> vecTimeconstantsXYN, std::array<double,3> vecTimeconstantsInput, std::array<double,3> satXYN) noexcept {
+        bool SetModel(std::array<double,36> matF, std::array<double,9> matB, std::array<double,3> vecTimeconstantsXYN, std::array<double,3> vecTimeconstantsInput, std::array<double,3> lowerLimitXYN, std::array<double,3> upperLimitXYN) noexcept {
             // Set internal parameters
             F = matF;
             B = matB;
@@ -67,9 +68,8 @@ class VehicleSimulator {
                 return false;
             }
             invB.swap(invMatB);
-            invSatXYN[0] = 1.0 / satXYN[0];
-            invSatXYN[1] = 1.0 / satXYN[1];
-            invSatXYN[2] = 1.0 / satXYN[2];
+            this->lowerLimitXYN = lowerLimitXYN;
+            this->upperLimitXYN = upperLimitXYN;
 
             // Precalculate parameters
             invTXYN[0] = 1.0 / vecTimeconstantsXYN[0];
@@ -129,12 +129,13 @@ class VehicleSimulator {
 
             // Check for finite model values
             bool validModel = true;
+            validModel &= std::isfinite(this->lowerLimitXYN[0]) && std::isfinite(this->lowerLimitXYN[1]) && std::isfinite(this->lowerLimitXYN[2]);
+            validModel &= std::isfinite(this->upperLimitXYN[0]) && std::isfinite(this->upperLimitXYN[1]) && std::isfinite(this->upperLimitXYN[2]);
             validModel = std::isfinite(matF[0]) && std::isfinite(matF[1]) && std::isfinite(matF[2]) && std::isfinite(matF[3]) && std::isfinite(matF[4]) && std::isfinite(matF[5]) && std::isfinite(matF[6]) && std::isfinite(matF[7]) && std::isfinite(matF[8]) && std::isfinite(matF[9]) && std::isfinite(matF[10]) && std::isfinite(matF[11]);
             validModel &= std::isfinite(matF[12]) && std::isfinite(matF[13]) && std::isfinite(matF[14]) && std::isfinite(matF[15]) && std::isfinite(matF[16]) && std::isfinite(matF[17]) && std::isfinite(matF[18]) && std::isfinite(matF[19]) && std::isfinite(matF[20]) && std::isfinite(matF[21]) && std::isfinite(matF[22]) && std::isfinite(matF[23]);
             validModel &= std::isfinite(matF[24]) && std::isfinite(matF[25]) && std::isfinite(matF[26]) && std::isfinite(matF[27]) && std::isfinite(matF[28]) && std::isfinite(matF[29]) && std::isfinite(matF[30]) && std::isfinite(matF[31]) && std::isfinite(matF[32]) && std::isfinite(matF[33]) && std::isfinite(matF[34]) && std::isfinite(matF[35]);
             validModel &= std::isfinite(B[0]) && std::isfinite(B[1]) && std::isfinite(B[2]) && std::isfinite(B[3]) && std::isfinite(B[4]) && std::isfinite(B[5]) && std::isfinite(B[6]) && std::isfinite(B[7]) && std::isfinite(B[8]);
             validModel &= std::isfinite(invB[0]) && std::isfinite(invB[1]) && std::isfinite(invB[2]) && std::isfinite(invB[3]) && std::isfinite(invB[4]) && std::isfinite(invB[5]) && std::isfinite(invB[6]) && std::isfinite(invB[7]) && std::isfinite(invB[8]);
-            validModel &= std::isfinite(invSatXYN[0]) && std::isfinite(invSatXYN[1]) && std::isfinite(invSatXYN[2]);
             validModel &= std::isfinite(invTXYN[0]) && std::isfinite(invTXYN[1]) && std::isfinite(invTXYN[2]);
             validModel &= std::isfinite(invTf123[0]) && std::isfinite(invTf123[1]) && std::isfinite(invTf123[2]);
             validModel &= std::isfinite(invBBB[0]) && std::isfinite(invBBB[1]) && std::isfinite(invBBB[2]) && std::isfinite(invBBB[3]) && std::isfinite(invBBB[4]) && std::isfinite(invBBB[5]) && std::isfinite(invBBB[6]) && std::isfinite(invBBB[7]) && std::isfinite(invBBB[8]);
@@ -149,7 +150,6 @@ class VehicleSimulator {
         /**
          * @brief Set parameters for the control system.
          * @param[in] vecTimeconstantsFlatStates Timeconstants for flat states {Tu, Tv, Tr, Tu_dot, Tv_dot, Tr_dot, Tu_dotdot, Tv_dotdot, Tr_dotdot}.
-         * @param[in] satUVR Absolute elliptical saturation value for velocity commands {u,v,r} from pose controller to underlying velocity controller.
          * @param[in] matK 3-by-12 control gain matrix (row-major order) for pose control (state controller using underlying velocity controller based on feedback-linearization).
          * @param[in] maxRadiusX Maximum look-ahead distance for longitudinal distance during pose control.
          * @param[in] maxRadiusY Maximum look-ahead distance for lateral distance during pose control.
@@ -157,11 +157,8 @@ class VehicleSimulator {
          * @param[in] minRadiusPosition Minimum look-ahead distance for position during pose control. The radius is limited by the guidance law according to nearby obstacles but is never lower than this value.
          * @return True if all input values and precalculated values are finite, false otherwise.
          */
-        bool SetController(std::array<double,9> vecTimeconstantsFlatStates, std::array<double,3> satUVR, std::array<double,36> matK, double maxRadiusX, double maxRadiusY, double maxRadiusPsi, double minRadiusPosition) noexcept {
+        bool SetController(std::array<double,9> vecTimeconstantsFlatStates, std::array<double,36> matK, double maxRadiusX, double maxRadiusY, double maxRadiusPsi, double minRadiusPosition) noexcept {
             // Set internal parameters
-            invSatUVR[0] = 1.0 / satUVR[0];
-            invSatUVR[1] = 1.0 / satUVR[1];
-            invSatUVR[2] = 1.0 / satUVR[2];
             K = matK;
             minSquaredRadiusPosition = minRadiusPosition * minRadiusPosition;
             invSquaredRadiusX = 1.0 / (maxRadiusX * maxRadiusX);
@@ -181,7 +178,6 @@ class VehicleSimulator {
 
             // Check for finite controller values
             bool validController = true;
-            validController &= std::isfinite(invSatUVR[0]) && std::isfinite(invSatUVR[1]) && std::isfinite(invSatUVR[2]);
             validController &= std::isfinite(K[0]) && std::isfinite(K[1]) && std::isfinite(K[2]) && std::isfinite(K[3]) && std::isfinite(K[4]) && std::isfinite(K[5]) && std::isfinite(K[6]) && std::isfinite(K[7]) && std::isfinite(K[8]);
             validController &= std::isfinite(K[9]) && std::isfinite(K[10]) && std::isfinite(K[11]) && std::isfinite(K[12]) && std::isfinite(K[13]) && std::isfinite(K[14]) && std::isfinite(K[15]) && std::isfinite(K[16]) && std::isfinite(K[17]);
             validController &= std::isfinite(K[18]) && std::isfinite(K[19]) && std::isfinite(K[20]) && std::isfinite(K[21]) && std::isfinite(K[22]) && std::isfinite(K[23]) && std::isfinite(K[24]) && std::isfinite(K[25]) && std::isfinite(K[26]);
@@ -205,11 +201,12 @@ class VehicleSimulator {
             F.fill(0.0);
             B.fill(0.0);
             invB.fill(0.0);
-            invSatXYN.fill(0.0);
             invTXYN.fill(0.0);
             invTf123.fill(0.0);
             invBBB.fill(0.0);
             M0.fill(0.0);
+            lowerLimitXYN.fill(0.0);
+            upperLimitXYN.fill(0.0);
             f17_2 = 0.0;
             f18_2 = 0.0;
             f19_2 = 0.0;
@@ -243,7 +240,6 @@ class VehicleSimulator {
          * @brief Clear controller parameters. All values are set to zero.
          */
         void ClearController(void) noexcept {
-            invSatUVR.fill(0.0);
             K.fill(0.0);
             Kz.fill(0.0);
             invSquaredRadiusX = 0.0;
@@ -282,7 +278,7 @@ class VehicleSimulator {
             // Simulate step by step
             double h2 = sampletime / 2.0;
             double h6 = sampletime / 6.0;
-            double c, s, dx, dy, scale;
+            double c, s, dx, dy;
             std::array<double,3> targetPose, forcedResponse, allocationModel, deltaPose, uvrCommand, tmp, compensation, uTau;
             std::array<double,9> J, S0, S1, z;
             std::array<double,12> xuTmp, k1, k2, k3, k4;
@@ -387,15 +383,6 @@ class VehicleSimulator {
                 uvrCommand[1] = -K[12]*deltaPose[0] - K[13]*deltaPose[1] - K[14]*deltaPose[2] - K[15]*z[0] - K[16]*z[1] - K[17]*z[2] - K[18]*z[3] - K[19]*z[4] - K[20]*z[5] - K[21]*z[6] - K[22]*z[7] - K[23]*z[8];
                 uvrCommand[2] = -K[24]*deltaPose[0] - K[25]*deltaPose[1] - K[26]*deltaPose[2] - K[27]*z[0] - K[28]*z[1] - K[29]*z[2] - K[30]*z[3] - K[31]*z[4] - K[32]*z[5] - K[33]*z[6] - K[34]*z[7] - K[35]*z[8];
 
-                // Saturate velocity commands to ellipsoid
-                tmp[0] = uvrCommand[0] * invSatUVR[0];
-                tmp[1] = uvrCommand[1] * invSatUVR[1];
-                tmp[2] = uvrCommand[2] * invSatUVR[2];
-                scale = 1.0 / std::max(1.0, std::sqrt(tmp[0]*tmp[0] + tmp[1]*tmp[1] + tmp[2]*tmp[2]));
-                uvrCommand[0] *= scale;
-                uvrCommand[1] *= scale;
-                uvrCommand[2] *= scale;
-
 
                 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 // Velocity controller using feedback-linearization
@@ -416,14 +403,10 @@ class VehicleSimulator {
                 uTau[1] = invBBB[3]*tmp[0] + invBBB[4]*tmp[1] + invBBB[5]*tmp[2];
                 uTau[2] = invBBB[6]*tmp[0] + invBBB[7]*tmp[1] + invBBB[8]*tmp[2];
 
-                // Saturate controls to ellipsoid
-                tmp[0] = uTau[0] * invSatXYN[0];
-                tmp[1] = uTau[1] * invSatXYN[1];
-                tmp[2] = uTau[2] * invSatXYN[2];
-                scale = 1.0 / std::max(1.0, std::sqrt(tmp[0]*tmp[0] + tmp[1]*tmp[1] + tmp[2]*tmp[2]));
-                uTau[0] *= scale;
-                uTau[1] *= scale;
-                uTau[2] *= scale;
+                // Saturate control input
+                uTau[0] = std::clamp(uTau[0], lowerLimitXYN[0], upperLimitXYN[0]);
+                uTau[1] = std::clamp(uTau[1], lowerLimitXYN[1], upperLimitXYN[1]);
+                uTau[2] = std::clamp(uTau[2], lowerLimitXYN[2], upperLimitXYN[2]);
 
 
                 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1046,58 +1029,58 @@ class VehicleSimulator {
 
     protected:
         /* model parameters and precalculated values set by @ref SetModel */
-        std::array<double,36> F;           // 3-by-12 coefficient matrix (row-major order) of model nu_dot = F*n(nu) + B*tau.
-        std::array<double,9> B;            // 3-by-3 input matrix B (row-major order) of model nu_dot = F*n(nu) + B*tau.
-        std::array<double,9> invB;         // Inverse of input matrix B.
-        std::array<double,3> invTXYN;      // {1/TX, 1/TY, 1/TN}.
-        std::array<double,3> invTf123;     // {1/Tf1, 1/Tf2, 1/Tf3}.
-        std::array<double,9> invBBB;       // Matrix inverse of (B * B_tau * B_c) (row-major order).
-        std::array<double,3> invSatXYN;    // Inverse of absolute elliptical saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
-        std::array<double,9> M0;           // Row-major order of M0 = B * A_tau.
+        std::array<double,36> F;              // 3-by-12 coefficient matrix (row-major order) of model nu_dot = F*n(nu) + B*tau.
+        std::array<double,9> B;               // 3-by-3 input matrix B (row-major order) of model nu_dot = F*n(nu) + B*tau.
+        std::array<double,9> invB;            // Inverse of input matrix B.
+        std::array<double,3> invTXYN;         // {1/TX, 1/TY, 1/TN}.
+        std::array<double,3> invTf123;        // {1/Tf1, 1/Tf2, 1/Tf3}.
+        std::array<double,9> invBBB;          // Matrix inverse of (B * B_tau * B_c) (row-major order).
+        std::array<double,9> M0;              // Row-major order of M0 = B * A_tau.
+        std::array<double,3> lowerLimitXYN;   // Lower saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
+        std::array<double,3> upperLimitXYN;   // Upper saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
 
         /* precalculated coefficients for first derivatives set by @ref SetModel */
-        double f17_2;                      // 2 * f_17.
-        double f18_2;                      // 2 * f_18.
-        double f19_2;                      // 2 * f_19.
-        double f1a_3;                      // 3 * f_1a.
-        double f1b_3;                      // 3 * f_1b.
-        double f1c_3;                      // 3 * f_1c.
+        double f17_2;                         // 2 * f_17.
+        double f18_2;                         // 2 * f_18.
+        double f19_2;                         // 2 * f_19.
+        double f1a_3;                         // 3 * f_1a.
+        double f1b_3;                         // 3 * f_1b.
+        double f1c_3;                         // 3 * f_1c.
 
-        double f27_2;                      // 2 * f_27.
-        double f28_2;                      // 2 * f_28.
-        double f29_2;                      // 2 * f_29.
-        double f2a_3;                      // 3 * f_2a.
-        double f2b_3;                      // 3 * f_2b.
-        double f2c_3;                      // 3 * f_2c.
+        double f27_2;                         // 2 * f_27.
+        double f28_2;                         // 2 * f_28.
+        double f29_2;                         // 2 * f_29.
+        double f2a_3;                         // 3 * f_2a.
+        double f2b_3;                         // 3 * f_2b.
+        double f2c_3;                         // 3 * f_2c.
 
-        double f37_2;                      // 2 * f_37.
-        double f38_2;                      // 2 * f_38.
-        double f39_2;                      // 2 * f_39.
-        double f3a_3;                      // 3 * f_3a.
-        double f3b_3;                      // 3 * f_3b.
-        double f3c_3;                      // 3 * f_3c.
+        double f37_2;                         // 2 * f_37.
+        double f38_2;                         // 2 * f_38.
+        double f39_2;                         // 2 * f_39.
+        double f3a_3;                         // 3 * f_3a.
+        double f3b_3;                         // 3 * f_3b.
+        double f3c_3;                         // 3 * f_3c.
 
         /* precalculated coefficients for second derivatives set by @ref SetModel */
-        double f1a_6;                      // 6 * f_1a.
-        double f1b_6;                      // 6 * f_1b.
-        double f1c_6;                      // 6 * f_1c.
+        double f1a_6;                         // 6 * f_1a.
+        double f1b_6;                         // 6 * f_1b.
+        double f1c_6;                         // 6 * f_1c.
 
-        double f2a_6;                      // 6 * f_2a.
-        double f2b_6;                      // 6 * f_2b.
-        double f2c_6;                      // 6 * f_2c.
+        double f2a_6;                         // 6 * f_2a.
+        double f2b_6;                         // 6 * f_2b.
+        double f2c_6;                         // 6 * f_2c.
 
-        double f3a_6;                      // 6 * f_3a.
-        double f3b_6;                      // 6 * f_3b.
-        double f3c_6;                      // 6 * f_3c.
+        double f3a_6;                         // 6 * f_3a.
+        double f3b_6;                         // 6 * f_3b.
+        double f3c_6;                         // 6 * f_3c.
 
         /* controller parameters and precalculated values set by @ref SetController */
-        double minSquaredRadiusPosition;   // r^2 with r being the minimum radius for position for the waypoint guidance law.
-        double invSquaredRadiusX;          // 1 / r^2 with r being the radius for the longitudinal distance for the waypoint guidance law.
-        double invSquaredRadiusY;          // 1 / r^2 with r being the radius for the lateral distance for the waypoint guidance law.
-        double invSquaredRadiusPsi;        // 1 / r^2 with r being the radius for the angular distrance for the waypoint guidance law.
-        std::array<double,3> invSatUVR;    // Inverse of absolute elliptical saturation value for velocity commands (u,v,r) from pose controller to underlying velocity controller.
-        std::array<double,36> K;           // 3-by-12 control gain matrix (row-major order) for pose control (state controller using underlying velocity controller based on feedback-linearization).
-        std::array<double,9> Kz;           // Diagonal elements for gain matrix of flatness-based velocity control.
+        double minSquaredRadiusPosition;      // r^2 with r being the minimum radius for position for the waypoint guidance law.
+        double invSquaredRadiusX;             // 1 / r^2 with r being the radius for the longitudinal distance for the waypoint guidance law.
+        double invSquaredRadiusY;             // 1 / r^2 with r being the radius for the lateral distance for the waypoint guidance law.
+        double invSquaredRadiusPsi;           // 1 / r^2 with r being the radius for the angular distrance for the waypoint guidance law.
+        std::array<double,36> K;              // 3-by-12 control gain matrix (row-major order) for pose control (state controller using underlying velocity controller based on feedback-linearization).
+        std::array<double,9> Kz;              // Diagonal elements for gain matrix of flatness-based velocity control.
 
         /**
          * @brief The path guidance law calculates a target pose based on a given path and the current pose of the vehicle.

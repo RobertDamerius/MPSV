@@ -111,11 +111,11 @@ class MotionPlanner {
                                         this->parameter.model.matB,
                                         this->parameter.model.vecTimeconstantsXYN,
                                         this->parameter.model.vecTimeconstantsInput,
-                                        this->parameter.model.satXYN)){
+                                        this->parameter.model.lowerLimitXYN,
+                                        this->parameter.model.upperLimitXYN)){
                 return false;
             }
             if(!vehicleSimulator.SetController(this->parameter.motionPlanner.controller.vecTimeconstantsFlatStates,
-                                               this->parameter.motionPlanner.controller.satUVR,
                                                this->parameter.motionPlanner.controller.matK,
                                                this->parameter.motionPlanner.controller.maxRadiusX,
                                                this->parameter.motionPlanner.controller.maxRadiusY,

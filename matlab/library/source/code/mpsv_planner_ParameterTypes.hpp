@@ -22,7 +22,8 @@ class ParameterModel {
         std::array<double,9> matB;                    // 3-by-3 input matrix B (row-major order) of model nu_dot = F*n(nu) + B*tau.
         std::array<double,3> vecTimeconstantsXYN;     // Timeconstants {TX, TY, TN} for input force dynamics.
         std::array<double,3> vecTimeconstantsInput;   // Timeconstants {Tf1, Tf2, Tf3} for input filter dynamics.
-        std::array<double,3> satXYN;                  // Absolute elliptical saturation value for input vector u of model nu_dot = A*nu + f(nu) + B*tau.
+        std::array<double,3> lowerLimitXYN;           // Lower saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
+        std::array<double,3> upperLimitXYN;           // Upper saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
 
         /**
          * @brief Construct a new model parameter object and set default values.
@@ -37,7 +38,8 @@ class ParameterModel {
             matB                  = {0.000237948834266, -0.000004551592718, 0.000010003488944, -0.000009313932115, 0.000215194147058, -0.000024957572224, -0.000002202124158, -0.000002930260852, 0.000043018345190};
             vecTimeconstantsXYN   = {0.2, 0.2, 0.2};
             vecTimeconstantsInput = {0.5, 0.5, 0.5};
-            satXYN                = {800.0, 600.0, 1200.0};
+            lowerLimitXYN         = {-630.0, -495.0, -675.0};
+            upperLimitXYN         = {630.0, 495.0, 675.0};
         }
 
         /**
@@ -53,7 +55,9 @@ class ParameterModel {
             validModel &= std::isfinite(matB[6]) && std::isfinite(matB[7]) && std::isfinite(matB[8]);
             validModel &= std::isfinite(vecTimeconstantsXYN[0]) && std::isfinite(vecTimeconstantsXYN[1]) && std::isfinite(vecTimeconstantsXYN[2]) && (vecTimeconstantsXYN[0] > 0.0) && (vecTimeconstantsXYN[1] > 0.0) && (vecTimeconstantsXYN[2] > 0.0);
             validModel &= std::isfinite(vecTimeconstantsInput[0]) && std::isfinite(vecTimeconstantsInput[1]) && std::isfinite(vecTimeconstantsInput[2]) && (vecTimeconstantsInput[0] > 0.0) && (vecTimeconstantsInput[1] > 0.0) && (vecTimeconstantsInput[2] > 0.0);
-            validModel &= std::isfinite(satXYN[0]) && std::isfinite(satXYN[1]) && std::isfinite(satXYN[2]) && (satXYN[0] > 0.0) && (satXYN[1] > 0.0) && (satXYN[2] > 0.0);
+            validModel &= std::isfinite(lowerLimitXYN[0]) && std::isfinite(lowerLimitXYN[1]) && std::isfinite(lowerLimitXYN[2]);
+            validModel &= std::isfinite(upperLimitXYN[0]) && std::isfinite(upperLimitXYN[1]) && std::isfinite(upperLimitXYN[2]);
+            validModel &= (upperLimitXYN[0] >= lowerLimitXYN[0]) && (upperLimitXYN[1] >= lowerLimitXYN[1]) && (upperLimitXYN[2] >= lowerLimitXYN[2]);
             return validModel;
         }
 
@@ -83,7 +87,8 @@ class ParameterModel {
             tmp[3] = matB[1]; tmp[4] = matB[4]; tmp[5] = matB[7];
             tmp[6] = matB[2]; tmp[7] = matB[5]; tmp[8] = matB[8];
             file.WriteField("double", preString + "matB", {3,3}, &matB[0], sizeof(matB));
-            file.WriteField("double", preString + "satXYN", {3,1}, &satXYN[0], sizeof(satXYN));
+            file.WriteField("double", preString + "lowerLimitXYN", {3,1}, &lowerLimitXYN[0], sizeof(lowerLimitXYN));
+            file.WriteField("double", preString + "upperLimitXYN", {3,1}, &upperLimitXYN[0], sizeof(upperLimitXYN));
         }
 };
 
@@ -296,7 +301,6 @@ class ParameterMotionPlanner {
             double minRadiusPosition;                          // [Controller] Minimum look-ahead distance for position during pose control. The radius is limited by the guidance law according to nearby obstacles but is never lower than this value.
             std::array<double,9> vecTimeconstantsFlatStates;   // [Controller] Timeconstants for flat states {Tu, Tv, Tr, Tu_dot, Tv_dot, Tr_dot, Tu_dotdot, Tv_dotdot, Tr_dotdot}.
             std::array<double,36> matK;                        // [Controller] 3-by-12 control gain matrix (row-major order) for pose control (state controller using underlying velocity controller based on feedback-linearization).
-            std::array<double,3> satUVR;                       // [Controller] Absolute elliptical saturation value for velocity commands (u,v,r) from pose controller to underlying velocity controller.
         } controller;
         struct {
             std::array<double,3> rangePose;                    // [RegionOfAttraction] Pose box constraints for the region of attraction.
@@ -321,7 +325,6 @@ class ParameterMotionPlanner {
             maxInputPathLength                      = 50.0;
             controller.vecTimeconstantsFlatStates   = {12.0, 15.0, 15.0, 1.0, 1.0, 1.0, 2.5, 2.5, 2.5};
             controller.matK                         = {1.80025300316239, 0.0, 0.0, 14.9932006585738, 0.0, 0.0, 34.8623145223247, 0.0, 0.0, 21.6450501549992, 0.0, 0.0, 0.0, 2.25031625395272, 0.0, 0.0, 18.9915008232153, 0.0, 0.0, 44.4528931529019, 0.0, 0.0, 27.6813126937466, 0.0, 0.0, 0.0, 2.25031625395276, 0.0, 0.0, 18.9915008232156, 0.0, 0.0, 44.4528931529024, 0.0, 0.0, 27.681312693747};
-            controller.satUVR                       = {1.8, 0.8, 0.4};
             controller.maxRadiusX                   = 10.0;
             controller.maxRadiusY                   = 6.0;
             controller.maxRadiusPsi                 = 1.0;
@@ -363,7 +366,6 @@ class ParameterMotionPlanner {
             validMotionPlanner &= std::isfinite(controller.matK[27]) && std::isfinite(controller.matK[28]) && std::isfinite(controller.matK[29]);
             validMotionPlanner &= std::isfinite(controller.matK[30]) && std::isfinite(controller.matK[31]) && std::isfinite(controller.matK[32]);
             validMotionPlanner &= std::isfinite(controller.matK[33]) && std::isfinite(controller.matK[34]) && std::isfinite(controller.matK[35]);
-            validMotionPlanner &= std::isfinite(controller.satUVR[0]) && std::isfinite(controller.satUVR[1]) && std::isfinite(controller.satUVR[2]);
             validMotionPlanner &= std::isfinite(controller.maxRadiusX) && (controller.maxRadiusX > 0.0);
             validMotionPlanner &= std::isfinite(controller.maxRadiusY) && (controller.maxRadiusY > 0.0);
             validMotionPlanner &= std::isfinite(controller.maxRadiusPsi) && (controller.maxRadiusPsi > 0.0);
@@ -407,7 +409,6 @@ class ParameterMotionPlanner {
             tmp[30] = controller.matK[10]; tmp[31] = controller.matK[22]; tmp[32] = controller.matK[34];
             tmp[33] = controller.matK[11]; tmp[34] = controller.matK[23]; tmp[35] = controller.matK[35];
             file.WriteField("double", preString + "controller.matK", {3,12}, &tmp[0], sizeof(controller.matK));
-            file.WriteField("double", preString + "controller.satUVR", {3,1}, &controller.satUVR[0], sizeof(controller.satUVR));
             file.WriteField("double", preString + "controller.maxRadiusX", {1}, &controller.maxRadiusX, sizeof(controller.maxRadiusX));
             file.WriteField("double", preString + "controller.maxRadiusY", {1}, &controller.maxRadiusY, sizeof(controller.maxRadiusY));
             file.WriteField("double", preString + "controller.maxRadiusPsi", {1}, &controller.maxRadiusPsi, sizeof(controller.maxRadiusPsi));

@@ -19,7 +19,8 @@ inline mpsv::planner::MotionPlannerParameterSet GetParameterSet(void){
     parameterSet.model.matB                                            = {0.000237948834266, -0.000004551592718, 0.000010003488944, -0.000009313932115, 0.000215194147058, -0.000024957572224, -0.000002202124158, -0.000002930260852, 0.000043018345190};
     parameterSet.model.vecTimeconstantsXYN                             = {0.2, 0.2, 0.2};
     parameterSet.model.vecTimeconstantsInput                           = {0.5, 0.5, 0.5};
-    parameterSet.model.satXYN                                          = {800.0, 600.0, 1200.0};
+    parameterSet.model.lowerLimitXYN                                   = {-630.0, -495.0, -675.0};
+    parameterSet.model.upperLimitXYN                                   = {630.0, 495.0, 675.0};
 
     // cost map
     parameterSet.costMap.modBreakpoints                                = 10;
@@ -52,7 +53,6 @@ inline mpsv::planner::MotionPlannerParameterSet GetParameterSet(void){
     parameterSet.motionPlanner.regionOfAttraction.rangeXYN             = {10.0, 10.0, 10.0};
     parameterSet.motionPlanner.controller.vecTimeconstantsFlatStates   = {12.0, 15.0, 15.0, 1.0, 1.0, 1.0, 2.5, 2.5, 2.5};
     parameterSet.motionPlanner.controller.matK                         = {1.80025300316239, 0.0, 0.0, 14.9932006585738, 0.0, 0.0, 34.8623145223247, 0.0, 0.0, 21.6450501549992, 0.0, 0.0, 0.0, 2.25031625395272, 0.0, 0.0, 18.9915008232153, 0.0, 0.0, 44.4528931529019, 0.0, 0.0, 27.6813126937466, 0.0, 0.0, 0.0, 2.25031625395276, 0.0, 0.0, 18.9915008232156, 0.0, 0.0, 44.4528931529024, 0.0, 0.0, 27.681312693747};
-    parameterSet.motionPlanner.controller.satUVR                       = {1.8, 0.8, 0.4};
     parameterSet.motionPlanner.controller.maxRadiusX                   = 10.0;
     parameterSet.motionPlanner.controller.maxRadiusY                   = 6.0;
     parameterSet.motionPlanner.controller.maxRadiusPsi                 = 1.0;

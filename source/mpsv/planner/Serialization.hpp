@@ -70,7 +70,8 @@ union SerializationAsyncOnlinePlannerParameterUnion {
                 std::array<double,9> matB;                                                 // [Model] 3-by-3 input matrix B (row-major order) of model nu_dot = F*n(nu) + B*tau.
                 std::array<double,3> vecTimeconstantsXYN;                                  // [Model] Timeconstants {TX, TY, TN} for input force dynamics.
                 std::array<double,3> vecTimeconstantsInput;                                // [Model] Timeconstants {Tf1, Tf2, Tf3} for input filter dynamics.
-                std::array<double,3> satXYN;                                               // [Model] Absolute elliptical saturation value for input vector u of model nu_dot = A*nu + f(nu) + B*tau.
+                std::array<double,3> lowerLimitXYN;                                        // [Model] Lower saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
+                std::array<double,3> upperLimitXYN;                                        // [Model] Upper saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
             } model;
             struct {
                 uint32_t periodGoalSampling;                                               // [PathPlanner] Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
@@ -89,7 +90,6 @@ union SerializationAsyncOnlinePlannerParameterUnion {
                     double minRadiusPosition;                                              // [MotionPlanner / Controller] Minimum look-ahead distance for position during pose control. The radius is limited by the guidance law according to nearby obstacles but is never lower than this value.
                     std::array<double,9> vecTimeconstantsFlatStates;                       // [MotionPlanner / Controller] Timeconstants for flat states {Tu, Tv, Tr, Tu_dot, Tv_dot, Tr_dot, Tu_dotdot, Tv_dotdot, Tr_dotdot}.
                     std::array<double,36> matK;                                            // [MotionPlanner / Controller] 3-by-12 control gain matrix (row-major order) for pose control (state controller using underlying velocity controller based on feedback-linearization).
-                    std::array<double,3> satUVR;                                           // [MotionPlanner / Controller] Absolute elliptical saturation value for velocity commands (u,v,r) from pose controller to underlying velocity controller.
                 } controller;
                 struct {
                     std::array<double,3> rangePose;                                        // [MotionPlanner / RegionOfAttraction] Pose box constraints for the region of attraction.
@@ -244,7 +244,8 @@ inline void Deserialize(mpsv::planner::AsyncOnlinePlannerParameterSet& plannerPa
     plannerParameter.sequentialPlanner.model.matB                                          = parameter->data.sequentialPlanner.model.matB;
     plannerParameter.sequentialPlanner.model.vecTimeconstantsXYN                           = parameter->data.sequentialPlanner.model.vecTimeconstantsXYN;
     plannerParameter.sequentialPlanner.model.vecTimeconstantsInput                         = parameter->data.sequentialPlanner.model.vecTimeconstantsInput;
-    plannerParameter.sequentialPlanner.model.satXYN                                        = parameter->data.sequentialPlanner.model.satXYN;
+    plannerParameter.sequentialPlanner.model.lowerLimitXYN                                 = parameter->data.sequentialPlanner.model.lowerLimitXYN;
+    plannerParameter.sequentialPlanner.model.upperLimitXYN                                 = parameter->data.sequentialPlanner.model.upperLimitXYN;
     plannerParameter.sequentialPlanner.pathPlanner.periodGoalSampling                      = parameter->data.sequentialPlanner.pathPlanner.periodGoalSampling;
     plannerParameter.sequentialPlanner.motionPlanner.samplingRangePosition                 = parameter->data.sequentialPlanner.motionPlanner.samplingRangePosition;
     plannerParameter.sequentialPlanner.motionPlanner.samplingRangeAngle                    = parameter->data.sequentialPlanner.motionPlanner.samplingRangeAngle;
@@ -258,7 +259,6 @@ inline void Deserialize(mpsv::planner::AsyncOnlinePlannerParameterSet& plannerPa
     plannerParameter.sequentialPlanner.motionPlanner.controller.minRadiusPosition          = parameter->data.sequentialPlanner.motionPlanner.controller.minRadiusPosition;
     plannerParameter.sequentialPlanner.motionPlanner.controller.vecTimeconstantsFlatStates = parameter->data.sequentialPlanner.motionPlanner.controller.vecTimeconstantsFlatStates;
     plannerParameter.sequentialPlanner.motionPlanner.controller.matK                       = parameter->data.sequentialPlanner.motionPlanner.controller.matK;
-    plannerParameter.sequentialPlanner.motionPlanner.controller.satUVR                     = parameter->data.sequentialPlanner.motionPlanner.controller.satUVR;
     plannerParameter.sequentialPlanner.motionPlanner.regionOfAttraction.rangePose          = parameter->data.sequentialPlanner.motionPlanner.regionOfAttraction.rangePose;
     plannerParameter.sequentialPlanner.motionPlanner.regionOfAttraction.rangeUVR           = parameter->data.sequentialPlanner.motionPlanner.regionOfAttraction.rangeUVR;
     plannerParameter.sequentialPlanner.motionPlanner.regionOfAttraction.rangeXYN           = parameter->data.sequentialPlanner.motionPlanner.regionOfAttraction.rangeXYN;
