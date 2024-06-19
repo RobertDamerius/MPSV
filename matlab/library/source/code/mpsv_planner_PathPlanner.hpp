@@ -371,7 +371,7 @@ class PathPlanner {
                 auto& a = tree.GetRefNode(idxSolutionPath[k]);
                 auto& b = tree.GetRefNode(idxSolutionPath[k - 1]);
                 double costDistance = mpsv::math::DistanceMetricSE2(a.pose, b.pose, parameter.metric.weightPsi);
-                double costHeading = mpsv::math::SwayMetric(a.pose, b.pose, parameter.metric.weightSway);
+                double costHeading = mpsv::math::SwayMetric(a.pose, b.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                 double costClearance = costMap.CostAlongLine(a.pose, b.pose, parameter.geometry.skeletalPoints);
                 b.tmp = a.tmp + (costDistance + costHeading + costClearance);
             }
@@ -384,7 +384,7 @@ class PathPlanner {
                 if(!parameter.geometry.vehicleShape.CheckCollisionLine(staticObstacles, node.pose, state.initialPose, parameter.geometry.collisionCheckMaxAngleDeviation)){
                     // The total cost for this connection is the cost from the initial pose to the connection point added to the cost from the connection point to the solution (old solution)
                     double costDistance = mpsv::math::DistanceMetricSE2(state.initialPose, node.pose, parameter.metric.weightPsi);
-                    double costHeading = mpsv::math::SwayMetric(state.initialPose, node.pose, parameter.metric.weightSway);
+                    double costHeading = mpsv::math::SwayMetric(state.initialPose, node.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                     double costClearance = costMap.CostAlongLine(state.initialPose, node.pose, parameter.geometry.skeletalPoints);
                     double totalCost = (costDistance + costHeading + costClearance) + (tree.GetRefNode(idxSolutionPath[0]).tmp - node.tmp);
                     if(totalCost < bestTotalCost){
@@ -428,7 +428,7 @@ class PathPlanner {
                 for(auto&& c : node.idxChilds){
                     auto& child = tree.GetRefNode(c);
                     child.cost = mpsv::math::DistanceMetricSE2(node.pose, child.pose, parameter.metric.weightPsi);
-                    child.cost += mpsv::math::SwayMetric(node.pose, child.pose, parameter.metric.weightSway);
+                    child.cost += mpsv::math::SwayMetric(node.pose, child.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                     child.cost += costMap.CostAlongLine(node.pose, child.pose, parameter.geometry.skeletalPoints);
                 }
             }
@@ -438,7 +438,7 @@ class PathPlanner {
                 for(auto&& c : node.idxChilds){
                     auto& child = tree.GetRefNode(c);
                     child.cost = mpsv::math::DistanceMetricSE2(node.pose, child.pose, parameter.metric.weightPsi);
-                    child.cost += mpsv::math::SwayMetric(node.pose, child.pose, parameter.metric.weightSway);
+                    child.cost += mpsv::math::SwayMetric(node.pose, child.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                     child.cost += costMap.CostAlongLine(node.pose, child.pose, parameter.geometry.skeletalPoints);
                 }
             }
@@ -634,7 +634,7 @@ class PathPlanner {
                 return result;
             }
             double costDistance = mpsv::math::DistanceMetricSE2(source.pose, newSample.pose, parameter.metric.weightPsi);
-            double costHeading = mpsv::math::SwayMetric(source.pose, newSample.pose, parameter.metric.weightSway);
+            double costHeading = mpsv::math::SwayMetric(source.pose, newSample.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
             double costClearance = costMap.CostAlongLine(source.pose, newSample.pose, parameter.geometry.skeletalPoints);
             newSample.cost = source.cost + costDistance + costHeading + costClearance;
 
@@ -663,7 +663,7 @@ class PathPlanner {
                 mpsv::planner::PathPlannerTreeNode& possibleParent = tree.GetRefNode(index);
                 double resultCost = possibleParent.cost;
                 resultCost += mpsv::math::DistanceMetricSE2(possibleParent.pose, newSample.pose, parameter.metric.weightPsi);
-                resultCost += mpsv::math::SwayMetric(possibleParent.pose, newSample.pose, parameter.metric.weightSway);
+                resultCost += mpsv::math::SwayMetric(possibleParent.pose, newSample.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                 if((resultCost + epsDistanceMetric) < newSample.cost){
                     resultCost += costMap.CostAlongLine(possibleParent.pose, newSample.pose, parameter.geometry.skeletalPoints);
                     if((resultCost + epsDistanceMetric) < newSample.cost){
@@ -699,7 +699,7 @@ class PathPlanner {
                 mpsv::planner::PathPlannerTreeNode& destination = tree.GetRefNode(index);
                 double resultCost = addedSample.cost;
                 resultCost += mpsv::math::DistanceMetricSE2(addedSample.pose, destination.pose, parameter.metric.weightPsi);
-                resultCost += mpsv::math::SwayMetric(addedSample.pose, destination.pose, parameter.metric.weightSway);
+                resultCost += mpsv::math::SwayMetric(addedSample.pose, destination.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                 if((resultCost + epsDistanceMetric) < destination.cost){
                     resultCost += costMap.CostAlongLine(addedSample.pose, destination.pose, parameter.geometry.skeletalPoints);
                     if((resultCost + epsDistanceMetric) < destination.cost){

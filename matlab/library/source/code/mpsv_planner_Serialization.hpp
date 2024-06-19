@@ -14,7 +14,7 @@ namespace planner {
 
 
 /**
- * @brief This union defines the input data for the asynchronous online planner wrapper class.
+ * @brief This union defines a constant-size input data for an asynchronous online planner.
  */
 #pragma pack(push, 1)
 union SerializationAsyncOnlinePlannerInputUnion {
@@ -38,7 +38,7 @@ union SerializationAsyncOnlinePlannerInputUnion {
 
 
 /**
- * @brief This union defines the parameter data for the asynchronous online planner wrapper class.
+ * @brief This union defines a constant-size parameter data for an asynchronous online planner.
  */
 #pragma pack(push, 1)
 union SerializationAsyncOnlinePlannerParameterUnion {
@@ -64,6 +64,8 @@ union SerializationAsyncOnlinePlannerParameterUnion {
             struct {
                 double weightPsi;                                                          // [Metric] Weighting for heading angle (psi) in distance metric function.
                 double weightSway;                                                         // [Metric] Weighting for sway movement (heading angle with respect to perpenticular direction of movement).
+                double weightReverseScale;                                                 // [Metric] Weighting for sway and reverse movement (heading angle with respect to line angle).
+                double weightReverseDecay;                                                 // [Metric] Decay factor (> 0) for the weighting function that weights sway and reverse movement.
             } metric;
             struct {
                 std::array<double,36> matF;                                                // [Model] 3-by-12 coefficient matrix (row-major order) of model nu_dot = F*n(nu) + B*tau.
@@ -116,7 +118,7 @@ union SerializationAsyncOnlinePlannerParameterUnion {
 
 
 /**
- * @brief This union defines the output data for the asynchronous online planner wrapper class.
+ * @brief This union defines the constant-size output data for an asynchronous online planner.
  */
 #pragma pack(push, 1)
 union SerializationAsyncOnlinePlannerOutputUnion {
@@ -189,7 +191,7 @@ inline void Deserialize(mpsv::planner::AsyncOnlinePlannerInput& plannerInput, co
         validStaticObstacles &= plannerInput.staticObstacles.back().EnsureCorrectVertexOrder();
     }
 
-    // if there're errors make whole input invalid (set timestampt o NaN)
+    // if there're errors make whole input invalid (set timestampt to NaN)
     if(!validStaticObstacles){
         plannerInput.timestamp = std::numeric_limits<double>::quiet_NaN();
     }
@@ -240,6 +242,8 @@ inline void Deserialize(mpsv::planner::AsyncOnlinePlannerParameterSet& plannerPa
     plannerParameter.sequentialPlanner.costMap.distanceDecay                               = parameter->data.sequentialPlanner.costMap.distanceDecay;
     plannerParameter.sequentialPlanner.metric.weightPsi                                    = parameter->data.sequentialPlanner.metric.weightPsi;
     plannerParameter.sequentialPlanner.metric.weightSway                                   = parameter->data.sequentialPlanner.metric.weightSway;
+    plannerParameter.sequentialPlanner.metric.weightReverseScale                           = parameter->data.sequentialPlanner.metric.weightReverseScale;
+    plannerParameter.sequentialPlanner.metric.weightReverseDecay                           = parameter->data.sequentialPlanner.metric.weightReverseDecay;
     plannerParameter.sequentialPlanner.model.matF                                          = parameter->data.sequentialPlanner.model.matF;
     plannerParameter.sequentialPlanner.model.matB                                          = parameter->data.sequentialPlanner.model.matB;
     plannerParameter.sequentialPlanner.model.vecTimeconstantsXYN                           = parameter->data.sequentialPlanner.model.vecTimeconstantsXYN;
@@ -283,6 +287,7 @@ inline void Deserialize(mpsv::planner::AsyncOnlinePlannerParameterSet& plannerPa
  * @brief Serialize output of the asynchronous online planner.
  * @param[out] output Serialized output data.
  * @param[in] plannerOutput Output structure of the asynchronous online planner to be serialized.
+ * @details The trajectory, path and referencePath containers may be shrinked to fit the constant-size serialization data.
  */
 inline void Serialize(mpsv::planner::SerializationAsyncOnlinePlannerOutputUnion* output, const mpsv::planner::AsyncOnlinePlannerOutput& plannerOutput){
     output->data.timestamp                                 = plannerOutput.timestamp;

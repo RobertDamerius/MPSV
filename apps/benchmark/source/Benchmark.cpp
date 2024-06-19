@@ -275,6 +275,8 @@ double Benchmark::PathPlanning(void){
     parameterSet.geometry.skeletalPoints.push_back({6.0, 0.0});
     parameterSet.metric.weightPsi                                      = 3.0;
     parameterSet.metric.weightSway                                     = 2.0;
+    parameterSet.metric.weightReverseScale                             = 0.0;
+    parameterSet.metric.weightReverseDecay                             = 1.0;
     parameterSet.pathPlanner.periodGoalSampling                        = 50;
 
     // Generate input data

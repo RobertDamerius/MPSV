@@ -31,6 +31,8 @@ union SerializationPathPlannerInputUnion {
             struct {
                 double weightPsi;                                                          // Weighting for yaw angle in distance metric function.
                 double weightSway;                                                         // Weighting for sway movement (heading angle with respect to perpenticular direction of movement).
+                double weightReverseScale;                                                 // Weighting for sway and reverse movement (heading angle with respect to line angle).
+                double weightReverseDecay;                                                 // Decay factor (> 0) for the weighting function that weights sway and reverse movement.
             } metric;
             struct {
                 uint32_t periodGoalSampling;                                               // Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.

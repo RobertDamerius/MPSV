@@ -55,6 +55,8 @@ inline mpsv::planner::AsyncOnlinePlannerParameterSet GetParameterSet(double time
     // metric
     parameterSet.sequentialPlanner.metric.weightPsi                                      = 3.0;
     parameterSet.sequentialPlanner.metric.weightSway                                     = 2.0;
+    parameterSet.sequentialPlanner.metric.weightReverseScale                             = 0.0;
+    parameterSet.sequentialPlanner.metric.weightReverseDecay                             = 1.0;
 
     // path planner
     parameterSet.sequentialPlanner.pathPlanner.periodGoalSampling                        = 50;

@@ -61,6 +61,8 @@ bool MPSV_WrapperPathPlanner::AssignInput(SerializationPathPlannerInputUnion* in
     }
     pathPlannerParameter.metric.weightPsi                            = input->data.parameter.metric.weightPsi;
     pathPlannerParameter.metric.weightSway                           = input->data.parameter.metric.weightSway;
+    pathPlannerParameter.metric.weightReverseScale                   = input->data.parameter.metric.weightReverseScale;
+    pathPlannerParameter.metric.weightReverseDecay                   = input->data.parameter.metric.weightReverseDecay;
     pathPlannerParameter.pathPlanner.periodGoalSampling              = input->data.parameter.pathPlanner.periodGoalSampling;
 
     // Assign maximum computation time

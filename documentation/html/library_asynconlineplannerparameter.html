@@ -10,7 +10,7 @@
 <body>
 <header>
 <div class="header_title">MPSV - Motion Planner for Surface Vehicles</div>
-<div class="header_version">Version 20240616</div>
+<div class="header_version">Version 20240619</div>
 </header>
 <button onclick="PageToTop()" id="buttonToTop"></button>
 <div class="wrapper">
@@ -66,6 +66,8 @@ A bus, which defines the parameter for the asynchronous online planner. The elem
 <tr><td style="font-family: Courier New;">sequentialPlanner.costMap.distanceDecay</td><td style="font-family: Courier New;">double</td><td>Decay factor (> 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).</td></tr>
 <tr><td style="font-family: Courier New;">sequentialPlanner.metric.weightPsi</td><td style="font-family: Courier New;">double</td><td>Weighting for heading angle (psi) in distance metric function.</td></tr>
 <tr><td style="font-family: Courier New;">sequentialPlanner.metric.weightSway</td><td style="font-family: Courier New;">double</td><td>Weighting for sway movement (heading angle with respect to perpenticular direction of movement).</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.metric.weightReverseScale</td><td style="font-family: Courier New;">double</td><td>Weighting for sway and reverse movement (heading angle with respect to line angle).</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.metric.weightReverseDecay</td><td style="font-family: Courier New;">double</td><td>Decay factor (> 0) for the weighting function that weights sway and reverse movement.</td></tr>
 <tr><td style="font-family: Courier New;">sequentialPlanner.model.matF</td><td style="font-family: Courier New;">double [36]</td><td>3-by-12 coefficient matrix (row-major order) of model nu_dot = F*n(nu) + B*tau.</td></tr>
 <tr><td style="font-family: Courier New;">sequentialPlanner.model.matB</td><td style="font-family: Courier New;">double [9]</td><td>3-by-3 input matrix B (row-major order) of model nu_dot = F*n(nu) + B*tau.</td></tr>
 <tr><td style="font-family: Courier New;">sequentialPlanner.model.vecTimeconstantsXYN</td><td style="font-family: Courier New;">double [3]</td><td>Timeconstants {TX, TY, TN} for input force dynamics.</td></tr>

@@ -40,6 +40,8 @@ inline mpsv::planner::SequentialPlannerParameterSet GetParameterSet(void){
     // metric
     parameterSet.metric.weightPsi                                      = 3.0;
     parameterSet.metric.weightSway                                     = 2.0;
+    parameterSet.metric.weightReverseScale                             = 0.0;
+    parameterSet.metric.weightReverseDecay                             = 1.0;
 
     // path planner
     parameterSet.pathPlanner.periodGoalSampling                        = 50;

@@ -40,6 +40,8 @@ inline mpsv::planner::MotionPlannerParameterSet GetParameterSet(void){
     // metric
     parameterSet.metric.weightPsi                                      = 3.0;
     parameterSet.metric.weightSway                                     = 2.0;
+    parameterSet.metric.weightReverseScale                             = 0.0;
+    parameterSet.metric.weightReverseDecay                             = 1.0;
 
     // motion panner
     parameterSet.motionPlanner.sampletime                              = 0.05;

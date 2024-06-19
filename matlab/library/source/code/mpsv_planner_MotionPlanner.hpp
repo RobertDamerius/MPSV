@@ -633,7 +633,7 @@ class MotionPlanner {
                 return result;
             }
             double costDistance = mpsv::math::DistanceMetricSE2(source.pose, newSample.pose, parameter.metric.weightPsi);
-            double costHeading = mpsv::math::SwayMetric(source.pose, newSample.pose, parameter.metric.weightSway);
+            double costHeading = mpsv::math::SwayMetric(source.pose, newSample.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
             double costClearance = costMap.CostAlongLine(source.pose, newSample.pose, parameter.geometry.skeletalPoints);
             newSample.cost = source.cost + costDistance + costHeading + costClearance;
 
@@ -662,7 +662,7 @@ class MotionPlanner {
                 mpsv::planner::MotionPlannerTreeNode& possibleParent = tree.GetRefNode(index);
                 double resultCost = possibleParent.cost;
                 resultCost += mpsv::math::DistanceMetricSE2(possibleParent.pose, newSample.pose, parameter.metric.weightPsi);
-                resultCost += mpsv::math::SwayMetric(possibleParent.pose, newSample.pose, parameter.metric.weightSway);
+                resultCost += mpsv::math::SwayMetric(possibleParent.pose, newSample.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                 if((resultCost + epsDistanceMetric) < newSample.cost){
                     resultCost += costMap.CostAlongLine(possibleParent.pose, newSample.pose, parameter.geometry.skeletalPoints);
                     if((resultCost + epsDistanceMetric) < newSample.cost){
@@ -701,7 +701,7 @@ class MotionPlanner {
                 mpsv::planner::MotionPlannerTreeNode& destination = tree.GetRefNode(index);
                 double resultCost = addedSample.cost;
                 resultCost += mpsv::math::DistanceMetricSE2(addedSample.pose, destination.pose, parameter.metric.weightPsi);
-                resultCost += mpsv::math::SwayMetric(addedSample.pose, destination.pose, parameter.metric.weightSway);
+                resultCost += mpsv::math::SwayMetric(addedSample.pose, destination.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                 if((resultCost + epsDistanceMetric) < destination.cost){
                     resultCost += costMap.CostAlongLine(addedSample.pose, destination.pose, parameter.geometry.skeletalPoints);
                     if((resultCost + epsDistanceMetric) < destination.cost){

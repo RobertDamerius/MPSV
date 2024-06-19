@@ -149,8 +149,10 @@ class ParameterCostMap {
  */
 class ParameterMetric {
     public:
-        double weightPsi;    // Weighting for heading angle (psi) in distance metric function.
-        double weightSway;   // Weighting for sway movement (heading angle with respect to perpenticular direction of movement).
+        double weightPsi;            // Weighting for heading angle (psi) in distance metric function.
+        double weightSway;           // Weighting for sway movement (heading angle with respect to perpenticular direction of movement).
+        double weightReverseScale;   // Weighting for sway and reverse movement (heading angle with respect to line angle).
+        double weightReverseDecay;   // Decay factor (> 0) for the weighting function that weights sway and reverse movement.
 
         /**
          * @brief Construct a new metric parameter object and set default values.
@@ -163,6 +165,8 @@ class ParameterMetric {
         void Clear(void) noexcept {
             weightPsi  = 3.0;
             weightSway = 2.0;
+            weightReverseScale = 0.0;
+            weightReverseDecay = 1.0;
         }
 
         /**
@@ -172,6 +176,8 @@ class ParameterMetric {
         bool IsValid(void) const noexcept {
             bool validMetric = std::isfinite(weightPsi) && (weightPsi > 0.0);
             validMetric &= std::isfinite(weightSway) && (weightSway >= 0.0);
+            validMetric &= std::isfinite(weightReverseScale) && (weightReverseScale >= 0.0);
+            validMetric &= std::isfinite(weightReverseDecay) && (weightReverseDecay > 0.0);
             return validMetric;
         }
 
@@ -183,6 +189,8 @@ class ParameterMetric {
         void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
             file.WriteField("double", preString + "weightPsi", {1}, &weightPsi, sizeof(weightPsi));
             file.WriteField("double", preString + "weightSway", {1}, &weightSway, sizeof(weightSway));
+            file.WriteField("double", preString + "weightReverseScale", {1}, &weightReverseScale, sizeof(weightReverseScale));
+            file.WriteField("double", preString + "weightReverseDecay", {1}, &weightReverseDecay, sizeof(weightReverseDecay));
         }
 };
 
