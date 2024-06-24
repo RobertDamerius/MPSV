@@ -307,8 +307,7 @@ class ParameterMotionPlanner {
             double maxRadiusY;                                 // [Controller] Maximum look-ahead distance for lateral distance during pose control.
             double maxRadiusPsi;                               // [Controller] Maximum look-ahead distance for angular distance during pose control.
             double minRadiusPosition;                          // [Controller] Minimum look-ahead distance for position during pose control. The radius is limited by the guidance law according to nearby obstacles but is never lower than this value.
-            std::array<double,9> vecTimeconstantsFlatStates;   // [Controller] Timeconstants for flat states {Tu, Tv, Tr, Tu_dot, Tv_dot, Tr_dot, Tu_dotdot, Tv_dotdot, Tr_dotdot}.
-            std::array<double,36> matK;                        // [Controller] 3-by-12 control gain matrix (row-major order) for pose control (state controller using underlying velocity controller based on feedback-linearization).
+            std::array<double,36> matK;                        // [Controller] 3-by-12 control gain matrix (row-major order) for pose control.
         } controller;
         struct {
             std::array<double,3> rangePose;                    // [RegionOfAttraction] Pose box constraints for the region of attraction.
@@ -331,8 +330,7 @@ class ParameterMotionPlanner {
             sampletime                              = 0.05;
             maxPositionOvershoot                    = 10.0;
             maxInputPathLength                      = 50.0;
-            controller.vecTimeconstantsFlatStates   = {12.0, 15.0, 15.0, 1.0, 1.0, 1.0, 2.5, 2.5, 2.5};
-            controller.matK                         = {1.80025300316239, 0.0, 0.0, 14.9932006585738, 0.0, 0.0, 34.8623145223247, 0.0, 0.0, 21.6450501549992, 0.0, 0.0, 0.0, 2.25031625395272, 0.0, 0.0, 18.9915008232153, 0.0, 0.0, 44.4528931529019, 0.0, 0.0, 27.6813126937466, 0.0, 0.0, 0.0, 2.25031625395276, 0.0, 0.0, 18.9915008232156, 0.0, 0.0, 44.4528931529024, 0.0, 0.0, 27.681312693747};
+            controller.matK                         = {22.6634683021076,0.41083997617316,-5.03181108460105,200.152378865113,3.50131969868455,-45.4715931055404,1.5119695156125,4.11059401574811e-05,6.69158720018265e-05,-2.34079198895084,-7.54067967761855e-05,-0.000123856162071262,1.12434267795184,25.3138181465665,14.4246388918514,9.92963030390279,215.90956455243,144.18277442949,-5.88351152250358e-05,1.5148295247012,-0.00151675229642403,0.000107595199040545,-2.34604350301895,0.00279300696770468,1.23673721286666,1.74532076137872,126.252817415723,10.9222424328901,14.9545285554908,1147.21712615239,0.000108596006441483,0.000320946378040582,1.50969338333892,-0.000200797181833612,-0.000590994129882,-2.33658555400436};
             controller.maxRadiusX                   = 10.0;
             controller.maxRadiusY                   = 6.0;
             controller.maxRadiusPsi                 = 1.0;
@@ -353,15 +351,6 @@ class ParameterMotionPlanner {
             validMotionPlanner &= std::isfinite(sampletime) && (sampletime > 0.0);
             validMotionPlanner &= std::isfinite(maxPositionOvershoot) && (maxPositionOvershoot > 0.0);
             validMotionPlanner &= std::isfinite(maxInputPathLength) && (maxInputPathLength > 0.0);
-            validMotionPlanner &= std::isfinite(controller.vecTimeconstantsFlatStates[0]) && (controller.vecTimeconstantsFlatStates[0] > 0.0);
-            validMotionPlanner &= std::isfinite(controller.vecTimeconstantsFlatStates[1]) && (controller.vecTimeconstantsFlatStates[1] > 0.0);
-            validMotionPlanner &= std::isfinite(controller.vecTimeconstantsFlatStates[2]) && (controller.vecTimeconstantsFlatStates[2] > 0.0);
-            validMotionPlanner &= std::isfinite(controller.vecTimeconstantsFlatStates[3]) && (controller.vecTimeconstantsFlatStates[3] > 0.0);
-            validMotionPlanner &= std::isfinite(controller.vecTimeconstantsFlatStates[4]) && (controller.vecTimeconstantsFlatStates[4] > 0.0);
-            validMotionPlanner &= std::isfinite(controller.vecTimeconstantsFlatStates[5]) && (controller.vecTimeconstantsFlatStates[5] > 0.0);
-            validMotionPlanner &= std::isfinite(controller.vecTimeconstantsFlatStates[6]) && (controller.vecTimeconstantsFlatStates[6] > 0.0);
-            validMotionPlanner &= std::isfinite(controller.vecTimeconstantsFlatStates[7]) && (controller.vecTimeconstantsFlatStates[7] > 0.0);
-            validMotionPlanner &= std::isfinite(controller.vecTimeconstantsFlatStates[8]) && (controller.vecTimeconstantsFlatStates[8] > 0.0);
             validMotionPlanner &= std::isfinite(controller.matK[0]) && std::isfinite(controller.matK[1]) && std::isfinite(controller.matK[2]);
             validMotionPlanner &= std::isfinite(controller.matK[3]) && std::isfinite(controller.matK[4]) && std::isfinite(controller.matK[5]);
             validMotionPlanner &= std::isfinite(controller.matK[6]) && std::isfinite(controller.matK[7]) && std::isfinite(controller.matK[8]);
@@ -403,7 +392,6 @@ class ParameterMotionPlanner {
             file.WriteField("double", preString + "sampletime", {1}, &sampletime, sizeof(sampletime));
             file.WriteField("double", preString + "maxPositionOvershoot", {1}, &maxPositionOvershoot, sizeof(maxPositionOvershoot));
             file.WriteField("double", preString + "maxInputPathLength", {1}, &maxInputPathLength, sizeof(maxInputPathLength));
-            file.WriteField("double", preString + "controller.vecTimeconstantsFlatStates", {9,1}, &controller.vecTimeconstantsFlatStates[0], sizeof(controller.vecTimeconstantsFlatStates));
             tmp[0]  = controller.matK[0];  tmp[1]  = controller.matK[12]; tmp[2]  = controller.matK[24];
             tmp[3]  = controller.matK[1];  tmp[4]  = controller.matK[13]; tmp[5]  = controller.matK[25];
             tmp[6]  = controller.matK[2];  tmp[7]  = controller.matK[14]; tmp[8]  = controller.matK[26];

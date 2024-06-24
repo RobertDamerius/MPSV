@@ -115,8 +115,7 @@ class MotionPlanner {
                                         this->parameter.model.upperLimitXYN)){
                 return false;
             }
-            if(!vehicleSimulator.SetController(this->parameter.motionPlanner.controller.vecTimeconstantsFlatStates,
-                                               this->parameter.motionPlanner.controller.matK,
+            if(!vehicleSimulator.SetController(this->parameter.motionPlanner.controller.matK,
                                                this->parameter.motionPlanner.controller.maxRadiusX,
                                                this->parameter.motionPlanner.controller.maxRadiusY,
                                                this->parameter.motionPlanner.controller.maxRadiusPsi,

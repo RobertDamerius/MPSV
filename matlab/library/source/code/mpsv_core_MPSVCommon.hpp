@@ -28,7 +28,7 @@
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MPSV Globals
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-constexpr uint32_t MPSV_VERSION = 20240609;   // Version number of the MPSV library.
+constexpr uint32_t MPSV_VERSION = 20240624;   // Version number of the MPSV library.
 
 
 /* Default namespace for MPSV */

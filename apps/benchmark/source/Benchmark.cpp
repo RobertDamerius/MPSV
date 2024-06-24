@@ -138,8 +138,7 @@ void Benchmark::InitializeVehicleSimulator(void){
     std::array<double,3> vecTimeconstantsInput      = {0.5, 0.5, 0.5};
     std::array<double,3> lowerLimitXYN              = {-630.0, -495.0, -675.0};
     std::array<double,3> upperLimitXYN              = {630.0, 495.0, 675.0};
-    std::array<double,9> vecTimeconstantsFlatStates = {12.0, 15.0, 15.0, 1.0, 1.0, 1.0, 2.5, 2.5, 2.5};
-    std::array<double,36> matK                      = {1.80025300316239, 0.0, 0.0, 14.9932006585738, 0.0, 0.0, 34.8623145223247, 0.0, 0.0, 21.6450501549992, 0.0, 0.0, 0.0, 2.25031625395272, 0.0, 0.0, 18.9915008232153, 0.0, 0.0, 44.4528931529019, 0.0, 0.0, 27.6813126937466, 0.0, 0.0, 0.0, 2.25031625395276, 0.0, 0.0, 18.9915008232156, 0.0, 0.0, 44.4528931529024, 0.0, 0.0, 27.681312693747};
+    std::array<double,36> matK                      = {22.6634683021076,0.41083997617316,-5.03181108460105,200.152378865113,3.50131969868455,-45.4715931055404,1.5119695156125,4.11059401574811e-05,6.69158720018265e-05,-2.34079198895084,-7.54067967761855e-05,-0.000123856162071262,1.12434267795184,25.3138181465665,14.4246388918514,9.92963030390279,215.90956455243,144.18277442949,-5.88351152250358e-05,1.5148295247012,-0.00151675229642403,0.000107595199040545,-2.34604350301895,0.00279300696770468,1.23673721286666,1.74532076137872,126.252817415723,10.9222424328901,14.9545285554908,1147.21712615239,0.000108596006441483,0.000320946378040582,1.50969338333892,-0.000200797181833612,-0.000590994129882,-2.33658555400436};
     double maxRadiusX                               = 10.0;
     double maxRadiusY                               = 6.0;
     double maxRadiusPsi                             = 1.0;
@@ -147,7 +146,7 @@ void Benchmark::InitializeVehicleSimulator(void){
     if(!vehicleSimulator.SetModel(matF, matB, vecTimeconstantsXYN, vecTimeconstantsInput, lowerLimitXYN, upperLimitXYN)){
         fprintf(stderr,"ERROR: Failed to set model parameters!\n");
     }
-    if(!vehicleSimulator.SetController(vecTimeconstantsFlatStates, matK, maxRadiusX, maxRadiusY, maxRadiusPsi, minRadiusPosition)){
+    if(!vehicleSimulator.SetController(matK, maxRadiusX, maxRadiusY, maxRadiusPsi, minRadiusPosition)){
         fprintf(stderr,"ERROR: Failed to set controller parameters!\n");
     }
 }
@@ -356,8 +355,7 @@ double Benchmark::MotionPlanning(void){
     parameterSet.motionPlanner.regionOfAttraction.rangePose            = {0.25, 0.25, 0.15};
     parameterSet.motionPlanner.regionOfAttraction.rangeUVR             = {0.1, 0.1, 0.01};
     parameterSet.motionPlanner.regionOfAttraction.rangeXYN             = {10.0, 10.0, 10.0};
-    parameterSet.motionPlanner.controller.vecTimeconstantsFlatStates   = {12.0, 15.0, 15.0, 1.0, 1.0, 1.0, 2.5, 2.5, 2.5};
-    parameterSet.motionPlanner.controller.matK                         = {1.80025300316239, 0.0, 0.0, 14.9932006585738, 0.0, 0.0, 34.8623145223247, 0.0, 0.0, 21.6450501549992, 0.0, 0.0, 0.0, 2.25031625395272, 0.0, 0.0, 18.9915008232153, 0.0, 0.0, 44.4528931529019, 0.0, 0.0, 27.6813126937466, 0.0, 0.0, 0.0, 2.25031625395276, 0.0, 0.0, 18.9915008232156, 0.0, 0.0, 44.4528931529024, 0.0, 0.0, 27.681312693747};
+    parameterSet.motionPlanner.controller.matK                         = {22.6634683021076,0.41083997617316,-5.03181108460105,200.152378865113,3.50131969868455,-45.4715931055404,1.5119695156125,4.11059401574811e-05,6.69158720018265e-05,-2.34079198895084,-7.54067967761855e-05,-0.000123856162071262,1.12434267795184,25.3138181465665,14.4246388918514,9.92963030390279,215.90956455243,144.18277442949,-5.88351152250358e-05,1.5148295247012,-0.00151675229642403,0.000107595199040545,-2.34604350301895,0.00279300696770468,1.23673721286666,1.74532076137872,126.252817415723,10.9222424328901,14.9545285554908,1147.21712615239,0.000108596006441483,0.000320946378040582,1.50969338333892,-0.000200797181833612,-0.000590994129882,-2.33658555400436};
     parameterSet.motionPlanner.controller.maxRadiusX                   = 10.0;
     parameterSet.motionPlanner.controller.maxRadiusY                   = 6.0;
     parameterSet.motionPlanner.controller.maxRadiusPsi                 = 1.0;

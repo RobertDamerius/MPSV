@@ -90,8 +90,7 @@ union SerializationAsyncOnlinePlannerParameterUnion {
                     double maxRadiusY;                                                     // [MotionPlanner / Controller] Maximum look-ahead distance for lateral distance during pose control.
                     double maxRadiusPsi;                                                   // [MotionPlanner / Controller] Maximum look-ahead distance for angular distance during pose control.
                     double minRadiusPosition;                                              // [MotionPlanner / Controller] Minimum look-ahead distance for position during pose control. The radius is limited by the guidance law according to nearby obstacles but is never lower than this value.
-                    std::array<double,9> vecTimeconstantsFlatStates;                       // [MotionPlanner / Controller] Timeconstants for flat states {Tu, Tv, Tr, Tu_dot, Tv_dot, Tr_dot, Tu_dotdot, Tv_dotdot, Tr_dotdot}.
-                    std::array<double,36> matK;                                            // [MotionPlanner / Controller] 3-by-12 control gain matrix (row-major order) for pose control (state controller using underlying velocity controller based on feedback-linearization).
+                    std::array<double,36> matK;                                            // [MotionPlanner / Controller] 3-by-12 control gain matrix (row-major order) for pose control.
                 } controller;
                 struct {
                     std::array<double,3> rangePose;                                        // [MotionPlanner / RegionOfAttraction] Pose box constraints for the region of attraction.
@@ -261,7 +260,6 @@ inline void Deserialize(mpsv::planner::AsyncOnlinePlannerParameterSet& plannerPa
     plannerParameter.sequentialPlanner.motionPlanner.controller.maxRadiusY                 = parameter->data.sequentialPlanner.motionPlanner.controller.maxRadiusY;
     plannerParameter.sequentialPlanner.motionPlanner.controller.maxRadiusPsi               = parameter->data.sequentialPlanner.motionPlanner.controller.maxRadiusPsi;
     plannerParameter.sequentialPlanner.motionPlanner.controller.minRadiusPosition          = parameter->data.sequentialPlanner.motionPlanner.controller.minRadiusPosition;
-    plannerParameter.sequentialPlanner.motionPlanner.controller.vecTimeconstantsFlatStates = parameter->data.sequentialPlanner.motionPlanner.controller.vecTimeconstantsFlatStates;
     plannerParameter.sequentialPlanner.motionPlanner.controller.matK                       = parameter->data.sequentialPlanner.motionPlanner.controller.matK;
     plannerParameter.sequentialPlanner.motionPlanner.regionOfAttraction.rangePose          = parameter->data.sequentialPlanner.motionPlanner.regionOfAttraction.rangePose;
     plannerParameter.sequentialPlanner.motionPlanner.regionOfAttraction.rangeUVR           = parameter->data.sequentialPlanner.motionPlanner.regionOfAttraction.rangeUVR;
