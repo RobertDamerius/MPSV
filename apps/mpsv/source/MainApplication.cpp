@@ -112,6 +112,8 @@ void MainApplication::PrintSystemInfo(void){
     Print("Compiler Version:       %s\n", strCompilerVersion.c_str());
     Print("Built (local):          %s\n", strBuilt.c_str());
     Print("Current time (UTC):     %04u-%02u-%02u %02u:%02u:%02u\n", 1900 + gmTime->tm_year, 1 + gmTime->tm_mon, gmTime->tm_mday, gmTime->tm_hour, gmTime->tm_min, gmTime->tm_sec);
+
+    // debug and threading info
     #ifdef DEBUG
     Print("DEBUG:                  1\n");
     #else
@@ -123,6 +125,10 @@ void MainApplication::PrintSystemInfo(void){
     Print("MPSV_DONT_USE_OMP:      0\n");
     Print("OMP max threads:        %d\n",omp_get_max_threads());
     #endif
+    int priorityMin = sched_get_priority_min(SCHED_FIFO);
+    int priorityMax = sched_get_priority_max(SCHED_FIFO);
+    Print("Minimum priority:       %d\n",priorityMin);
+    Print("Maximum priority:       %d\n",priorityMax);
     Print("\n");
 
     // application path
