@@ -4,13 +4,13 @@
 %%   Simulink Coder TLC Code Generation file for SFunctionMPSVAsynchronousOnlinePlanner
 %% 
 %% Simulink version      : 23.2 (R2023b) 01-Aug-2023
-%% TLC file generated on : 24-Jun-2024 10:29:44
+%% TLC file generated on : 06-Jul-2024 00:14:37
 
 /%
      %%%-MATLAB_Construction_Commands_Start
      def = legacy_code('initialize');
      def.SFunctionName = 'SFunctionMPSVAsynchronousOnlinePlanner';
-     def.OutputFcnSpec = 'void MPSV_AsynchronousOnlinePlannerStep(void* work1, uint8 y1[52905], uint8 u1[64595], uint8 u2[4417])';
+     def.OutputFcnSpec = 'void MPSV_AsynchronousOnlinePlannerStep(void* work1, uint8 y1[52905], uint8 u1[64595], uint8 u2[4409])';
      def.StartFcnSpec = 'void MPSV_AsynchronousOnlinePlannerInitialize(void** work1, int16 p1, uint32 p2, int16 p3, uint32 p4, int32 p5, int32 p6, int32 p7)';
      def.TerminateFcnSpec = 'void MPSV_AsynchronousOnlinePlannerTerminate(void* work1)';
      def.HeaderFiles = {'MPSV_DriverAsynchronousOnlinePlanner.hpp'};

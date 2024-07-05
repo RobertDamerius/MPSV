@@ -350,7 +350,6 @@ double Benchmark::MotionPlanning(void){
     parameterSet.motionPlanner.samplingRangePosition                   = 10.0;
     parameterSet.motionPlanner.samplingRangeAngle                      = 1.0;
     parameterSet.motionPlanner.maxInputPathLength                      = 50.0;
-    parameterSet.motionPlanner.maxPositionOvershoot                    = 10.0;
     parameterSet.motionPlanner.periodGoalSampling                      = 50;
     parameterSet.motionPlanner.regionOfAttraction.rangePose            = {0.25, 0.25, 0.15};
     parameterSet.motionPlanner.regionOfAttraction.rangeUVR             = {0.1, 0.1, 0.01};

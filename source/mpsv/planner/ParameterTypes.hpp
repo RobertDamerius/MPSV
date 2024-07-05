@@ -300,7 +300,6 @@ class ParameterMotionPlanner {
         double samplingRangeAngle;                             // Range in radians for sampling the angle around a given path.
         uint32_t periodGoalSampling;                           // Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
         double sampletime;                                     // Sampletime to be used for fixed-step trajectory simulation.
-        double maxPositionOvershoot;                           // Maximum position overshoot due to dynamic motion between two states. This value is used to remove obstacles outside the area of interest.
         double maxInputPathLength;                             // Maximum length (> 0) of the input path (x,y only). The input path is trimmed to ensure this maximum length. The trimmed pose may be interpolated.
         struct {
             double maxRadiusX;                                 // [Controller] Maximum look-ahead distance for longitudinal distance during pose control.
@@ -328,7 +327,6 @@ class ParameterMotionPlanner {
             samplingRangeAngle                      = 1.0;
             periodGoalSampling                      = 50;
             sampletime                              = 0.05;
-            maxPositionOvershoot                    = 10.0;
             maxInputPathLength                      = 50.0;
             controller.matK                         = {22.6634683021076,0.41083997617316,-5.03181108460105,200.152378865113,3.50131969868455,-45.4715931055404,1.5119695156125,4.11059401574811e-05,6.69158720018265e-05,-2.34079198895084,-7.54067967761855e-05,-0.000123856162071262,1.12434267795184,25.3138181465665,14.4246388918514,9.92963030390279,215.90956455243,144.18277442949,-5.88351152250358e-05,1.5148295247012,-0.00151675229642403,0.000107595199040545,-2.34604350301895,0.00279300696770468,1.23673721286666,1.74532076137872,126.252817415723,10.9222424328901,14.9545285554908,1147.21712615239,0.000108596006441483,0.000320946378040582,1.50969338333892,-0.000200797181833612,-0.000590994129882,-2.33658555400436};
             controller.maxRadiusX                   = 10.0;
@@ -349,7 +347,6 @@ class ParameterMotionPlanner {
             validMotionPlanner &= std::isfinite(samplingRangeAngle) && (samplingRangeAngle > 0.0);
             validMotionPlanner &= (periodGoalSampling > 0);
             validMotionPlanner &= std::isfinite(sampletime) && (sampletime > 0.0);
-            validMotionPlanner &= std::isfinite(maxPositionOvershoot) && (maxPositionOvershoot > 0.0);
             validMotionPlanner &= std::isfinite(maxInputPathLength) && (maxInputPathLength > 0.0);
             validMotionPlanner &= std::isfinite(controller.matK[0]) && std::isfinite(controller.matK[1]) && std::isfinite(controller.matK[2]);
             validMotionPlanner &= std::isfinite(controller.matK[3]) && std::isfinite(controller.matK[4]) && std::isfinite(controller.matK[5]);
@@ -390,7 +387,6 @@ class ParameterMotionPlanner {
             file.WriteField("double", preString + "samplingRangeAngle", {1}, &samplingRangeAngle, sizeof(samplingRangeAngle));
             file.WriteField("uint32_t", preString + "periodGoalSampling", {1}, &periodGoalSampling, sizeof(periodGoalSampling));
             file.WriteField("double", preString + "sampletime", {1}, &sampletime, sizeof(sampletime));
-            file.WriteField("double", preString + "maxPositionOvershoot", {1}, &maxPositionOvershoot, sizeof(maxPositionOvershoot));
             file.WriteField("double", preString + "maxInputPathLength", {1}, &maxInputPathLength, sizeof(maxInputPathLength));
             tmp[0]  = controller.matK[0];  tmp[1]  = controller.matK[12]; tmp[2]  = controller.matK[24];
             tmp[3]  = controller.matK[1];  tmp[4]  = controller.matK[13]; tmp[5]  = controller.matK[25];

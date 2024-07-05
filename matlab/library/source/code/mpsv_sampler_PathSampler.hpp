@@ -182,6 +182,7 @@ class PathSampler {
          * @brief Get the volume of the whole sampling area in SE(2).
          * @return Volume of the sampling area.
          * @details The volume corresponds to (x) * (y) * (wpsi * psi), where wpsi denotes the weighting for psi in the metric distance function.
+         * Note that this value is the sum of volumes of all overlapping sampling boxes around the path. Due to overlapping, the true volume would be smaller.
          */
         double GetVolume(void){ return volume; }
 

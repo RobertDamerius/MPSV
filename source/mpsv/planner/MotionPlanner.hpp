@@ -135,7 +135,7 @@ class MotionPlanner {
          * @brief Prepare the motion planner before solving the motion planning problem. The planner must be initialized using the @ref Initialize member function and a parameter set has to be applied using the @ref ApplyParameterSet member function.
          * @param[out] dataOut The output data where to store results to.
          * @param[inout] dataIn The input data containing initial and final pose as well as static obstacles and the exported path planning tree. All static obstacles that are outside the area of interest are removed! The input argument is changed.
-         * @param[in] forceColdStart True if no warm start should be performed and the motion planner starts with an empty tree, false otherwise. The default value is false.
+         * @param[in] forceColdStart True if the initial sample set of the motion planner should be initialized based on the input path only. False if the previous solution path should also be included into the sample set.
          * @details This member function copies the initial state/input and final pose to internal variables. The sampling area and cost look-up table are generated during this call.
          * @note NOTE: The feasibility output only indicates whether the initial pose collides with static obstacles! The actual dynamic feasibility (violation-free trajectory) is checked at the end of the @ref Solve step!
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
@@ -162,13 +162,12 @@ class MotionPlanner {
             TrimPath(dataIn.initialPath, parameter.motionPlanner.maxInputPathLength);
             state.finalPose = dataIn.initialPath.back();
 
-            // Set sampling area and initial sample set, build costmap, remove uninteresting obstacles
+            // Set sampling area and initial sample set, build costmap
             mpsv::geometry::OrientedBox samplingArea = SetSamplingArea(dataIn.initialPath);
             SetInitialSampleSet(dataIn.initialPath, dataIn.originOldToNew, forceColdStart);
             SetEps(samplingArea);
             tree.SetCSpaceVolume(pathSampler.GetVolume());
             BuildCostMap(samplingArea, dataIn.staticObstacles);
-            RemoveObstaclesOutsideAreaOfInterest(dataIn.staticObstacles, samplingArea);
 
             // Reset tree and check feasibility
             state.idxSolutionNode = tree.ClearAndSetRoot(mpsv::planner::MotionPlannerTreeNode(state.initialStateAndInput));
@@ -399,11 +398,12 @@ class MotionPlanner {
 
         /**
          * @brief Set the initial sample set for motion planning.
-         * @param[in] initialPath The initial path from path planning to be included in the sample set.
+         * @param[in] initialPath The initial path (trimmed) from path planning to be included in the sample set.
          * @param[in] originOldToNew Translation between two consecutive problems. If the origin of the previous problem is different to the origin of the new problem, then the old solution must be
          * transformed to be used as initial sample set in the new problem. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).
-         * @param[in] forceColdStart True if no warm start should be performed and the motion planner starts with an empty tree, false otherwise.
-         * @details The sample set contains the old solution path followed by the initial path (excluding its initial pose).
+         * @param[in] forceColdStart True if the initial sample set of the motion planner should be initialized based on the input path only. False if the previous solution path should also be included into the sample set.
+         * @details The sample set contains the old solution path followed by the initial path (excluding its initial pose). The use of the old solution path is advantageous because the it may have a higher
+         * probability of being collision free compared to the initial path of the path planner.
          */
         void SetInitialSampleSet(const std::vector<std::array<double,3>>& initialPath, std::array<double,2> originOldToNew, bool forceColdStart) noexcept {
             state.initialSamplesReversed.clear();
@@ -457,18 +457,6 @@ class MotionPlanner {
             // Eps for distance metric sqrt(dx^2 + dy^2 + (w*dpsi)^2)
             double epsWeightedAngle = std::max(1.0, parameter.metric.weightPsi) * epsAngle;
             epsDistanceMetric = std::sqrt(2.0*epsPosition*epsPosition + epsWeightedAngle*epsWeightedAngle);
-        }
-
-        /**
-         * @brief Remove obstacles that are completely outside the new configuration space (sampling box + farest vehicle shape vertex + motion overshoot).
-         * @param[inout] staticObstacles Static obstacles to be considered. The content of the container may change.
-         * @param[in] samplingArea The sampling area.
-         */
-        void RemoveObstaclesOutsideAreaOfInterest(std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, mpsv::geometry::OrientedBox samplingArea) noexcept {
-            double boxExtension = parameter.geometry.vehicleShape.GetFarthestVertexDistance();
-            samplingArea.Extend(boxExtension + parameter.motionPlanner.maxPositionOvershoot);
-            mpsv::geometry::ConvexPolygon boxPolygon = samplingArea.ExportAsConvexPolygon();
-            staticObstacles.erase(std::remove_if(staticObstacles.begin(), staticObstacles.end(), [&boxPolygon](mpsv::geometry::ConvexPolygon& p){ return !boxPolygon.Overlap(p); } ), staticObstacles.end());
         }
 
         /**

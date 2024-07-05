@@ -14,7 +14,7 @@ const std::string strOS("Windows");
 #else
 const std::string strOS("unknown");
 #endif
-const std::string strVersion("20240624");
+const std::string strVersion("20240706");
 const std::string strCompilerVersion(__VERSION__);
 const std::string strBuilt(__DATE__ " " __TIME__);
 

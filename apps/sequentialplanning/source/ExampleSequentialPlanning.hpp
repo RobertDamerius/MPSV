@@ -51,7 +51,6 @@ inline mpsv::planner::SequentialPlannerParameterSet GetParameterSet(void){
     parameterSet.motionPlanner.samplingRangePosition                   = 5.0;
     parameterSet.motionPlanner.samplingRangeAngle                      = 0.2;
     parameterSet.motionPlanner.maxInputPathLength                      = 50.0;
-    parameterSet.motionPlanner.maxPositionOvershoot                    = 10.0;
     parameterSet.motionPlanner.periodGoalSampling                      = 50;
     parameterSet.motionPlanner.regionOfAttraction.rangePose            = {0.25, 0.25, 0.15};
     parameterSet.motionPlanner.regionOfAttraction.rangeUVR             = {0.1, 0.1, 0.01};

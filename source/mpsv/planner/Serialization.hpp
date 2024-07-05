@@ -83,7 +83,6 @@ union SerializationAsyncOnlinePlannerParameterUnion {
                 double samplingRangeAngle;                                                 // [MotionPlanner] Range in radians for sampling the angle around a given path.
                 uint32_t periodGoalSampling;                                               // [MotionPlanner] Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
                 double sampletime;                                                         // [MotionPlanner] Sampletime to be used for fixed-step trajectory simulation.
-                double maxPositionOvershoot;                                               // [MotionPlanner] Maximum position overshoot due to dynamic motion between two states. This value is used to remove obstacles outside the area of interest.
                 double maxInputPathLength;                                                 // [MotionPlanner] Maximum length (> 0) of the input path (x,y only). The input path is trimmed to ensure this maximum length. The trimmed pose may be interpolated.
                 struct {
                     double maxRadiusX;                                                     // [MotionPlanner / Controller] Maximum look-ahead distance for longitudinal distance during pose control.
@@ -254,7 +253,6 @@ inline void Deserialize(mpsv::planner::AsyncOnlinePlannerParameterSet& plannerPa
     plannerParameter.sequentialPlanner.motionPlanner.samplingRangeAngle                    = parameter->data.sequentialPlanner.motionPlanner.samplingRangeAngle;
     plannerParameter.sequentialPlanner.motionPlanner.periodGoalSampling                    = parameter->data.sequentialPlanner.motionPlanner.periodGoalSampling;
     plannerParameter.sequentialPlanner.motionPlanner.sampletime                            = parameter->data.sequentialPlanner.motionPlanner.sampletime;
-    plannerParameter.sequentialPlanner.motionPlanner.maxPositionOvershoot                  = parameter->data.sequentialPlanner.motionPlanner.maxPositionOvershoot;
     plannerParameter.sequentialPlanner.motionPlanner.maxInputPathLength                    = parameter->data.sequentialPlanner.motionPlanner.maxInputPathLength;
     plannerParameter.sequentialPlanner.motionPlanner.controller.maxRadiusX                 = parameter->data.sequentialPlanner.motionPlanner.controller.maxRadiusX;
     plannerParameter.sequentialPlanner.motionPlanner.controller.maxRadiusY                 = parameter->data.sequentialPlanner.motionPlanner.controller.maxRadiusY;

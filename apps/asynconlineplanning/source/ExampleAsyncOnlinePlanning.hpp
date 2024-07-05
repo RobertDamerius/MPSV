@@ -66,7 +66,6 @@ inline mpsv::planner::AsyncOnlinePlannerParameterSet GetParameterSet(double time
     parameterSet.sequentialPlanner.motionPlanner.samplingRangePosition                   = 5.0;
     parameterSet.sequentialPlanner.motionPlanner.samplingRangeAngle                      = 0.2;
     parameterSet.sequentialPlanner.motionPlanner.maxInputPathLength                      = 50.0;
-    parameterSet.sequentialPlanner.motionPlanner.maxPositionOvershoot                    = 10.0;
     parameterSet.sequentialPlanner.motionPlanner.periodGoalSampling                      = 50;
     parameterSet.sequentialPlanner.motionPlanner.regionOfAttraction.rangePose            = {0.25, 0.25, 0.15};
     parameterSet.sequentialPlanner.motionPlanner.regionOfAttraction.rangeUVR             = {0.1, 0.1, 0.01};
