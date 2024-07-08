@@ -17,7 +17,7 @@ namespace planner {
 class PathPlannerOutput {
     public:
         bool goalReached;                         // True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-        bool isFeasible;                          // True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles.
+        bool isFeasible;                          // True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles or if the initial or final pose is not inside the sampling area.
         bool outOfNodes;                          // True if all nodes are within the solution path and no new nodes can be sampled and added to the tree.
         uint32_t numberOfPerformedIterations;     // The total number of iterations that have been performed since the latest prepare step.
         double timestampOfComputationUTC;         // Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.

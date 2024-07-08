@@ -25,7 +25,7 @@ class OnlinePlannerOutput {
         struct {
             std::vector<std::array<double,3>> path;            // [PathPlanner] Resulting path of the internal path planning problem, where each pose is given as {x,y,psi}.
             bool goalReached;                                  // [PathPlanner] True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-            bool isFeasible;                                   // [PathPlanner] True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles.
+            bool isFeasible;                                   // [PathPlanner] True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles or if the initial or final pose is not inside the sampling area.
             bool outOfNodes;                                   // [PathPlanner] True if all nodes are within the solution path and no new nodes can be sampled and added to the tree.
             uint32_t numberOfPerformedIterations;              // [PathPlanner] The total number of iterations that have been performed since the latest prepare step.
             double timestampOfComputationUTC;                  // [PathPlanner] Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.

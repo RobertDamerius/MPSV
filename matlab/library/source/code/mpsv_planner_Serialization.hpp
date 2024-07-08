@@ -139,7 +139,7 @@ union SerializationAsyncOnlinePlannerOutputUnion {
             uint16_t numPoses;                                     // [PathPlanner] The number of poses representing the path, e.g. the length of the path.
             std::array<std::array<double,3>,100> path;             // [PathPlanner] Resulting path of the internal path planning problem, where each pose is given as {x,y,psi}. The actual length of the path is given by numPoses.
             uint8_t goalReached:1;                                 // [PathPlanner] Bit 0: non-zero if goal is reached, zero otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-            uint8_t isFeasible:1;                                  // [PathPlanner] Bit 1: non-zero if problem is feasible, zero otherwise. The problem is not feasible, if the initial pose already collides with static obstacles.
+            uint8_t isFeasible:1;                                  // [PathPlanner] Bit 1: non-zero if problem is feasible, zero otherwise. The problem is not feasible, if the initial pose already collides with static obstacles or if the initial or final pose is not inside the sampling area.
             uint8_t outOfNodes:1;                                  // [PathPlanner] Bit 2: non-zero if all nodes are within the solution path and no new nodes can be sampled and added to the tree.
             uint8_t pathShrinked:1;                                // [PathPlanner] Bit 3: non-zero if path has been shrinked to fit to the memory size.
             uint8_t reserved:4;                                    // [PathPlanner] Bit 4-7: reserved, always zero.

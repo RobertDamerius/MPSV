@@ -133,7 +133,7 @@ class PathPlanner {
             //
             // 4. FEASIBILITY CHECK
             //    If the static vehicle shape at the initial pose already collides with static obstacles, no solution can be computed
-            //    and the problem is infeasible. The prepare function returns.
+            //    and the problem is infeasible. In addition, the initial and final pose must lie inside the sampling area.
             //
             // 5. WARM START / COLD START
             //    A warm start is performed to initialize the tree and keep as much nodes as possible from the previous tree. If a warm
@@ -151,7 +151,7 @@ class PathPlanner {
             tree.SetCSpaceVolume(samplingArea, parameter.metric.weightPsi);
             BuildCostMap(samplingArea, dataIn.staticObstacles);
             RemoveObstaclesOutsideAreaOfInterest(dataIn.staticObstacles, samplingArea);
-            state.isFeasible = !parameter.geometry.vehicleShape.CheckCollisionPose(dataIn.staticObstacles, state.initialPose); // initial pose must not collide for the problem to be feasible
+            state.isFeasible = !parameter.geometry.vehicleShape.CheckCollisionPose(dataIn.staticObstacles, state.initialPose) && samplingArea.IsInside(state.initialPose) && samplingArea.IsInside(state.finalPose);
             if(!state.isFeasible){
                 state.idxSolutionNode = tree.ClearAndSetRoot(mpsv::planner::PathPlannerTreeNode(state.initialPose));
                 state.closestDistanceToGoal = mpsv::math::DistanceMetricSE2(state.initialPose, state.finalPose, parameter.metric.weightPsi);

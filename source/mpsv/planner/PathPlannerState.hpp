@@ -13,7 +13,7 @@ namespace planner {
 class PathPlannerState {
     public:
         int16_t idxSolutionNode;                 // Index to the solution node. The solution node is a node inside the goal region or the node closest to the goal region and is defined to be at least the root node.
-        bool isFeasible;                         // True if problem is actually feasible, false otherwise. The problem is feasible, if the initial pose does not collide with static obstacles.
+        bool isFeasible;                         // True if problem is actually feasible, false otherwise. The problem is feasible, if the initial pose does not collide with static obstacles or if the initial or final pose is not inside the sampling area.
         bool goalReached;                        // True if solution was found and the goal pose is reached from the initial pose.
         bool outOfNodes;                         // True if all nodes are within the solution path and no new nodes can be sampled and added to the tree.
         double closestDistanceToGoal;            // The closest distance value to the goal.

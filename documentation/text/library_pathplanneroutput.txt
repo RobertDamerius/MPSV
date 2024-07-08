@@ -13,7 +13,7 @@ A bus, which defines the output of the path planner. The elements of the bus are
 <table>
 <tr><th>Element</th><th width="200">Data Type</th><th>Description</th></tr>
 <tr><td style="font-family: Courier New;">goalReached</td><td style="font-family: Courier New;">bool</td><td>True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.</td></tr>
-<tr><td style="font-family: Courier New;">isFeasible</td><td style="font-family: Courier New;">bool</td><td>True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles.</td></tr>
+<tr><td style="font-family: Courier New;">isFeasible</td><td style="font-family: Courier New;">bool</td><td>True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles or if the initial or final pose is not inside the sampling area.</td></tr>
 <tr><td style="font-family: Courier New;">outOfNodes</td><td style="font-family: Courier New;">bool</td><td>True if all nodes are within the solution path and no new nodes can be sampled and added to the tree.</td></tr>
 <tr><td style="font-family: Courier New;">invalidInput</td><td style="font-family: Courier New;">bool</td><td>True if input data is invalid, false otherwise.</td></tr>
 <tr><td style="font-family: Courier New;">numberOfPerformedIterations</td><td style="font-family: Courier New;">uint32</td><td>The total number of iterations that have been performed since the latest prepare step.</td></tr>

@@ -10,7 +10,7 @@
 <body>
 <header>
 <div class="header_title">MPSV - Motion Planner for Surface Vehicles</div>
-<div class="header_version">Version 20240706</div>
+<div class="header_version">Version 20240708</div>
 </header>
 <button onclick="PageToTop()" id="buttonToTop"></button>
 <div class="wrapper">
@@ -68,7 +68,7 @@ A bus, which defines the output of the asynchronous online planner. The elements
 <tr><td style="font-family: Courier New;">pathPlanner.numPoses</td><td style="font-family: Courier New;">uint32</td><td>The number of poses representing the path, e.g. the length of the path.</td></tr>
 <tr><td style="font-family: Courier New;">pathPlanner.path</td><td style="font-family: Courier New;">double [3][100]</td><td>Resulting path of the internal path planning problem, where each pose is given as {x,y,psi}. The actual length of the path is given by numPoses.</td></tr>
 <tr><td style="font-family: Courier New;">pathPlanner.goalReached</td><td style="font-family: Courier New;">bool</td><td>True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.</td></tr>
-<tr><td style="font-family: Courier New;">pathPlanner.isFeasible</td><td style="font-family: Courier New;">bool</td><td>True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles.</td></tr>
+<tr><td style="font-family: Courier New;">pathPlanner.isFeasible</td><td style="font-family: Courier New;">bool</td><td>True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles or if the initial or final pose is not inside the sampling area.</td></tr>
 <tr><td style="font-family: Courier New;">pathPlanner.outOfNodes</td><td style="font-family: Courier New;">bool</td><td>True if all nodes are within the solution path and no new nodes can be sampled and added to the tree.</td></tr>
 <tr><td style="font-family: Courier New;">pathPlanner.pathShrinked</td><td style="font-family: Courier New;">bool</td><td>True if path has been shrinked to fit to the memory size.</td></tr>
 <tr><td style="font-family: Courier New;">pathPlanner.numberOfPerformedIterations</td><td style="font-family: Courier New;">uint32</td><td>The total number of iterations that have been performed since the latest prepare step.</td></tr>

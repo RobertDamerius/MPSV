@@ -60,7 +60,7 @@ union SerializationPathPlannerInputUnion {
 union SerializationPathPlannerOutputUnion {
     struct SerializationPathPlannerOutputStruct {
         uint8_t goalReached:1;                        // True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-        uint8_t isFeasible:1;                         // True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles.
+        uint8_t isFeasible:1;                         // True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles or if the initial or final pose is not inside the sampling area.
         uint8_t outOfNodes:1;                         // True if all nodes are within the solution path and no new nodes can be sampled and added to the tree.
         uint8_t invalidInput:1;                       // True if input data is invalid, false otherwise.
         uint8_t reserved:4;                           // Reserved bits, unused, set to zero.
