@@ -10,7 +10,7 @@
 <body>
 <header>
 <div class="header_title">MPSV - Motion Planner for Surface Vehicles</div>
-<div class="header_version">Version 20240710</div>
+<div class="header_version">Version 20240711</div>
 </header>
 <button onclick="PageToTop()" id="buttonToTop"></button>
 <div class="wrapper">
@@ -78,7 +78,7 @@ A bus, which defines the output of the asynchronous online planner. The elements
 <tr><td style="font-family: Courier New;">motionPlanner.referencePath</td><td style="font-family: Courier New;">double [3][100]</td><td>Resulting reference path of the internal motion planning problem, where each pose is given as {x,y,psi}. The actual length of the reference path is given by numPoses.</td></tr>
 <tr><td style="font-family: Courier New;">motionPlanner.startingTimepoint</td><td style="font-family: Courier New;">double</td><td>The starting timepoint of the internal motion planner trajectory (arbitrary time origin defined by the user, same as timestamp).</td></tr>
 <tr><td style="font-family: Courier New;">motionPlanner.goalReached</td><td style="font-family: Courier New;">bool</td><td>True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.</td></tr>
-<tr><td style="font-family: Courier New;">motionPlanner.isFeasible</td><td style="font-family: Courier New;">bool</td><td>True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles.</td></tr>
+<tr><td style="font-family: Courier New;">motionPlanner.isFeasible</td><td style="font-family: Courier New;">bool</td><td>True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles or if the output trajectory is dynamically infeasible.</td></tr>
 <tr><td style="font-family: Courier New;">motionPlanner.outOfNodes</td><td style="font-family: Courier New;">bool</td><td>True if all nodes are within the solution path and no new nodes can be sampled and added to the tree.</td></tr>
 <tr><td style="font-family: Courier New;">motionPlanner.referencePathShrinked</td><td style="font-family: Courier New;">bool</td><td>True if referencePath has been shrinked to fit to the memory size.</td></tr>
 <tr><td style="font-family: Courier New;">motionPlanner.numberOfPerformedIterations</td><td style="font-family: Courier New;">uint32</td><td>The total number of iterations that have been performed since the latest prepare step.</td></tr>
