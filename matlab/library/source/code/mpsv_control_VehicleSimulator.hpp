@@ -62,6 +62,12 @@ class VehicleSimulator {
             // Set internal parameters
             F = matF;
             B = matB;
+            auto [success, invMatB] = mpsv::math::MatrixInverse3x3(B);
+            if(!success){
+                ClearModel();
+                return false;
+            }
+            invB.swap(invMatB);
             this->lowerLimitXYN = lowerLimitXYN;
             this->upperLimitXYN = upperLimitXYN;
 
@@ -72,6 +78,54 @@ class VehicleSimulator {
             invTf123[0] = 1.0 / vecTimeconstantsInput[0];
             invTf123[1] = 1.0 / vecTimeconstantsInput[1];
             invTf123[2] = 1.0 / vecTimeconstantsInput[2];
+            double TXTf1 = vecTimeconstantsXYN[0] * vecTimeconstantsInput[0];
+            double TYTf2 = vecTimeconstantsXYN[1] * vecTimeconstantsInput[1];
+            double TNTf3 = vecTimeconstantsXYN[2] * vecTimeconstantsInput[2];
+            invBBB[0] = TXTf1 * invB[0];
+            invBBB[1] = TXTf1 * invB[1];
+            invBBB[2] = TXTf1 * invB[2];
+            invBBB[3] = TYTf2 * invB[3];
+            invBBB[4] = TYTf2 * invB[4];
+            invBBB[5] = TYTf2 * invB[5];
+            invBBB[6] = TNTf3 * invB[6];
+            invBBB[7] = TNTf3 * invB[7];
+            invBBB[8] = TNTf3 * invB[8];
+            M0[0] = -B[0] / vecTimeconstantsXYN[0];
+            M0[1] = -B[1] / vecTimeconstantsXYN[1];
+            M0[2] = -B[2] / vecTimeconstantsXYN[2];
+            M0[3] = -B[3] / vecTimeconstantsXYN[0];
+            M0[4] = -B[4] / vecTimeconstantsXYN[1];
+            M0[5] = -B[5] / vecTimeconstantsXYN[2];
+            M0[6] = -B[6] / vecTimeconstantsXYN[0];
+            M0[7] = -B[7] / vecTimeconstantsXYN[1];
+            M0[8] = -B[8] / vecTimeconstantsXYN[2];
+            f17_2 = 2.0 * F[6];
+            f18_2 = 2.0 * F[7];
+            f19_2 = 2.0 * F[8];
+            f1a_3 = 3.0 * F[9];
+            f1b_3 = 3.0 * F[10];
+            f1c_3 = 3.0 * F[11];
+            f27_2 = 2.0 * F[18];
+            f28_2 = 2.0 * F[19];
+            f29_2 = 2.0 * F[20];
+            f2a_3 = 3.0 * F[21];
+            f2b_3 = 3.0 * F[22];
+            f2c_3 = 3.0 * F[23];
+            f37_2 = 2.0 * F[30];
+            f38_2 = 2.0 * F[31];
+            f39_2 = 2.0 * F[32];
+            f3a_3 = 3.0 * F[33];
+            f3b_3 = 3.0 * F[34];
+            f3c_3 = 3.0 * F[35];
+            f1a_6 = 6.0 * F[9];
+            f1b_6 = 6.0 * F[10];
+            f1c_6 = 6.0 * F[11];
+            f2a_6 = 6.0 * F[21];
+            f2b_6 = 6.0 * F[22];
+            f2c_6 = 6.0 * F[23];
+            f3a_6 = 6.0 * F[33];
+            f3b_6 = 6.0 * F[34];
+            f3c_6 = 6.0 * F[35];
 
             // Check for finite model values
             bool validModel = true;
@@ -81,8 +135,11 @@ class VehicleSimulator {
             validModel &= std::isfinite(matF[12]) && std::isfinite(matF[13]) && std::isfinite(matF[14]) && std::isfinite(matF[15]) && std::isfinite(matF[16]) && std::isfinite(matF[17]) && std::isfinite(matF[18]) && std::isfinite(matF[19]) && std::isfinite(matF[20]) && std::isfinite(matF[21]) && std::isfinite(matF[22]) && std::isfinite(matF[23]);
             validModel &= std::isfinite(matF[24]) && std::isfinite(matF[25]) && std::isfinite(matF[26]) && std::isfinite(matF[27]) && std::isfinite(matF[28]) && std::isfinite(matF[29]) && std::isfinite(matF[30]) && std::isfinite(matF[31]) && std::isfinite(matF[32]) && std::isfinite(matF[33]) && std::isfinite(matF[34]) && std::isfinite(matF[35]);
             validModel &= std::isfinite(B[0]) && std::isfinite(B[1]) && std::isfinite(B[2]) && std::isfinite(B[3]) && std::isfinite(B[4]) && std::isfinite(B[5]) && std::isfinite(B[6]) && std::isfinite(B[7]) && std::isfinite(B[8]);
+            validModel &= std::isfinite(invB[0]) && std::isfinite(invB[1]) && std::isfinite(invB[2]) && std::isfinite(invB[3]) && std::isfinite(invB[4]) && std::isfinite(invB[5]) && std::isfinite(invB[6]) && std::isfinite(invB[7]) && std::isfinite(invB[8]);
             validModel &= std::isfinite(invTXYN[0]) && std::isfinite(invTXYN[1]) && std::isfinite(invTXYN[2]);
             validModel &= std::isfinite(invTf123[0]) && std::isfinite(invTf123[1]) && std::isfinite(invTf123[2]);
+            validModel &= std::isfinite(invBBB[0]) && std::isfinite(invBBB[1]) && std::isfinite(invBBB[2]) && std::isfinite(invBBB[3]) && std::isfinite(invBBB[4]) && std::isfinite(invBBB[5]) && std::isfinite(invBBB[6]) && std::isfinite(invBBB[7]) && std::isfinite(invBBB[8]);
+            validModel &= std::isfinite(M0[0]) && std::isfinite(M0[1]) && std::isfinite(M0[2]) && std::isfinite(M0[3]) && std::isfinite(M0[4]) && std::isfinite(M0[5]) && std::isfinite(M0[6]) && std::isfinite(M0[7]) && std::isfinite(M0[8]);
             if(!validModel){
                 ClearModel();
                 return false;
@@ -130,10 +187,40 @@ class VehicleSimulator {
         void ClearModel(void) noexcept {
             F.fill(0.0);
             B.fill(0.0);
+            invB.fill(0.0);
             invTXYN.fill(0.0);
             invTf123.fill(0.0);
+            invBBB.fill(0.0);
+            M0.fill(0.0);
             lowerLimitXYN.fill(0.0);
             upperLimitXYN.fill(0.0);
+            f17_2 = 0.0;
+            f18_2 = 0.0;
+            f19_2 = 0.0;
+            f1a_3 = 0.0;
+            f1b_3 = 0.0;
+            f1c_3 = 0.0;
+            f27_2 = 0.0;
+            f28_2 = 0.0;
+            f29_2 = 0.0;
+            f2a_3 = 0.0;
+            f2b_3 = 0.0;
+            f2c_3 = 0.0;
+            f37_2 = 0.0;
+            f38_2 = 0.0;
+            f39_2 = 0.0;
+            f3a_3 = 0.0;
+            f3b_3 = 0.0;
+            f3c_3 = 0.0;
+            f1a_6 = 0.0;
+            f1b_6 = 0.0;
+            f1c_6 = 0.0;
+            f2a_6 = 0.0;
+            f2b_6 = 0.0;
+            f2c_6 = 0.0;
+            f3a_6 = 0.0;
+            f3b_6 = 0.0;
+            f3c_6 = 0.0;
         }
 
         /**
@@ -178,7 +265,8 @@ class VehicleSimulator {
             double h2 = sampletime / 2.0;
             double h6 = sampletime / 6.0;
             double c, s, dx, dy;
-            std::array<double,3> targetPose, deltaPose, uTau;
+            std::array<double,3> targetPose, deltaPose, uTau, tmp, forcedResponse, allocationModel, compensation, uz;
+            std::array<double,9> J, S0, S1, z;
             std::array<double,12> xuTmp, k1, k2, k3, k4;
             double uv, ur, vr, uu, vv, rr, uuu, vvv, rrr;
             uint32_t k = 0;
@@ -201,29 +289,9 @@ class VehicleSimulator {
 
 
                 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                // Pose controller (state controller with respect to target pose as origin)
+                // Feedback linearization: calculate useful model terms and compensation
                 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                dx = xu[0] - targetPose[0];
-                dy = xu[1] - targetPose[1];
-                deltaPose[0] = c*dx + s*dy;
-                deltaPose[1] =-s*dx + c*dy;
-                deltaPose[2] = mpsv::math::SymmetricalAngle(xu[2] - targetPose[2]);
-
-                // Calculate the control command using the control law uTau = -K * [deltaPose; nu; tau; tau_c]
-                uTau[0] =  -K[0]*deltaPose[0] -  K[1]*deltaPose[1] -  K[2]*deltaPose[2] -  K[3]*xu[3] -  K[4]*xu[4] -  K[5]*xu[5] -  K[6]*xu[6] -  K[7]*xu[7] -  K[8]*xu[8] -  K[9]*xu[9] - K[10]*xu[10] - K[11]*xu[11];
-                uTau[1] = -K[12]*deltaPose[0] - K[13]*deltaPose[1] - K[14]*deltaPose[2] - K[15]*xu[3] - K[16]*xu[4] - K[17]*xu[5] - K[18]*xu[6] - K[19]*xu[7] - K[20]*xu[8] - K[21]*xu[9] - K[22]*xu[10] - K[23]*xu[11];
-                uTau[2] = -K[24]*deltaPose[0] - K[25]*deltaPose[1] - K[26]*deltaPose[2] - K[27]*xu[3] - K[28]*xu[4] - K[29]*xu[5] - K[30]*xu[6] - K[31]*xu[7] - K[32]*xu[8] - K[33]*xu[9] - K[34]*xu[10] - K[35]*xu[11];
-
-                // Saturate control input
-                uTau[0] = std::clamp(uTau[0], lowerLimitXYN[0], upperLimitXYN[0]);
-                uTau[1] = std::clamp(uTau[1], lowerLimitXYN[1], upperLimitXYN[1]);
-                uTau[2] = std::clamp(uTau[2], lowerLimitXYN[2], upperLimitXYN[2]);
-
-
-                // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                // Non-linear Model: numerical integration via RK4
-                // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                // RK4: k1
+                // forced response velocity model: f(nu) = F*n(nu) + B*tau, where n(nu) = (u,v,r,v*r,u*r,u*v,u^2,v^2,r^2,u^3,v^3,r^3)^T
                 vr = xu[4] * xu[5];
                 ur = xu[3] * xu[5];
                 uv = xu[3] * xu[4];
@@ -233,15 +301,109 @@ class VehicleSimulator {
                 uuu = uu * xu[3];
                 vvv = vv * xu[4];
                 rrr = rr * xu[5];
+                forcedResponse[0] =  F[0]*xu[3] +  F[1]*xu[4] +  F[2]*xu[5] +  F[3]*vr +  F[4]*ur +  F[5]*uv +  F[6]*uu +  F[7]*vv +  F[8]*rr +  F[9]*uuu + F[10]*vvv + F[11]*rrr + B[0]*xu[6] + B[1]*xu[7] + B[2]*xu[8];
+                forcedResponse[1] = F[12]*xu[3] + F[13]*xu[4] + F[14]*xu[5] + F[15]*vr + F[16]*ur + F[17]*uv + F[18]*uu + F[19]*vv + F[20]*rr + F[21]*uuu + F[22]*vvv + F[23]*rrr + B[3]*xu[6] + B[4]*xu[7] + B[5]*xu[8];
+                forcedResponse[2] = F[24]*xu[3] + F[25]*xu[4] + F[26]*xu[5] + F[27]*vr + F[28]*ur + F[29]*uv + F[30]*uu + F[31]*vv + F[32]*rr + F[33]*uuu + F[34]*vvv + F[35]*rrr + B[6]*xu[6] + B[7]*xu[7] + B[8]*xu[8];
+
+                // forced response allocation model: A_tau * tau + B_tau * tau_c
+                allocationModel[0] = (xu[9] - xu[6]) * invTXYN[0];
+                allocationModel[1] = (xu[10] - xu[7]) * invTXYN[1];
+                allocationModel[2] = (xu[11] - xu[8]) * invTXYN[2];
+
+                // Jacobian J = df(nu)/dnu (uvr model w.r.t. uvr)
+                J[0] =  F[0] +  F[4]*xu[5] +  F[5]*xu[4] + f17_2*xu[3] + f1a_3*uu;
+                J[1] =  F[1] +  F[3]*xu[5] +  F[5]*xu[3] + f18_2*xu[4] + f1b_3*vv;
+                J[2] =  F[2] +  F[3]*xu[4] +  F[4]*xu[3] + f19_2*xu[5] + f1c_3*rr;
+                J[3] = F[12] + F[16]*xu[5] + F[17]*xu[4] + f27_2*xu[3] + f2a_3*uu;
+                J[4] = F[13] + F[15]*xu[5] + F[17]*xu[3] + f28_2*xu[4] + f2b_3*vv;
+                J[5] = F[14] + F[15]*xu[4] + F[16]*xu[3] + f29_2*xu[5] + f2c_3*rr;
+                J[6] = F[24] + F[28]*xu[5] + F[29]*xu[4] + f37_2*xu[3] + f3a_3*uu;
+                J[7] = F[25] + F[27]*xu[5] + F[29]*xu[3] + f38_2*xu[4] + f3b_3*vv;
+                J[8] = F[26] + F[27]*xu[4] + F[28]*xu[3] + f39_2*xu[5] + f3c_3*rr;
+
+                // S0 matrix: J^2 + T, where t_m1 = (dj_m1/du, dj_m2/du, dj_m2/du)*forcedResponse, t_m2 = (dj_m1/dv, dj_m2/dv, dj_m2/dv)*forcedResponse, t_m3 = (dj_m1/dr, dj_m2/dr, dj_m2/dr)*forcedResponse for m=1,2,3
+                S0[0] = J[0]*J[0] + J[1]*J[3] + J[2]*J[6] + (f17_2 + f1a_6*xu[3])*forcedResponse[0] +                  F[5]*forcedResponse[1] +                  F[4]*forcedResponse[2];
+                S0[1] = J[0]*J[1] + J[1]*J[4] + J[2]*J[7] +                  F[5]*forcedResponse[0] + (f18_2 + f1b_6*xu[4])*forcedResponse[1] +                  F[3]*forcedResponse[2];
+                S0[2] = J[0]*J[2] + J[1]*J[5] + J[2]*J[8] +                  F[4]*forcedResponse[0] +                  F[3]*forcedResponse[1] + (f19_2 + f1c_6*xu[5])*forcedResponse[2];
+                S0[3] = J[3]*J[0] + J[4]*J[3] + J[5]*J[6] + (f27_2 + f2a_6*xu[3])*forcedResponse[0] +                 F[17]*forcedResponse[1] +                 F[16]*forcedResponse[2];
+                S0[4] = J[3]*J[1] + J[4]*J[4] + J[5]*J[7] +                 F[17]*forcedResponse[0] + (f28_2 + f2b_6*xu[4])*forcedResponse[1] +                 F[15]*forcedResponse[2];
+                S0[5] = J[3]*J[2] + J[4]*J[5] + J[5]*J[8] +                 F[16]*forcedResponse[0] +                 F[15]*forcedResponse[1] + (f29_2 + f2c_6*xu[5])*forcedResponse[2];
+                S0[6] = J[6]*J[0] + J[7]*J[3] + J[8]*J[6] + (f37_2 + f3a_6*xu[3])*forcedResponse[0] +                 F[29]*forcedResponse[1] +                 F[28]*forcedResponse[2];
+                S0[7] = J[6]*J[1] + J[7]*J[4] + J[8]*J[7] +                 F[29]*forcedResponse[0] + (f38_2 + f3b_6*xu[4])*forcedResponse[1] +                 F[27]*forcedResponse[2];
+                S0[8] = J[6]*J[2] + J[7]*J[5] + J[8]*J[8] +                 F[28]*forcedResponse[0] +                 F[27]*forcedResponse[1] + (f39_2 + f3c_6*xu[5])*forcedResponse[2];
+
+                // S1 matrix: J * B
+                S1[0] = J[0]*B[0] + J[1]*B[3] + J[2]*B[6];
+                S1[1] = J[0]*B[1] + J[1]*B[4] + J[2]*B[7];
+                S1[2] = J[0]*B[2] + J[1]*B[5] + J[2]*B[8];
+                S1[3] = J[3]*B[0] + J[4]*B[3] + J[5]*B[6];
+                S1[4] = J[3]*B[1] + J[4]*B[4] + J[5]*B[7];
+                S1[5] = J[3]*B[2] + J[4]*B[5] + J[5]*B[8];
+                S1[6] = J[6]*B[0] + J[7]*B[3] + J[8]*B[6];
+                S1[7] = J[6]*B[1] + J[7]*B[4] + J[8]*B[7];
+                S1[8] = J[6]*B[2] + J[7]*B[5] + J[8]*B[8];
+
+                // flat state vector
+                z[0] = xu[3];
+                z[1] = xu[4];
+                z[2] = xu[5];
+                z[3] = forcedResponse[0];
+                z[4] = forcedResponse[1];
+                z[5] = forcedResponse[2];
+                z[6] = J[0]*forcedResponse[0] + J[1]*forcedResponse[1] + J[2]*forcedResponse[2] + B[0]*allocationModel[0] + B[1]*allocationModel[1] + B[2]*allocationModel[2];
+                z[7] = J[3]*forcedResponse[0] + J[4]*forcedResponse[1] + J[5]*forcedResponse[2] + B[3]*allocationModel[0] + B[4]*allocationModel[1] + B[5]*allocationModel[2];
+                z[8] = J[6]*forcedResponse[0] + J[7]*forcedResponse[1] + J[8]*forcedResponse[2] + B[6]*allocationModel[0] + B[7]*allocationModel[1] + B[8]*allocationModel[2];
+
+                // compensation = S0(uvr) * forcedResponse + S1(uvr) * allocationModel + M0 * (allocationModel + Bc*tau_c)
+                tmp[0] = allocationModel[0] + xu[9] * invTf123[0];
+                tmp[1] = allocationModel[1] + xu[10] * invTf123[1];
+                tmp[2] = allocationModel[2] + xu[11] * invTf123[2];
+                compensation[0] = S0[0]*forcedResponse[0] + S0[1]*forcedResponse[1] + S0[2]*forcedResponse[2] + S1[0]*allocationModel[0] + S1[1]*allocationModel[1] + S1[2]*allocationModel[2] + M0[0]*tmp[0] + M0[1]*tmp[1] + M0[2]*tmp[2];
+                compensation[1] = S0[3]*forcedResponse[0] + S0[4]*forcedResponse[1] + S0[5]*forcedResponse[2] + S1[3]*allocationModel[0] + S1[4]*allocationModel[1] + S1[5]*allocationModel[2] + M0[3]*tmp[0] + M0[4]*tmp[1] + M0[5]*tmp[2];
+                compensation[2] = S0[6]*forcedResponse[0] + S0[7]*forcedResponse[1] + S0[8]*forcedResponse[2] + S1[6]*allocationModel[0] + S1[7]*allocationModel[1] + S1[8]*allocationModel[2] + M0[6]*tmp[0] + M0[7]*tmp[1] + M0[8]*tmp[2];
+
+
+                // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                // Pose controller (flat state controller with respect to target pose as origin)
+                // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                dx = xu[0] - targetPose[0];
+                dy = xu[1] - targetPose[1];
+                deltaPose[0] = c*dx + s*dy;
+                deltaPose[1] =-s*dx + c*dy;
+                deltaPose[2] = mpsv::math::SymmetricalAngle(xu[2] - targetPose[2]);
+
+                // Calculate the flat state control command using the control law uz = -K * [deltaPose; z1; z2; z3]
+                uz[0] =  -K[0]*deltaPose[0] -  K[1]*deltaPose[1] -  K[2]*deltaPose[2] -  K[3]*z[0] -  K[4]*z[1] -  K[5]*z[2] -  K[6]*z[3] -  K[7]*z[4] -  K[8]*z[5] -  K[9]*z[6] - K[10]*z[7] - K[11]*z[8];
+                uz[1] = -K[12]*deltaPose[0] - K[13]*deltaPose[1] - K[14]*deltaPose[2] - K[15]*z[0] - K[16]*z[1] - K[17]*z[2] - K[18]*z[3] - K[19]*z[4] - K[20]*z[5] - K[21]*z[6] - K[22]*z[7] - K[23]*z[8];
+                uz[2] = -K[24]*deltaPose[0] - K[25]*deltaPose[1] - K[26]*deltaPose[2] - K[27]*z[0] - K[28]*z[1] - K[29]*z[2] - K[30]*z[3] - K[31]*z[4] - K[32]*z[5] - K[33]*z[6] - K[34]*z[7] - K[35]*z[8];
+
+                // final control law uTau = invBBB * (uz - compensation)
+                tmp[0] = uz[0] - compensation[0];
+                tmp[1] = uz[1] - compensation[1];
+                tmp[2] = uz[2] - compensation[2];
+                uTau[0] = invBBB[0]*tmp[0] + invBBB[1]*tmp[1] + invBBB[2]*tmp[2];
+                uTau[1] = invBBB[3]*tmp[0] + invBBB[4]*tmp[1] + invBBB[5]*tmp[2];
+                uTau[2] = invBBB[6]*tmp[0] + invBBB[7]*tmp[1] + invBBB[8]*tmp[2];
+
+                // saturate control input
+                uTau[0] = std::clamp(uTau[0], lowerLimitXYN[0], upperLimitXYN[0]);
+                uTau[1] = std::clamp(uTau[1], lowerLimitXYN[1], upperLimitXYN[1]);
+                uTau[2] = std::clamp(uTau[2], lowerLimitXYN[2], upperLimitXYN[2]);
+
+
+                // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                // Non-linear Model: numerical integration via RK4
+                // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                // RK4: k1
                 k1[0]  = c*xu[3] - s*xu[4];
                 k1[1]  = s*xu[3] + c*xu[4];
                 k1[2]  = xu[5];
-                k1[3] =  F[0]*xu[3] +  F[1]*xu[4] +  F[2]*xu[5] +  F[3]*vr +  F[4]*ur +  F[5]*uv +  F[6]*uu +  F[7]*vv +  F[8]*rr +  F[9]*uuu + F[10]*vvv + F[11]*rrr + B[0]*xu[6] + B[1]*xu[7] + B[2]*xu[8];
-                k1[4] = F[12]*xu[3] + F[13]*xu[4] + F[14]*xu[5] + F[15]*vr + F[16]*ur + F[17]*uv + F[18]*uu + F[19]*vv + F[20]*rr + F[21]*uuu + F[22]*vvv + F[23]*rrr + B[3]*xu[6] + B[4]*xu[7] + B[5]*xu[8];
-                k1[5] = F[24]*xu[3] + F[25]*xu[4] + F[26]*xu[5] + F[27]*vr + F[28]*ur + F[29]*uv + F[30]*uu + F[31]*vv + F[32]*rr + F[33]*uuu + F[34]*vvv + F[35]*rrr + B[6]*xu[6] + B[7]*xu[7] + B[8]*xu[8];
-                k1[6] = (xu[9] - xu[6]) * invTXYN[0];
-                k1[7] = (xu[10] - xu[7]) * invTXYN[1];
-                k1[8] = (xu[11] - xu[8]) * invTXYN[2];
+                k1[3]  = forcedResponse[0];
+                k1[4]  = forcedResponse[1];
+                k1[5]  = forcedResponse[2];
+                k1[6]  = allocationModel[0];
+                k1[7]  = allocationModel[1];
+                k1[8]  = allocationModel[2];
                 k1[9]  = (uTau[0] - xu[9]) * invTf123[0];
                 k1[10] = (uTau[1] - xu[10]) * invTf123[1];
                 k1[11] = (uTau[2] - xu[11]) * invTf123[2];
@@ -851,10 +1013,48 @@ class VehicleSimulator {
         /* model parameters and precalculated values set by @ref SetModel */
         std::array<double,36> F;              // 3-by-12 coefficient matrix (row-major order) of model nu_dot = F*n(nu) + B*tau.
         std::array<double,9> B;               // 3-by-3 input matrix B (row-major order) of model nu_dot = F*n(nu) + B*tau.
+        std::array<double,9> invB;            // Inverse of input matrix B.
         std::array<double,3> invTXYN;         // {1/TX, 1/TY, 1/TN}.
         std::array<double,3> invTf123;        // {1/Tf1, 1/Tf2, 1/Tf3}.
+        std::array<double,9> invBBB;          // Matrix inverse of (B * B_tau * B_c) (row-major order).
+        std::array<double,9> M0;              // Row-major order of M0 = B * A_tau.
         std::array<double,3> lowerLimitXYN;   // Lower saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
         std::array<double,3> upperLimitXYN;   // Upper saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
+
+        /* precalculated coefficients for first derivatives set by @ref SetModel */
+        double f17_2;                         // 2 * f_17.
+        double f18_2;                         // 2 * f_18.
+        double f19_2;                         // 2 * f_19.
+        double f1a_3;                         // 3 * f_1a.
+        double f1b_3;                         // 3 * f_1b.
+        double f1c_3;                         // 3 * f_1c.
+
+        double f27_2;                         // 2 * f_27.
+        double f28_2;                         // 2 * f_28.
+        double f29_2;                         // 2 * f_29.
+        double f2a_3;                         // 3 * f_2a.
+        double f2b_3;                         // 3 * f_2b.
+        double f2c_3;                         // 3 * f_2c.
+
+        double f37_2;                         // 2 * f_37.
+        double f38_2;                         // 2 * f_38.
+        double f39_2;                         // 2 * f_39.
+        double f3a_3;                         // 3 * f_3a.
+        double f3b_3;                         // 3 * f_3b.
+        double f3c_3;                         // 3 * f_3c.
+
+        /* precalculated coefficients for second derivatives set by @ref SetModel */
+        double f1a_6;                         // 6 * f_1a.
+        double f1b_6;                         // 6 * f_1b.
+        double f1c_6;                         // 6 * f_1c.
+
+        double f2a_6;                         // 6 * f_2a.
+        double f2b_6;                         // 6 * f_2b.
+        double f2c_6;                         // 6 * f_2c.
+
+        double f3a_6;                         // 6 * f_3a.
+        double f3b_6;                         // 6 * f_3b.
+        double f3c_6;                         // 6 * f_3c.
 
         /* controller parameters and precalculated values set by @ref SetController */
         double minSquaredRadiusPosition;      // r^2 with r being the minimum radius for position for the waypoint guidance law.

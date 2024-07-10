@@ -52,7 +52,7 @@ inline mpsv::planner::MotionPlannerParameterSet GetParameterSet(void){
     parameterSet.motionPlanner.regionOfAttraction.rangePose            = {0.25, 0.25, 0.15};
     parameterSet.motionPlanner.regionOfAttraction.rangeUVR             = {0.1, 0.1, 0.01};
     parameterSet.motionPlanner.regionOfAttraction.rangeXYN             = {10.0, 10.0, 10.0};
-    parameterSet.motionPlanner.controller.matK                         = {22.6634683021076,0.41083997617316,-5.03181108460105,200.152378865113,3.50131969868455,-45.4715931055404,1.5119695156125,4.11059401574811e-05,6.69158720018265e-05,-2.34079198895084,-7.54067967761855e-05,-0.000123856162071262,1.12434267795184,25.3138181465665,14.4246388918514,9.92963030390279,215.90956455243,144.18277442949,-5.88351152250358e-05,1.5148295247012,-0.00151675229642403,0.000107595199040545,-2.34604350301895,0.00279300696770468,1.23673721286666,1.74532076137872,126.252817415723,10.9222424328901,14.9545285554908,1147.21712615239,0.000108596006441483,0.000320946378040582,1.50969338333892,-0.000200797181833612,-0.000590994129882,-2.33658555400436};
+    parameterSet.motionPlanner.controller.matK                         = {0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35, 0.0, 0.0, 0.0, 0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35, 0.0, 0.0, 0.0, 0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35};
     parameterSet.motionPlanner.controller.maxRadiusX                   = 10.0;
     parameterSet.motionPlanner.controller.maxRadiusY                   = 6.0;
     parameterSet.motionPlanner.controller.maxRadiusPsi                 = 1.0;

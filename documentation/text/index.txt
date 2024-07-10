@@ -26,7 +26,7 @@
     <ul>
     <li>find trajectory from initial state/input to final pose around a given path</li>
     <li>RRT* with fixed number of nodes</li>
-    <li>internal control system based full-state feedback to generate dynamically feasible trajectory</li>
+    <li>internal control system based on feedback linearization and full-state feedback to generate dynamically feasible trajectory</li>
     </ul>
 
     <b>SequentialPlanner</b>

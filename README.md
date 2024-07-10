@@ -48,7 +48,7 @@ The API of MPSV consists of several planning levels that are shown in the follow
 **MotionPlanner**
 - find trajectory from initial state/input to final pose around a given path
 - RRT* with fixed number of nodes
-- internal control system based on full-state feedback to generate dynamically feasible trajectory
+- internal control system based on feedback linearization and full-state feedback to generate dynamically feasible trajectory
 
 **SequentialPlanner**
 - combine path and motion planner in sequential manner
