@@ -54,25 +54,81 @@ inline int32_t signi(double value) noexcept {
 /**
  * @brief Calculate the inverse of a 3-by-3 matrix.
  * @param[in] matA 3-by-3 input matrix in row-major order.
- * @return <0> True if success, false otherwise. The inversion fails, if the determinant of A is close to zero.
+ * @return <0> True if success, false otherwise. The inversion fails, if the inverse is not finite.
  * @return <1> Resulting 3-by-3 matrix in row-major order.
  */
 inline std::tuple<bool,std::array<double,9>> MatrixInverse3x3(const std::array<double,9>& matA) noexcept {
     std::tuple<bool,std::array<double,9>> result;
     bool& success = std::get<0>(result);
     std::array<double,9>& matInvA = std::get<1>(result);
-    constexpr double eps = 100.0 * std::numeric_limits<double>::epsilon();
-    double detA = matA[0]*matA[4]*matA[8] + matA[1]*matA[5]*matA[6] + matA[2]*matA[3]*matA[7] - matA[0]*matA[5]*matA[7] - matA[1]*matA[3]*matA[8]- matA[2]*matA[4]*matA[6];
-    if((success = (std::fabs(detA) > eps))){
-        matInvA[0] = (matA[4]*matA[8] - matA[5]*matA[7]) / detA;
-        matInvA[1] = (matA[2]*matA[7] - matA[1]*matA[8]) / detA;
-        matInvA[2] = (matA[1]*matA[5] - matA[2]*matA[4]) / detA;
-        matInvA[3] = (matA[5]*matA[6] - matA[3]*matA[8]) / detA;
-        matInvA[4] = (matA[0]*matA[8] - matA[2]*matA[6]) / detA;
-        matInvA[5] = (matA[2]*matA[3] - matA[0]*matA[5]) / detA;
-        matInvA[6] = (matA[3]*matA[7] - matA[4]*matA[6]) / detA;
-        matInvA[7] = (matA[1]*matA[6] - matA[0]*matA[7]) / detA;
-        matInvA[8] = (matA[0]*matA[4] - matA[1]*matA[3]) / detA;
+    std::array<double,9> x = matA;
+    int32_t p1 = 0;
+    int32_t p2 = 3;
+    int32_t p3 = 6;
+    int32_t itmp;
+    double absx11 = std::fabs(matA[0]);
+    double absx21 = std::fabs(matA[3]);
+    double absx31 = std::fabs(matA[6]);
+    if((absx21 > absx11) && (absx21 > absx31)){
+        p1 = 3;
+        p2 = 0;
+        x[0] = matA[3];
+        x[1] = matA[0];
+        x[3] = matA[4];
+        x[4] = matA[1];
+        x[6] = matA[5];
+        x[7] = matA[2];
+    }
+    else if(absx31 > absx11){
+        p1 = 6;
+        p3 = 0;
+        x[0] = matA[6];
+        x[2] = matA[0];
+        x[3] = matA[7];
+        x[5] = matA[1];
+        x[6] = matA[8];
+        x[8] = matA[2];
+    }
+    x[1] /= x[0];
+    x[2] /= x[0];
+    x[4] -= x[1] * x[3];
+    x[5] -= x[2] * x[3];
+    x[7] -= x[1] * x[6];
+    x[8] -= x[2] * x[6];
+    if(std::fabs(x[5]) > std::fabs(x[4])){
+        itmp = p2;
+        p2 = p3;
+        p3 = itmp;
+        absx11 = x[1];
+        x[1] = x[2];
+        x[2] = absx11;
+        absx11 = x[4];
+        x[4] = x[5];
+        x[5] = absx11;
+        absx11 = x[7];
+        x[7] = x[8];
+        x[8] = absx11;
+    }
+    x[5] /= x[4];
+    x[8] -= x[5] * x[7];
+    absx11 = (x[1] * x[5] - x[2]) / x[8];
+    absx21 = -(x[7] * absx11 + x[1]) / x[4];
+    matInvA[p1] = ((1.0 - x[3] * absx21) - x[6] * absx11) / x[0];
+    matInvA[p1 + 1] = absx21;
+    matInvA[p1 + 2] = absx11;
+    absx11 = -x[5] / x[8];
+    absx21 = (1.0 - x[7] * absx11) / x[4];
+    matInvA[p2] = -(x[3] * absx21 + x[6] * absx11) / x[0];
+    matInvA[p2 + 1] = absx21;
+    matInvA[p2 + 2] = absx11;
+    absx11 = 1.0 / x[8];
+    absx21 = -x[7] * absx11 / x[4];
+    matInvA[p3] = -(x[3] * absx21 + x[6] * absx11) / x[0];
+    matInvA[p3 + 1] = absx21;
+    matInvA[p3 + 2] = absx11;
+    success = std::isfinite(matInvA[0]) && std::isfinite(matInvA[1]) && std::isfinite(matInvA[2]) && std::isfinite(matInvA[3]) && std::isfinite(matInvA[4]) && std::isfinite(matInvA[5]) && std::isfinite(matInvA[6]) && std::isfinite(matInvA[7]) && std::isfinite(matInvA[8]);
+    if(!success){
+        matInvA.fill(0.0);
     }
     return result;
 }
