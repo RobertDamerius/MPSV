@@ -327,7 +327,7 @@ class MotionPlanner {
         void BuildFinalTrajectory(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, double minTrajectoryDuration){
             uint32_t minNumSteps = static_cast<uint32_t>(std::ceil(std::max(0.0, minTrajectoryDuration) / parameter.motionPlanner.sampletime));
             tree.GetPathFromRootToNode(tree.GetRefNode(state.idxSolutionNode).pathBuffer, state.idxSolutionNode);
-            state.isFeasible = PathFromRootIsFeasible(tree.GetRefNode(state.idxSolutionNode).pathBuffer, staticObstacles, tree.GetRefNode(state.idxSolutionNode).trajectoryBuffer, minNumSteps);
+            (void) vehicleSimulator.ExplorePathToEnd(tree.GetRefNode(state.idxSolutionNode).trajectoryBuffer, state.initialStateAndInput, tree.GetRefNode(state.idxSolutionNode).pathBuffer, regionOfAttraction, staticObstacles, parameter.motionPlanner.sampletime, minNumSteps);
         }
 
         /**
