@@ -34,7 +34,6 @@ class UDPSocket {
 
         /**
          * @brief Close the socket.
-         * @details Resets the port.
          */
         void Close(void);
 

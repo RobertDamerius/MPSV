@@ -73,6 +73,7 @@ class PathPlanner {
          */
         void Terminate(void) noexcept {
             interruptFlag = false;
+            isSolving = false;
             tree.Terminate();
             state.Clear();
             parameter.Clear();
@@ -183,6 +184,7 @@ class PathPlanner {
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
         void Solve(mpsv::planner::PathPlannerOutput& dataOut, mpsv::planner::PathPlannerInput& dataIn, double maxComputationTime) noexcept {
+            isSolving = true;
             if(state.isFeasible){
                 mpsv::core::PerformanceCounter executionCounter, iterationCounter;
                 double maxIterationTime = 0.0; // maximum execution time of one iteration
@@ -198,6 +200,7 @@ class PathPlanner {
                 }
             }
             AssignOutput(dataOut);
+            isSolving = false;
             interruptFlag = false;
         }
 
@@ -217,6 +220,7 @@ class PathPlanner {
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
         void Solve(mpsv::planner::PathPlannerOutput& dataOut, mpsv::planner::PathPlannerInput& dataIn, uint32_t maxIterations) noexcept {
+            isSolving = true;
             if(state.isFeasible){
                 for(uint32_t i = 0; i < maxIterations; ++i){
                     ++state.numberOfPerformedIterations;
@@ -227,15 +231,15 @@ class PathPlanner {
                 }
             }
             AssignOutput(dataOut);
+            isSolving = false;
             interruptFlag = false;
         }
 
         /**
-         * @brief Interrupt a running @ref Solve operation of the path planner. If the @ref Solve operation is not running, then the next one
-         * is to be interrupted.
+         * @brief Interrupt a running @ref Solve operation of the path planner.
          * @note The internal @ref interruptFlag is automatically reset at the end of a @ref Solve operation.
          */
-        void Interrupt(void) noexcept { interruptFlag = true; }
+        void Interrupt(void) noexcept { interruptFlag.store(isSolving); }
 
 
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -257,6 +261,7 @@ class PathPlanner {
         uint32_t maxNumSamples;                             // The maximum number of samples set by @ref Initialize.
         std::vector<int16_t> idxNeighbors;                  // Reserved memory for nearest neighbors.
         std::atomic<bool> interruptFlag;                    // If set to true, no more iterations are performed and the @ref Solve member function returns.
+        std::atomic<bool> isSolving;                        // True if the path planner performs a @ref Solve step, false otherwise.
         double epsPosition;                                 // Eps (numeric threshold) for position.
         double epsAngle;                                    // Eps (numeric threshold) for angle.
         double epsDistanceMetric;                           // Eps (numeric threshold) for distance metric.
