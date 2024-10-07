@@ -3,14 +3,14 @@
 %% Description:
 %%   Simulink Coder TLC Code Generation file for SFunctionMPSVPathPlanner
 %% 
-%% Simulink version      : 23.2 (R2023b) 01-Aug-2023
-%% TLC file generated on : 11-Jul-2024 00:52:30
+%% Simulink version      : 24.1 (R2024a) 19-Nov-2023
+%% TLC file generated on : 07-Oct-2024 14:51:25
 
 /%
      %%%-MATLAB_Construction_Commands_Start
      def = legacy_code('initialize');
      def.SFunctionName = 'SFunctionMPSVPathPlanner';
-     def.OutputFcnSpec = 'void MPSV_PathPlannerStep(void* work1, uint8 y1[24023], uint8 u1[324566])';
+     def.OutputFcnSpec = 'void MPSV_PathPlannerStep(void* work1, uint8 y1[24023], uint8 u1[65153])';
      def.StartFcnSpec = 'void MPSV_PathPlannerInitialize(void** work1, int16 p1, uint32 p2)';
      def.TerminateFcnSpec = 'void MPSV_PathPlannerTerminate(void* work1)';
      def.HeaderFiles = {'MPSV_DriverPathPlanner.hpp'};
@@ -25,22 +25,6 @@
 %/
 
 %implements SFunctionMPSVPathPlanner "C"
-
-%% Function: FcnGenerateUniqueFileName ====================================
-%function FcnGenerateUniqueFileName (filename, type) void
-    %assign isReserved = TLC_FALSE
-    %foreach idxFile = CompiledModel.DataObjectUsage.NumFiles[0]
-        %assign thisFile = CompiledModel.DataObjectUsage.File[idxFile]
-        %if (thisFile.Name==filename) && (thisFile.Type==type)
-            %assign isReserved = TLC_TRUE
-            %break
-        %endif
-    %endforeach
-    %if (isReserved==TLC_TRUE)
-        %assign filename = FcnGenerateUniqueFileName(filename + "_", type)
-    %endif
-    %return filename
-%endfunction
 
 %% Function: BlockTypeSetup ===============================================
 %function BlockTypeSetup (block, system) void
@@ -112,7 +96,7 @@
     %assign int16Type = LibGetDataTypeNameFromId(::CompiledModel.tSS_INT16)
     %assign uint8Type = LibGetDataTypeNameFromId(::CompiledModel.tSS_UINT8)
     %if IsModelReferenceSimTarget() || CodeFormat=="S-Function" || ::isRAccel
-        %assign sfunInstanceName = FEVAL("matlab.lang.makeValidName", block.Identifier)
+        %assign sfunInstanceName = FEVAL("matlab.lang.makeValidName", LibBlockIdentifier(block))
         %assign hFileName = FcnGenerateUniqueFileName("SFunctionMPSVPathPlanner_wrapper_%<sfunInstanceName>", "header")
         %assign hFileNameMacro = FEVAL("upper", hFileName)
         %openfile hFile = "%<hFileName>.h"
@@ -134,7 +118,7 @@
         
         %closefile hFile
         
-        %assign sfunInstanceName = FEVAL("matlab.lang.makeValidName", block.Identifier)
+        %assign sfunInstanceName = FEVAL("matlab.lang.makeValidName", LibBlockIdentifier(block))
         %assign cFileName = FcnGenerateUniqueFileName("SFunctionMPSVPathPlanner_wrapper_%<sfunInstanceName>", "source")
         %openfile cFile = "%<cFileName>.cpp"
         %selectfile cFile
@@ -199,7 +183,7 @@
         %% 
         /* %<Type> (%<ParamSettings.FunctionName>): %<Name> */
         {
-            %assign sfunInstanceName = FEVAL("matlab.lang.makeValidName", block.Identifier)
+            %assign sfunInstanceName = FEVAL("matlab.lang.makeValidName", LibBlockIdentifier(block))
             SFunctionMPSVPathPlanner_wrapper_Start_%<sfunInstanceName>(%<work1_ptr>, %<p1_val>, %<p2_val>);
         
         }
@@ -222,7 +206,7 @@
         %% 
         /* %<Type> (%<ParamSettings.FunctionName>): %<Name> */
         {
-            %assign sfunInstanceName = FEVAL("matlab.lang.makeValidName", block.Identifier)
+            %assign sfunInstanceName = FEVAL("matlab.lang.makeValidName", LibBlockIdentifier(block))
             SFunctionMPSVPathPlanner_wrapper_Output_%<sfunInstanceName>(%<work1_val>, %<y1_ptr>, %<u1_ptr>);
         
         }
@@ -242,7 +226,7 @@
         %% 
         /* %<Type> (%<ParamSettings.FunctionName>): %<Name> */
         {
-            %assign sfunInstanceName = FEVAL("matlab.lang.makeValidName", block.Identifier)
+            %assign sfunInstanceName = FEVAL("matlab.lang.makeValidName", LibBlockIdentifier(block))
             SFunctionMPSVPathPlanner_wrapper_Terminate_%<sfunInstanceName>(%<work1_val>);
         
         }

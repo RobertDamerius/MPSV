@@ -29,7 +29,7 @@ The directory structure of this repository is as follows.
 | :----------------- | :------------------------------------------------------------------------------------------------------------- |
 | apps               | contains example applications and a standalone application                                                     |
 | documentation      | contains the documentation that has been created with [SimpleDoc](https://github.com/RobertDamerius/SimpleDoc) |
-| matlab             | contains the MATLAB/Simulink library "MPSV" (**>= R2023b**) and Simulink examples                              |
+| matlab             | contains the MATLAB/Simulink library "MPSV" (**>= R2024a**) and Simulink examples                              |
 | source             | contains the header-only library (C++)                                                                         |
 | LICENSE            | license information                                                                                            |
 | Makefile           | used to build example applications and the standalone application                                              |

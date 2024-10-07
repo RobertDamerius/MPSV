@@ -28,9 +28,7 @@ union SerializationAsyncOnlinePlannerInputUnion {
         std::array<double,3> finalPose;                                                 // The final pose given as {x,y,psi}.
         std::array<double,3> samplingBoxCenterPose;                                     // Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
         std::array<double,2> samplingBoxDimension;                                      // Dimension of the sampling box along major and minor axes of the box.
-        uint16_t numStaticObstacles;                                                    // The number of static obstacles in range [0,400].
-        std::array<uint8_t,400> numVerticesPerStaticObstacle;                           // The number of vertices for each static obstacle in range [3,20].
-        std::array<std::array<std::array<float,2>,20>,400> verticesStaticObstacles;     // Vertex data of the static obstacles.
+        std::array<std::array<float,2>,8000> verticesStaticObstacles;                   // Vertex data of the static obstacles. Multiple convex polygons are separated by non-finite vertices.
     } data;
     uint8_t bytes[sizeof(mpsv::planner::SerializationAsyncOnlinePlannerInputUnion::SerializationAsyncOnlinePlannerInputStruct)];
 };
@@ -49,9 +47,7 @@ union SerializationAsyncOnlinePlannerParameterUnion {
             struct {
                 double collisionCheckMaxPositionDeviation;                                 // [Geometry] Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 meters.
                 double collisionCheckMaxAngleDeviation;                                    // [Geometry] Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree.
-                uint8_t numPolygonsVehicleShape;                                           // [Geometry] Number of convex polygons that represent the vehicle shape in range [1,10].
-                std::array<uint8_t,10> numVerticesVehicleShape;                            // [Geometry] Number of vertices of a convex polygon of the vehicle shape in range [3,20].
-                std::array<std::array<std::array<double,2>,20>,10> verticesVehicleShape;   // [Geometry] Vertex data of the vehicle shape.
+                std::array<std::array<float,2>,100> verticesVehicleShape;                  // [Geometry] Vertex data of the vehicle shape. Multiple convex polygons are separated by non-finite vertices.
                 uint8_t numSkeletalPoints;                                                 // [Geometry] Number of skeletal points in range [1,10].
                 std::array<std::array<double,2>,10> skeletalPoints;                        // [Geometry] Skeletal points (b-frame) at which the cost map is to be evaluated. All points must be inside the vehicle shape.
             } geometry;
@@ -180,13 +176,26 @@ inline void Deserialize(mpsv::planner::AsyncOnlinePlannerInput& plannerInput, co
     plannerInput.samplingBoxCenterPose = input->data.samplingBoxCenterPose;
     plannerInput.samplingBoxDimension  = input->data.samplingBoxDimension;
     plannerInput.staticObstacles.clear();
-    bool validStaticObstacles = (input->data.numStaticObstacles <= input->data.numVerticesPerStaticObstacle.size());
-    for(size_t p = 0; (p < static_cast<size_t>(input->data.numStaticObstacles)) && validStaticObstacles; ++p){
-        validStaticObstacles &= (input->data.numVerticesPerStaticObstacle[p] > 2) && (input->data.numVerticesPerStaticObstacle[p] <= input->data.verticesStaticObstacles[p].size());
-        std::vector<std::array<double,2>> vertices(input->data.numVerticesPerStaticObstacle[p]);
-        std::transform(input->data.verticesStaticObstacles[p].begin(), input->data.verticesStaticObstacles[p].begin() + input->data.numVerticesPerStaticObstacle[p], vertices.begin(), [](const std::array<float,2>& f){ return std::array<double,2>({static_cast<double>(f[0]), static_cast<double>(f[1])}); });
-        plannerInput.staticObstacles.push_back(mpsv::geometry::StaticObstacle(vertices));
-        validStaticObstacles &= plannerInput.staticObstacles.back().EnsureCorrectVertexOrder();
+    bool validStaticObstacles = true;
+    int32_t N = static_cast<int32_t>(input->data.verticesStaticObstacles.size());
+    int32_t i0 = -1; // index of previous finite vertex (-1 indicates no previous finite vertex)
+    for(int32_t i = 0; (i < N) && validStaticObstacles; ++i){
+        if((i0 < 0) && std::isfinite(input->data.verticesStaticObstacles[i][0]) && std::isfinite(input->data.verticesStaticObstacles[i][1])){
+            i0 = i;
+        }
+        else if((i0 >= 0) && (!std::isfinite(input->data.verticesStaticObstacles[i][0]) || !std::isfinite(input->data.verticesStaticObstacles[i][1]) || (i == (N - 1)))){
+            i += static_cast<int32_t>(i == (N - 1));
+            int32_t numVertices = i - i0;
+            if(numVertices < 3){
+                validStaticObstacles = false;
+                break;
+            }
+            std::vector<std::array<double,2>> vertices(numVertices);
+            std::transform(input->data.verticesStaticObstacles.begin() + i0, input->data.verticesStaticObstacles.begin() + i, vertices.begin(), [](const std::array<float,2>& f){ return std::array<double,2>({static_cast<double>(f[0]), static_cast<double>(f[1])}); });
+            plannerInput.staticObstacles.push_back(mpsv::geometry::StaticObstacle(vertices));
+            validStaticObstacles &= plannerInput.staticObstacles.back().EnsureCorrectVertexOrder();
+            i0 = -1;
+        }
     }
 
     // if there're errors make whole input invalid (set timestampt to NaN)
@@ -209,18 +218,30 @@ inline void Deserialize(mpsv::planner::AsyncOnlinePlannerParameterSet& plannerPa
 
     // vehicle shape
     plannerParameter.sequentialPlanner.geometry.vehicleShape.Clear();
-    bool validVehicleShape = (parameter->data.sequentialPlanner.geometry.numPolygonsVehicleShape > 0) && (parameter->data.sequentialPlanner.geometry.numPolygonsVehicleShape <= parameter->data.sequentialPlanner.geometry.numVerticesVehicleShape.size());
-    if(validVehicleShape){
-        for(uint8_t p = 0; p < parameter->data.sequentialPlanner.geometry.numPolygonsVehicleShape; ++p){
-            validVehicleShape &= (parameter->data.sequentialPlanner.geometry.numVerticesVehicleShape[p] > 2) && (parameter->data.sequentialPlanner.geometry.numVerticesVehicleShape[p] <= parameter->data.sequentialPlanner.geometry.verticesVehicleShape[p].size());
-            if(!validVehicleShape){
+    bool validVehicleShape = true;
+    int32_t N = static_cast<int32_t>(parameter->data.sequentialPlanner.geometry.verticesVehicleShape.size());
+    int32_t i0 = -1; // index of previous finite vertex (-1 indicates no previous finite vertex)
+    int32_t numPolygonsAdded = 0;
+    for(int32_t i = 0; (i < N) && validVehicleShape; ++i){
+        if((i0 < 0) && std::isfinite(parameter->data.sequentialPlanner.geometry.verticesVehicleShape[i][0]) && std::isfinite(parameter->data.sequentialPlanner.geometry.verticesVehicleShape[i][1])){
+            i0 = i;
+        }
+        else if((i0 >= 0) && (!std::isfinite(parameter->data.sequentialPlanner.geometry.verticesVehicleShape[i][0]) || !std::isfinite(parameter->data.sequentialPlanner.geometry.verticesVehicleShape[i][1]) || (i == (N - 1)))){
+            i += static_cast<int32_t>(i == (N - 1));
+            int32_t numVertices = i - i0;
+            if(numVertices < 3){
+                validVehicleShape = false;
                 break;
             }
-            for(uint8_t v = 0; v < parameter->data.sequentialPlanner.geometry.numVerticesVehicleShape[p]; ++v){
-                std::vector<std::array<double,2>> vertices(parameter->data.sequentialPlanner.geometry.verticesVehicleShape[p].begin(), parameter->data.sequentialPlanner.geometry.verticesVehicleShape[p].begin() + parameter->data.sequentialPlanner.geometry.numVerticesVehicleShape[p]);
-                plannerParameter.sequentialPlanner.geometry.vehicleShape.Add(vertices);
-            }
+            std::vector<std::array<double,2>> vertices(numVertices);
+            std::transform(parameter->data.sequentialPlanner.geometry.verticesVehicleShape.begin() + i0, parameter->data.sequentialPlanner.geometry.verticesVehicleShape.begin() + i, vertices.begin(), [](const std::array<float,2>& f){ return std::array<double,2>({static_cast<double>(f[0]), static_cast<double>(f[1])}); });
+            plannerParameter.sequentialPlanner.geometry.vehicleShape.Add(vertices);
+            numPolygonsAdded++;
+            i0 = -1;
         }
+    }
+    validVehicleShape &= (numPolygonsAdded > 0);
+    if(validVehicleShape){
         validVehicleShape &= plannerParameter.sequentialPlanner.geometry.vehicleShape.EnsureCorrectVertexOrder();
     }
 

@@ -20,7 +20,5 @@ A bus, which defines the input for the asynchronous online planner. The elements
 <tr><td style="font-family: Courier New;">finalPose</td><td style="font-family: Courier New;">double [3]</td><td>The final pose given as {x,y,psi}.</td></tr>
 <tr><td style="font-family: Courier New;">samplingBoxCenterPose</td><td style="font-family: Courier New;">double [3]</td><td>Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.</td></tr>
 <tr><td style="font-family: Courier New;">samplingBoxDimension</td><td style="font-family: Courier New;">double [2]</td><td>Dimension of the sampling box along major and minor axes of the box.</td></tr>
-<tr><td style="font-family: Courier New;">numStaticObstacles</td><td style="font-family: Courier New;">uint16</td><td>The number of static obstacles in range [0,400].</td></tr>
-<tr><td style="font-family: Courier New;">numVerticesPerStaticObstacle</td><td style="font-family: Courier New;">uint8 [400]</td><td>The number of vertices for each static obstacle in range [3,20].</td></tr>
-<tr><td style="font-family: Courier New;">verticesStaticObstacles</td><td style="font-family: Courier New;">double [2][20][400]</td><td>Vertex data of the static obstacles.</td></tr>
+<tr><td style="font-family: Courier New;">verticesStaticObstacles</td><td style="font-family: Courier New;">double [2][8000]</td><td>Vertex data of the static obstacles. Multiple convex polygons are separated by non-finite vertices.</td></tr>
 </table>

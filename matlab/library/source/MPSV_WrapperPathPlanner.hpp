@@ -22,11 +22,9 @@ union SerializationPathPlannerInputUnion {
             struct {
                 double collisionCheckMaxPositionDeviation;                                 // Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 meters.
                 double collisionCheckMaxAngleDeviation;                                    // Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree.
+                std::array<std::array<float,2>,100> verticesVehicleShape;                  // Vertex data of the vehicle shape. Multiple convex polygons are separated by non-finite vertices.
                 uint8_t numSkeletalPoints;                                                 // Number of skeletal points in range [1,10].
                 std::array<std::array<double,2>,10> skeletalPoints;                        // Skeletal points (b-frame) at which the cost map is to be evaluated. All points must be inside the vehicle shape.
-                uint8_t numPolygonsVehicleShape;                                           // Number of convex polygons that represent the vehicle shape in range [1,10].
-                std::array<uint8_t,10> numVerticesVehicleShape;                            // Number of vertices of a convex polygon of the vehicle shape in range [3,20].
-                std::array<std::array<std::array<double,2>,20>,10> verticesVehicleShape;   // Vertex data of the vehicle shape.
             } geometry;
             struct {
                 double weightPsi;                                                          // Weighting for yaw angle in distance metric function.
@@ -44,9 +42,7 @@ union SerializationPathPlannerInputUnion {
         std::array<double,2> originOldToNew;                                               // Translation between two consecutive problems. If the origin of the previous problem is different to the origin of the new problem, then the tree must be transformed during a warm start. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).
         std::array<double,3> samplingBoxCenterPose;                                        // Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
         std::array<double,2> samplingBoxDimension;                                         // Dimension of the sampling box along major and minor axes of the box.
-        uint16_t numStaticObstacles;                                                       // The number of static obstacles in range [0,1000].
-        std::array<uint8_t,1000> numVerticesPerStaticObstacle;                             // The number of vertices for each static obstacle in range [3,20].
-        std::array<std::array<std::array<double,2>,20>,1000> verticesStaticObstacles;      // Vertex data of the static obstacles.
+        std::array<std::array<float,2>,8000> verticesStaticObstacles;                      // Vertex data of the static obstacles. Multiple convex polygons are separated by non-finite vertices.
     } data;
     uint8_t bytes[sizeof(SerializationPathPlannerInputUnion::SerializationPathPlannerInputStruct)];
 };

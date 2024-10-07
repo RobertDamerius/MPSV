@@ -45,18 +45,30 @@ bool MPSV_WrapperPathPlanner::AssignInput(SerializationPathPlannerInputUnion* in
         }
     }
     pathPlannerParameter.geometry.vehicleShape.Clear();
-    bool validVehicleShape = (input->data.parameter.geometry.numPolygonsVehicleShape > 0) && (input->data.parameter.geometry.numPolygonsVehicleShape <= input->data.parameter.geometry.numVerticesVehicleShape.size());
-    if(validVehicleShape){
-        for(uint8_t p = 0; p < input->data.parameter.geometry.numPolygonsVehicleShape; ++p){
-            validVehicleShape &= (input->data.parameter.geometry.numVerticesVehicleShape[p] > 2) && (input->data.parameter.geometry.numVerticesVehicleShape[p] <= input->data.parameter.geometry.verticesVehicleShape[p].size());
-            if(!validVehicleShape){
+    bool validVehicleShape = true;
+    int32_t N = static_cast<int32_t>(input->data.parameter.geometry.verticesVehicleShape.size());
+    int32_t i0 = -1; // index of previous finite vertex (-1 indicates no previous finite vertex)
+    int32_t numPolygonsAdded = 0;
+    for(int32_t i = 0; (i < N) && validVehicleShape; ++i){
+        if((i0 < 0) && std::isfinite(input->data.parameter.geometry.verticesVehicleShape[i][0]) && std::isfinite(input->data.parameter.geometry.verticesVehicleShape[i][1])){
+            i0 = i;
+        }
+        else if((i0 >= 0) && (!std::isfinite(input->data.parameter.geometry.verticesVehicleShape[i][0]) || !std::isfinite(input->data.parameter.geometry.verticesVehicleShape[i][1]) || (i == (N - 1)))){
+            i += static_cast<int32_t>(i == (N - 1));
+            int32_t numVertices = i - i0;
+            if(numVertices < 3){
+                validVehicleShape = false;
                 break;
             }
-            for(uint8_t v = 0; v < input->data.parameter.geometry.numVerticesVehicleShape[p]; ++v){
-                std::vector<std::array<double,2>> vertices(input->data.parameter.geometry.verticesVehicleShape[p].begin(), input->data.parameter.geometry.verticesVehicleShape[p].begin() + input->data.parameter.geometry.numVerticesVehicleShape[p]);
-                pathPlannerParameter.geometry.vehicleShape.Add(vertices);
-            }
+            std::vector<std::array<double,2>> vertices(numVertices);
+            std::transform(input->data.parameter.geometry.verticesVehicleShape.begin() + i0, input->data.parameter.geometry.verticesVehicleShape.begin() + i, vertices.begin(), [](const std::array<float,2>& f){ return std::array<double,2>({static_cast<double>(f[0]), static_cast<double>(f[1])}); });
+            pathPlannerParameter.geometry.vehicleShape.Add(vertices);
+            numPolygonsAdded++;
+            i0 = -1;
         }
+    }
+    validVehicleShape &= (numPolygonsAdded > 0);
+    if(validVehicleShape){
         validVehicleShape &= pathPlannerParameter.geometry.vehicleShape.EnsureCorrectVertexOrder();
     }
     pathPlannerParameter.metric.weightPsi                            = input->data.parameter.metric.weightPsi;
@@ -76,16 +88,25 @@ bool MPSV_WrapperPathPlanner::AssignInput(SerializationPathPlannerInputUnion* in
     pathPlannerInput.samplingBoxCenterPose                           = input->data.samplingBoxCenterPose;
     pathPlannerInput.samplingBoxDimension                            = input->data.samplingBoxDimension;
     pathPlannerInput.staticObstacles.clear();
-    bool validStaticObstacles = (input->data.numStaticObstacles <= input->data.numVerticesPerStaticObstacle.size());
-    if(validStaticObstacles){
-        for(size_t p = 0; p < static_cast<size_t>(input->data.numStaticObstacles); ++p){
-            validStaticObstacles &= (input->data.numVerticesPerStaticObstacle[p] > 2) && (input->data.numVerticesPerStaticObstacle[p] <= input->data.verticesStaticObstacles[p].size());
-            if(!validStaticObstacles){
+    bool validStaticObstacles = true;
+    N = static_cast<int32_t>(input->data.verticesStaticObstacles.size());
+    i0 = -1; // index of previous finite vertex (-1 indicates no previous finite vertex)
+    for(int32_t i = 0; (i < N) && validStaticObstacles; ++i){
+        if((i0 < 0) && std::isfinite(input->data.verticesStaticObstacles[i][0]) && std::isfinite(input->data.verticesStaticObstacles[i][1])){
+            i0 = i;
+        }
+        else if((i0 >= 0) && (!std::isfinite(input->data.verticesStaticObstacles[i][0]) || !std::isfinite(input->data.verticesStaticObstacles[i][1]) || (i == (N - 1)))){
+            i += static_cast<int32_t>(i == (N - 1));
+            int32_t numVertices = i - i0;
+            if(numVertices < 3){
+                validStaticObstacles = false;
                 break;
             }
-            std::vector<std::array<double,2>> vertices(input->data.verticesStaticObstacles[p].begin(), input->data.verticesStaticObstacles[p].begin() + input->data.numVerticesPerStaticObstacle[p]);
+            std::vector<std::array<double,2>> vertices(numVertices);
+            std::transform(input->data.verticesStaticObstacles.begin() + i0, input->data.verticesStaticObstacles.begin() + i, vertices.begin(), [](const std::array<float,2>& f){ return std::array<double,2>({static_cast<double>(f[0]), static_cast<double>(f[1])}); });
             pathPlannerInput.staticObstacles.push_back(mpsv::geometry::StaticObstacle(vertices));
             validStaticObstacles &= pathPlannerInput.staticObstacles.back().EnsureCorrectVertexOrder();
+            i0 = -1;
         }
     }
 
