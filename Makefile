@@ -127,6 +127,9 @@ apps:
 	@echo ""
 	@echo "Building asynconlineplanning2"
 	@make --no-print-directory app=asynconlineplanning2
+	@echo ""
+	@echo "Building mpsv"
+	@make --no-print-directory app=mpsv
 
 clean:
 	@$(RM) $(DIRECTORY_BUILD)
