@@ -180,11 +180,12 @@ inline void Deserialize(mpsv::planner::AsyncOnlinePlannerInput& plannerInput, co
     int32_t N = static_cast<int32_t>(input->data.verticesStaticObstacles.size());
     int32_t i0 = -1; // index of previous finite vertex (-1 indicates no previous finite vertex)
     for(int32_t i = 0; (i < N) && validStaticObstacles; ++i){
-        if((i0 < 0) && std::isfinite(input->data.verticesStaticObstacles[i][0]) && std::isfinite(input->data.verticesStaticObstacles[i][1])){
+        bool finiteVertex = std::isfinite(input->data.verticesStaticObstacles[i][0]) && std::isfinite(input->data.verticesStaticObstacles[i][1]);
+        if((i0 < 0) && finiteVertex){
             i0 = i;
         }
-        else if((i0 >= 0) && (!std::isfinite(input->data.verticesStaticObstacles[i][0]) || !std::isfinite(input->data.verticesStaticObstacles[i][1]) || (i == (N - 1)))){
-            i += static_cast<int32_t>(i == (N - 1));
+        else if((i0 >= 0) && (!finiteVertex || (i == (N - 1)))){
+            i += static_cast<int32_t>((i == (N - 1)) && finiteVertex);
             int32_t numVertices = i - i0;
             if(numVertices < 3){
                 validStaticObstacles = false;
@@ -223,11 +224,12 @@ inline void Deserialize(mpsv::planner::AsyncOnlinePlannerParameterSet& plannerPa
     int32_t i0 = -1; // index of previous finite vertex (-1 indicates no previous finite vertex)
     int32_t numPolygonsAdded = 0;
     for(int32_t i = 0; (i < N) && validVehicleShape; ++i){
-        if((i0 < 0) && std::isfinite(parameter->data.sequentialPlanner.geometry.verticesVehicleShape[i][0]) && std::isfinite(parameter->data.sequentialPlanner.geometry.verticesVehicleShape[i][1])){
+        bool finiteVertex = std::isfinite(parameter->data.sequentialPlanner.geometry.verticesVehicleShape[i][0]) && std::isfinite(parameter->data.sequentialPlanner.geometry.verticesVehicleShape[i][1]);
+        if((i0 < 0) && finiteVertex){
             i0 = i;
         }
-        else if((i0 >= 0) && (!std::isfinite(parameter->data.sequentialPlanner.geometry.verticesVehicleShape[i][0]) || !std::isfinite(parameter->data.sequentialPlanner.geometry.verticesVehicleShape[i][1]) || (i == (N - 1)))){
-            i += static_cast<int32_t>(i == (N - 1));
+        else if((i0 >= 0) && (!finiteVertex || (i == (N - 1)))){
+            i += static_cast<int32_t>((i == (N - 1)) && finiteVertex);
             int32_t numVertices = i - i0;
             if(numVertices < 3){
                 validVehicleShape = false;
