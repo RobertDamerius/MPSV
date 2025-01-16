@@ -17,7 +17,7 @@ int main(int, char**){
     // apply a parameter set to the sequential planner
     mpsv::planner::SequentialPlannerParameterSet parameter = example::GetParameterSet();
     if(!planner.ApplyParameterSet(parameter)){
-        std::cerr << "ERROR: Could apply parameter set!\n";
+        std::cerr << "ERROR: Could not apply parameter set!\n";
         return 0;
     }
 
