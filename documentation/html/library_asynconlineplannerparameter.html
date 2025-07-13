@@ -10,7 +10,7 @@
 <body>
 <header>
 <div class="header_title">MPSV - Motion Planner for Surface Vehicles</div>
-<div class="header_version">Version 20241007</div>
+<div class="header_version">Version 20250713</div>
 </header>
 <button onclick="PageToTop()" id="buttonToTop"></button>
 <div class="wrapper">
@@ -57,7 +57,7 @@ A bus, which defines the parameter for the asynchronous online planner. The elem
 <tr><td style="font-family: Courier New;">sequentialPlanner.geometry.collisionCheckMaxAngleDeviation</td><td style="font-family: Courier New;">double</td><td>Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree.</td></tr>
 <tr><td style="font-family: Courier New;">sequentialPlanner.geometry.verticesVehicleShape</td><td style="font-family: Courier New;">double [2][100]</td><td>Vertex data of the vehicle shape. Multiple convex polygons are separated by non-finite vertices.</td></tr>
 <tr><td style="font-family: Courier New;">sequentialPlanner.geometry.skeletalPoints.numSkeletalPoints</td><td style="font-family: Courier New;">uint8</td><td>Number of skeletal points in range [1,10].</td></tr>
-<tr><td style="font-family: Courier New;">sequentialPlanner.geometry.skeletalPoints.skeletalPoints</td><td style="font-family: Courier New;">double [2][10]</td><td>Skeletal points (b-frame) at which the cost map is to be evaluated. All points must be inside the vehicle shape.</td></tr>
+<tr><td style="font-family: Courier New;">sequentialPlanner.geometry.skeletalPoints.skeletalPoints</td><td style="font-family: Courier New;">double [2][10]</td><td>Skeletal points (b-frame) at which the cost map is to be evaluated.</td></tr>
 <tr><td style="font-family: Courier New;">sequentialPlanner.costMap.modBreakpoints</td><td style="font-family: Courier New;">int32</td><td>A modulo factor (> 0) that indicates when to calculate the cost using the objective function and when to do bilinear interpolation.</td></tr>
 <tr><td style="font-family: Courier New;">sequentialPlanner.costMap.resolution</td><td style="font-family: Courier New;">double</td><td>Resolution (> 1e-3) of the grid map (dimension of one cell).</td></tr>
 <tr><td style="font-family: Courier New;">sequentialPlanner.costMap.distanceScale</td><td style="font-family: Courier New;">double</td><td>Scale factor (>= 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).</td></tr>

@@ -7,7 +7,7 @@
 #include <mpsv/planner/MotionPlannerState.hpp>
 #include <mpsv/planner/MotionPlannerInput.hpp>
 #include <mpsv/planner/MotionPlannerOutput.hpp>
-#include <mpsv/planner/MotionPlannerCostMap.hpp>
+#include <mpsv/planner/CostMap.hpp>
 #include <mpsv/geometry/OrientedBox.hpp>
 #include <mpsv/geometry/ConvexPolygon.hpp>
 #include <mpsv/geometry/StaticObstacle.hpp>
@@ -311,7 +311,7 @@ class MotionPlanner {
         mpsv::planner::MotionPlannerTree tree;                  // Tree for motion planning.
         mpsv::planner::MotionPlannerState state;                // State of the motion planner.
         mpsv::planner::MotionPlannerParameterSet parameter;     // Parameter set for the motion planner.
-        mpsv::planner::MotionPlannerCostMap costMap;            // The cost map to be used as additional cost term in the objective function.
+        mpsv::planner::CostMap costMap;                         // The cost map to be used as additional cost term in the objective function.
         mpsv::sampler::UniformBoxSamplerSE2 boxSampler;         // The box sampler to be used to draw random samples from SE(2).
         mpsv::sampler::PathSampler pathSampler;                 // The path sampler to be used to draw random samples from SE(2).
         uint32_t maxNumSamples;                                 // The maximum number of samples set by @ref Initialize.
@@ -479,7 +479,7 @@ class MotionPlanner {
             }
             double additionalBoxExtension = maxSekeletalPointDistance + 2.0 * parameter.costMap.resolution;
             samplingArea.Extend(additionalBoxExtension);
-            mpsv::planner::MotionPlannerCostMapArgument args(parameter.costMap.distanceScale, parameter.costMap.distanceDecay, staticObstacles);
+            mpsv::planner::CostMapArgument args(parameter.costMap.distanceScale, parameter.costMap.distanceDecay, staticObstacles);
             costMap.Build(samplingArea, parameter.costMap.resolution, parameter.costMap.modBreakpoints, args, maxNumCells);
         }
 

@@ -49,8 +49,8 @@
 #include <mpsv/planner/AsyncOnlinePlannerInput.hpp>
 #include <mpsv/planner/AsyncOnlinePlannerOutput.hpp>
 #include <mpsv/planner/AsyncOnlinePlannerParameterSet.hpp>
+#include <mpsv/planner/CostMap.hpp>
 #include <mpsv/planner/MotionPlanner.hpp>
-#include <mpsv/planner/MotionPlannerCostMap.hpp>
 #include <mpsv/planner/MotionPlannerInput.hpp>
 #include <mpsv/planner/MotionPlannerOutput.hpp>
 #include <mpsv/planner/MotionPlannerParameterSet.hpp>
@@ -58,7 +58,6 @@
 #include <mpsv/planner/MotionPlannerTree.hpp>
 #include <mpsv/planner/ParameterTypes.hpp>
 #include <mpsv/planner/PathPlanner.hpp>
-#include <mpsv/planner/PathPlannerCostMap.hpp>
 #include <mpsv/planner/PathPlannerInput.hpp>
 #include <mpsv/planner/PathPlannerOutput.hpp>
 #include <mpsv/planner/PathPlannerParameterSet.hpp>

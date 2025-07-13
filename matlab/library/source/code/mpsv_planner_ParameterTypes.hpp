@@ -203,7 +203,7 @@ class ParameterGeometry {
         double collisionCheckMaxPositionDeviation;          // Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 meters.
         double collisionCheckMaxAngleDeviation;             // Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree (0.0174532925199433 radians).
         mpsv::geometry::VehicleShape vehicleShape;          // Static shape of the vehicle to be used for path planning described by several convex polyons.
-        std::vector<std::array<double,2>> skeletalPoints;   // Skeletal points (b-frame) at which the cost map is to be evaluated. All points must be inside the vehicle shape.
+        std::vector<std::array<double,2>> skeletalPoints;   // Skeletal points (b-frame) at which the cost map is to be evaluated.
 
         /**
          * @brief Construct a new geometry parameter object and set default values.
@@ -233,7 +233,6 @@ class ParameterGeometry {
             validGeometry &= !skeletalPoints.empty();
             for(auto&& p : skeletalPoints){
                 validGeometry &= std::isfinite(p[0]) && std::isfinite(p[1]);
-                validGeometry &= vehicleShape.IsInside(p);
             }
             return validGeometry;
         }

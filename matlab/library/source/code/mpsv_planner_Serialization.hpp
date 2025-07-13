@@ -49,7 +49,7 @@ union SerializationAsyncOnlinePlannerParameterUnion {
                 double collisionCheckMaxAngleDeviation;                                    // [Geometry] Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree.
                 std::array<std::array<float,2>,100> verticesVehicleShape;                  // [Geometry] Vertex data of the vehicle shape. Multiple convex polygons are separated by non-finite vertices.
                 uint8_t numSkeletalPoints;                                                 // [Geometry] Number of skeletal points in range [1,10].
-                std::array<std::array<double,2>,10> skeletalPoints;                        // [Geometry] Skeletal points (b-frame) at which the cost map is to be evaluated. All points must be inside the vehicle shape.
+                std::array<std::array<double,2>,10> skeletalPoints;                        // [Geometry] Skeletal points (b-frame) at which the cost map is to be evaluated.
             } geometry;
             struct {
                 int32_t modBreakpoints;                                                    // [CostMap] A modulo factor (> 0) that indicates when to calculate the cost using the objective function and when to do bilinear interpolation.

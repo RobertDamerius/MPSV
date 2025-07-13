@@ -7,7 +7,7 @@
 #include <mpsv/planner/PathPlannerState.hpp>
 #include <mpsv/planner/PathPlannerInput.hpp>
 #include <mpsv/planner/PathPlannerOutput.hpp>
-#include <mpsv/planner/PathPlannerCostMap.hpp>
+#include <mpsv/planner/CostMap.hpp>
 #include <mpsv/geometry/OrientedBox.hpp>
 #include <mpsv/geometry/StaticObstacle.hpp>
 #include <mpsv/geometry/ConvexPolygon.hpp>
@@ -256,7 +256,7 @@ class PathPlanner {
         mpsv::planner::PathPlannerTree tree;                // Tree for path planning.
         mpsv::planner::PathPlannerState state;              // State of the path planner.
         mpsv::planner::PathPlannerParameterSet parameter;   // Parameter set for the path planner.
-        mpsv::planner::PathPlannerCostMap costMap;          // The cost map to be used as additional cost term in the objective function.
+        mpsv::planner::CostMap costMap;                     // The cost map to be used as additional cost term in the objective function.
         mpsv::sampler::UniformBoxSamplerSE2 boxSampler;     // The box sampler to be used to draw random samples from SE(2).
         uint32_t maxNumSamples;                             // The maximum number of samples set by @ref Initialize.
         std::vector<int16_t> idxNeighbors;                  // Reserved memory for nearest neighbors.
@@ -341,7 +341,7 @@ class PathPlanner {
             }
             double additionalBoxExtension = maxSekeletalPointDistance + 2.0 * parameter.costMap.resolution;
             samplingArea.Extend(additionalBoxExtension);
-            mpsv::planner::PathPlannerCostMapArgument args(parameter.costMap.distanceScale, parameter.costMap.distanceDecay, staticObstacles);
+            mpsv::planner::CostMapArgument args(parameter.costMap.distanceScale, parameter.costMap.distanceDecay, staticObstacles);
             costMap.Build(samplingArea, parameter.costMap.resolution, parameter.costMap.modBreakpoints, args, maxNumCells);
         }
 

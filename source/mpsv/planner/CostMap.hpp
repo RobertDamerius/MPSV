@@ -1,9 +1,9 @@
 #pragma once
 
 
-#include <mpsv_core_MPSVCommon.hpp>
-#include <mpsv_core_LookUpTable2DScalar.hpp>
-#include <mpsv_geometry_StaticObstacle.hpp>
+#include <mpsv/core/MPSVCommon.hpp>
+#include <mpsv/core/LookUpTable2DScalar.hpp>
+#include <mpsv/geometry/StaticObstacle.hpp>
 
 
 namespace mpsv {
@@ -13,26 +13,26 @@ namespace planner {
 
 
 /**
- * @brief This class represents the argument for building the costmap for the motion planner.
+ * @brief This class represents the argument for building the costmap.
  */
-class MotionPlannerCostMapArgument {
+class CostMapArgument {
     public:
         double weightScale;                                                   // Scale factor (>= 0) of distance cost scale*exp(-decay*d^2).
         double weightDecay;                                                   // Decay factor (> 0) of distance cost scale*exp(-decay*d^2).
         const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles;   // Reference to the container of static obstacles.
 
         /**
-         * @brief Construct a new argument object for the motion planner cost map.
+         * @brief Construct a new argument object for the cost map.
          * @param[in] weightScale Scale factor (>= 0) of distance cost scale*exp(-decay*d^2).
          * @param[in] weightDecay Decay factor (> 0) of distance cost scale*exp(-decay*d^2).
          * @param[in] staticObstacles Reference to the container of static obstacles.
          */
-        MotionPlannerCostMapArgument(double weightScale, double weightDecay, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept : weightScale(weightScale), weightDecay(weightDecay), staticObstacles(staticObstacles) {}
+        CostMapArgument(double weightScale, double weightDecay, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept : weightScale(weightScale), weightDecay(weightDecay), staticObstacles(staticObstacles) {}
 };
 
 
 /**
- * @brief This class represents a 2D costmap for motion planning. It is a 2D look-up table that contains precalculated cost values for each cell.
+ * @brief This class represents a 2D costmap. It is a 2D look-up table that contains precalculated cost values for each cell.
  * The cost function for a 2D position is given by
  * 
  *     c(x,y) = scale * exp(-decay * d(x,y)^2)
@@ -40,7 +40,7 @@ class MotionPlannerCostMapArgument {
  * where (scale >= 0) and (decay > 0) are tuning parameters and d(x,y)^2 denotes the minimum squared distance to the closest
  * edge of all polygons. The cost value inside polygons is not of importance as those configurations would collide anyway.
  */
-class MotionPlannerCostMap: public mpsv::core::LookUpTable2DScalar<MotionPlannerCostMapArgument> {
+class CostMap: public mpsv::core::LookUpTable2DScalar<mpsv::planner::CostMapArgument> {
     public:
         /**
          * @brief Calculate the cost along a given line between two poses. Two additional points are added along the longitudinal axis to consider the angle of the pose.
@@ -78,7 +78,7 @@ class MotionPlannerCostMap: public mpsv::core::LookUpTable2DScalar<MotionPlanner
          * @param[in] args User-defined arguments to be used for evaluating the table data.
          * @return Final table data value to be stored in the LUT.
          */
-        double CallbackTableData(double x, double y, const MotionPlannerCostMapArgument& args) noexcept {
+        double CallbackTableData(double x, double y, const CostMapArgument& args) noexcept {
             double result = 0.0;
             double squaredDistance = std::numeric_limits<double>::infinity();
             bool vertexInsidePolygon = false;

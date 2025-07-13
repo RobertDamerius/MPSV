@@ -24,7 +24,7 @@ union SerializationPathPlannerInputUnion {
                 double collisionCheckMaxAngleDeviation;                                    // Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree.
                 std::array<std::array<float,2>,100> verticesVehicleShape;                  // Vertex data of the vehicle shape. Multiple convex polygons are separated by non-finite vertices.
                 uint8_t numSkeletalPoints;                                                 // Number of skeletal points in range [1,10].
-                std::array<std::array<double,2>,10> skeletalPoints;                        // Skeletal points (b-frame) at which the cost map is to be evaluated. All points must be inside the vehicle shape.
+                std::array<std::array<double,2>,10> skeletalPoints;                        // Skeletal points (b-frame) at which the cost map is to be evaluated.
             } geometry;
             struct {
                 double weightPsi;                                                          // Weighting for yaw angle in distance metric function.
