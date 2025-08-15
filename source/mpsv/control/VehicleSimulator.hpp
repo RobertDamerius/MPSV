@@ -296,7 +296,7 @@ class VehicleSimulator {
                 ur = xu[3] * xu[5];
                 uv = xu[3] * xu[4];
                 uu = xu[3] * xu[3];
-                vv = xu[2] * xu[4];
+                vv = xu[4] * xu[4];
                 rr = xu[5] * xu[5];
                 uuu = uu * xu[3];
                 vvv = vv * xu[4];
