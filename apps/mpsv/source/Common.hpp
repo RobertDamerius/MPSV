@@ -7,6 +7,8 @@
 /* Default C/C++ headers */
 #include <iostream>
 #include <chrono>
+#include <array>
+#include <vector>
 #include <string>
 #include <filesystem>
 #include <fstream>
