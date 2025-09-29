@@ -24,7 +24,8 @@ class ExamplePlanner: protected mpsv::planner::AsyncOnlinePlanner {
             constexpr int32_t threadPriority = 20;
             int32_t ompNumThreads = -1; // ignore
             int32_t ompDynamic = -1; // ignore
-            return Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, threadPriority, ompNumThreads, ompDynamic);
+            std::vector<int32_t> cpuCoreIDs; // ignore
+            return Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
         }
 
         /**

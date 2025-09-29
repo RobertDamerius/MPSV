@@ -44,7 +44,7 @@ function BuildDrivers(generateSimulinkBlocks)
     def.HostLibFiles            = {};
     def.Options.language        = 'C++';
     def.Options.useTlcWithAccel = false;
-    def.SampleTime = 'parameterized';
+    def.SampleTime              = 'inherited';
     defs = [defs; def];
     
     
@@ -53,7 +53,7 @@ function BuildDrivers(generateSimulinkBlocks)
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def = legacy_code('initialize');
     def.SFunctionName           = 'SFunctionMPSVAsynchronousOnlinePlanner';
-    def.StartFcnSpec            = 'void MPSV_AsynchronousOnlinePlannerInitialize(void** work1, int16 p1, uint32 p2, int16 p3, uint32 p4, int32 p5, int32 p6, int32 p7)';
+    def.StartFcnSpec            = 'void MPSV_AsynchronousOnlinePlannerInitialize(void** work1, int16 p1, uint32 p2, int16 p3, uint32 p4, int32 p5, int32 p6, int32 p7, int32 p8[], uint32 p9)';
     def.TerminateFcnSpec        = 'void MPSV_AsynchronousOnlinePlannerTerminate(void* work1)';
     def.OutputFcnSpec           = 'void MPSV_AsynchronousOnlinePlannerStep(void* work1, uint8 y1[52905], uint8 u1[64193], uint8 u2[1998])';
     def.HeaderFiles             = {'MPSV_DriverAsynchronousOnlinePlanner.hpp'};
@@ -64,7 +64,7 @@ function BuildDrivers(generateSimulinkBlocks)
     def.HostLibFiles            = {};
     def.Options.language        = 'C++';
     def.Options.useTlcWithAccel = false;
-    def.SampleTime = 'parameterized';
+    def.SampleTime              = 'inherited';
     defs = [defs; def];
     
     

@@ -19,6 +19,7 @@
         "threadPriorityUpdater": 99,
         "ompNumThreads": -1,
         "ompDynamic": -1,
+        "cpuCoreIDs": [],
         "updatePeriod": 1.0
     }
 }

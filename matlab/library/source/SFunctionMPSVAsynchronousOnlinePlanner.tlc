@@ -4,20 +4,19 @@
 %%   Simulink Coder TLC Code Generation file for SFunctionMPSVAsynchronousOnlinePlanner
 %% 
 %% Simulink version      : 25.1 (R2025a) 21-Nov-2024
-%% TLC file generated on : 15-Aug-2025 13:06:33
+%% TLC file generated on : 29-Sep-2025 15:26:31
 
 /%
      %%%-MATLAB_Construction_Commands_Start
      def = legacy_code('initialize');
      def.SFunctionName = 'SFunctionMPSVAsynchronousOnlinePlanner';
      def.OutputFcnSpec = 'void MPSV_AsynchronousOnlinePlannerStep(void* work1, uint8 y1[52905], uint8 u1[64193], uint8 u2[1998])';
-     def.StartFcnSpec = 'void MPSV_AsynchronousOnlinePlannerInitialize(void** work1, int16 p1, uint32 p2, int16 p3, uint32 p4, int32 p5, int32 p6, int32 p7)';
+     def.StartFcnSpec = 'void MPSV_AsynchronousOnlinePlannerInitialize(void** work1, int16 p1, uint32 p2, int16 p3, uint32 p4, int32 p5, int32 p6, int32 p7, int32 p8[], uint32 p9)';
      def.TerminateFcnSpec = 'void MPSV_AsynchronousOnlinePlannerTerminate(void* work1)';
      def.HeaderFiles = {'MPSV_DriverAsynchronousOnlinePlanner.hpp'};
      def.SourceFiles = {'MPSV_DriverAsynchronousOnlinePlanner.cpp', 'MPSV_WrapperAsynchronousOnlinePlanner.cpp'};
      def.IncPaths = {'code'};
      def.SrcPaths = {'code'};
-     def.SampleTime = 'parameterized';
      def.Options.useTlcWithAccel = false;
      def.Options.language = 'C++';
      legacy_code('sfcn_tlc_generate', def);
@@ -111,7 +110,7 @@
         %<LibEmitPlatformTypeIncludes()>
         #endif
         
-        extern void SFunctionMPSVAsynchronousOnlinePlanner_wrapper_Start_%<sfunInstanceName>( void** work1, const %<int16Type> p1, const %<uint32Type> p2, const %<int16Type> p3, const %<uint32Type> p4, const %<int32Type> p5, const %<int32Type> p6, const %<int32Type> p7);
+        extern void SFunctionMPSVAsynchronousOnlinePlanner_wrapper_Start_%<sfunInstanceName>( void** work1, const %<int16Type> p1, const %<uint32Type> p2, const %<int16Type> p3, const %<uint32Type> p4, const %<int32Type> p5, const %<int32Type> p6, const %<int32Type> p7, const %<int32Type>* p8, const %<uint32Type> p9);
         extern void SFunctionMPSVAsynchronousOnlinePlanner_wrapper_Output_%<sfunInstanceName>( void* work1,  %<uint8Type>* y1, const %<uint8Type>* u1, const %<uint8Type>* u2);
         extern void SFunctionMPSVAsynchronousOnlinePlanner_wrapper_Terminate_%<sfunInstanceName>( void* work1);
         
@@ -135,8 +134,8 @@
         %if IsModelReferenceSimTarget() && !::GenCPP
         extern "C" {
         %endif
-        void SFunctionMPSVAsynchronousOnlinePlanner_wrapper_Start_%<sfunInstanceName>( void** work1, const %<int16Type> p1, const %<uint32Type> p2, const %<int16Type> p3, const %<uint32Type> p4, const %<int32Type> p5, const %<int32Type> p6, const %<int32Type> p7) {
-            MPSV_AsynchronousOnlinePlannerInitialize(work1, (%<int16Type>)(p1), (%<uint32Type>)(p2), (%<int16Type>)(p3), (%<uint32Type>)(p4), (%<int32Type>)(p5), (%<int32Type>)(p6), (%<int32Type>)(p7));
+        void SFunctionMPSVAsynchronousOnlinePlanner_wrapper_Start_%<sfunInstanceName>( void** work1, const %<int16Type> p1, const %<uint32Type> p2, const %<int16Type> p3, const %<uint32Type> p4, const %<int32Type> p5, const %<int32Type> p6, const %<int32Type> p7, const %<int32Type>* p8, const %<uint32Type> p9) {
+            MPSV_AsynchronousOnlinePlannerInitialize(work1, (%<int16Type>)(p1), (%<uint32Type>)(p2), (%<int16Type>)(p3), (%<uint32Type>)(p4), (%<int32Type>)(p5), (%<int32Type>)(p6), (%<int32Type>)(p7), (%<int32Type>*)(p8), (%<uint32Type>)(p9));
         }
         %if IsModelReferenceSimTarget() && !::GenCPP
         }
@@ -177,6 +176,7 @@
 
 %% Function: Start ========================================================
 %function Start (block, system) Output
+    %assign int32Type = LibGetDataTypeNameFromId(::CompiledModel.tSS_INT32)
     %if IsModelReferenceSimTarget() || CodeFormat=="S-Function" || ::isRAccel
         %assign work1_ptr = "&"+LibBlockPWork("", "", "", 0)
         %assign p1_val = LibBlockParameter(p1, "", "", 0)
@@ -186,11 +186,13 @@
         %assign p5_val = LibBlockParameter(p5, "", "", 0)
         %assign p6_val = LibBlockParameter(p6, "", "", 0)
         %assign p7_val = LibBlockParameter(p7, "", "", 0)
+        %assign p8_ptr = LibBlockParameterBaseAddr(p8)
+        %assign p9_val = LibBlockParameter(p9, "", "", 0)
         %% 
         /* %<Type> (%<ParamSettings.FunctionName>): %<Name> */
         {
             %assign sfunInstanceName = FEVAL("matlab.lang.makeValidName", LibBlockIdentifier(block))
-            SFunctionMPSVAsynchronousOnlinePlanner_wrapper_Start_%<sfunInstanceName>(%<work1_ptr>, %<p1_val>, %<p2_val>, %<p3_val>, %<p4_val>, %<p5_val>, %<p6_val>, %<p7_val>);
+            SFunctionMPSVAsynchronousOnlinePlanner_wrapper_Start_%<sfunInstanceName>(%<work1_ptr>, %<p1_val>, %<p2_val>, %<p3_val>, %<p4_val>, %<p5_val>, %<p6_val>, %<p7_val>, %<p8_ptr>, %<p9_val>);
         
         }
     %else
@@ -202,8 +204,10 @@
         %assign p5_val = LibBlockParameter(p5, "", "", 0)
         %assign p6_val = LibBlockParameter(p6, "", "", 0)
         %assign p7_val = LibBlockParameter(p7, "", "", 0)
+        %assign p8_ptr = LibBlockParameterBaseAddr(p8)
+        %assign p9_val = LibBlockParameter(p9, "", "", 0)
         %% 
-        MPSV_AsynchronousOnlinePlannerInitialize(%<work1_ptr>, %<p1_val>, %<p2_val>, %<p3_val>, %<p4_val>, %<p5_val>, %<p6_val>, %<p7_val>);
+        MPSV_AsynchronousOnlinePlannerInitialize(%<work1_ptr>, %<p1_val>, %<p2_val>, %<p3_val>, %<p4_val>, %<p5_val>, %<p6_val>, %<p7_val>, (%<int32Type>*)%<p8_ptr>, %<p9_val>);
     %endif
 %endfunction
 

@@ -30,5 +30,4 @@ The following table shows all block parameters.
     <tr><th>Parameter Name</th><th>Description</th></tr>
     <tr><td style="font-family: Courier New;">maxNumNodes</td><td>Maximum number of nodes to be used in the tree.</td></tr>
     <tr><td style="font-family: Courier New;">maxNumSamples</td><td>Maximum number of random samples to be generated in advance.</td></tr>
-    <tr><td style="font-family: Courier New;">SampleTime</td><td>Sampletime.</td></tr>
 </table>

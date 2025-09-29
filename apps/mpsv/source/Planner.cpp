@@ -3,7 +3,7 @@
 
 
 bool Planner::Start(const PlannerConfiguration plannerConf){
-    if(!Initialize(plannerConf.pathMaxNumNodes, plannerConf.pathMaxNumSamples, plannerConf.motionMaxNumNodes, plannerConf.motionMaxNumSamples, plannerConf.threadPriorityPlanner, plannerConf.ompNumThreads, plannerConf.ompDynamic)){
+    if(!Initialize(plannerConf.pathMaxNumNodes, plannerConf.pathMaxNumSamples, plannerConf.motionMaxNumNodes, plannerConf.motionMaxNumSamples, plannerConf.threadPriorityPlanner, plannerConf.ompNumThreads, plannerConf.ompDynamic, plannerConf.cpuCoreIDs)){
         return false;
     }
     if(!periodicTimer.Start(plannerConf.updatePeriod)){

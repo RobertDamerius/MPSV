@@ -4,7 +4,7 @@
 %%   Simulink Coder TLC Code Generation file for SFunctionMPSVPathPlanner
 %% 
 %% Simulink version      : 25.1 (R2025a) 21-Nov-2024
-%% TLC file generated on : 15-Aug-2025 13:06:33
+%% TLC file generated on : 29-Sep-2025 15:26:30
 
 /%
      %%%-MATLAB_Construction_Commands_Start
@@ -17,7 +17,6 @@
      def.SourceFiles = {'MPSV_DriverPathPlanner.cpp', 'MPSV_WrapperPathPlanner.cpp'};
      def.IncPaths = {'code'};
      def.SrcPaths = {'code'};
-     def.SampleTime = 'parameterized';
      def.Options.useTlcWithAccel = false;
      def.Options.language = 'C++';
      legacy_code('sfcn_tlc_generate', def);

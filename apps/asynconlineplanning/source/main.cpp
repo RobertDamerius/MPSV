@@ -12,7 +12,8 @@ int main(int, char**){
     constexpr int32_t threadPriority = 20;
     int32_t ompNumThreads = -1; // ignore
     int32_t ompDynamic = -1; // ignore
-    if(!planner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, threadPriority, ompNumThreads, ompDynamic)){
+    std::vector<int32_t> cpuCoreIDs; // ignore
+    if(!planner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs)){
         std::cerr << "ERROR: Could not initialize planner!\n";
         return 0;
     }
