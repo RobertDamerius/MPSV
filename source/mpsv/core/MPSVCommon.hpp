@@ -28,11 +28,12 @@
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MPSV Globals
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-constexpr uint32_t MPSV_VERSION = 20241007;   // Version number of the MPSV library.
-
-
 /* Default namespace for MPSV */
 namespace mpsv {
+
+
+// MPSV version number
+constexpr const char* version = "1.0.0";
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

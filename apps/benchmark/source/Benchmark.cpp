@@ -497,7 +497,7 @@ void Benchmark::PrintSystemInfo(void){
     std::time_t systemTime = std::chrono::system_clock::to_time_t(timePoint);
     std::tm* gmTime = std::gmtime(&systemTime);
     printf("Benchmark Version:        %s\n", strVersion.c_str());
-    printf("MPSV API Version:         %u\n", MPSV_VERSION);
+    printf("MPSV API Version:         %s\n", mpsv::version);
     printf("Compiler Version:         %s\n", strCompilerVersion.c_str());
     printf("Built (local):            %s\n", strBuilt.c_str());
     printf("Current time (UTC):       %04u-%02u-%02u %02u:%02u:%02u\n", 1900 + gmTime->tm_year, 1 + gmTime->tm_mon, gmTime->tm_mday, gmTime->tm_hour, gmTime->tm_min, gmTime->tm_sec);

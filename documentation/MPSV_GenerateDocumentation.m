@@ -28,7 +28,7 @@ layoutNavBar = [
 ];
 
 % Generate HTML documentation
-SimpleDoc.Make(title, inputDirectory, outputDirectory, layoutNavBar, false);
+SimpleDoc.Make(title, inputDirectory, outputDirectory, layoutNavBar, false, ['Version ', char(strjoin(string(mpsv.GetVersion()),'.'))]);
 
 % View documentation in MATLAB browser
 open(fullfile(outputDirectory,'index.html'));
