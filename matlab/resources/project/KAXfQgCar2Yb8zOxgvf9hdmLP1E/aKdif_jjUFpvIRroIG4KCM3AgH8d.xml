@@ -1,2 +1,2 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<Info File="library/MPSV_OpenDocumentation.m" GroupUUID="" Icon="" Name="Documentation" Type="Basic" Visible="1"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<Info File="packages/+mpsv/OpenDocumentation.m" GroupUUID="default" Icon="" Name="Documentation" Type="Basic" Visible="1"/>
