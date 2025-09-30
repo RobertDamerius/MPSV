@@ -35,13 +35,13 @@ class NetworkManager {
         void Send(const mpsv::planner::AsyncOnlinePlannerOutput& plannerOutput);
 
     private:
-        std::atomic<bool> started;                                             // True if the network manager has already been started, false otherwise.
-        std::thread networkReceiveThread;                                      // Thread object for the internal network manager receive thread.
-        std::atomic<bool> terminate;                                           // True if the thread should be terminated, false otherwise.
-        UnicastUDPSocket udpSocket;                                            // The unicast UDP socket.
-        mpsv::core::Event udpRetryTimer;                                       // A timer to wait before retrying to initialize a UDP socket in case of errors.
-        mpsv::planner::SerializationAsyncOnlinePlannerOutputUnion msgBuffer;   // Message buffer for the output message.
-        IPAddress destination;                                                 // Destination to which to send output messages.
+        std::atomic<bool> started;                       // True if the network manager has already been started, false otherwise.
+        std::thread networkReceiveThread;                // Thread object for the internal network manager receive thread.
+        std::atomic<bool> terminate;                     // True if the thread should be terminated, false otherwise.
+        UnicastUDPSocket udpSocket;                      // The unicast UDP socket.
+        mpsv::core::Event udpRetryTimer;                 // A timer to wait before retrying to initialize a UDP socket in case of errors.
+        mpsv::planner::serialization_output msgBuffer;   // Message buffer for the output message.
+        IPAddress destination;                           // Destination to which to send output messages.
 
         /**
          * @brief The receive thread function of the network manager.

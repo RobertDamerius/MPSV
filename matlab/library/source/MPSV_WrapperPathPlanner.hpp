@@ -7,68 +7,58 @@
 
 
 /**
- * @brief This union defines the input data for the path planner wrapper class.
+ * @brief This structure defines the input data for the path planner wrapper class.
  */
-#pragma pack(push, 1)
-union SerializationPathPlannerInputUnion {
-    struct SerializationPathPlannerInputStruct {
+struct serialization_path_planner_input {
+    struct {
         struct {
-            struct {
-                int32_t modBreakpoints;                                                    // A modulo factor (> 0) that indicates when to calculate the cost using the cost function and when to do linear interpolation.
-                double resolution;                                                         // Resolution (> 1e-3) of the grid map (dimension of one cell).
-                double distanceScale;                                                      // Scale factor (>= 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
-                double distanceDecay;                                                      // Decay factor (> 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
-            } costMap;
-            struct {
-                double collisionCheckMaxPositionDeviation;                                 // Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 meters.
-                double collisionCheckMaxAngleDeviation;                                    // Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree.
-                std::array<std::array<float,2>,100> verticesVehicleShape;                  // Vertex data of the vehicle shape. Multiple convex polygons are separated by non-finite vertices.
-                uint8_t numSkeletalPoints;                                                 // Number of skeletal points in range [1,10].
-                std::array<std::array<double,2>,10> skeletalPoints;                        // Skeletal points (b-frame) at which the cost map is to be evaluated.
-            } geometry;
-            struct {
-                double weightPsi;                                                          // Weighting for yaw angle in distance metric function.
-                double weightSway;                                                         // Weighting for sway movement (heading angle with respect to perpenticular direction of movement).
-                double weightReverseScale;                                                 // Weighting for sway and reverse movement (heading angle with respect to line angle).
-                double weightReverseDecay;                                                 // Decay factor (> 0) for the weighting function that weights sway and reverse movement.
-            } metric;
-            struct {
-                uint32_t periodGoalSampling;                                               // Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
-                double maxComputationTime;                                                 // The maximum computation time in seconds allowed before leaving the iteration loop.
-            } pathPlanner;
-        } parameter;
-        std::array<double,3> initialPose;                                                  // Initial pose given as {x,y,psi}.
-        std::array<double,3> finalPose;                                                    // Final pose given as {x,y,psi}.
-        std::array<double,2> originOldToNew;                                               // Translation between two consecutive problems. If the origin of the previous problem is different to the origin of the new problem, then the tree must be transformed during a warm start. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).
-        std::array<double,3> samplingBoxCenterPose;                                        // Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
-        std::array<double,2> samplingBoxDimension;                                         // Dimension of the sampling box along major and minor axes of the box.
-        std::array<std::array<float,2>,8000> verticesStaticObstacles;                      // Vertex data of the static obstacles. Multiple convex polygons are separated by non-finite vertices.
-    } data;
-    uint8_t bytes[sizeof(SerializationPathPlannerInputUnion::SerializationPathPlannerInputStruct)];
-};
-#pragma pack(pop)
+            int32_t modBreakpoints;                                                    // A modulo factor (> 0) that indicates when to calculate the cost using the cost function and when to do linear interpolation.
+            double resolution;                                                         // Resolution (> 1e-3) of the grid map (dimension of one cell).
+            double distanceScale;                                                      // Scale factor (>= 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
+            double distanceDecay;                                                      // Decay factor (> 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
+        } costMap;
+        struct {
+            double collisionCheckMaxPositionDeviation;                                 // Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 meters.
+            double collisionCheckMaxAngleDeviation;                                    // Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree.
+            std::array<std::array<float,2>,100> verticesVehicleShape;                  // Vertex data of the vehicle shape. Multiple convex polygons are separated by non-finite vertices.
+            uint8_t numSkeletalPoints;                                                 // Number of skeletal points in range [1,10].
+            std::array<std::array<double,2>,10> skeletalPoints;                        // Skeletal points (b-frame) at which the cost map is to be evaluated.
+        } geometry;
+        struct {
+            double weightPsi;                                                          // Weighting for yaw angle in distance metric function.
+            double weightSway;                                                         // Weighting for sway movement (heading angle with respect to perpenticular direction of movement).
+            double weightReverseScale;                                                 // Weighting for sway and reverse movement (heading angle with respect to line angle).
+            double weightReverseDecay;                                                 // Decay factor (> 0) for the weighting function that weights sway and reverse movement.
+        } metric;
+        struct {
+            uint32_t periodGoalSampling;                                               // Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
+            double maxComputationTime;                                                 // The maximum computation time in seconds allowed before leaving the iteration loop.
+        } pathPlanner;
+    } parameter;
+    std::array<double,3> initialPose;                                                  // Initial pose given as {x,y,psi}.
+    std::array<double,3> finalPose;                                                    // Final pose given as {x,y,psi}.
+    std::array<double,2> originOldToNew;                                               // Translation between two consecutive problems. If the origin of the previous problem is different to the origin of the new problem, then the tree must be transformed during a warm start. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).
+    std::array<double,3> samplingBoxCenterPose;                                        // Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
+    std::array<double,2> samplingBoxDimension;                                         // Dimension of the sampling box along major and minor axes of the box.
+    std::array<std::array<float,2>,8000> verticesStaticObstacles;                      // Vertex data of the static obstacles. Multiple convex polygons are separated by non-finite vertices.
+} __attribute__((packed));
 
 
 /**
- * @brief This union defines the output data for the path planner wrapper class.
+ * @brief This structure defines the output data for the path planner wrapper class.
  */
-#pragma pack(push, 1)
-union SerializationPathPlannerOutputUnion {
-    struct SerializationPathPlannerOutputStruct {
-        uint8_t goalReached:1;                        // True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-        uint8_t isFeasible:1;                         // True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles or if the initial or final pose is not inside the sampling area.
-        uint8_t outOfNodes:1;                         // True if all nodes are within the solution path and no new nodes can be sampled and added to the tree.
-        uint8_t invalidInput:1;                       // True if input data is invalid, false otherwise.
-        uint8_t reserved:4;                           // Reserved bits, unused, set to zero.
-        uint32_t numberOfPerformedIterations;         // The total number of iterations that have been performed since the latest prepare step.
-        double timestampOfComputationUTC;             // Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
-        double cost;                                  // The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
-        uint16_t numPoses;                            // The total number of poses that represent the actual path.
-        std::array<std::array<double,3>,1000> path;   // Resulting path, where each pose is given as {x,y,psi}. The first element always corresponds to the initial pose. If the goal is reached, then the final pose corresponds to the desired final pose of the path planning problem.
-    } data;
-    uint8_t bytes[sizeof(SerializationPathPlannerOutputUnion::SerializationPathPlannerOutputStruct)];
-};
-#pragma pack(pop)
+struct serialization_path_planner_output {
+    uint8_t goalReached:1;                        // True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
+    uint8_t isFeasible:1;                         // True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles or if the initial or final pose is not inside the sampling area.
+    uint8_t outOfNodes:1;                         // True if all nodes are within the solution path and no new nodes can be sampled and added to the tree.
+    uint8_t invalidInput:1;                       // True if input data is invalid, false otherwise.
+    uint8_t reserved:4;                           // Reserved bits, unused, set to zero.
+    uint32_t numberOfPerformedIterations;         // The total number of iterations that have been performed since the latest prepare step.
+    double timestampOfComputationUTC;             // Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
+    double cost;                                  // The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
+    uint16_t numPoses;                            // The total number of poses that represent the actual path.
+    std::array<std::array<double,3>,1000> path;   // Resulting path, where each pose is given as {x,y,psi}. The first element always corresponds to the initial pose. If the goal is reached, then the final pose corresponds to the desired final pose of the path planning problem.
+} __attribute__((packed));
 
 
 /**
@@ -104,7 +94,7 @@ class MPSV_WrapperPathPlanner {
          * @param[out] output Output where to store the results of the solved path planning problem.
          * @param[in] input Input data defining the path planning problem to be solved.
          */
-        void Step(SerializationPathPlannerOutputUnion* output, SerializationPathPlannerInputUnion* input);
+        void Step(serialization_path_planner_output* output, serialization_path_planner_input* input);
 
     protected:
         bool initializationOK;                                         // True if initialization was OK, false otherwise.
@@ -119,19 +109,19 @@ class MPSV_WrapperPathPlanner {
          * @param[in] input Input data defining the path planning problem to be solved.
          * @return True if the input data is valid, false otherwise.
          */
-        bool AssignInput(SerializationPathPlannerInputUnion* input);
+        bool AssignInput(serialization_path_planner_input* input);
 
         /**
          * @brief Assign the output data from the internal path planner data.
          * @param[out] output Output where to store the results of the solved path planning problem.
          */
-        void AssignOutput(SerializationPathPlannerOutputUnion* output);
+        void AssignOutput(serialization_path_planner_output* output);
 
         /**
          * @brief Clear the output data by setting default values.
          * @param[inout] output Output where to store the results of the solved path planning problem.
          * @param[in] validInput True if the input data is valid, false otherwise.
          */
-        void ClearOutput(SerializationPathPlannerOutputUnion* output, bool validInput);
+        void ClearOutput(serialization_path_planner_output* output, bool validInput);
 };
 

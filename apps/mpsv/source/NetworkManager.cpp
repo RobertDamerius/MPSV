@@ -38,7 +38,7 @@ void NetworkManager::Stop(void){
 void NetworkManager::Send(const mpsv::planner::AsyncOnlinePlannerOutput& plannerOutput){
     mpsv::planner::Serialize(&msgBuffer, plannerOutput);
     udpSocket.ResetLastError();
-    (void) udpSocket.SendTo(destination, msgBuffer.bytes, sizeof(mpsv::planner::SerializationAsyncOnlinePlannerOutputUnion));
+    (void) udpSocket.SendTo(destination, reinterpret_cast<uint8_t*>(&msgBuffer), sizeof(mpsv::planner::serialization_output));
 }
 
 void NetworkManager::NetworkReceiveThread(const NetworkConfiguration networkConf){
@@ -86,14 +86,14 @@ void NetworkManager::NetworkReceiveThread(const NetworkConfiguration networkConf
 }
 
 void NetworkManager::ProcessReceivedMessage(const uint8_t* bytes, int32_t length){
-    if(static_cast<int32_t>(sizeof(mpsv::planner::SerializationAsyncOnlinePlannerInputUnion)) == length){
-        const mpsv::planner::SerializationAsyncOnlinePlannerInputUnion* messageData = reinterpret_cast<const mpsv::planner::SerializationAsyncOnlinePlannerInputUnion*>(bytes);
+    if(static_cast<int32_t>(sizeof(mpsv::planner::serialization_input)) == length){
+        const mpsv::planner::serialization_input* messageData = reinterpret_cast<const mpsv::planner::serialization_input*>(bytes);
         mpsv::planner::AsyncOnlinePlannerInput plannerInput;
         mpsv::planner::Deserialize(plannerInput, messageData);
         mainApplication.planner.SetInput(plannerInput);
     }
-    else if(static_cast<int32_t>(sizeof(mpsv::planner::SerializationAsyncOnlinePlannerParameterUnion)) == length){
-        const mpsv::planner::SerializationAsyncOnlinePlannerParameterUnion* messageData = reinterpret_cast<const mpsv::planner::SerializationAsyncOnlinePlannerParameterUnion*>(bytes);
+    else if(static_cast<int32_t>(sizeof(mpsv::planner::serialization_parameter)) == length){
+        const mpsv::planner::serialization_parameter* messageData = reinterpret_cast<const mpsv::planner::serialization_parameter*>(bytes);
         mpsv::planner::AsyncOnlinePlannerParameterSet plannerParameter;
         mpsv::planner::Deserialize(plannerParameter, messageData);
         mainApplication.planner.SetParameter(plannerParameter);

@@ -10,7 +10,16 @@ function BuildDrivers(generateSimulinkBlocks)
     arguments
         generateSimulinkBlocks (1,1) logical = false
     end
-    fprintf('\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n B U I L D   S I M U L I N K - D R I V E R S\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n');
+
+    % print banner
+    fprintf('\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n');
+    fprintf('  __  __ ___  _____   __\n');
+    fprintf(' |  \\/  | _ \\/ __\\ \\ / /\n');
+    fprintf(' | |\\/| |  _/\\__ \\\\ V / \n');
+    fprintf(' |_|  |_|_|  |___/ \\_/  \n\n');
+    fprintf(' Motion Planner for Surface Vehicles\n');
+    fprintf(' %s\n', char(strjoin(string(mpsv.GetVersion()),'.')));
+    fprintf('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n');
 
     % get absolute paths
     thisDirectory = extractBefore(mfilename('fullpath'),strlength(mfilename('fullpath')) - strlength(mfilename) + 1);
@@ -22,7 +31,9 @@ function BuildDrivers(generateSimulinkBlocks)
     cd(folderSimulinkLibrarySource);
 
     % update library-internal code directory (contains a copy of the MPSV header-only library with modified filenames and include paths because code generation does not work with code subfolders)
+    fprintf('update code directory: ');
     UpdateCodeDirectory(folderSimulinkLibrarySource, folderMPSVSource);
+    fprintf('done\n');
 
     % generate specifications for all drivers
     defs = [];
@@ -31,6 +42,7 @@ function BuildDrivers(generateSimulinkBlocks)
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     % Driver: MPSV Path Planner
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    fprintf('define driver: MPSVPathPlanner\n');
     def = legacy_code('initialize');
     def.SFunctionName           = 'SFunctionMPSVPathPlanner';
     def.StartFcnSpec            = 'void MPSV_PathPlannerInitialize(void** work1, int16 p1, uint32 p2)';
@@ -51,6 +63,7 @@ function BuildDrivers(generateSimulinkBlocks)
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     % Driver: MPSV Asynchronous Online Planner
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    fprintf('define driver: MPSVAsynchronousOnlinePlanner\n');
     def = legacy_code('initialize');
     def.SFunctionName           = 'SFunctionMPSVAsynchronousOnlinePlanner';
     def.StartFcnSpec            = 'void MPSV_AsynchronousOnlinePlannerInitialize(void** work1, int16 p1, uint32 p2, int16 p3, uint32 p4, int32 p5, int32 p6, int32 p7, int32 p8[], uint32 p9)';
@@ -72,28 +85,41 @@ function BuildDrivers(generateSimulinkBlocks)
     % Compile and generate all required files
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     % generate SFunctions
+    fprintf('generate S-functions: ');
     legacy_code('sfcn_cmex_generate', defs);
+    fprintf('done\n');
 
     % compile
-    cflags    = '-Wall -Wextra -fopenmp -mtune=native';
-    cxxflags  = '-Wall -Wextra -fopenmp -mtune=native -std=c++20';
-    ldflags   = '-Wall -Wextra -fopenmp -mtune=native -std=c++20';
+    cflags    = '-fopenmp -mtune=native';
+    cxxflags  = '-fopenmp -mtune=native -std=c++20';
+    ldflags   = '-fopenmp -mtune=native -std=c++20';
     libraries = {'-L/usr/lib','-L/usr/local/lib','-lstdc++','-lpthread','-lgomp'};
     legacy_code('compile', defs, [{['CFLAGS=$CFLAGS ',cflags],['CXXFLAGS=$CXXFLAGS ',cxxflags],['LINKFLAGS=$LINKFLAGS ',ldflags]},libraries]);
 
     % generate TLC
+    fprintf('\ngenerate TLC: ');
     legacy_code('sfcn_tlc_generate', defs);
+    fprintf('done\n');
 
     % generate RTWMAKECFG
+    fprintf('generate rtwmakecfg: ');
     legacy_code('rtwmakecfg_generate', defs);
+    fprintf('done\n');
 
     % generate Simulink blocks
     if(generateSimulinkBlocks)
+        fprintf('generate simulink blocks: ');
         legacy_code('slblock_generate', defs);
+        fprintf('done\n');
     end
 
     % navigate back to current path
     cd(currentWorkingDirectory);
+
+    % print footer
+    fprintf('\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n');
+    fprintf(' MPSV DRIVER BUILD COMPLETED\n');
+    fprintf('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n');
 end
 
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

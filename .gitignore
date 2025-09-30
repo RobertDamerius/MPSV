@@ -1,4 +1,6 @@
 build
+matlab/library/source/SFunction*
+matlab/library/source/rtwmakecfg.m
 apps/benchmark/benchmark
 apps/benchmark/benchmark.exe
 apps/pathplanning/pathplanning

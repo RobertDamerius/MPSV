@@ -45,7 +45,7 @@ bool Configuration::ReadFromFile(std::string filename){
     try{ planner.threadPriorityUpdater    = jsonData.at("planner").at("threadPriorityUpdater");                          } catch(const std::exception& e){ success = false; PrintE("Error in configuration file \"%s\": %s\n", filename.c_str(), e.what()); }
     try{ planner.ompNumThreads            = jsonData.at("planner").at("ompNumThreads");                                  } catch(const std::exception& e){ success = false; PrintE("Error in configuration file \"%s\": %s\n", filename.c_str(), e.what()); }
     try{ planner.ompDynamic               = jsonData.at("planner").at("ompDynamic");                                     } catch(const std::exception& e){ success = false; PrintE("Error in configuration file \"%s\": %s\n", filename.c_str(), e.what()); }
-    try{ planner.cpuCoreIDs              = static_cast<std::vector<int32_t>>(jsonData.at("planner").at("cpuCoreIDs"));   } catch(const std::exception& e){ success = false; PrintE("Error in configuration file \"%s\": %s\n", filename.c_str(), e.what()); }
+    try{ planner.cpuCoreIDs               = static_cast<std::vector<int32_t>>(jsonData.at("planner").at("cpuCoreIDs"));  } catch(const std::exception& e){ success = false; PrintE("Error in configuration file \"%s\": %s\n", filename.c_str(), e.what()); }
     try{ planner.updatePeriod             = jsonData.at("planner").at("updatePeriod");                                   } catch(const std::exception& e){ success = false; PrintE("Error in configuration file \"%s\": %s\n", filename.c_str(), e.what()); }
     return success;
 }

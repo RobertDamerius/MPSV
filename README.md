@@ -4,7 +4,7 @@
 The **M**otion **P**lanner for **S**urface **V**ehicles solves motion planning problems for fully actuated surface vehicles with non-linear dynamics in an environment with non-convex non-moving obstacles.
 The method is based on the RRT* algorithm.
 The problem is decomposed into two sequential problems in which first a feasible path is searched for and then a collision-free trajectory is calculated based on the path found.
-For references, see below.
+For references, see [below](#publication).
 
 
 ![](documentation/img/Overview.svg)
@@ -12,7 +12,9 @@ For references, see below.
 
 ## Header-only library with MATLAB/Simulink support
 The MPSV solver is implemented as header-only library (C++) and requires a compiler that supports the C++20 language features.
-There exists a MATLAB/Simulink library with prebuild blocks for windows and linux to use the planner in Simulink.
+There exists a MATLAB/Simulink toolbox that allows you to run the planner in Simulink.
+To use the toolbox, open the [matlab/MPSV.prj](matlab/MPSV.prj) project file or add it as reference project to an existing MATLAB project.
+Run `mpsv.BuildDrivers()` once to build all driver blocks of the simulink library.
 All blocks are supported for C++ code generation.
 
 **OpenMP**
@@ -27,9 +29,9 @@ The directory structure of this repository is as follows.
 
 | File / Directory   | Description                                                                                                    |
 | :----------------- | :------------------------------------------------------------------------------------------------------------- |
-| apps               | contains example applications and a standalone application                                                     |
-| documentation      | contains the documentation that has been created with [SimpleDoc](https://github.com/RobertDamerius/SimpleDoc) |
-| matlab             | contains the MATLAB/Simulink library "MPSV" (**>= R2025a**) and Simulink examples                              |
+| apps               | contains example applications and a standalone application (C++)                                               |
+| documentation      | contains an HTML-based documentation                                                                           |
+| matlab             | contains the MATLAB/Simulink project for the MPSV toolbox                                                      |
 | source             | contains the header-only library (C++)                                                                         |
 | LICENSE            | license information                                                                                            |
 | Makefile           | used to build example applications and the standalone application                                              |
@@ -86,6 +88,7 @@ make apps
 
 ## Examples (MATLAB/Simulink)
 Example models for Simulink are located at [matlab/examples/](matlab/examples/).
+Make sure that you build already build the driver blocks of the Simulink library with `mpsv.BuildDrivers()`.
 
 
 ## Standalone Application
@@ -95,6 +98,7 @@ The application is located at [apps/mpsv](apps/mpsv/) and is compiled with
 ```
 make app=mpsv
 ```
+Further details are given [here](apps/mpsv/README.md).
 
 
 ## Publication

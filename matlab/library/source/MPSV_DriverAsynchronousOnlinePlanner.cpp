@@ -22,9 +22,9 @@ void MPSV_AsynchronousOnlinePlannerTerminate(void* workVector){
 void MPSV_AsynchronousOnlinePlannerStep(void* workVector, uint8_t* serializedOutput, uint8_t* serializedInput, uint8_t* serializedParameter){
     // reinterpret wrapper, input and output data
     MPSV_WrapperAsynchronousOnlinePlanner* wrapper = reinterpret_cast<MPSV_WrapperAsynchronousOnlinePlanner*>(workVector);
-    mpsv::planner::SerializationAsyncOnlinePlannerOutputUnion* out = reinterpret_cast<mpsv::planner::SerializationAsyncOnlinePlannerOutputUnion*>(serializedOutput);
-    mpsv::planner::SerializationAsyncOnlinePlannerInputUnion* in = reinterpret_cast<mpsv::planner::SerializationAsyncOnlinePlannerInputUnion*>(serializedInput);
-    mpsv::planner::SerializationAsyncOnlinePlannerParameterUnion* param = reinterpret_cast<mpsv::planner::SerializationAsyncOnlinePlannerParameterUnion*>(serializedParameter);
+    mpsv::planner::serialization_output* out = reinterpret_cast<mpsv::planner::serialization_output*>(serializedOutput);
+    mpsv::planner::serialization_input* in = reinterpret_cast<mpsv::planner::serialization_input*>(serializedInput);
+    mpsv::planner::serialization_parameter* param = reinterpret_cast<mpsv::planner::serialization_parameter*>(serializedParameter);
 
     // call the step function of the wrapper class
     wrapper->Step(out, in, param);

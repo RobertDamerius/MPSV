@@ -47,7 +47,7 @@ class MPSV_WrapperAsynchronousOnlinePlanner {
          * @param[in] input Input data defining the motion planning problem to be solved.
          * @param[in] parameter Parameter data to be set for the asynchronous online planner.
          */
-        void Step(mpsv::planner::SerializationAsyncOnlinePlannerOutputUnion* output, mpsv::planner::SerializationAsyncOnlinePlannerInputUnion* input, mpsv::planner::SerializationAsyncOnlinePlannerParameterUnion* parameter);
+        void Step(mpsv::planner::serialization_output* output, mpsv::planner::serialization_input* input, mpsv::planner::serialization_parameter* parameter);
 
     protected:
         mpsv::planner::AsyncOnlinePlanner planner;                        // The internal asynchronous online planner.

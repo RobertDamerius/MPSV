@@ -15,7 +15,7 @@ void MPSV_WrapperAsynchronousOnlinePlanner::Terminate(void){
     planner.Terminate();
 }
 
-void MPSV_WrapperAsynchronousOnlinePlanner::Step(mpsv::planner::SerializationAsyncOnlinePlannerOutputUnion* output, mpsv::planner::SerializationAsyncOnlinePlannerInputUnion* input, mpsv::planner::SerializationAsyncOnlinePlannerParameterUnion* parameter){
+void MPSV_WrapperAsynchronousOnlinePlanner::Step(mpsv::planner::serialization_output* output, mpsv::planner::serialization_input* input, mpsv::planner::serialization_parameter* parameter){
     // deserialize and set parameter
     mpsv::planner::Deserialize(plannerParameter, parameter);
     planner.SetParameter(plannerParameter);

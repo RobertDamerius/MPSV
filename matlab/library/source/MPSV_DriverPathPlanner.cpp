@@ -20,8 +20,8 @@ void MPSV_PathPlannerTerminate(void* workVector){
 void MPSV_PathPlannerStep(void* workVector, uint8_t* serializedDataOut, uint8_t* serializedDataIn){
     // Reinterpret wrapper, input and output data
     MPSV_WrapperPathPlanner* wrapper = reinterpret_cast<MPSV_WrapperPathPlanner*>(workVector);
-    SerializationPathPlannerInputUnion* in = reinterpret_cast<SerializationPathPlannerInputUnion*>(serializedDataIn);
-    SerializationPathPlannerOutputUnion* out = reinterpret_cast<SerializationPathPlannerOutputUnion*>(serializedDataOut);
+    serialization_path_planner_input* in = reinterpret_cast<serialization_path_planner_input*>(serializedDataIn);
+    serialization_path_planner_output* out = reinterpret_cast<serialization_path_planner_output*>(serializedDataOut);
 
     // Call the step function of the wrapper class
     wrapper->Step(out, in);
