@@ -16,7 +16,7 @@ namespace planner {
 /**
  * @brief This structure defines a constant-size input data for an asynchronous online planner.
  */
-struct serialization_input {
+struct __attribute__((packed)) serialization_input {
     double timestamp;                                               // Monotonically increasing timestamp in seconds (arbitrary time origin defined by the user) indicating the initial timepoint corresponding to @ref initialStateAndInput.
     uint8_t enable:1;                                               // Bit 0: non-zero if the asynchronous online planner should be enabled, zero if the planner should go into standby mode.
     uint8_t reset:1;                                                // Bit 1: non-zero if the asynchronous online planner should be reset. A reset is ensured to be performed before the next internal solve operation of the planner.
@@ -27,36 +27,36 @@ struct serialization_input {
     std::array<double,3> samplingBoxCenterPose;                     // Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
     std::array<double,2> samplingBoxDimension;                      // Dimension of the sampling box along major and minor axes of the box.
     std::array<std::array<float,2>,8000> verticesStaticObstacles;   // Vertex data of the static obstacles. Multiple convex polygons are separated by non-finite vertices.
-} __attribute__((packed));
+};
 
 
 /**
  * @brief This structure defines a constant-size parameter data for an asynchronous online planner.
  */
-struct serialization_parameter {
+struct __attribute__((packed)) serialization_parameter {
     double timestamp;                                                   // The user-defined timestamp that indicates the parameters to be used. This parameter set is only applied, if this value changes.
     double timeoutInput;                                                // Timeout in seconds for the input data.
-    struct {
-        struct {
+    struct __attribute__((packed)) {
+        struct __attribute__((packed)) {
             double collisionCheckMaxPositionDeviation;                  // [Geometry] Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 meters.
             double collisionCheckMaxAngleDeviation;                     // [Geometry] Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree.
             std::array<std::array<float,2>,100> verticesVehicleShape;   // [Geometry] Vertex data of the vehicle shape. Multiple convex polygons are separated by non-finite vertices.
             uint8_t numSkeletalPoints;                                  // [Geometry] Number of skeletal points in range [1,10].
             std::array<std::array<double,2>,10> skeletalPoints;         // [Geometry] Skeletal points (b-frame) at which the cost map is to be evaluated.
         } geometry;
-        struct {
+        struct __attribute__((packed)) {
             int32_t modBreakpoints;                                     // [CostMap] A modulo factor (> 0) that indicates when to calculate the cost using the objective function and when to do bilinear interpolation.
             double resolution;                                          // [CostMap] Resolution (> 1e-3) of the grid map (dimension of one cell).
             double distanceScale;                                       // [CostMap] Scale factor (>= 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
             double distanceDecay;                                       // [CostMap] Decay factor (> 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
         } costMap;
-        struct {
+        struct __attribute__((packed)) {
             double weightPsi;                                           // [Metric] Weighting for heading angle (psi) in distance metric function.
             double weightSway;                                          // [Metric] Weighting for sway movement (heading angle with respect to perpenticular direction of movement).
             double weightReverseScale;                                  // [Metric] Weighting for sway and reverse movement (heading angle with respect to line angle).
             double weightReverseDecay;                                  // [Metric] Decay factor (> 0) for the weighting function that weights sway and reverse movement.
         } metric;
-        struct {
+        struct __attribute__((packed)) {
             std::array<double,36> matF;                                 // [Model] 3-by-12 coefficient matrix (row-major order) of model nu_dot = F*n(nu) + B*tau.
             std::array<double,9> matB;                                  // [Model] 3-by-3 input matrix B (row-major order) of model nu_dot = F*n(nu) + B*tau.
             std::array<double,3> vecTimeconstantsXYN;                   // [Model] Timeconstants {TX, TY, TN} for input force dynamics.
@@ -64,30 +64,30 @@ struct serialization_parameter {
             std::array<double,3> lowerLimitXYN;                         // [Model] Lower saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
             std::array<double,3> upperLimitXYN;                         // [Model] Upper saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
         } model;
-        struct {
+        struct __attribute__((packed)) {
             uint32_t periodGoalSampling;                                // [PathPlanner] Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
         } pathPlanner;
-        struct {
+        struct __attribute__((packed)) {
             double samplingRangePosition;                               // [MotionPlanner] Range in meters for sampling the position around a given path.
             double samplingRangeAngle;                                  // [MotionPlanner] Range in radians for sampling the angle around a given path.
             uint32_t periodGoalSampling;                                // [MotionPlanner] Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
             double sampletime;                                          // [MotionPlanner] Sampletime to be used for fixed-step trajectory simulation.
             double maxInputPathLength;                                  // [MotionPlanner] Maximum length (> 0) of the input path (x,y only). The input path is trimmed to ensure this maximum length. The trimmed pose may be interpolated.
-            struct {
+            struct __attribute__((packed)) {
                 double maxRadiusX;                                      // [MotionPlanner / Controller] Maximum look-ahead distance for longitudinal distance during pose control.
                 double maxRadiusY;                                      // [MotionPlanner / Controller] Maximum look-ahead distance for lateral distance during pose control.
                 double maxRadiusPsi;                                    // [MotionPlanner / Controller] Maximum look-ahead distance for angular distance during pose control.
                 double minRadiusPosition;                               // [MotionPlanner / Controller] Minimum look-ahead distance for position during pose control. The radius is limited by the guidance law according to nearby obstacles but is never lower than this value.
                 std::array<double,36> matK;                             // [MotionPlanner / Controller] 3-by-12 control gain matrix (row-major order) for pose control.
             } controller;
-            struct {
+            struct __attribute__((packed)) {
                 std::array<double,3> rangePose;                         // [MotionPlanner / RegionOfAttraction] Pose box constraints for the region of attraction.
                 std::array<double,3> rangeUVR;                          // [MotionPlanner / RegionOfAttraction] Velocity box constraints for the region of attraction.
                 std::array<double,3> rangeXYN;                          // [MotionPlanner / RegionOfAttraction] The force range {dX,dY,dN}. A given force must be in this range {[-dX,dX],[-dY,dY],[-dN,dN]} to be in the region of attraction.
             } regionOfAttraction;
         } motionPlanner;
     } sequentialPlanner;
-    struct {
+    struct __attribute__((packed)) {
         uint8_t predictInitialStateOnReset:1;                           // [OnlinePlanner] Bit 0: non-zero if the initial state should be predicted by the expected computation time after a reset of the online planner (e.g. the first solve).
         uint8_t reserved:7;                                             // [OnlinePlanner] Bit 1-7: reserved, always zero.
         double maxComputationTimePathOnReset;                           // [OnlinePlanner] Maximum computation time in seconds for path planning after a reset.
@@ -98,13 +98,13 @@ struct serialization_parameter {
         double additionalTrajectoryDuration;                            // [OnlinePlanner] Additional time added to the ahead planning time (= execution time + additional ahead planning time) to obtain the minimum time duration of a trajectory. This value must be greater than zero.
         double timeKeepPastTrajectory;                                  // [OnlinePlanner] Time in seconds to keep from a past trajectory. The past data of the previous trajectory is inserted at the beginning of a new solution. Inserting past data helps to handle imperfect time synchronization between this trajectory generator and the user of the trajectory data.
     } onlinePlanner;
-} __attribute__((packed));
+};
 
 
 /**
  * @brief This structure defines the constant-size output data for an asynchronous online planner.
  */
-struct serialization_output {
+struct __attribute__((packed)) serialization_output {
     double timestamp;                                          // Monotonically increasing timestamp in seconds (arbitrary time origin defined by the user) indicating the initial timepoint of the @ref trajectory.
     double timestampInput;                                     // The user-defined timestamp of the corresponding input data that has been used to compute the solution. The default value is quiet_NaN.
     double timestampParameter;                                 // The user-defined timestamp of the corresponding parameter data that has been used to compute the solution. The default value is quiet_NaN.
@@ -119,7 +119,7 @@ struct serialization_output {
     uint16_t numTrajectoryPoints;                              // The number of points inside the trajectory.
     std::array<std::array<double,12>,500> trajectory;          // Resulting trajectory, where each element is given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state and input is not inserted. The actual length of the trajectory is given by numTrajectoryPoints.
     double sampletime;                                         // The sampletime of the trajectory data in seconds.
-    struct {
+    struct __attribute__((packed)) {
         uint16_t numPoses;                                     // [PathPlanner] The number of poses representing the path, e.g. the length of the path.
         std::array<std::array<double,3>,100> path;             // [PathPlanner] Resulting path of the internal path planning problem, where each pose is given as {x,y,psi}. The actual length of the path is given by numPoses.
         uint8_t goalReached:1;                                 // [PathPlanner] Bit 0: non-zero if goal is reached, zero otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
@@ -131,7 +131,7 @@ struct serialization_output {
         double timestampOfComputationUTC;                      // [PathPlanner] Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
         double cost;                                           // [PathPlanner] The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
     } pathPlanner;
-    struct {
+    struct __attribute__((packed)) {
         uint16_t numPoses;                                     // [MotionPlanner] The number of poses representing the reference path, e.g. the length of the reference path.
         std::array<std::array<double,3>,100> referencePath;    // [MotionPlanner] Resulting reference path of the internal motion planning problem, where each pose is given as {x,y,psi}. The actual length of the reference path is given by numPoses.
         uint8_t goalReached:1;                                 // [MotionPlanner] Bit 0: non-zero if goal is reached, zero otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
@@ -143,7 +143,7 @@ struct serialization_output {
         double timestampOfComputationUTC;                      // [MotionPlanner] Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
         double cost;                                           // [MotionPlanner] The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
     } motionPlanner;
-} __attribute__((packed));
+};
 
 
 /**

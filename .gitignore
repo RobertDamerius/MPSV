@@ -1,4 +1,5 @@
 build
+matlab/library/source/code
 matlab/library/source/SFunction*
 matlab/library/source/rtwmakecfg.m
 apps/benchmark/benchmark

@@ -9,28 +9,28 @@
 /**
  * @brief This structure defines the input data for the path planner wrapper class.
  */
-struct serialization_path_planner_input {
-    struct {
-        struct {
+struct __attribute__((packed)) serialization_path_planner_input {
+    struct __attribute__((packed)) {
+        struct __attribute__((packed)) {
             int32_t modBreakpoints;                                                    // A modulo factor (> 0) that indicates when to calculate the cost using the cost function and when to do linear interpolation.
             double resolution;                                                         // Resolution (> 1e-3) of the grid map (dimension of one cell).
             double distanceScale;                                                      // Scale factor (>= 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
             double distanceDecay;                                                      // Decay factor (> 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
         } costMap;
-        struct {
+        struct __attribute__((packed)) {
             double collisionCheckMaxPositionDeviation;                                 // Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 meters.
             double collisionCheckMaxAngleDeviation;                                    // Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree.
             std::array<std::array<float,2>,100> verticesVehicleShape;                  // Vertex data of the vehicle shape. Multiple convex polygons are separated by non-finite vertices.
             uint8_t numSkeletalPoints;                                                 // Number of skeletal points in range [1,10].
             std::array<std::array<double,2>,10> skeletalPoints;                        // Skeletal points (b-frame) at which the cost map is to be evaluated.
         } geometry;
-        struct {
+        struct __attribute__((packed)) {
             double weightPsi;                                                          // Weighting for yaw angle in distance metric function.
             double weightSway;                                                         // Weighting for sway movement (heading angle with respect to perpenticular direction of movement).
             double weightReverseScale;                                                 // Weighting for sway and reverse movement (heading angle with respect to line angle).
             double weightReverseDecay;                                                 // Decay factor (> 0) for the weighting function that weights sway and reverse movement.
         } metric;
-        struct {
+        struct __attribute__((packed)) {
             uint32_t periodGoalSampling;                                               // Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
             double maxComputationTime;                                                 // The maximum computation time in seconds allowed before leaving the iteration loop.
         } pathPlanner;
@@ -41,13 +41,13 @@ struct serialization_path_planner_input {
     std::array<double,3> samplingBoxCenterPose;                                        // Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
     std::array<double,2> samplingBoxDimension;                                         // Dimension of the sampling box along major and minor axes of the box.
     std::array<std::array<float,2>,8000> verticesStaticObstacles;                      // Vertex data of the static obstacles. Multiple convex polygons are separated by non-finite vertices.
-} __attribute__((packed));
+};
 
 
 /**
  * @brief This structure defines the output data for the path planner wrapper class.
  */
-struct serialization_path_planner_output {
+struct __attribute__((packed)) serialization_path_planner_output {
     uint8_t goalReached:1;                        // True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
     uint8_t isFeasible:1;                         // True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles or if the initial or final pose is not inside the sampling area.
     uint8_t outOfNodes:1;                         // True if all nodes are within the solution path and no new nodes can be sampled and added to the tree.
@@ -58,7 +58,7 @@ struct serialization_path_planner_output {
     double cost;                                  // The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
     uint16_t numPoses;                            // The total number of poses that represent the actual path.
     std::array<std::array<double,3>,1000> path;   // Resulting path, where each pose is given as {x,y,psi}. The first element always corresponds to the initial pose. If the goal is reached, then the final pose corresponds to the desired final pose of the path planning problem.
-} __attribute__((packed));
+};
 
 
 /**

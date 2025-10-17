@@ -132,8 +132,9 @@ function UpdateCodeDirectory(folderSimulinkLibrarySource, folderMPSVSource)
     directoryInput = fullfile(folderMPSVSource,'mpsv');
     directoryOutput = fullfile(folderSimulinkLibrarySource,'code');
 
-    % delete all files in the output directory
-    delete(fullfile(directoryOutput,'*'));
+    % re-create output directory
+    [~,~] = rmdir(directoryOutput, 's');
+    [~,~] = mkdir(directoryOutput);
 
     % search for all header files in the input directory (it's a header-only library with .hpp files only)
     listings = dir(fullfile(directoryInput,['**',filesep,'*.hpp']));
