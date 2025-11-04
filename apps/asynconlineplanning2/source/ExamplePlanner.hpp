@@ -45,9 +45,8 @@ class ExamplePlanner: protected mpsv::planner::AsyncOnlinePlanner {
             std::cout << "threadState=" << mpsv::to_string(dataOut.threadState) <<
                      ", timestampInput=" << std::to_string(dataOut.timestampInput) <<
                      ", timestampParameter=" << std::to_string(dataOut.timestampParameter) <<
-                     ", timeoutInput=" << dataOut.timeoutInput <<
-                     ", validInput=" << dataOut.validInput <<
-                     ", validParameter=" << dataOut.validParameter <<
+                     ", inputError=" << static_cast<int32_t>(dataOut.inputError) <<
+                     ", parameterError=" << static_cast<int32_t>(dataOut.parameterError) <<
                      ", error=" << dataOut.error <<
                      ", performedReset=" << dataOut.performedReset <<
                      ", timestamp=" << dataOut.timestamp <<

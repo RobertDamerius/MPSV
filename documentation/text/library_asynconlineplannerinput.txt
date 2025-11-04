@@ -20,5 +20,5 @@ A bus, which defines the input for the asynchronous online planner. The elements
 <tr><td style="font-family: Courier New;">finalPose</td><td style="font-family: Courier New;">double [3]</td><td>The final pose given as {x,y,psi}.</td></tr>
 <tr><td style="font-family: Courier New;">samplingBoxCenterPose</td><td style="font-family: Courier New;">double [3]</td><td>Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.</td></tr>
 <tr><td style="font-family: Courier New;">samplingBoxDimension</td><td style="font-family: Courier New;">double [2]</td><td>Dimension of the sampling box along major and minor axes of the box.</td></tr>
-<tr><td style="font-family: Courier New;">verticesStaticObstacles</td><td style="font-family: Courier New;">double [2][8000]</td><td>Vertex data of the static obstacles. Multiple convex polygons are separated by non-finite vertices.</td></tr>
+<tr><td style="font-family: Courier New;">verticesStaticObstacles</td><td style="font-family: Courier New;">float [2][8000]</td><td>Vertex data of the static obstacles. Multiple convex polygons are separated by non-finite vertices.</td></tr>
 </table>

@@ -13,6 +13,7 @@
 #include <mpsv/core/DataLogFile.hpp>
 #include <mpsv/core/Time.hpp>
 #include <mpsv/core/PerformanceCounter.hpp>
+#include <mpsv/core/ErrorCode.hpp>
 #include <mpsv/math/WGS84.hpp>
 
 
@@ -65,22 +66,20 @@ class OnlinePlanner {
         /**
          * @brief Apply a new parameter set to the internal solvers.
          * @param[in] parameter The parameter set to be applied.
-         * @return True if parameter set is valid and has been applied, false otherwise.
+         * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
          * @details If a new parameter set has been applied successfully, @ref Reset is called internally.
          */
-        bool ApplyParameterSet(const mpsv::planner::OnlinePlannerParameterSet& parameter) noexcept {
-            if(!parameter.onlinePlanner.IsValid() || !sequentialPlanner.ApplyParameterSet(parameter.sequentialPlanner)){
-                return false;
+        error_code ApplyParameterSet(mpsv::planner::OnlinePlannerParameterSet& parameter) noexcept {
+            error_code e;
+            if(error_code::NONE != (e = parameter.IsValid())){
+                return e;
             }
-            if(static_cast<uint32_t>(std::floor((parameter.onlinePlanner.maxComputationTimeMotionOnReset + parameter.onlinePlanner.maxComputationTimePathOnReset + parameter.onlinePlanner.additionalAheadPlanningTime) / parameter.sequentialPlanner.motionPlanner.sampletime)) >= 0x0000FFFF){
-                return false;
-            }
-            if(static_cast<uint32_t>(std::floor((parameter.onlinePlanner.maxComputationTimeMotion + parameter.onlinePlanner.maxComputationTimePath + parameter.onlinePlanner.additionalAheadPlanningTime) / parameter.sequentialPlanner.motionPlanner.sampletime)) >= 0x0000FFFF){
-                return false;
+            if(error_code::NONE != (e = sequentialPlanner.ApplyParameterSet(parameter.sequentialPlanner))){
+                return e;
             }
             this->parameter = parameter.onlinePlanner;
             Reset();
-            return true;
+            return error_code::NONE;
         }
 
         /**

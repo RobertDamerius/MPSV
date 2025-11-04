@@ -5,6 +5,8 @@
 #include <mpsv/math/Additional.hpp>
 #include <mpsv/control/RegionOfAttraction.hpp>
 #include <mpsv/geometry/StaticObstacle.hpp>
+#include <mpsv/planner/ParameterTypes.hpp>
+#include <mpsv/core/ErrorCode.hpp>
 
 
 namespace mpsv {
@@ -50,37 +52,50 @@ class VehicleSimulator {
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Set parameters for the dynamic model.
-         * @param[in] matF 3-by-12 coefficient matrix (row-major order) of model nu_dot = F*n(nu) + B*tau.
-         * @param[in] matB 3-by-3 non-singular input matrix B (row-major order) of model nu_dot = F*n(nu) + B*tau.
-         * @param[in] vecTimeconstantsXYN Timeconstants {TX, TY, TN} for input force dynamics.
-         * @param[in] vecTimeconstantsInput Timeconstants {Tf1, Tf2, Tf3} for input filter dynamics.
-         * @param[in] lowerLimitXYN Lower saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
-         * @param[in] upperLimitXYN Upper saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
-         * @return True if all input values and precalculated values are finite, false otherwise.
+         * @param[in] modelParameter The model parameter to be set.
+         * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
          */
-        bool SetModel(std::array<double,36> matF, std::array<double,9> matB, std::array<double,3> vecTimeconstantsXYN, std::array<double,3> vecTimeconstantsInput, std::array<double,3> lowerLimitXYN, std::array<double,3> upperLimitXYN) noexcept {
-            // Set internal parameters
-            F = matF;
-            B = matB;
-            auto [success, invMatB] = mpsv::math::MatrixInverse3x3(B);
-            if(!success){
+        error_code SetModel(const mpsv::planner::ParameterModel& modelParameter) noexcept {
+            // Check input parameter
+            error_code e = modelParameter.IsValid();
+            if(error_code::NONE != e){
                 ClearModel();
-                return false;
+                return e;
             }
+
+            // Calculate and check matrix inverse
+            auto [success, invMatB] = mpsv::math::MatrixInverse3x3(modelParameter.matB);
+            if(!(success &&
+                 std::isfinite(invMatB[0]) &&
+                 std::isfinite(invMatB[1]) &&
+                 std::isfinite(invMatB[2]) &&
+                 std::isfinite(invMatB[3]) &&
+                 std::isfinite(invMatB[4]) &&
+                 std::isfinite(invMatB[5]) &&
+                 std::isfinite(invMatB[6]) &&
+                 std::isfinite(invMatB[7]) &&
+                 std::isfinite(invMatB[8]))){
+                ClearModel();
+                return error_code::MODEL_INV_MATB;
+            }
+
+            // Set internal parameters
+            F = modelParameter.matF;
+            B = modelParameter.matB;
             invB.swap(invMatB);
-            this->lowerLimitXYN = lowerLimitXYN;
-            this->upperLimitXYN = upperLimitXYN;
+            this->lowerLimitXYN = modelParameter.lowerLimitXYN;
+            this->upperLimitXYN = modelParameter.upperLimitXYN;
 
             // Precalculate parameters
-            invTXYN[0] = 1.0 / vecTimeconstantsXYN[0];
-            invTXYN[1] = 1.0 / vecTimeconstantsXYN[1];
-            invTXYN[2] = 1.0 / vecTimeconstantsXYN[2];
-            invTf123[0] = 1.0 / vecTimeconstantsInput[0];
-            invTf123[1] = 1.0 / vecTimeconstantsInput[1];
-            invTf123[2] = 1.0 / vecTimeconstantsInput[2];
-            double TXTf1 = vecTimeconstantsXYN[0] * vecTimeconstantsInput[0];
-            double TYTf2 = vecTimeconstantsXYN[1] * vecTimeconstantsInput[1];
-            double TNTf3 = vecTimeconstantsXYN[2] * vecTimeconstantsInput[2];
+            invTXYN[0] = 1.0 / modelParameter.vecTimeconstantsXYN[0];
+            invTXYN[1] = 1.0 / modelParameter.vecTimeconstantsXYN[1];
+            invTXYN[2] = 1.0 / modelParameter.vecTimeconstantsXYN[2];
+            invTf123[0] = 1.0 / modelParameter.vecTimeconstantsInput[0];
+            invTf123[1] = 1.0 / modelParameter.vecTimeconstantsInput[1];
+            invTf123[2] = 1.0 / modelParameter.vecTimeconstantsInput[2];
+            double TXTf1 = modelParameter.vecTimeconstantsXYN[0] * modelParameter.vecTimeconstantsInput[0];
+            double TYTf2 = modelParameter.vecTimeconstantsXYN[1] * modelParameter.vecTimeconstantsInput[1];
+            double TNTf3 = modelParameter.vecTimeconstantsXYN[2] * modelParameter.vecTimeconstantsInput[2];
             invBBB[0] = TXTf1 * invB[0];
             invBBB[1] = TXTf1 * invB[1];
             invBBB[2] = TXTf1 * invB[2];
@@ -90,15 +105,15 @@ class VehicleSimulator {
             invBBB[6] = TNTf3 * invB[6];
             invBBB[7] = TNTf3 * invB[7];
             invBBB[8] = TNTf3 * invB[8];
-            M0[0] = -B[0] / vecTimeconstantsXYN[0];
-            M0[1] = -B[1] / vecTimeconstantsXYN[1];
-            M0[2] = -B[2] / vecTimeconstantsXYN[2];
-            M0[3] = -B[3] / vecTimeconstantsXYN[0];
-            M0[4] = -B[4] / vecTimeconstantsXYN[1];
-            M0[5] = -B[5] / vecTimeconstantsXYN[2];
-            M0[6] = -B[6] / vecTimeconstantsXYN[0];
-            M0[7] = -B[7] / vecTimeconstantsXYN[1];
-            M0[8] = -B[8] / vecTimeconstantsXYN[2];
+            M0[0] = -B[0] / modelParameter.vecTimeconstantsXYN[0];
+            M0[1] = -B[1] / modelParameter.vecTimeconstantsXYN[1];
+            M0[2] = -B[2] / modelParameter.vecTimeconstantsXYN[2];
+            M0[3] = -B[3] / modelParameter.vecTimeconstantsXYN[0];
+            M0[4] = -B[4] / modelParameter.vecTimeconstantsXYN[1];
+            M0[5] = -B[5] / modelParameter.vecTimeconstantsXYN[2];
+            M0[6] = -B[6] / modelParameter.vecTimeconstantsXYN[0];
+            M0[7] = -B[7] / modelParameter.vecTimeconstantsXYN[1];
+            M0[8] = -B[8] / modelParameter.vecTimeconstantsXYN[2];
             f17_2 = 2.0 * F[6];
             f18_2 = 2.0 * F[7];
             f19_2 = 2.0 * F[8];
@@ -126,59 +141,29 @@ class VehicleSimulator {
             f3a_6 = 6.0 * F[33];
             f3b_6 = 6.0 * F[34];
             f3c_6 = 6.0 * F[35];
-
-            // Check for finite model values
-            bool validModel = true;
-            validModel &= std::isfinite(this->lowerLimitXYN[0]) && std::isfinite(this->lowerLimitXYN[1]) && std::isfinite(this->lowerLimitXYN[2]);
-            validModel &= std::isfinite(this->upperLimitXYN[0]) && std::isfinite(this->upperLimitXYN[1]) && std::isfinite(this->upperLimitXYN[2]);
-            validModel = std::isfinite(matF[0]) && std::isfinite(matF[1]) && std::isfinite(matF[2]) && std::isfinite(matF[3]) && std::isfinite(matF[4]) && std::isfinite(matF[5]) && std::isfinite(matF[6]) && std::isfinite(matF[7]) && std::isfinite(matF[8]) && std::isfinite(matF[9]) && std::isfinite(matF[10]) && std::isfinite(matF[11]);
-            validModel &= std::isfinite(matF[12]) && std::isfinite(matF[13]) && std::isfinite(matF[14]) && std::isfinite(matF[15]) && std::isfinite(matF[16]) && std::isfinite(matF[17]) && std::isfinite(matF[18]) && std::isfinite(matF[19]) && std::isfinite(matF[20]) && std::isfinite(matF[21]) && std::isfinite(matF[22]) && std::isfinite(matF[23]);
-            validModel &= std::isfinite(matF[24]) && std::isfinite(matF[25]) && std::isfinite(matF[26]) && std::isfinite(matF[27]) && std::isfinite(matF[28]) && std::isfinite(matF[29]) && std::isfinite(matF[30]) && std::isfinite(matF[31]) && std::isfinite(matF[32]) && std::isfinite(matF[33]) && std::isfinite(matF[34]) && std::isfinite(matF[35]);
-            validModel &= std::isfinite(B[0]) && std::isfinite(B[1]) && std::isfinite(B[2]) && std::isfinite(B[3]) && std::isfinite(B[4]) && std::isfinite(B[5]) && std::isfinite(B[6]) && std::isfinite(B[7]) && std::isfinite(B[8]);
-            validModel &= std::isfinite(invB[0]) && std::isfinite(invB[1]) && std::isfinite(invB[2]) && std::isfinite(invB[3]) && std::isfinite(invB[4]) && std::isfinite(invB[5]) && std::isfinite(invB[6]) && std::isfinite(invB[7]) && std::isfinite(invB[8]);
-            validModel &= std::isfinite(invTXYN[0]) && std::isfinite(invTXYN[1]) && std::isfinite(invTXYN[2]);
-            validModel &= std::isfinite(invTf123[0]) && std::isfinite(invTf123[1]) && std::isfinite(invTf123[2]);
-            validModel &= std::isfinite(invBBB[0]) && std::isfinite(invBBB[1]) && std::isfinite(invBBB[2]) && std::isfinite(invBBB[3]) && std::isfinite(invBBB[4]) && std::isfinite(invBBB[5]) && std::isfinite(invBBB[6]) && std::isfinite(invBBB[7]) && std::isfinite(invBBB[8]);
-            validModel &= std::isfinite(M0[0]) && std::isfinite(M0[1]) && std::isfinite(M0[2]) && std::isfinite(M0[3]) && std::isfinite(M0[4]) && std::isfinite(M0[5]) && std::isfinite(M0[6]) && std::isfinite(M0[7]) && std::isfinite(M0[8]);
-            if(!validModel){
-                ClearModel();
-                return false;
-            }
-            return true;
+            return error_code::NONE;
         }
 
         /**
          * @brief Set parameters for the control system.
-         * @param[in] matK 3-by-12 control gain matrix (row-major order) for pose control.
-         * @param[in] maxRadiusX Maximum look-ahead distance for longitudinal distance during pose control.
-         * @param[in] maxRadiusY Maximum look-ahead distance for lateral distance during pose control.
-         * @param[in] maxRadiusPsi Maximum look-ahead distance for angular distance during pose control.
-         * @param[in] minRadiusPosition Minimum look-ahead distance for position during pose control. The radius is limited by the guidance law according to nearby obstacles but is never lower than this value.
-         * @return True if all input values and precalculated values are finite, false otherwise.
+         * @param[in] controllerParameter The controller parameter to be set.
+         * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
          */
-        bool SetController(std::array<double,36> matK, double maxRadiusX, double maxRadiusY, double maxRadiusPsi, double minRadiusPosition) noexcept {
-            // Set internal parameters
-            K = matK;
-            minSquaredRadiusPosition = minRadiusPosition * minRadiusPosition;
-            invSquaredRadiusX = 1.0 / (maxRadiusX * maxRadiusX);
-            invSquaredRadiusY = 1.0 / (maxRadiusY * maxRadiusY);
-            invSquaredRadiusPsi = 1.0 / (maxRadiusPsi * maxRadiusPsi);
-
-            // Check for finite controller values
-            bool validController = true;
-            validController &= std::isfinite(K[0]) && std::isfinite(K[1]) && std::isfinite(K[2]) && std::isfinite(K[3]) && std::isfinite(K[4]) && std::isfinite(K[5]) && std::isfinite(K[6]) && std::isfinite(K[7]) && std::isfinite(K[8]);
-            validController &= std::isfinite(K[9]) && std::isfinite(K[10]) && std::isfinite(K[11]) && std::isfinite(K[12]) && std::isfinite(K[13]) && std::isfinite(K[14]) && std::isfinite(K[15]) && std::isfinite(K[16]) && std::isfinite(K[17]);
-            validController &= std::isfinite(K[18]) && std::isfinite(K[19]) && std::isfinite(K[20]) && std::isfinite(K[21]) && std::isfinite(K[22]) && std::isfinite(K[23]) && std::isfinite(K[24]) && std::isfinite(K[25]) && std::isfinite(K[26]);
-            validController &= std::isfinite(K[27]) && std::isfinite(K[28]) && std::isfinite(K[29]) && std::isfinite(K[30]) && std::isfinite(K[31]) && std::isfinite(K[32]) && std::isfinite(K[33]) && std::isfinite(K[34]) && std::isfinite(K[35]);
-            validController &= std::isfinite(minSquaredRadiusPosition);
-            validController &= std::isfinite(invSquaredRadiusX);
-            validController &= std::isfinite(invSquaredRadiusY);
-            validController &= std::isfinite(invSquaredRadiusPsi);
-            if(!validController){
+        error_code SetController(const mpsv::planner::ParameterController& controllerParameter) noexcept {
+            // Check input parameter
+            error_code e = controllerParameter.IsValid();
+            if(error_code::NONE != e){
                 ClearController();
-                return false;
+                return e;
             }
-            return true;
+
+            // Set internal parameters
+            K = controllerParameter.matK;
+            minSquaredRadiusPosition = controllerParameter.minRadiusPosition * controllerParameter.minRadiusPosition;
+            invSquaredRadiusX = 1.0 / (controllerParameter.maxRadiusX * controllerParameter.maxRadiusX);
+            invSquaredRadiusY = 1.0 / (controllerParameter.maxRadiusY * controllerParameter.maxRadiusY);
+            invSquaredRadiusPsi = 1.0 / (controllerParameter.maxRadiusPsi * controllerParameter.maxRadiusPsi);
+            return error_code::NONE;
         }
 
         /**

@@ -47,7 +47,7 @@ function BuildDrivers(generateSimulinkBlocks)
     def.SFunctionName           = 'SFunctionMPSVPathPlanner';
     def.StartFcnSpec            = 'void MPSV_PathPlannerInitialize(void** work1, int16 p1, uint32 p2)';
     def.TerminateFcnSpec        = 'void MPSV_PathPlannerTerminate(void* work1)';
-    def.OutputFcnSpec           = 'void MPSV_PathPlannerStep(void* work1, uint8 y1[24023], uint8 u1[65153])';
+    def.OutputFcnSpec           = 'void MPSV_PathPlannerStep(void* work1, uint8 y1[24024], uint8 u1[65072])';
     def.HeaderFiles             = {'MPSV_DriverPathPlanner.hpp'};
     def.SourceFiles             = {'MPSV_DriverPathPlanner.cpp','MPSV_WrapperPathPlanner.cpp'};
     def.IncPaths                = {'code'};
@@ -68,7 +68,7 @@ function BuildDrivers(generateSimulinkBlocks)
     def.SFunctionName           = 'SFunctionMPSVAsynchronousOnlinePlanner';
     def.StartFcnSpec            = 'void MPSV_AsynchronousOnlinePlannerInitialize(void** work1, int16 p1, uint32 p2, int16 p3, uint32 p4, int32 p5, int32 p6, int32 p7, int32 p8[], uint32 p9)';
     def.TerminateFcnSpec        = 'void MPSV_AsynchronousOnlinePlannerTerminate(void* work1)';
-    def.OutputFcnSpec           = 'void MPSV_AsynchronousOnlinePlannerStep(void* work1, uint8 y1[52905], uint8 u1[64193], uint8 u2[1998])';
+    def.OutputFcnSpec           = 'void MPSV_AsynchronousOnlinePlannerStep(void* work1, uint8 y1[52907], uint8 u1[64193], uint8 u2[1917])';
     def.HeaderFiles             = {'MPSV_DriverAsynchronousOnlinePlanner.hpp'};
     def.SourceFiles             = {'MPSV_DriverAsynchronousOnlinePlanner.cpp','MPSV_WrapperAsynchronousOnlinePlanner.cpp'};
     def.IncPaths                = {'code'};

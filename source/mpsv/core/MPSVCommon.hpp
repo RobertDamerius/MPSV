@@ -33,7 +33,7 @@ namespace mpsv {
 
 
 // MPSV version number
-constexpr const char* version = "1.1.0";
+constexpr const char* version = "2.0.0";
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

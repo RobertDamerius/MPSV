@@ -24,7 +24,7 @@ int main(int, char**){
 
     // set parameter
     mpsv::planner::AsyncOnlinePlannerParameterSet parameter = example::GetParameterSet(timer.TimeToStart());
-    if(!parameter.IsValid()){
+    if(mpsv::error_code::NONE != parameter.IsValid()){
         std::cerr << "WARNING: parameters are invalid!\n";
     }
     planner.SetParameter(parameter);
@@ -32,7 +32,7 @@ int main(int, char**){
     // solve the online planning problem
     std::cout << "solve async online planning problem\n\n";
     mpsv::planner::AsyncOnlinePlannerInput dataIn = example::GetInput(timer.TimeToStart());
-    if(!dataIn.IsValid()){
+    if(mpsv::error_code::NONE != dataIn.IsValid()){
         std::cerr << "WARNING: input data is invalid!\n";
     }
     planner.SetInput(dataIn);
@@ -46,9 +46,8 @@ int main(int, char**){
         std::cout << "threadState=" << mpsv::to_string(dataOut.threadState) <<
                      ", timestampInput=" << std::to_string(dataOut.timestampInput) <<
                      ", timestampParameter=" << std::to_string(dataOut.timestampParameter) <<
-                     ", timeoutInput=" << dataOut.timeoutInput <<
-                     ", validInput=" << dataOut.validInput <<
-                     ", validParameter=" << dataOut.validParameter <<
+                     ", inputError=" << static_cast<int32_t>(dataOut.inputError) <<
+                     ", parameterError=" << static_cast<int32_t>(dataOut.parameterError) <<
                      ", error=" << dataOut.error <<
                      ", performedReset=" << dataOut.performedReset <<
                      ", timestamp=" << dataOut.timestamp <<

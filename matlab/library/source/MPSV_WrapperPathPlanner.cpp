@@ -13,23 +13,23 @@ void MPSV_WrapperPathPlanner::Terminate(void){
 
 void MPSV_WrapperPathPlanner::Step(serialization_path_planner_output* output, serialization_path_planner_input* input){
     // Assign input data to path planner data
-    bool validInput = AssignInput(input);
+    mpsv::error_code errorCode = AssignInput(input);
 
     // Set default output values
-    ClearOutput(output, validInput);
+    ClearOutput(output, errorCode);
 
     // Solve the planning problem
-    if(validInput){
+    if(mpsv::error_code::NONE == errorCode){
         pathPlanner.ApplyParameterSet(pathPlannerParameter);
         pathPlanner.Prepare(pathPlannerOutput, pathPlannerInput);
         pathPlanner.Solve(pathPlannerOutput, pathPlannerInput, input->parameter.pathPlanner.maxComputationTime);
 
         // Assign output data
-        AssignOutput(output);
+        AssignOutput(output, errorCode);
     }
 }
 
-bool MPSV_WrapperPathPlanner::AssignInput(serialization_path_planner_input* input){
+mpsv::error_code MPSV_WrapperPathPlanner::AssignInput(serialization_path_planner_input* input){
     // Assign parameters
     pathPlannerParameter.costMap.modBreakpoints                      = input->parameter.costMap.modBreakpoints;
     pathPlannerParameter.costMap.resolution                          = input->parameter.costMap.resolution;
@@ -37,19 +37,17 @@ bool MPSV_WrapperPathPlanner::AssignInput(serialization_path_planner_input* inpu
     pathPlannerParameter.costMap.distanceDecay                       = input->parameter.costMap.distanceDecay;
     pathPlannerParameter.geometry.collisionCheckMaxPositionDeviation = input->parameter.geometry.collisionCheckMaxPositionDeviation;
     pathPlannerParameter.geometry.collisionCheckMaxAngleDeviation    = input->parameter.geometry.collisionCheckMaxAngleDeviation;
-    bool validSkeletalPoints = (input->parameter.geometry.numSkeletalPoints > 0) && (input->parameter.geometry.numSkeletalPoints <= input->parameter.geometry.skeletalPoints.size());
-    if(validSkeletalPoints){
-        pathPlannerParameter.geometry.skeletalPoints.resize(input->parameter.geometry.numSkeletalPoints);
-        for(uint8_t k = 0; (k < input->parameter.geometry.numSkeletalPoints); ++k){
-            pathPlannerParameter.geometry.skeletalPoints[k] = input->parameter.geometry.skeletalPoints[k];
+    pathPlannerParameter.geometry.skeletalPoints.clear();
+    for(size_t k = 0; k < input->parameter.geometry.skeletalPoints.size(); ++k){
+        if(std::isfinite(input->parameter.geometry.skeletalPoints[k][0]) && std::isfinite(input->parameter.geometry.skeletalPoints[k][1])){
+            pathPlannerParameter.geometry.skeletalPoints.push_back({static_cast<double>(input->parameter.geometry.skeletalPoints[k][0]), static_cast<double>(input->parameter.geometry.skeletalPoints[k][1])});
         }
     }
     pathPlannerParameter.geometry.vehicleShape.Clear();
-    bool validVehicleShape = true;
     int32_t N = static_cast<int32_t>(input->parameter.geometry.verticesVehicleShape.size());
     int32_t i0 = -1; // index of previous finite vertex (-1 indicates no previous finite vertex)
     int32_t numPolygonsAdded = 0;
-    for(int32_t i = 0; (i < N) && validVehicleShape; ++i){
+    for(int32_t i = 0; i < N; ++i){
         bool finiteVertex = std::isfinite(input->parameter.geometry.verticesVehicleShape[i][0]) && std::isfinite(input->parameter.geometry.verticesVehicleShape[i][1]);
         if((i0 < 0) && finiteVertex){
             i0 = i;
@@ -58,7 +56,7 @@ bool MPSV_WrapperPathPlanner::AssignInput(serialization_path_planner_input* inpu
             i += static_cast<int32_t>((i == (N - 1)) && finiteVertex);
             int32_t numVertices = i - i0;
             if(numVertices < 3){
-                validVehicleShape = false;
+                pathPlannerParameter.geometry.vehicleShape.Clear();
                 break;
             }
             std::vector<std::array<double,2>> vertices(numVertices);
@@ -68,9 +66,8 @@ bool MPSV_WrapperPathPlanner::AssignInput(serialization_path_planner_input* inpu
             i0 = -1;
         }
     }
-    validVehicleShape &= (numPolygonsAdded > 0);
-    if(validVehicleShape){
-        validVehicleShape &= pathPlannerParameter.geometry.vehicleShape.EnsureCorrectVertexOrder();
+    if(!numPolygonsAdded){
+        pathPlannerParameter.geometry.vehicleShape.Clear();
     }
     pathPlannerParameter.metric.weightPsi                            = input->parameter.metric.weightPsi;
     pathPlannerParameter.metric.weightSway                           = input->parameter.metric.weightSway;
@@ -89,10 +86,9 @@ bool MPSV_WrapperPathPlanner::AssignInput(serialization_path_planner_input* inpu
     pathPlannerInput.samplingBoxCenterPose                           = input->samplingBoxCenterPose;
     pathPlannerInput.samplingBoxDimension                            = input->samplingBoxDimension;
     pathPlannerInput.staticObstacles.clear();
-    bool validStaticObstacles = true;
     N = static_cast<int32_t>(input->verticesStaticObstacles.size());
     i0 = -1; // index of previous finite vertex (-1 indicates no previous finite vertex)
-    for(int32_t i = 0; (i < N) && validStaticObstacles; ++i){
+    for(int32_t i = 0; i < N; ++i){
         bool finiteVertex = std::isfinite(input->verticesStaticObstacles[i][0]) && std::isfinite(input->verticesStaticObstacles[i][1]);
         if((i0 < 0) && finiteVertex){
             i0 = i;
@@ -101,28 +97,36 @@ bool MPSV_WrapperPathPlanner::AssignInput(serialization_path_planner_input* inpu
             i += static_cast<int32_t>((i == (N - 1)) && finiteVertex);
             int32_t numVertices = i - i0;
             if(numVertices < 3){
-                validStaticObstacles = false;
+                std::vector<std::array<double,2>> invalid_vertices = {{0,0},{0,0},{0,0}};
+                pathPlannerInput.staticObstacles.push_back(mpsv::geometry::StaticObstacle(invalid_vertices));
                 break;
             }
             std::vector<std::array<double,2>> vertices(numVertices);
             std::transform(input->verticesStaticObstacles.begin() + i0, input->verticesStaticObstacles.begin() + i, vertices.begin(), [](const std::array<float,2>& f){ return std::array<double,2>({static_cast<double>(f[0]), static_cast<double>(f[1])}); });
             pathPlannerInput.staticObstacles.push_back(mpsv::geometry::StaticObstacle(vertices));
-            validStaticObstacles &= pathPlannerInput.staticObstacles.back().EnsureCorrectVertexOrder();
             i0 = -1;
         }
     }
 
     // Check for data validity
-    return initializationOK && validSkeletalPoints && validVehicleShape && validMaxComputationTime && validStaticObstacles && pathPlannerParameter.IsValid() && pathPlannerInput.IsValid();
+    mpsv::error_code e;
+    if(mpsv::error_code::NONE != (e = pathPlannerParameter.IsValid()))
+        return e;
+    if(mpsv::error_code::NONE != (e = pathPlannerInput.IsValid()))
+        return e;
+    if(!(initializationOK && validMaxComputationTime))
+        return mpsv::error_code::NOT_AVAILABLE;
+    return mpsv::error_code::NONE;
 }
 
-void MPSV_WrapperPathPlanner::AssignOutput(serialization_path_planner_output* output){
+void MPSV_WrapperPathPlanner::AssignOutput(serialization_path_planner_output* output, mpsv::error_code errorCode){
     // Limit the number of poses to at most 1000
     if(pathPlannerOutput.path.size() > 1000){
         pathPlannerOutput.path.resize(1000);
     }
 
     // Copy planning results to the output
+    output->errorCode                   = static_cast<uint8_t>(errorCode);
     output->cost                        = pathPlannerOutput.cost;
     output->goalReached                 = pathPlannerOutput.goalReached;
     output->isFeasible                  = pathPlannerOutput.isFeasible;
@@ -135,12 +139,13 @@ void MPSV_WrapperPathPlanner::AssignOutput(serialization_path_planner_output* ou
     }
 }
 
-void MPSV_WrapperPathPlanner::ClearOutput(serialization_path_planner_output* output, bool validInput){
+void MPSV_WrapperPathPlanner::ClearOutput(serialization_path_planner_output* output, mpsv::error_code errorCode){
     output->cost = 0.0;
     output->goalReached = 0;
     output->isFeasible = 0;
     output->outOfNodes = 0;
-    output->invalidInput = static_cast<uint8_t>(!validInput);
+    output->reserved = 0;
+    output->errorCode = static_cast<uint8_t>(errorCode);
     output->numberOfPerformedIterations = 0;
     output->numPoses = 0;
     output->timestampOfComputationUTC = mpsv::core::GetTimestampUTC();

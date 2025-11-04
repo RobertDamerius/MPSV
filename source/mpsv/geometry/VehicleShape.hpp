@@ -47,14 +47,14 @@ class VehicleShape {
 
         /**
          * @brief Ensure the correct vertex order by possibly reversing the order of the internal vertices.
-         * @return True if all internal polygons are convex and the vertex order is correct or has been corrected, false otherwise. If this vehicle shape does not contain any polygons, true is returned.
+         * @return True if all internal polygons are convex and the vertex order is correct or has been corrected, false otherwise. If this vehicle shape does not contain any polygons, false is returned.
          */
         bool EnsureCorrectVertexOrder(void) noexcept {
             bool convex = true;
             for(auto&& v : convexVehicleShapes){
                 convex &= v.EnsureCorrectVertexOrder();
             }
-            return convex;
+            return !convexVehicleShapes.empty() && convex;
         }
 
         /**
@@ -71,14 +71,14 @@ class VehicleShape {
 
         /**
          * @brief Check whether all internal shapes of this vehicle shape contain finite values.
-         * @return True if all values are finite, false otherwise. If this vehicle shape does not contain any polygons, true is returned.
+         * @return True if all values are finite, false otherwise. If this vehicle shape does not contain any polygons, false is returned.
          */
         bool IsFinite(void) const noexcept{
             bool finite = true;
             for(auto&& v : convexVehicleShapes){
                 finite &= v.IsFinite();
             }
-            return finite;
+            return !convexVehicleShapes.empty() && finite;
         }
 
         /**

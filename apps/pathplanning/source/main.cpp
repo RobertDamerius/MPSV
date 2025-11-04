@@ -14,14 +14,14 @@ int main(int, char**){
 
     // apply a parameter set to the path planner
     mpsv::planner::PathPlannerParameterSet parameter = example::GetParameterSet();
-    if(!planner.ApplyParameterSet(parameter)){
+    if(mpsv::error_code::NONE != planner.ApplyParameterSet(parameter)){
         std::cerr << "ERROR: Could not apply parameter set!\n";
         return 0;
     }
 
     // get valid input data for planning problem
     mpsv::planner::PathPlannerInput dataIn = example::GetInput();
-    if(!dataIn.IsValid()){
+    if(mpsv::error_code::NONE != dataIn.IsValid()){
         std::cerr << "ERROR: Input data is invalid!\n";
         return 0;
     }

@@ -10,7 +10,7 @@
 <body>
 <header>
 <div class="header_title">MPSV - Motion Planner for Surface Vehicles</div>
-<div class="header_version">Version 1.1.0</div>
+<div class="header_version">Version 2.0.0</div>
 </header>
 <button onclick="PageToTop()" id="buttonToTop"></button>
 <div class="wrapper">
@@ -33,6 +33,8 @@
 <li class="linav"><a href="library_serializeasynconlineplannerparameter.html">Serialize AsyncOnlinePlanner Parameter Bus</a></li>
 <li class="linav"><a href="library_deserializeasynconlineplanneroutput.html">Deserialize AsyncOnlinePlanner Output Bus</a></li>
 <li class="linav"><a href="library_selectcurrentpointontrajectory.html">Select Current Point On Trajectory</a></li>
+<li class="linone"></li>
+<li class="linav"><a href="error_codes.html">Error Codes</a></li>
 </ul>
 
 </div>
@@ -54,10 +56,9 @@ A bus, which defines the output of the asynchronous online planner. The elements
 <tr><td style="font-family: Courier New;">timestamp</td><td style="font-family: Courier New;">double</td><td>Monotonically increasing timestamp in seconds (arbitrary time origin defined by the user) indicating the initial timepoint of the trajectory.</td></tr>
 <tr><td style="font-family: Courier New;">timestampInput</td><td style="font-family: Courier New;">double</td><td>The user-defined timestamp of the corresponding input data that has been used to compute the solution. The default value is quiet_NaN.</td></tr>
 <tr><td style="font-family: Courier New;">timestampParameter</td><td style="font-family: Courier New;">double</td><td>The user-defined timestamp of the corresponding parameter data that has been used to compute the solution. The default value is quiet_NaN.</td></tr>
+<tr><td style="font-family: Courier New;">inputError</td><td style="font-family: Courier New;">uint8</td><td>An <a href="error_codes.html">error code</a> indicating invalid input data.</td></tr>
+<tr><td style="font-family: Courier New;">parameterError</td><td style="font-family: Courier New;">uint8</td><td>An <a href="error_codes.html">error code</a> indicating invalid parameter data.</td></tr>
 <tr><td style="font-family: Courier New;">threadState</td><td style="font-family: Courier New;">uint8</td><td>The state of the planning thread (0: offline, 1: standby, 2: running).</td></tr>
-<tr><td style="font-family: Courier New;">timeoutInput</td><td style="font-family: Courier New;">bool</td><td>True if the given input data timed out, false otherwise.</td></tr>
-<tr><td style="font-family: Courier New;">validInput</td><td style="font-family: Courier New;">bool</td><td>True if the given input data is valid, false otherwise.</td></tr>
-<tr><td style="font-family: Courier New;">validParameter</td><td style="font-family: Courier New;">bool</td><td>True if the given parameter data is valid, false otherwise.</td></tr>
 <tr><td style="font-family: Courier New;">performedReset</td><td style="font-family: Courier New;">bool</td><td>True if reset has been performed, false otherwise.</td></tr>
 <tr><td style="font-family: Courier New;">error</td><td style="font-family: Courier New;">bool</td><td>True if path or motion planner reported an error, e.g. not feasible or out of nodes, false otherwise. This value is equal to (!pathPlanner.isFeasible || pathPlanner.outOfNodes || !motionPlanner.isFeasible || motionPlanner.outOfNodes).</td></tr>
 <tr><td style="font-family: Courier New;">trajectoryShrinked</td><td style="font-family: Courier New;">bool</td><td>True if trajectory has been shrinked to fit to the memory size.</td></tr>

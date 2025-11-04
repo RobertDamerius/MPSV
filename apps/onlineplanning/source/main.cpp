@@ -16,7 +16,7 @@ int main(int, char**){
 
     // apply a parameter set to the online planner
     mpsv::planner::OnlinePlannerParameterSet parameter = example::GetParameterSet();
-    if(!planner.ApplyParameterSet(parameter)){
+    if(mpsv::error_code::NONE != planner.ApplyParameterSet(parameter)){
         std::cerr << "ERROR: Could not apply parameter set!\n";
         return 0;
     }
@@ -28,7 +28,7 @@ int main(int, char**){
     for(int i = 0; i != 5; ++i){
         // get valid input data for planning problem
         mpsv::planner::OnlinePlannerInput dataIn = example::GetInput(timer.TimeToStart());
-        if(!dataIn.IsValid()){
+        if(mpsv::error_code::NONE != dataIn.IsValid()){
             std::cerr << "ERROR: Input data is invalid!\n";
             return 0;
         }

@@ -15,6 +15,7 @@
 #include <mpsv/planner/MotionPlannerOutput.hpp>
 #include <mpsv/core/DataLogFile.hpp>
 #include <mpsv/core/PerformanceCounter.hpp>
+#include <mpsv/core/ErrorCode.hpp>
 #include <mpsv/geometry/StaticObstacle.hpp>
 
 
@@ -75,10 +76,10 @@ class SequentialPlanner {
         /**
          * @brief Apply a new parameter set to the internal solvers.
          * @param[in] parameter The parameter set to be applied.
-         * @return True if parameter set is valid and has been applied, false otherwise.
+         * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
          */
-        bool ApplyParameterSet(const mpsv::planner::SequentialPlannerParameterSet& parameter) noexcept {
-            // Split into two parameter sets for path and motion planning
+        error_code ApplyParameterSet(const mpsv::planner::SequentialPlannerParameterSet& parameter) noexcept {
+            // split into two parameter sets for path and motion planning
             mpsv::planner::PathPlannerParameterSet parameterPath;
             mpsv::planner::MotionPlannerParameterSet parameterMotion;
             parameterPath.geometry = parameter.geometry;
@@ -91,16 +92,18 @@ class SequentialPlanner {
             parameterMotion.model = parameter.model;
             parameterMotion.motionPlanner = parameter.motionPlanner;
 
-            // Apply parameter set to path planner
-            if(!pathPlanner.ApplyParameterSet(parameterPath)){
-                return false;
+            // apply parameter set to path planner
+            error_code e = pathPlanner.ApplyParameterSet(parameterPath);
+            if(error_code::NONE != e){
+                return e;
             }
 
-            // Apply parameter set to motion planner
-            if(!motionPlanner.ApplyParameterSet(parameterMotion)){
-                return false;
+            // apply parameter set to motion planner
+            e = motionPlanner.ApplyParameterSet(parameterMotion);
+            if(error_code::NONE != e){
+                return e;
             }
-            return true;
+            return error_code::NONE;
         }
 
         /**

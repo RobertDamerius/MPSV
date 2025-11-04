@@ -4,6 +4,7 @@
 #include <mpsv/core/MPSVCommon.hpp>
 #include <mpsv/planner/ParameterTypes.hpp>
 #include <mpsv/core/DataLogFile.hpp>
+#include <mpsv/core/ErrorCode.hpp>
 
 
 namespace mpsv {
@@ -43,16 +44,22 @@ class SequentialPlannerParameterSet {
 
         /**
          * @brief Check whether this parameter set is valid or not.
-         * @return True if parameter set is valid, false otherwise.
+         * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
+         * @details The vertex order of polygon data may be adjusted if possible.
          */
-        bool IsValid(void) const noexcept {
-            bool validGeometry = geometry.IsValid();
-            bool validCostMap = costMap.IsValid();
-            bool validMetric = metric.IsValid();
-            bool validModel = model.IsValid();
-            bool validPathPlanner = pathPlanner.IsValid();
-            bool validMotionPlanner = motionPlanner.IsValid();
-            return validGeometry && validCostMap && validMetric && validModel && validPathPlanner && validMotionPlanner;
+        error_code IsValid(void) noexcept {
+            error_code e;
+            if(error_code::NONE != (e = geometry.IsValid()))
+                return e;
+            if(error_code::NONE != (e = costMap.IsValid()))
+                return e;
+            if(error_code::NONE != (e = metric.IsValid()))
+                return e;
+            if(error_code::NONE != (e = model.IsValid()))
+                return e;
+            if(error_code::NONE != (e = pathPlanner.IsValid()))
+                return e;
+            return motionPlanner.IsValid();
         }
 
         /**

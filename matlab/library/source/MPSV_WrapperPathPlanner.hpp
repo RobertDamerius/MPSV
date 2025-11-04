@@ -21,8 +21,7 @@ struct __attribute__((packed)) serialization_path_planner_input {
             double collisionCheckMaxPositionDeviation;                                 // Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 meters.
             double collisionCheckMaxAngleDeviation;                                    // Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree.
             std::array<std::array<float,2>,100> verticesVehicleShape;                  // Vertex data of the vehicle shape. Multiple convex polygons are separated by non-finite vertices.
-            uint8_t numSkeletalPoints;                                                 // Number of skeletal points in range [1,10].
-            std::array<std::array<double,2>,10> skeletalPoints;                        // Skeletal points (b-frame) at which the cost map is to be evaluated.
+            std::array<std::array<float,2>,10> skeletalPoints;                         // Skeletal points (b-frame) at which the cost map is to be evaluated. Non-finite entries are ignored.
         } geometry;
         struct __attribute__((packed)) {
             double weightPsi;                                                          // Weighting for yaw angle in distance metric function.
@@ -48,11 +47,11 @@ struct __attribute__((packed)) serialization_path_planner_input {
  * @brief This structure defines the output data for the path planner wrapper class.
  */
 struct __attribute__((packed)) serialization_path_planner_output {
+    uint8_t errorCode;                            // Non-zero error code value if input or parameter data is invalid.
     uint8_t goalReached:1;                        // True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
     uint8_t isFeasible:1;                         // True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles or if the initial or final pose is not inside the sampling area.
     uint8_t outOfNodes:1;                         // True if all nodes are within the solution path and no new nodes can be sampled and added to the tree.
-    uint8_t invalidInput:1;                       // True if input data is invalid, false otherwise.
-    uint8_t reserved:4;                           // Reserved bits, unused, set to zero.
+    uint8_t reserved:5;                           // Reserved bits, unused, set to zero.
     uint32_t numberOfPerformedIterations;         // The total number of iterations that have been performed since the latest prepare step.
     double timestampOfComputationUTC;             // Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
     double cost;                                  // The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
@@ -107,21 +106,22 @@ class MPSV_WrapperPathPlanner {
         /**
          * @brief Assign the input data to the internal path planner data.
          * @param[in] input Input data defining the path planning problem to be solved.
-         * @return True if the input data is valid, false otherwise.
+         * @return Error code.
          */
-        bool AssignInput(serialization_path_planner_input* input);
+        mpsv::error_code AssignInput(serialization_path_planner_input* input);
 
         /**
          * @brief Assign the output data from the internal path planner data.
          * @param[out] output Output where to store the results of the solved path planning problem.
+         * @param[in] errorCode Error code to be assigned.
          */
-        void AssignOutput(serialization_path_planner_output* output);
+        void AssignOutput(serialization_path_planner_output* output, mpsv::error_code errorCode);
 
         /**
          * @brief Clear the output data by setting default values.
          * @param[inout] output Output where to store the results of the solved path planning problem.
-         * @param[in] validInput True if the input data is valid, false otherwise.
+         * @param[in] errorCode Error code to be assigned.
          */
-        void ClearOutput(serialization_path_planner_output* output, bool validInput);
+        void ClearOutput(serialization_path_planner_output* output, mpsv::error_code errorCode);
 };
 

@@ -15,6 +15,7 @@
 #include <mpsv/core/DataLogFile.hpp>
 #include <mpsv/core/PerformanceCounter.hpp>
 #include <mpsv/core/Time.hpp>
+#include <mpsv/core/ErrorCode.hpp>
 #include <mpsv/math/Additional.hpp>
 #include <mpsv/math/Metric.hpp>
 
@@ -91,17 +92,18 @@ class PathPlanner {
         /**
          * @brief Apply a parameter set to the path planner.
          * @param[in] parameterSet The parameter set to be applied.
-         * @return True if the input parameter set is valid and parameters have been applied, false otherwise.
+         * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
          * @details Call this function after a successfull initialization (using the @ref Initialize member function). Do not call this function between @ref Prepare and @ref Solve calls, otherwise the parameters used by
          * both member functions may be inconsistent! If new parameters are to be applied, always apply them BEFORE a prepare-solve-step.
          */
-        bool ApplyParameterSet(const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
-            if(!parameter.IsValid()){
-                return false;
+        error_code ApplyParameterSet(mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
+            error_code e = parameter.IsValid();
+            if(error_code::NONE != e){
+                return e;
             }
             this->parameter = parameter;
             state.Clear(true);
-            return true;
+            return error_code::NONE;
         }
 
         /**

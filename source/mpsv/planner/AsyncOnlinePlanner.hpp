@@ -4,6 +4,7 @@
 #include <mpsv/core/MPSVCommon.hpp>
 #include <mpsv/core/WorkerThread.hpp>
 #include <mpsv/core/PerformanceCounter.hpp>
+#include <mpsv/core/ErrorCode.hpp>
 #include <mpsv/planner/OnlinePlanner.hpp>
 #include <mpsv/planner/AsyncOnlinePlannerInput.hpp>
 #include <mpsv/planner/AsyncOnlinePlannerOutput.hpp>
@@ -28,6 +29,7 @@ class AsyncOnlinePlanner {
          */
         AsyncOnlinePlanner() noexcept {
             terminate = false;
+            previousParameterTimestamp = std::numeric_limits<double>::quiet_NaN();
         }
 
         /**
@@ -73,6 +75,7 @@ class AsyncOnlinePlanner {
             database.Clear();
             mtxDatabase.unlock();
             terminate = false;
+            previousParameterTimestamp = std::numeric_limits<double>::quiet_NaN();
         }
 
         /**
@@ -85,34 +88,28 @@ class AsyncOnlinePlanner {
          */
         void SetInput(mpsv::planner::AsyncOnlinePlannerInput& input) noexcept {
             // check for data validity
-            bool valid = input.IsValid();
-            bool suspendWorkerThread = !input.enable;
+            error_code inputError = input.IsValid();
 
             // move valid input to internal database
             mtxDatabase.lock();
-            if(valid){
+            database.inputError = inputError;
+            if(error_code::NONE == inputError){
                 if(input.reset){ // detected reset: interrupt planner
-                    database.resetIsRequired = true;
+                    database.resetIsRequired = true; // make sure the reset is not lost if SetInput is called with high frequency
                     onlinePlanner.Interrupt();
                 }
                 input.MoveTo(database.input);
                 database.timeoutCounter.Start();
             }
-            if(suspendWorkerThread){
-                database.resetIsRequired = true; // reset is required when leaving the standby mode
-            }
-            if(mpsv::core::WorkerThreadState::running != workerThread.GetState()){ // update some outputs if thread is not running
-                database.output.validInput = valid;
-                if(valid){
-                    database.output.timestampInput = database.input.timestamp;
-                }
-            }
-            database.validInput = valid;
+            bool suspendWorkerThread = (error_code::NONE != database.inputError) || (error_code::NONE != database.parameterError) || !database.input.enable;
             mtxDatabase.unlock();
 
             // suspend or resume worker thread
             if(suspendWorkerThread){
                 workerThread.Suspend();
+                mtxDatabase.lock();
+                database.resetIsRequired = true; // reset is required when leaving the standby mode
+                mtxDatabase.unlock();
             }
             else{
                 workerThread.Resume();
@@ -126,19 +123,16 @@ class AsyncOnlinePlanner {
          */
         void SetParameter(mpsv::planner::AsyncOnlinePlannerParameterSet& parameter) noexcept {
             // check for data validity
-            bool valid = parameter.IsValid();
+            error_code parameterError = parameter.IsValid();
+            bool timestampChanged = !std::isfinite(previousParameterTimestamp) || (previousParameterTimestamp != parameter.timestamp);
 
             // move valid parameters to internal database
             mtxDatabase.lock();
-            if(valid){
+            database.parameterError = parameterError;
+            if((error_code::NONE == parameterError) && timestampChanged){
+                previousParameterTimestamp = parameter.timestamp;
                 parameter.MoveTo(database.parameter);
-            }
-            database.validParameter = valid;
-            if(mpsv::core::WorkerThreadState::running != workerThread.GetState()){ // update some outputs if thread is not running
-                database.output.validParameter = valid;
-                if(valid){
-                    database.output.timestampParameter = database.parameter.timestamp;
-                }
+                database.parameterUpdateRequired = true;
             }
             mtxDatabase.unlock();
         }
@@ -151,8 +145,14 @@ class AsyncOnlinePlanner {
             mpsv::planner::AsyncOnlinePlannerOutput result;
             mtxDatabase.lock();
             result = database.output;
-            mtxDatabase.unlock();
             result.threadState = workerThread.GetState();
+            if(result.threadState != mpsv::core::WorkerThreadState::running){
+                result.timestampInput = database.input.timestamp;
+                result.timestampParameter = database.parameter.timestamp;
+                result.inputError = database.inputError;
+                result.parameterError = database.parameterError;
+            }
+            mtxDatabase.unlock();
             return result;
         }
 
@@ -169,18 +169,19 @@ class AsyncOnlinePlanner {
         mpsv::core::WorkerThread workerThread;        // The internal worker thread.
         mpsv::planner::OnlinePlanner onlinePlanner;   // The online sequential planner.
         std::atomic<bool> terminate;                  // True if the asynchronous online planner should be terminated, false otherwise.
+        volatile double previousParameterTimestamp;   // Previous parameter timestamp (used to detect new parameter sets).
 
         /* internal database */
         class Database {
             public:
                 mpsv::planner::AsyncOnlinePlannerInput input;              // The latest valid input data.
                 mpsv::planner::AsyncOnlinePlannerParameterSet parameter;   // The latest valid input parameter set.
-                mpsv::planner::AsyncOnlinePlannerOutput output;            // Output of the planner.
+                mpsv::planner::AsyncOnlinePlannerOutput output;            // Output of the online planner.
                 mpsv::core::PerformanceCounter timeoutCounter;             // Performance counter to measure timeouts.
-                bool validInput;                                           // True if @ref input is valid, false otherwise.
-                bool validParameter;                                       // True if @ref parameter is valid, false otherwise.
+                mpsv::error_code inputError;                               // Error code of the latest @ref SetInput call.
+                mpsv::error_code parameterError;                           // Error code of the latest @ref SetParameter call.
                 bool resetIsRequired;                                      // True if an automatic reset is required or a reset has been commanded via @ref SetInput, false otherwise.
-                double previousParameterTimestamp;                         // The previous timestamp of a parameter set. The initial value is quiet_NaN.
+                bool parameterUpdateRequired;                              // True if parameters should be applied to the planner, false otherwise.
 
                 /**
                  * @brief Construct a new database object and set default values.
@@ -195,10 +196,10 @@ class AsyncOnlinePlanner {
                     parameter.Clear();
                     output.Clear();
                     timeoutCounter.Reset();
-                    validInput = false;
-                    validParameter = false;
+                    inputError = error_code::NOT_AVAILABLE;
+                    parameterError = error_code::NOT_AVAILABLE;
                     resetIsRequired = true;
-                    previousParameterTimestamp = std::numeric_limits<double>::quiet_NaN();
+                    parameterUpdateRequired = false;
                 }
         } database;
         std::mutex mtxDatabase;   // Protect @ref database.
@@ -217,48 +218,36 @@ class AsyncOnlinePlanner {
             mpsv::planner::AsyncOnlinePlannerInput dataIn;
             mpsv::planner::AsyncOnlinePlannerOutput dataOut;
 
-            // handle timeout and invalid input data: suspend worker thread in case of errors
+            // get input, apply parameters, handle errors
             mtxDatabase.lock();
-            bool timeout = (database.timeoutCounter.TimeToStart() >= database.parameter.timeoutInput);
-            dataOut.timestampInput = database.input.timestamp;
-            dataOut.timestampParameter = database.parameter.timestamp;
-            dataOut.timeoutInput = timeout;
-            dataOut.validInput = database.validInput;
-            dataOut.validParameter = database.validParameter;
-            if(timeout || !database.validInput || !database.validParameter || !database.input.enable){
-                dataOut.MoveTo(database.output);
-                database.resetIsRequired = true; // reset is required when leaving the standby mode
-                mtxDatabase.unlock();
-                workerThread.Suspend();
-                return;
+            if(database.timeoutCounter.TimeToStart() >= database.parameter.timeoutInput){
+                database.inputError = (database.inputError == error_code::NONE) ? error_code::NOT_AVAILABLE : database.inputError;
             }
-            if(!std::isfinite(database.previousParameterTimestamp) || (database.previousParameterTimestamp != database.parameter.timestamp)){
-                database.previousParameterTimestamp = database.parameter.timestamp;
-                dataOut.validParameter = onlinePlanner.ApplyParameterSet(database.parameter);
-                if(!dataOut.validParameter){
-                    dataOut.MoveTo(database.output);
-                    database.resetIsRequired = true; // reset is required when leaving the standby mode
-                    mtxDatabase.unlock();
-                    workerThread.Suspend();
-                    return;
-                }
+            if(database.parameterUpdateRequired){
+                database.parameterError = onlinePlanner.ApplyParameterSet(database.parameter);
+                database.parameterUpdateRequired = false;
             }
+            bool suspend = (error_code::NONE != database.inputError) || (error_code::NONE != database.parameterError) || !database.input.enable;
             bool reset = database.resetIsRequired;
             database.resetIsRequired = false;
             dataIn = database.input;
+            dataOut.timestampInput = database.input.timestamp;
+            dataOut.timestampParameter = database.parameter.timestamp;
+            dataOut.inputError = database.inputError;
+            dataOut.parameterError = database.parameterError;
             mtxDatabase.unlock();
 
-            // perform a reset if commanded
-            if(reset){
-                onlinePlanner.Reset();
+            // perform a reset if commanded and solve the planning problem
+            if(!suspend){
+                if(reset){
+                    onlinePlanner.Reset();
+                }
+                onlinePlanner.Solve(dataOut, dataIn);
             }
-
-            // solve the planning problem
-            onlinePlanner.Solve(dataOut, dataIn);
 
             // move result to internal database and run callback
             mtxDatabase.lock();
-            if(dataOut.error){
+            if(dataOut.error || suspend){
                 database.resetIsRequired = true; // reset is required when leaving the standby mode
                 workerThread.Suspend();
             }

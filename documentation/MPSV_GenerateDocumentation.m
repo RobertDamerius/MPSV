@@ -25,6 +25,8 @@ layoutNavBar = [
     SimpleDoc.NavEntry(SimpleDoc.NavEntryType.link, 'Serialize AsyncOnlinePlanner Parameter Bus', 'library_serializeasynconlineplannerparameter.html');
     SimpleDoc.NavEntry(SimpleDoc.NavEntryType.link, 'Deserialize AsyncOnlinePlanner Output Bus', 'library_deserializeasynconlineplanneroutput.html');
     SimpleDoc.NavEntry(SimpleDoc.NavEntryType.link, 'Select Current Point On Trajectory', 'library_selectcurrentpointontrajectory.html');
+    SimpleDoc.NavEntry(SimpleDoc.NavEntryType.none);
+    SimpleDoc.NavEntry(SimpleDoc.NavEntryType.link, 'Error Codes', 'error_codes.html');
 ];
 
 % Generate HTML documentation

@@ -1,0 +1,66 @@
+<h1>Error Codes</h1>
+If invalid input or parameter data is passed to the planner, then a non-zero error code is returned.
+All types of error codes are listed below.
+
+<table>
+<tr><th>Value</th><th width="200">Name</th><th>Description</th></tr>
+<tr><td style="font-family: Courier New;">0 </td><td style="font-family: Courier New;">NONE                                           </td><td>No error.</td></tr>
+<tr><td style="font-family: Courier New;">1 </td><td style="font-family: Courier New;">NOT_AVAILABLE                                  </td><td>Default error code if error is not available yet, but it should be marked as error, e.g. as initial error code. This value is also used to indicate a timeout.</td></tr>
+<tr><td style="font-family: Courier New;">2 </td><td style="font-family: Courier New;">INPUT_TIMESTAMP                                </td><td>timestamp is not finite.</td></tr>
+<tr><td style="font-family: Courier New;">3 </td><td style="font-family: Courier New;">INPUT_ORIGIN_LLA                               </td><td>originLLA is not finite.</td></tr>
+<tr><td style="font-family: Courier New;">4 </td><td style="font-family: Courier New;">INPUT_ORIGIN_OLD_TO_NEW                        </td><td>originOldToNew is not finite.</td></tr>
+<tr><td style="font-family: Courier New;">5 </td><td style="font-family: Courier New;">INPUT_INITIAL_POSE                             </td><td>initialPose is not finite.</td></tr>
+<tr><td style="font-family: Courier New;">6 </td><td style="font-family: Courier New;">INPUT_INITIAL_STATE_AND_INPUT                  </td><td>initialStateAndInput is not finite.</td></tr>
+<tr><td style="font-family: Courier New;">7 </td><td style="font-family: Courier New;">INPUT_INITIAL_PATH                             </td><td>initialPath is not finite.</td></tr>
+<tr><td style="font-family: Courier New;">8 </td><td style="font-family: Courier New;">INPUT_FINAL_POSE                               </td><td>finalPose is not finite.</td></tr>
+<tr><td style="font-family: Courier New;">9 </td><td style="font-family: Courier New;">INPUT_SAMPLING_BOX_CENTER_POSE                 </td><td>samplingBoxCenterPose is not finite.</td></tr>
+<tr><td style="font-family: Courier New;">10</td><td style="font-family: Courier New;">INPUT_SAMPLING_BOX_DIMENSION                   </td><td>samplingBoxDimension is not finite.</td></tr>
+<tr><td style="font-family: Courier New;">11</td><td style="font-family: Courier New;">INPUT_INITIAL_POSE_NOT_INSIDE_SAMPLING_BOX     </td><td>initalPose is not inside the sampling box.</td></tr>
+<tr><td style="font-family: Courier New;">12</td><td style="font-family: Courier New;">INPUT_INITIAL_STATE_NOT_INSIDE_SAMPLING_BOX    </td><td>initialStateAndInput is not inside the sampling box.</td></tr>
+<tr><td style="font-family: Courier New;">13</td><td style="font-family: Courier New;">INPUT_FINAL_POSE_NOT_INSIDE_SAMPLING_BOX       </td><td>finalPose is not inside the sampling box.</td></tr>
+<tr><td style="font-family: Courier New;">14</td><td style="font-family: Courier New;">INPUT_STATIC_OBSTACLES                         </td><td>Vertices of staticObstacles are not finite, not convex or vertex order is inconsistent.</td></tr>
+<tr><td style="font-family: Courier New;">15</td><td style="font-family: Courier New;">MODEL_MATF                                     </td><td>matF is not finite.</td></tr>
+<tr><td style="font-family: Courier New;">16</td><td style="font-family: Courier New;">MODEL_MATB                                     </td><td>matB is not finite.</td></tr>
+<tr><td style="font-family: Courier New;">17</td><td style="font-family: Courier New;">MODEL_INV_MATB                                 </td><td>matB is not invertable.</td></tr>
+<tr><td style="font-family: Courier New;">18</td><td style="font-family: Courier New;">MODEL_VEC_TIMECONSTANTS_XYN                    </td><td>vecTimeconstantsXYN is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">19</td><td style="font-family: Courier New;">MODEL_VEC_TIMECONSTANTS_INPUT                  </td><td>vecTimeconstantsInput is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">20</td><td style="font-family: Courier New;">MODEL_LOWER_LIMIT_XYN                          </td><td>lowerLimitXYN is not finite.</td></tr>
+<tr><td style="font-family: Courier New;">21</td><td style="font-family: Courier New;">MODEL_UPPER_LIMIT_XYN                          </td><td>upperLimitXYN is not finite.</td></tr>
+<tr><td style="font-family: Courier New;">22</td><td style="font-family: Courier New;">MODEL_LOWER_GREATER_UPPER_LIMIT                </td><td>lowerLimitXYN is greater than upperLimitXYN.</td></tr>
+<tr><td style="font-family: Courier New;">23</td><td style="font-family: Courier New;">COSTMAP_MOD_BREAKPOINTS                        </td><td>modBreakpoints is not positive.</td></tr>
+<tr><td style="font-family: Courier New;">24</td><td style="font-family: Courier New;">COSTMAP_RESOLUTION                             </td><td>resolution is not finite or is too low.</td></tr>
+<tr><td style="font-family: Courier New;">25</td><td style="font-family: Courier New;">COSTMAP_DISTANCE_SCALE                         </td><td>distanceScale is not finite or negative.</td></tr>
+<tr><td style="font-family: Courier New;">26</td><td style="font-family: Courier New;">COSTMAP_DISTANCE_DECAY                         </td><td>distanceDecay is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">27</td><td style="font-family: Courier New;">METRIC_WEIGHT_PSI                              </td><td>weightPsi is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">28</td><td style="font-family: Courier New;">METRIC_WEIGHT_SWAY                             </td><td>weightSway is not finite or negative.</td></tr>
+<tr><td style="font-family: Courier New;">29</td><td style="font-family: Courier New;">METRIC_WEIGHT_REVERSE_SCALE                    </td><td>weightReverseScale is not finite or negative.</td></tr>
+<tr><td style="font-family: Courier New;">30</td><td style="font-family: Courier New;">METRIC_WEIGHT_REVERSE_DECAY                    </td><td>weightReverseDecay is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">31</td><td style="font-family: Courier New;">GEOMETRY_MAX_POSITION_DEVIATION                </td><td>collisionCheckMaxPositionDeviation is not finite or too low.</td></tr>
+<tr><td style="font-family: Courier New;">32</td><td style="font-family: Courier New;">GEOMETRY_MAX_ANGLE_DEVIATION                   </td><td>collisionCheckMaxAngleDeviation is not finite or too low.</td></tr>
+<tr><td style="font-family: Courier New;">33</td><td style="font-family: Courier New;">GEOMETRY_VEHICLE_SHAPE                         </td><td>Vertices of vehicleShape are not finite, not convex or vertex order is inconsistent.</td></tr>
+<tr><td style="font-family: Courier New;">34</td><td style="font-family: Courier New;">GEOMETRY_SKELETAL_POINTS                       </td><td>skeletalPoints is empty or not finite.</td></tr>
+<tr><td style="font-family: Courier New;">35</td><td style="font-family: Courier New;">PATHPLANNER_PERIOD_GOAL_SAMPLING               </td><td>periodGoalSampling for path planner is not positive.</td></tr>
+<tr><td style="font-family: Courier New;">36</td><td style="font-family: Courier New;">MOTIONPLANNER_SAMPLING_RANGE_POSITION          </td><td>samplingRangePosition is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">37</td><td style="font-family: Courier New;">MOTIONPLANNER_SAMPLING_RANGE_ANGLE             </td><td>samplingRangeAngle is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">38</td><td style="font-family: Courier New;">MOTIONPLANNER_PERIOD_GOAL_SAMPLING             </td><td>periodGoalSampling for motion planner is not positive.</td></tr>
+<tr><td style="font-family: Courier New;">39</td><td style="font-family: Courier New;">MOTIONPLANNER_SAMPLETIME                       </td><td>sampletime is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">40</td><td style="font-family: Courier New;">MOTIONPLANNER_MAX_INPUT_PATH_LENGTH            </td><td>maxInputPathLength is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">41</td><td style="font-family: Courier New;">CONTROLLER_MAT_K                               </td><td>matK is not finite.</td></tr>
+<tr><td style="font-family: Courier New;">42</td><td style="font-family: Courier New;">CONTROLLER_MAX_RADIUS_X                        </td><td>maxRadiusX is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">43</td><td style="font-family: Courier New;">CONTROLLER_MAX_RADIUS_Y                        </td><td>maxRadiusY is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">44</td><td style="font-family: Courier New;">CONTROLLER_MAX_RADIUS_PSI                      </td><td>maxRadiusPsi is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">45</td><td style="font-family: Courier New;">CONTROLLER_MIN_RADIUS_POSITION                 </td><td>minRadiusPosition is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">46</td><td style="font-family: Courier New;">REGION_OF_ATTRACTION_RANGE_POSE                </td><td>rangePose is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">47</td><td style="font-family: Courier New;">REGION_OF_ATTRACTION_RANGE_UVR                 </td><td>rangeUVR is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">48</td><td style="font-family: Courier New;">REGION_OF_ATTRACTION_RANGE_XYN                 </td><td>rangeXYN is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">49</td><td style="font-family: Courier New;">ONLINEPLANNER_MAX_COMPUTATION_TIME_PATH_RESET  </td><td>maxComputationTimePathOnReset is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">50</td><td style="font-family: Courier New;">ONLINEPLANNER_MAX_COMPUTATION_TIME_MOTION_RESET</td><td>maxComputationTimeMotionOnReset is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">51</td><td style="font-family: Courier New;">ONLINEPLANNER_MAX_COMPUTATION_TIME_PATH        </td><td>maxComputationTimePath is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">52</td><td style="font-family: Courier New;">ONLINEPLANNER_MAX_COMPUTATION_TIME_MOTION      </td><td>maxComputationTimeMotion is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">53</td><td style="font-family: Courier New;">ONLINEPLANNER_ADDITIONAL_AHEAD_PLANNING_TIME   </td><td>additionalAheadPlanningTime is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">54</td><td style="font-family: Courier New;">ONLINEPLANNER_ADDITIONAL_TRAJECTORY_DURATION   </td><td>additionalTrajectoryDuration is not finite or not positive.</td></tr>
+<tr><td style="font-family: Courier New;">55</td><td style="font-family: Courier New;">ONLINEPLANNER_TIME_KEEP_PAST_TRAJECTORY        </td><td>timeKeepPastTrajectory is not finite or negative.</td></tr>
+<tr><td style="font-family: Courier New;">56</td><td style="font-family: Courier New;">ONLINEPLANNER_NUM_SIMULATION_STEPS             </td><td>The number of simulation steps is too high: either planning time is too high and/or sampletime is too low.</td></tr>
+<tr><td style="font-family: Courier New;">57</td><td style="font-family: Courier New;">ASYNCPLANNER_TIMESTAMP                         </td><td>timestamp is not finite.</td></tr>
+<tr><td style="font-family: Courier New;">58</td><td style="font-family: Courier New;">ASYNCPLANNER_TIMEOUT_INPUT                     </td><td>timeoutInput is not finite.</td></tr>
+</table>

@@ -132,21 +132,23 @@ void Benchmark::GeneratePolygons(const size_t numPolygons){
 }
 
 void Benchmark::InitializeVehicleSimulator(void){
-    std::array<double,36> matF                      = {-0.031604977390302, 0.0, 0.0, 0.233741474945168, 0.0, 0.0, 0.0, 0.0, 0.133462292221887, -0.020792892088185, 0.0, 0.0, 0.0, -0.041708610292712, 0.017242263124379, 0.0, -0.251243228165994, -0.000476044356140, 0.0, 0.0, 0.005297185500344, 0.0, -0.167981638498434, 0.497442136687157, 0.0, 0.000017966020615, -0.023528504195578, 0.0, 0.000108223241795, 0.000649602175186, 0.0, 0.0, -0.000002281767319, 0.0, 0.000072358238719, -0.678801229030825};
-    std::array<double,9> matB                       = {0.000237948834266, -0.000004551592718, 0.000010003488944, -0.000009313932115, 0.000215194147058, -0.000024957572224, -0.000002202124158, -0.000002930260852, 0.000043018345190};
-    std::array<double,3> vecTimeconstantsXYN        = {0.2, 0.2, 0.2};
-    std::array<double,3> vecTimeconstantsInput      = {0.5, 0.5, 0.5};
-    std::array<double,3> lowerLimitXYN              = {-630.0, -495.0, -675.0};
-    std::array<double,3> upperLimitXYN              = {630.0, 495.0, 675.0};
-    std::array<double,36> matK                      = {0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35, 0.0, 0.0, 0.0, 0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35, 0.0, 0.0, 0.0, 0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35};
-    double maxRadiusX                               = 10.0;
-    double maxRadiusY                               = 6.0;
-    double maxRadiusPsi                             = 1.0;
-    double minRadiusPosition                        = 2.0;
-    if(!vehicleSimulator.SetModel(matF, matB, vecTimeconstantsXYN, vecTimeconstantsInput, lowerLimitXYN, upperLimitXYN)){
+    mpsv::planner::ParameterModel model;
+    mpsv::planner::ParameterController controller;
+    model.matF                   = {-0.031604977390302, 0.0, 0.0, 0.233741474945168, 0.0, 0.0, 0.0, 0.0, 0.133462292221887, -0.020792892088185, 0.0, 0.0, 0.0, -0.041708610292712, 0.017242263124379, 0.0, -0.251243228165994, -0.000476044356140, 0.0, 0.0, 0.005297185500344, 0.0, -0.167981638498434, 0.497442136687157, 0.0, 0.000017966020615, -0.023528504195578, 0.0, 0.000108223241795, 0.000649602175186, 0.0, 0.0, -0.000002281767319, 0.0, 0.000072358238719, -0.678801229030825};
+    model.matB                   = {0.000237948834266, -0.000004551592718, 0.000010003488944, -0.000009313932115, 0.000215194147058, -0.000024957572224, -0.000002202124158, -0.000002930260852, 0.000043018345190};
+    model.vecTimeconstantsXYN    = {0.2, 0.2, 0.2};
+    model.vecTimeconstantsInput  = {0.5, 0.5, 0.5};
+    model.lowerLimitXYN          = {-630.0, -495.0, -675.0};
+    model.upperLimitXYN          = {630.0, 495.0, 675.0};
+    controller.matK              = {0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35, 0.0, 0.0, 0.0, 0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35, 0.0, 0.0, 0.0, 0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35};
+    controller.maxRadiusX        = 10.0;
+    controller.maxRadiusY        = 6.0;
+    controller.maxRadiusPsi      = 1.0;
+    controller.minRadiusPosition = 2.0;
+    if(mpsv::error_code::NONE != vehicleSimulator.SetModel(model)){
         fprintf(stderr,"ERROR: Failed to set model parameters!\n");
     }
-    if(!vehicleSimulator.SetController(matK, maxRadiusX, maxRadiusY, maxRadiusPsi, minRadiusPosition)){
+    if(mpsv::error_code::NONE != vehicleSimulator.SetController(controller)){
         fprintf(stderr,"ERROR: Failed to set controller parameters!\n");
     }
 }
@@ -292,12 +294,12 @@ double Benchmark::PathPlanning(void){
         planner.Terminate();
         return std::numeric_limits<double>::quiet_NaN();
     }
-    if(!planner.ApplyParameterSet(parameterSet)){
+    if(mpsv::error_code::NONE != planner.ApplyParameterSet(parameterSet)){
         fprintf(stderr,"ERROR: Failed to set parameters for the path planner!\n");
         planner.Terminate();
         return std::numeric_limits<double>::quiet_NaN();
     }
-    if(!dataIn.IsValid()){
+    if(mpsv::error_code::NONE != dataIn.IsValid()){
         fprintf(stderr,"ERROR: Input data for the path planner is invalid!\n");
         planner.Terminate();
         return std::numeric_limits<double>::quiet_NaN();
@@ -382,12 +384,12 @@ double Benchmark::MotionPlanning(void){
         planner.Terminate();
         return std::numeric_limits<double>::quiet_NaN();
     }
-    if(!planner.ApplyParameterSet(parameterSet)){
+    if(mpsv::error_code::NONE != planner.ApplyParameterSet(parameterSet)){
         fprintf(stderr,"ERROR: Failed to set parameters for the motion planner!\n");
         planner.Terminate();
         return std::numeric_limits<double>::quiet_NaN();
     }
-    if(!dataIn.IsValid()){
+    if(mpsv::error_code::NONE != dataIn.IsValid()){
         fprintf(stderr,"ERROR: Input data for the motion planner is invalid!\n");
         planner.Terminate();
         return std::numeric_limits<double>::quiet_NaN();

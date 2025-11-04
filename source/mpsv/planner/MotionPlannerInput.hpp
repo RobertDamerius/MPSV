@@ -4,6 +4,7 @@
 #include <mpsv/core/MPSVCommon.hpp>
 #include <mpsv/geometry/StaticObstacle.hpp>
 #include <mpsv/core/DataLogFile.hpp>
+#include <mpsv/core/ErrorCode.hpp>
 
 
 namespace mpsv {
@@ -32,19 +33,38 @@ class MotionPlannerInput {
 
         /**
          * @brief Check whether the attributes are valid.
-         * @return True if all attributes are valid, false otherwise.
-         * @details Attributes are valid if all values are finite and static obstacles are indeed convex.
+         * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
+         * @details The vertex order of polygon data may be adjusted if possible.
          */
-        bool IsValid(void) noexcept {
-            bool valid = std::isfinite(initialStateAndInput[0]) && std::isfinite(initialStateAndInput[1]) && std::isfinite(initialStateAndInput[2]) && std::isfinite(initialStateAndInput[3]) && std::isfinite(initialStateAndInput[4]) && std::isfinite(initialStateAndInput[5]) && std::isfinite(initialStateAndInput[6]) && std::isfinite(initialStateAndInput[7]) && std::isfinite(initialStateAndInput[8]) && std::isfinite(initialStateAndInput[9]) && std::isfinite(initialStateAndInput[10]) && std::isfinite(initialStateAndInput[11]);
-            valid &= std::isfinite(originOldToNew[0]) && std::isfinite(originOldToNew[1]);
+        error_code IsValid(void) noexcept {
+            if(!(std::isfinite(initialStateAndInput[0]) &&
+                 std::isfinite(initialStateAndInput[1]) &&
+                 std::isfinite(initialStateAndInput[2]) &&
+                 std::isfinite(initialStateAndInput[3]) &&
+                 std::isfinite(initialStateAndInput[4]) &&
+                 std::isfinite(initialStateAndInput[5]) &&
+                 std::isfinite(initialStateAndInput[6]) &&
+                 std::isfinite(initialStateAndInput[7]) &&
+                 std::isfinite(initialStateAndInput[8]) &&
+                 std::isfinite(initialStateAndInput[9]) &&
+                 std::isfinite(initialStateAndInput[10]) &&
+                 std::isfinite(initialStateAndInput[11])))
+                return error_code::INPUT_INITIAL_STATE_AND_INPUT;
+            if(!(std::isfinite(originOldToNew[0]) &&
+                 std::isfinite(originOldToNew[1])))
+                return error_code::INPUT_ORIGIN_OLD_TO_NEW;
             for(auto&& pose : initialPath){
-                valid &= std::isfinite(pose[0]) && std::isfinite(pose[1]) && std::isfinite(pose[2]);
+                if(!(std::isfinite(pose[0]) &&
+                     std::isfinite(pose[1]) &&
+                     std::isfinite(pose[2])))
+                    return error_code::INPUT_INITIAL_PATH;
             }
             for(auto&& obstacle : staticObstacles){
-                valid &= obstacle.IsConvex() && obstacle.IsFinite();
+                if(!(obstacle.IsFinite() &&
+                     obstacle.EnsureCorrectVertexOrder()))
+                    return error_code::INPUT_STATIC_OBSTACLES;
             }
-            return valid;
+            return error_code::NONE;
         }
 
         /**

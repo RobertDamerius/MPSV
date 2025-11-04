@@ -3,6 +3,7 @@
 
 #include <mpsv/core/MPSVCommon.hpp>
 #include <mpsv/planner/OnlinePlannerParameterSet.hpp>
+#include <mpsv/core/ErrorCode.hpp>
 
 
 namespace mpsv {
@@ -35,13 +36,15 @@ class AsyncOnlinePlannerParameterSet: public mpsv::planner::OnlinePlannerParamet
 
         /**
          * @brief Check whether this parameter set is valid or not.
-         * @return True if parameter set is valid, false otherwise.
+         * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
+         * @details The vertex order of polygon data may be adjusted if possible.
          */
-        bool IsValid(void) const noexcept {
-            bool valid = mpsv::planner::OnlinePlannerParameterSet::IsValid();
-            valid &= std::isfinite(timestamp);
-            valid &= std::isfinite(timeoutInput);
-            return valid;
+        error_code IsValid(void) noexcept {
+            if(!std::isfinite(timestamp))
+                return error_code::ASYNCPLANNER_TIMESTAMP;
+            if(!std::isfinite(timeoutInput))
+                return error_code::ASYNCPLANNER_TIMEOUT_INPUT;
+            return mpsv::planner::OnlinePlannerParameterSet::IsValid();
         }
 
         /**

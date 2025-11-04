@@ -41,8 +41,7 @@ struct __attribute__((packed)) serialization_parameter {
             double collisionCheckMaxPositionDeviation;                  // [Geometry] Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 meters.
             double collisionCheckMaxAngleDeviation;                     // [Geometry] Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree.
             std::array<std::array<float,2>,100> verticesVehicleShape;   // [Geometry] Vertex data of the vehicle shape. Multiple convex polygons are separated by non-finite vertices.
-            uint8_t numSkeletalPoints;                                  // [Geometry] Number of skeletal points in range [1,10].
-            std::array<std::array<double,2>,10> skeletalPoints;         // [Geometry] Skeletal points (b-frame) at which the cost map is to be evaluated.
+            std::array<std::array<float,2>,10> skeletalPoints;          // [Geometry] Skeletal points (b-frame) at which the cost map is to be evaluated. Non-finite entries are ignored.
         } geometry;
         struct __attribute__((packed)) {
             int32_t modBreakpoints;                                     // [CostMap] A modulo factor (> 0) that indicates when to calculate the cost using the objective function and when to do bilinear interpolation.
@@ -108,13 +107,13 @@ struct __attribute__((packed)) serialization_output {
     double timestamp;                                          // Monotonically increasing timestamp in seconds (arbitrary time origin defined by the user) indicating the initial timepoint of the @ref trajectory.
     double timestampInput;                                     // The user-defined timestamp of the corresponding input data that has been used to compute the solution. The default value is quiet_NaN.
     double timestampParameter;                                 // The user-defined timestamp of the corresponding parameter data that has been used to compute the solution. The default value is quiet_NaN.
+    uint8_t inputError;                                        // An error code for invalid or timed out input data.
+    uint8_t parameterError;                                    // An error code for invalid parameter data.
     uint8_t threadState:2;                                     // Bit 0-1: the state of the planning thread (0: offline, 1: standby, 2: running).
-    uint8_t timeoutInput:1;                                    // Bit 2: non-zero if the given input data timed out, zero otherwise.
-    uint8_t validInput:1;                                      // Bit 3: non-zero if the given input data is valid, zero otherwise.
-    uint8_t validParameter:1;                                  // Bit 4: non-zero if the given parameter data is valid, zero otherwise.
-    uint8_t performedReset:1;                                  // Bit 5: non-zero if reset has been performed, zero otherwise.
-    uint8_t error:1;                                           // Bit 6: non-zero if path or motion planner reported an error, e.g. not feasible or out of nodes, zero otherwise. This value is equal to (!pathPlanner.isFeasible || pathPlanner.outOfNodes || !motionPlanner.isFeasible || motionPlanner.outOfNodes).
-    uint8_t trajectoryShrinked:1;                              // Bit 7: non-zero if trajectory has been shrinked to fit to the memory size.
+    uint8_t performedReset:1;                                  // Bit 2: non-zero if reset has been performed, zero otherwise.
+    uint8_t error:1;                                           // Bit 3: non-zero if path or motion planner reported an error, e.g. not feasible or out of nodes, zero otherwise. This value is equal to (!pathPlanner.isFeasible || pathPlanner.outOfNodes || !motionPlanner.isFeasible || motionPlanner.outOfNodes).
+    uint8_t trajectoryShrinked:1;                              // Bit 4: non-zero if trajectory has been shrinked to fit to the memory size.
+    uint8_t reserved:3;                                        // Bit 5-7: Reserved bits, unused, set to zero.
     std::array<double,3> originLLA;                            // Geographical origin to which this outputs belongs to, given as {lat,lon,alt}.
     uint16_t numTrajectoryPoints;                              // The number of points inside the trajectory.
     std::array<std::array<double,12>,500> trajectory;          // Resulting trajectory, where each element is given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state and input is not inserted. The actual length of the trajectory is given by numTrajectoryPoints.
@@ -161,10 +160,9 @@ inline void Deserialize(mpsv::planner::AsyncOnlinePlannerInput& plannerInput, co
     plannerInput.samplingBoxCenterPose = input->samplingBoxCenterPose;
     plannerInput.samplingBoxDimension  = input->samplingBoxDimension;
     plannerInput.staticObstacles.clear();
-    bool validStaticObstacles = true;
     int32_t N = static_cast<int32_t>(input->verticesStaticObstacles.size());
     int32_t i0 = -1; // index of previous finite vertex (-1 indicates no previous finite vertex)
-    for(int32_t i = 0; (i < N) && validStaticObstacles; ++i){
+    for(int32_t i = 0; (i < N); ++i){
         bool finiteVertex = std::isfinite(input->verticesStaticObstacles[i][0]) && std::isfinite(input->verticesStaticObstacles[i][1]);
         if((i0 < 0) && finiteVertex){
             i0 = i;
@@ -173,20 +171,15 @@ inline void Deserialize(mpsv::planner::AsyncOnlinePlannerInput& plannerInput, co
             i += static_cast<int32_t>((i == (N - 1)) && finiteVertex);
             int32_t numVertices = i - i0;
             if(numVertices < 3){
-                validStaticObstacles = false;
+                std::vector<std::array<double,2>> invalid_vertices = {{0,0},{0,0},{0,0}};
+                plannerInput.staticObstacles.push_back(mpsv::geometry::StaticObstacle(invalid_vertices));
                 break;
             }
             std::vector<std::array<double,2>> vertices(numVertices);
             std::transform(input->verticesStaticObstacles.begin() + i0, input->verticesStaticObstacles.begin() + i, vertices.begin(), [](const std::array<float,2>& f){ return std::array<double,2>({static_cast<double>(f[0]), static_cast<double>(f[1])}); });
             plannerInput.staticObstacles.push_back(mpsv::geometry::StaticObstacle(vertices));
-            validStaticObstacles &= plannerInput.staticObstacles.back().EnsureCorrectVertexOrder();
             i0 = -1;
         }
-    }
-
-    // if there're errors make whole input invalid (set timestampt to NaN)
-    if(!validStaticObstacles){
-        plannerInput.timestamp = std::numeric_limits<double>::quiet_NaN();
     }
 }
 
@@ -204,11 +197,10 @@ inline void Deserialize(mpsv::planner::AsyncOnlinePlannerParameterSet& plannerPa
 
     // vehicle shape
     plannerParameter.sequentialPlanner.geometry.vehicleShape.Clear();
-    bool validVehicleShape = true;
     int32_t N = static_cast<int32_t>(parameter->sequentialPlanner.geometry.verticesVehicleShape.size());
     int32_t i0 = -1; // index of previous finite vertex (-1 indicates no previous finite vertex)
     int32_t numPolygonsAdded = 0;
-    for(int32_t i = 0; (i < N) && validVehicleShape; ++i){
+    for(int32_t i = 0; (i < N); ++i){
         bool finiteVertex = std::isfinite(parameter->sequentialPlanner.geometry.verticesVehicleShape[i][0]) && std::isfinite(parameter->sequentialPlanner.geometry.verticesVehicleShape[i][1]);
         if((i0 < 0) && finiteVertex){
             i0 = i;
@@ -217,7 +209,7 @@ inline void Deserialize(mpsv::planner::AsyncOnlinePlannerParameterSet& plannerPa
             i += static_cast<int32_t>((i == (N - 1)) && finiteVertex);
             int32_t numVertices = i - i0;
             if(numVertices < 3){
-                validVehicleShape = false;
+                plannerParameter.sequentialPlanner.geometry.vehicleShape.Clear();
                 break;
             }
             std::vector<std::array<double,2>> vertices(numVertices);
@@ -227,18 +219,15 @@ inline void Deserialize(mpsv::planner::AsyncOnlinePlannerParameterSet& plannerPa
             i0 = -1;
         }
     }
-    validVehicleShape &= (numPolygonsAdded > 0);
-    if(validVehicleShape){
-        validVehicleShape &= plannerParameter.sequentialPlanner.geometry.vehicleShape.EnsureCorrectVertexOrder();
+    if(!numPolygonsAdded){
+        plannerParameter.sequentialPlanner.geometry.vehicleShape.Clear();
     }
 
     // skeletal points
     plannerParameter.sequentialPlanner.geometry.skeletalPoints.clear();
-    bool validSkeletalPoints = (parameter->sequentialPlanner.geometry.numSkeletalPoints > 0) && (parameter->sequentialPlanner.geometry.numSkeletalPoints <= parameter->sequentialPlanner.geometry.skeletalPoints.size());
-    if(validSkeletalPoints){
-        plannerParameter.sequentialPlanner.geometry.skeletalPoints.resize(parameter->sequentialPlanner.geometry.numSkeletalPoints);
-        for(uint8_t k = 0; (k < parameter->sequentialPlanner.geometry.numSkeletalPoints); ++k){
-            plannerParameter.sequentialPlanner.geometry.skeletalPoints[k] = parameter->sequentialPlanner.geometry.skeletalPoints[k];
+    for(size_t k = 0; k < parameter->sequentialPlanner.geometry.skeletalPoints.size(); ++k){
+        if(std::isfinite(parameter->sequentialPlanner.geometry.skeletalPoints[k][0]) && std::isfinite(parameter->sequentialPlanner.geometry.skeletalPoints[k][1])){
+            plannerParameter.sequentialPlanner.geometry.skeletalPoints.push_back({static_cast<double>(parameter->sequentialPlanner.geometry.skeletalPoints[k][0]), static_cast<double>(parameter->sequentialPlanner.geometry.skeletalPoints[k][1])});
         }
     }
 
@@ -278,12 +267,6 @@ inline void Deserialize(mpsv::planner::AsyncOnlinePlannerParameterSet& plannerPa
     plannerParameter.onlinePlanner.additionalAheadPlanningTime                             = parameter->onlinePlanner.additionalAheadPlanningTime;
     plannerParameter.onlinePlanner.additionalTrajectoryDuration                            = parameter->onlinePlanner.additionalTrajectoryDuration;
     plannerParameter.onlinePlanner.timeKeepPastTrajectory                                  = parameter->onlinePlanner.timeKeepPastTrajectory;
-
-    // if there're errors make whole parameter invalid (remove vehicle shape and skeletal points)
-    if(!validVehicleShape || !validSkeletalPoints){
-        plannerParameter.sequentialPlanner.geometry.vehicleShape.Clear();
-        plannerParameter.sequentialPlanner.geometry.skeletalPoints.clear();
-    }
 }
 
 
@@ -297,11 +280,11 @@ inline void Serialize(mpsv::planner::serialization_output* output, const mpsv::p
     output->timestamp                                 = plannerOutput.timestamp;
     output->timestampInput                            = plannerOutput.timestampInput;
     output->timestampParameter                        = plannerOutput.timestampParameter;
+    output->inputError                                = static_cast<uint8_t>(plannerOutput.inputError);
+    output->parameterError                            = static_cast<uint8_t>(plannerOutput.parameterError);
     output->threadState                               = static_cast<uint8_t>(plannerOutput.threadState);
-    output->timeoutInput                              = static_cast<uint8_t>(plannerOutput.timeoutInput);
-    output->validInput                                = static_cast<uint8_t>(plannerOutput.validInput);
-    output->validParameter                            = static_cast<uint8_t>(plannerOutput.validParameter);
     output->performedReset                            = static_cast<uint8_t>(plannerOutput.performedReset);
+    output->reserved                                  = static_cast<uint8_t>(0);
     output->error                                     = static_cast<uint8_t>(plannerOutput.error);
     output->originLLA                                 = plannerOutput.originLLA;
 

@@ -5,6 +5,7 @@
 #include <mpsv/core/DataLogFile.hpp>
 #include <mpsv/geometry/VehicleShape.hpp>
 #include <mpsv/math/Additional.hpp>
+#include <mpsv/core/ErrorCode.hpp>
 
 
 namespace mpsv {
@@ -44,21 +45,83 @@ class ParameterModel {
 
         /**
          * @brief Check whether this parameter is valid.
-         * @return True if parameter is valid, false otherwise.
+         * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        bool IsValid(void) const noexcept {
-            bool validModel = std::isfinite(matF[0]) && std::isfinite(matF[1]) && std::isfinite(matF[2]) && std::isfinite(matF[3]) && std::isfinite(matF[4]) && std::isfinite(matF[5]) && std::isfinite(matF[6]) && std::isfinite(matF[7]) && std::isfinite(matF[8]) && std::isfinite(matF[9]) && std::isfinite(matF[10]) && std::isfinite(matF[11]);
-            validModel &= std::isfinite(matF[12]) && std::isfinite(matF[13]) && std::isfinite(matF[14]) && std::isfinite(matF[15]) && std::isfinite(matF[16]) && std::isfinite(matF[17]) && std::isfinite(matF[18]) && std::isfinite(matF[19]) && std::isfinite(matF[20]) && std::isfinite(matF[21]) && std::isfinite(matF[22]) && std::isfinite(matF[23]);
-            validModel &= std::isfinite(matF[24]) && std::isfinite(matF[25]) && std::isfinite(matF[26]) && std::isfinite(matF[27]) && std::isfinite(matF[28]) && std::isfinite(matF[29]) && std::isfinite(matF[30]) && std::isfinite(matF[31]) && std::isfinite(matF[32]) && std::isfinite(matF[33]) && std::isfinite(matF[34]) && std::isfinite(matF[35]);
-            validModel &= std::isfinite(matB[0]) && std::isfinite(matB[1]) && std::isfinite(matB[2]);
-            validModel &= std::isfinite(matB[3]) && std::isfinite(matB[4]) && std::isfinite(matB[5]);
-            validModel &= std::isfinite(matB[6]) && std::isfinite(matB[7]) && std::isfinite(matB[8]);
-            validModel &= std::isfinite(vecTimeconstantsXYN[0]) && std::isfinite(vecTimeconstantsXYN[1]) && std::isfinite(vecTimeconstantsXYN[2]) && (vecTimeconstantsXYN[0] > 0.0) && (vecTimeconstantsXYN[1] > 0.0) && (vecTimeconstantsXYN[2] > 0.0);
-            validModel &= std::isfinite(vecTimeconstantsInput[0]) && std::isfinite(vecTimeconstantsInput[1]) && std::isfinite(vecTimeconstantsInput[2]) && (vecTimeconstantsInput[0] > 0.0) && (vecTimeconstantsInput[1] > 0.0) && (vecTimeconstantsInput[2] > 0.0);
-            validModel &= std::isfinite(lowerLimitXYN[0]) && std::isfinite(lowerLimitXYN[1]) && std::isfinite(lowerLimitXYN[2]);
-            validModel &= std::isfinite(upperLimitXYN[0]) && std::isfinite(upperLimitXYN[1]) && std::isfinite(upperLimitXYN[2]);
-            validModel &= (upperLimitXYN[0] >= lowerLimitXYN[0]) && (upperLimitXYN[1] >= lowerLimitXYN[1]) && (upperLimitXYN[2] >= lowerLimitXYN[2]);
-            return validModel;
+        error_code IsValid(void) const noexcept {
+            if(!(std::isfinite(matF[0]) &&
+                 std::isfinite(matF[1]) &&
+                 std::isfinite(matF[2]) &&
+                 std::isfinite(matF[3]) &&
+                 std::isfinite(matF[4]) &&
+                 std::isfinite(matF[5]) &&
+                 std::isfinite(matF[6]) &&
+                 std::isfinite(matF[7]) &&
+                 std::isfinite(matF[8]) &&
+                 std::isfinite(matF[9]) &&
+                 std::isfinite(matF[10]) &&
+                 std::isfinite(matF[11]) &&
+                 std::isfinite(matF[12]) &&
+                 std::isfinite(matF[13]) &&
+                 std::isfinite(matF[14]) &&
+                 std::isfinite(matF[15]) &&
+                 std::isfinite(matF[16]) &&
+                 std::isfinite(matF[17]) &&
+                 std::isfinite(matF[18]) &&
+                 std::isfinite(matF[19]) &&
+                 std::isfinite(matF[20]) &&
+                 std::isfinite(matF[21]) &&
+                 std::isfinite(matF[22]) &&
+                 std::isfinite(matF[23]) &&
+                 std::isfinite(matF[24]) &&
+                 std::isfinite(matF[25]) &&
+                 std::isfinite(matF[26]) &&
+                 std::isfinite(matF[27]) &&
+                 std::isfinite(matF[28]) &&
+                 std::isfinite(matF[29]) &&
+                 std::isfinite(matF[30]) &&
+                 std::isfinite(matF[31]) &&
+                 std::isfinite(matF[32]) &&
+                 std::isfinite(matF[33]) &&
+                 std::isfinite(matF[34]) &&
+                 std::isfinite(matF[35])))
+                return error_code::MODEL_MATF;
+            if(!(std::isfinite(matB[0]) &&
+                 std::isfinite(matB[1]) &&
+                 std::isfinite(matB[2]) &&
+                 std::isfinite(matB[3]) &&
+                 std::isfinite(matB[4]) &&
+                 std::isfinite(matB[5]) &&
+                 std::isfinite(matB[6]) &&
+                 std::isfinite(matB[7]) &&
+                 std::isfinite(matB[8])))
+                return error_code::MODEL_MATB;
+            if(!(std::isfinite(vecTimeconstantsXYN[0]) &&
+                 std::isfinite(vecTimeconstantsXYN[1]) &&
+                 std::isfinite(vecTimeconstantsXYN[2]) &&
+                 (vecTimeconstantsXYN[0] > 0.0) &&
+                 (vecTimeconstantsXYN[1] > 0.0) &&
+                 (vecTimeconstantsXYN[2] > 0.0)))
+                return error_code::MODEL_VEC_TIMECONSTANTS_XYN;
+            if(!(std::isfinite(vecTimeconstantsInput[0]) &&
+                 std::isfinite(vecTimeconstantsInput[1]) &&
+                 std::isfinite(vecTimeconstantsInput[2]) &&
+                 (vecTimeconstantsInput[0] > 0.0) &&
+                 (vecTimeconstantsInput[1] > 0.0) &&
+                 (vecTimeconstantsInput[2] > 0.0)))
+                return error_code::MODEL_VEC_TIMECONSTANTS_INPUT;
+            if(!(std::isfinite(lowerLimitXYN[0]) &&
+                 std::isfinite(lowerLimitXYN[1]) &&
+                 std::isfinite(lowerLimitXYN[2])))
+                return error_code::MODEL_LOWER_LIMIT_XYN;
+            if(!(std::isfinite(upperLimitXYN[0]) &&
+                 std::isfinite(upperLimitXYN[1]) &&
+                 std::isfinite(upperLimitXYN[2])))
+                return error_code::MODEL_UPPER_LIMIT_XYN;
+            if(!((upperLimitXYN[0] >= lowerLimitXYN[0]) &&
+                 (upperLimitXYN[1] >= lowerLimitXYN[1]) &&
+                 (upperLimitXYN[2] >= lowerLimitXYN[2])))
+                return error_code::MODEL_LOWER_GREATER_UPPER_LIMIT;
+            return error_code::NONE;
         }
 
         /**
@@ -120,14 +183,18 @@ class ParameterCostMap {
 
         /**
          * @brief Check whether this parameter is valid.
-         * @return True if parameter is valid, false otherwise.
+         * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        bool IsValid(void) const noexcept {
-            bool validCostMap = (modBreakpoints > 0);
-            validCostMap &= std::isfinite(resolution) && (resolution > 1e-3);
-            validCostMap &= std::isfinite(distanceScale) && (distanceScale >= 0.0);
-            validCostMap &= std::isfinite(distanceDecay) && (distanceDecay > 0.0);
-            return validCostMap;
+        error_code IsValid(void) const noexcept {
+            if(!(modBreakpoints > 0))
+                return error_code::COSTMAP_MOD_BREAKPOINTS;
+            if(!(std::isfinite(resolution) && (resolution > 1e-3)))
+                return error_code::COSTMAP_RESOLUTION;
+            if(!(std::isfinite(distanceScale) && (distanceScale >= 0.0)))
+                return error_code::COSTMAP_DISTANCE_SCALE;
+            if(!(std::isfinite(distanceDecay) && (distanceDecay > 0.0)))
+                return error_code::COSTMAP_DISTANCE_DECAY;
+            return error_code::NONE;
         }
 
         /**
@@ -171,14 +238,18 @@ class ParameterMetric {
 
         /**
          * @brief Check whether this parameter is valid.
-         * @return True if parameter is valid, false otherwise.
+         * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        bool IsValid(void) const noexcept {
-            bool validMetric = std::isfinite(weightPsi) && (weightPsi > 0.0);
-            validMetric &= std::isfinite(weightSway) && (weightSway >= 0.0);
-            validMetric &= std::isfinite(weightReverseScale) && (weightReverseScale >= 0.0);
-            validMetric &= std::isfinite(weightReverseDecay) && (weightReverseDecay > 0.0);
-            return validMetric;
+        error_code IsValid(void) const noexcept {
+            if(!(std::isfinite(weightPsi) && (weightPsi > 0.0)))
+                return error_code::METRIC_WEIGHT_PSI;
+            if(!(std::isfinite(weightSway) && (weightSway >= 0.0)))
+                return error_code::METRIC_WEIGHT_SWAY;
+            if(!(std::isfinite(weightReverseScale) && (weightReverseScale >= 0.0)))
+                return error_code::METRIC_WEIGHT_REVERSE_SCALE;
+            if(!(std::isfinite(weightReverseDecay) && (weightReverseDecay > 0.0)))
+                return error_code::METRIC_WEIGHT_REVERSE_DECAY;
+            return error_code::NONE;
         }
 
         /**
@@ -221,20 +292,26 @@ class ParameterGeometry {
         }
 
         /**
-         * @brief Check whether this parameter is valid.
-         * @return True if parameter is valid, false otherwise.
+         * @brief Check whether this parameter is valid. Vertices of @ref vehicleShape might be reordered.
+         * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
+         * @details The vertex order of polygon data may be adjusted if possible.
          */
-        bool IsValid(void) const noexcept {
+        error_code IsValid(void) noexcept {
             constexpr double minPositionDeviation = 0.01; // Minimum position deviation for path subdivision during collision checking.
             constexpr double minAngleDeviation = 0.0174532925199433; // Minimum angle deviation for path subdivision during collision checking (= 1 deg).
-            bool validGeometry = std::isfinite(collisionCheckMaxPositionDeviation) && (collisionCheckMaxPositionDeviation >= minPositionDeviation);
-            validGeometry &= std::isfinite(collisionCheckMaxAngleDeviation) && (collisionCheckMaxAngleDeviation >= minAngleDeviation);
-            validGeometry &= vehicleShape.InternalPolygonsAreConvex() && vehicleShape.IsFinite();
-            validGeometry &= !skeletalPoints.empty();
+            if(!(std::isfinite(collisionCheckMaxPositionDeviation) && (collisionCheckMaxPositionDeviation >= minPositionDeviation)))
+                return error_code::GEOMETRY_MAX_POSITION_DEVIATION;
+            if(!(std::isfinite(collisionCheckMaxAngleDeviation) && (collisionCheckMaxAngleDeviation >= minAngleDeviation)))
+                return error_code::GEOMETRY_MAX_ANGLE_DEVIATION;
+            if(!(vehicleShape.IsFinite() && vehicleShape.EnsureCorrectVertexOrder()))
+                return error_code::GEOMETRY_VEHICLE_SHAPE;
+            if(skeletalPoints.empty())
+                return error_code::GEOMETRY_SKELETAL_POINTS;
             for(auto&& p : skeletalPoints){
-                validGeometry &= std::isfinite(p[0]) && std::isfinite(p[1]);
+                if(!(std::isfinite(p[0]) && std::isfinite(p[1])))
+                    return error_code::GEOMETRY_SKELETAL_POINTS;
             }
-            return validGeometry;
+            return error_code::NONE;
         }
 
         /**
@@ -267,16 +344,17 @@ class ParameterPathPlanner {
          * @brief Clear the path planner parameters and set default values.
          */
         void Clear(void) noexcept {
-            periodGoalSampling        = 50;
+            periodGoalSampling = 50;
         }
 
         /**
          * @brief Check whether this parameter is valid.
-         * @return True if parameter is valid, false otherwise.
+         * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        bool IsValid(void) const noexcept {
-            bool validPathPlanner = (periodGoalSampling > 0);
-            return validPathPlanner;
+        error_code IsValid(void) const noexcept {
+            if(!(periodGoalSampling > 0))
+                return error_code::PATHPLANNER_PERIOD_GOAL_SAMPLING;
+            return error_code::NONE;
         }
 
         /**
@@ -291,27 +369,190 @@ class ParameterPathPlanner {
 
 
 /**
+ * @brief Parameter for the controller inside the motion planner.
+ */
+class ParameterController {
+    public:
+        double maxRadiusX;            // Maximum look-ahead distance for longitudinal distance during pose control.
+        double maxRadiusY;            // Maximum look-ahead distance for lateral distance during pose control.
+        double maxRadiusPsi;          // Maximum look-ahead distance for angular distance during pose control.
+        double minRadiusPosition;     // Minimum look-ahead distance for position during pose control. The radius is limited by the guidance law according to nearby obstacles but is never lower than this value.
+        std::array<double,36> matK;   // 3-by-12 control gain matrix (row-major order) for pose control.
+
+        /**
+         * @brief Construct a new controller parameter object and set default values.
+         */
+        ParameterController() noexcept { Clear(); }
+
+        /**
+         * @brief Clear the controller parameters and set default values.
+         */
+        void Clear(void) noexcept {
+            matK                = {0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35, 0.0, 0.0, 0.0, 0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35, 0.0, 0.0, 0.0, 0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35};
+            maxRadiusX          = 10.0;
+            maxRadiusY          = 6.0;
+            maxRadiusPsi        = 1.0;
+            minRadiusPosition   = 2.0;
+        }
+
+        /**
+         * @brief Check whether this parameter is valid.
+         * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
+         */
+        error_code IsValid(void) const noexcept {
+            if(!(std::isfinite(matK[0]) &&
+                 std::isfinite(matK[1]) &&
+                 std::isfinite(matK[2]) &&
+                 std::isfinite(matK[3]) &&
+                 std::isfinite(matK[4]) &&
+                 std::isfinite(matK[5]) &&
+                 std::isfinite(matK[6]) &&
+                 std::isfinite(matK[7]) &&
+                 std::isfinite(matK[8]) &&
+                 std::isfinite(matK[9]) &&
+                 std::isfinite(matK[10]) &&
+                 std::isfinite(matK[11]) &&
+                 std::isfinite(matK[12]) &&
+                 std::isfinite(matK[13]) &&
+                 std::isfinite(matK[14]) &&
+                 std::isfinite(matK[15]) &&
+                 std::isfinite(matK[16]) &&
+                 std::isfinite(matK[17]) &&
+                 std::isfinite(matK[18]) &&
+                 std::isfinite(matK[19]) &&
+                 std::isfinite(matK[20]) &&
+                 std::isfinite(matK[21]) &&
+                 std::isfinite(matK[22]) &&
+                 std::isfinite(matK[23]) &&
+                 std::isfinite(matK[24]) &&
+                 std::isfinite(matK[25]) &&
+                 std::isfinite(matK[26]) &&
+                 std::isfinite(matK[27]) &&
+                 std::isfinite(matK[28]) &&
+                 std::isfinite(matK[29]) &&
+                 std::isfinite(matK[30]) &&
+                 std::isfinite(matK[31]) &&
+                 std::isfinite(matK[32]) &&
+                 std::isfinite(matK[33]) &&
+                 std::isfinite(matK[34]) &&
+                 std::isfinite(matK[35])))
+                return error_code::CONTROLLER_MAT_K;
+            if(!(std::isfinite(maxRadiusX) && (maxRadiusX > 0.0)))
+                return error_code::CONTROLLER_MAX_RADIUS_X;
+            if(!(std::isfinite(maxRadiusY) && (maxRadiusY > 0.0)))
+                return error_code::CONTROLLER_MAX_RADIUS_Y;
+            if(!(std::isfinite(maxRadiusPsi) && (maxRadiusPsi > 0.0)))
+                return error_code::CONTROLLER_MAX_RADIUS_PSI;
+            if(!(std::isfinite(minRadiusPosition) && (minRadiusPosition > 0.0)))
+                return error_code::CONTROLLER_MIN_RADIUS_POSITION;
+            return error_code::NONE;
+        }
+
+        /**
+         * @brief Write the whole parameter set to the log file.
+         * @param[in] file The log file to which to write the data to.
+         * @param[in] preString A pre-string to be inserted at the beginning of variable names.
+         */
+        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+            std::array<double,36> tmp;
+            tmp[0]  = matK[0];  tmp[1]  = matK[12]; tmp[2]  = matK[24];
+            tmp[3]  = matK[1];  tmp[4]  = matK[13]; tmp[5]  = matK[25];
+            tmp[6]  = matK[2];  tmp[7]  = matK[14]; tmp[8]  = matK[26];
+            tmp[9]  = matK[3];  tmp[10] = matK[15]; tmp[11] = matK[27];
+            tmp[12] = matK[4];  tmp[13] = matK[16]; tmp[14] = matK[28];
+            tmp[15] = matK[5];  tmp[16] = matK[17]; tmp[17] = matK[29];
+            tmp[18] = matK[6];  tmp[19] = matK[18]; tmp[20] = matK[30];
+            tmp[21] = matK[7];  tmp[22] = matK[19]; tmp[23] = matK[31];
+            tmp[24] = matK[8];  tmp[25] = matK[20]; tmp[26] = matK[32];
+            tmp[27] = matK[9];  tmp[28] = matK[21]; tmp[29] = matK[33];
+            tmp[30] = matK[10]; tmp[31] = matK[22]; tmp[32] = matK[34];
+            tmp[33] = matK[11]; tmp[34] = matK[23]; tmp[35] = matK[35];
+            file.WriteField("double", preString + "matK", {3,12}, &tmp[0], sizeof(matK));
+            file.WriteField("double", preString + "maxRadiusX", {1}, &maxRadiusX, sizeof(maxRadiusX));
+            file.WriteField("double", preString + "maxRadiusY", {1}, &maxRadiusY, sizeof(maxRadiusY));
+            file.WriteField("double", preString + "maxRadiusPsi", {1}, &maxRadiusPsi, sizeof(maxRadiusPsi));
+            file.WriteField("double", preString + "minRadiusPosition", {1}, &minRadiusPosition, sizeof(minRadiusPosition));
+        }
+};
+
+
+/**
+ * @brief Parameter for the region of attraction inside the motion planner.
+ */
+class ParameterRegionOfAttraction {
+    public:
+        std::array<double,3> rangePose;   // Pose box constraints for the region of attraction.
+        std::array<double,3> rangeUVR;    // Velocity box constraints for the region of attraction.
+        std::array<double,3> rangeXYN;    // The force range {dX,dY,dN}. A given force must be in this range {[-dX,dX],[-dY,dY],[-dN,dN]} to be in the region of attraction.
+
+        /**
+         * @brief Construct a new region of attraction parameter object and set default values.
+         */
+        ParameterRegionOfAttraction() noexcept { Clear(); }
+
+        /**
+         * @brief Clear the region of attraction parameters and set default values.
+         */
+        void Clear(void) noexcept {
+            rangePose = {0.25, 0.25, 0.15};
+            rangeUVR  = {0.1, 0.1, 0.01};
+            rangeXYN  = {10.0, 10.0, 10.0};
+        }
+
+        /**
+         * @brief Check whether this parameter is valid.
+         * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
+         */
+        error_code IsValid(void) const noexcept {
+            if(!(std::isfinite(rangePose[0]) &&
+                 std::isfinite(rangePose[1]) &&
+                 std::isfinite(rangePose[2]) &&
+                 (rangePose[0] > 0.0) &&
+                 (rangePose[1] > 0.0) &&
+                 (rangePose[2] > 0.0)))
+                return error_code::REGION_OF_ATTRACTION_RANGE_POSE;
+            if(!(std::isfinite(rangeUVR[0]) &&
+                 std::isfinite(rangeUVR[1]) &&
+                 std::isfinite(rangeUVR[2]) &&
+                 (rangeUVR[0] > 0.0) &&
+                 (rangeUVR[1] > 0.0) &&
+                 (rangeUVR[2] > 0.0)))
+                return error_code::REGION_OF_ATTRACTION_RANGE_UVR;
+            if(!(std::isfinite(rangeXYN[0]) &&
+                 std::isfinite(rangeXYN[1]) &&
+                 std::isfinite(rangeXYN[2]) &&
+                 (rangeXYN[0] > 0.0) &&
+                 (rangeXYN[1] > 0.0) &&
+                 (rangeXYN[2] > 0.0)))
+                return error_code::REGION_OF_ATTRACTION_RANGE_XYN;
+            return error_code::NONE;
+        }
+
+        /**
+         * @brief Write the whole parameter set to the log file.
+         * @param[in] file The log file to which to write the data to.
+         * @param[in] preString A pre-string to be inserted at the beginning of variable names.
+         */
+        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+            file.WriteField("double", preString + "rangePose", {3,1}, &rangePose[0], sizeof(rangePose));
+            file.WriteField("double", preString + "rangeUVR", {3,1}, &rangeUVR[0], sizeof(rangeUVR));
+            file.WriteField("double", preString + "rangeXYN", {3,1}, &rangeXYN[0], sizeof(rangeXYN));
+        }
+};
+
+
+/**
  * @brief Parameter for the motion planner.
  */
 class ParameterMotionPlanner {
     public:
-        double samplingRangePosition;                          // Range in meters for sampling the position around a given path.
-        double samplingRangeAngle;                             // Range in radians for sampling the angle around a given path.
-        uint32_t periodGoalSampling;                           // Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
-        double sampletime;                                     // Sampletime to be used for fixed-step trajectory simulation.
-        double maxInputPathLength;                             // Maximum length (> 0) of the input path (x,y only). The input path is trimmed to ensure this maximum length. The trimmed pose may be interpolated.
-        struct {
-            double maxRadiusX;                                 // [Controller] Maximum look-ahead distance for longitudinal distance during pose control.
-            double maxRadiusY;                                 // [Controller] Maximum look-ahead distance for lateral distance during pose control.
-            double maxRadiusPsi;                               // [Controller] Maximum look-ahead distance for angular distance during pose control.
-            double minRadiusPosition;                          // [Controller] Minimum look-ahead distance for position during pose control. The radius is limited by the guidance law according to nearby obstacles but is never lower than this value.
-            std::array<double,36> matK;                        // [Controller] 3-by-12 control gain matrix (row-major order) for pose control.
-        } controller;
-        struct {
-            std::array<double,3> rangePose;                    // [RegionOfAttraction] Pose box constraints for the region of attraction.
-            std::array<double,3> rangeUVR;                     // [RegionOfAttraction] Velocity box constraints for the region of attraction.
-            std::array<double,3> rangeXYN;                     // [RegionOfAttraction] The force range {dX,dY,dN}. A given force must be in this range {[-dX,dX],[-dY,dY],[-dN,dN]} to be in the region of attraction.
-        } regionOfAttraction;
+        double samplingRangePosition;     // Range in meters for sampling the position around a given path.
+        double samplingRangeAngle;        // Range in radians for sampling the angle around a given path.
+        uint32_t periodGoalSampling;      // Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
+        double sampletime;                // Sampletime to be used for fixed-step trajectory simulation.
+        double maxInputPathLength;        // Maximum length (> 0) of the input path (x,y only). The input path is trimmed to ensure this maximum length. The trimmed pose may be interpolated.
+        ParameterController controller;
+        ParameterRegionOfAttraction regionOfAttraction;
 
         /**
          * @brief Construct a new motion planner parameter object and set default values.
@@ -322,57 +563,34 @@ class ParameterMotionPlanner {
          * @brief Clear the motion planner parameters and set default values.
          */
         void Clear(void) noexcept {
-            samplingRangePosition                   = 10.0;
-            samplingRangeAngle                      = 1.0;
-            periodGoalSampling                      = 50;
-            sampletime                              = 0.05;
-            maxInputPathLength                      = 50.0;
-            controller.matK                         = {0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35, 0.0, 0.0, 0.0, 0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35, 0.0, 0.0, 0.0, 0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35};
-            controller.maxRadiusX                   = 10.0;
-            controller.maxRadiusY                   = 6.0;
-            controller.maxRadiusPsi                 = 1.0;
-            controller.minRadiusPosition            = 2.0;
-            regionOfAttraction.rangePose            = {0.25, 0.25, 0.15};
-            regionOfAttraction.rangeUVR             = {0.1, 0.1, 0.01};
-            regionOfAttraction.rangeXYN             = {10.0, 10.0, 10.0};
+            samplingRangePosition = 10.0;
+            samplingRangeAngle    = 1.0;
+            periodGoalSampling    = 50;
+            sampletime            = 0.05;
+            maxInputPathLength    = 50.0;
+            controller.Clear();
+            regionOfAttraction.Clear();
         }
 
         /**
          * @brief Check whether this parameter is valid.
-         * @return True if parameter is valid, false otherwise.
+         * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        bool IsValid(void) const noexcept {
-            bool validMotionPlanner = std::isfinite(samplingRangePosition) && (samplingRangePosition > 0.0);
-            validMotionPlanner &= std::isfinite(samplingRangeAngle) && (samplingRangeAngle > 0.0);
-            validMotionPlanner &= (periodGoalSampling > 0);
-            validMotionPlanner &= std::isfinite(sampletime) && (sampletime > 0.0);
-            validMotionPlanner &= std::isfinite(maxInputPathLength) && (maxInputPathLength > 0.0);
-            validMotionPlanner &= std::isfinite(controller.matK[0]) && std::isfinite(controller.matK[1]) && std::isfinite(controller.matK[2]);
-            validMotionPlanner &= std::isfinite(controller.matK[3]) && std::isfinite(controller.matK[4]) && std::isfinite(controller.matK[5]);
-            validMotionPlanner &= std::isfinite(controller.matK[6]) && std::isfinite(controller.matK[7]) && std::isfinite(controller.matK[8]);
-            validMotionPlanner &= std::isfinite(controller.matK[9]) && std::isfinite(controller.matK[10]) && std::isfinite(controller.matK[11]);
-            validMotionPlanner &= std::isfinite(controller.matK[12]) && std::isfinite(controller.matK[13]) && std::isfinite(controller.matK[14]);
-            validMotionPlanner &= std::isfinite(controller.matK[15]) && std::isfinite(controller.matK[16]) && std::isfinite(controller.matK[17]);
-            validMotionPlanner &= std::isfinite(controller.matK[18]) && std::isfinite(controller.matK[19]) && std::isfinite(controller.matK[20]);
-            validMotionPlanner &= std::isfinite(controller.matK[21]) && std::isfinite(controller.matK[22]) && std::isfinite(controller.matK[23]);
-            validMotionPlanner &= std::isfinite(controller.matK[24]) && std::isfinite(controller.matK[25]) && std::isfinite(controller.matK[26]);
-            validMotionPlanner &= std::isfinite(controller.matK[27]) && std::isfinite(controller.matK[28]) && std::isfinite(controller.matK[29]);
-            validMotionPlanner &= std::isfinite(controller.matK[30]) && std::isfinite(controller.matK[31]) && std::isfinite(controller.matK[32]);
-            validMotionPlanner &= std::isfinite(controller.matK[33]) && std::isfinite(controller.matK[34]) && std::isfinite(controller.matK[35]);
-            validMotionPlanner &= std::isfinite(controller.maxRadiusX) && (controller.maxRadiusX > 0.0);
-            validMotionPlanner &= std::isfinite(controller.maxRadiusY) && (controller.maxRadiusY > 0.0);
-            validMotionPlanner &= std::isfinite(controller.maxRadiusPsi) && (controller.maxRadiusPsi > 0.0);
-            validMotionPlanner &= std::isfinite(controller.minRadiusPosition) && (controller.minRadiusPosition > 0.0);
-            validMotionPlanner &= std::isfinite(regionOfAttraction.rangePose[0]) && (regionOfAttraction.rangePose[0] > 0.0);
-            validMotionPlanner &= std::isfinite(regionOfAttraction.rangePose[1]) && (regionOfAttraction.rangePose[1] > 0.0);
-            validMotionPlanner &= std::isfinite(regionOfAttraction.rangePose[2]) && (regionOfAttraction.rangePose[2] > 0.0);
-            validMotionPlanner &= std::isfinite(regionOfAttraction.rangeUVR[0]) && (regionOfAttraction.rangeUVR[0] > 0.0);
-            validMotionPlanner &= std::isfinite(regionOfAttraction.rangeUVR[1]) && (regionOfAttraction.rangeUVR[1] > 0.0);
-            validMotionPlanner &= std::isfinite(regionOfAttraction.rangeUVR[2]) && (regionOfAttraction.rangeUVR[2] > 0.0);
-            validMotionPlanner &= std::isfinite(regionOfAttraction.rangeXYN[0]) && (regionOfAttraction.rangeXYN[0] > 0.0);
-            validMotionPlanner &= std::isfinite(regionOfAttraction.rangeXYN[1]) && (regionOfAttraction.rangeXYN[1] > 0.0);
-            validMotionPlanner &= std::isfinite(regionOfAttraction.rangeXYN[2]) && (regionOfAttraction.rangeXYN[2] > 0.0);
-            return validMotionPlanner;
+        error_code IsValid(void) const noexcept {
+            if(!(std::isfinite(samplingRangePosition) && (samplingRangePosition > 0.0)))
+                return error_code::MOTIONPLANNER_SAMPLING_RANGE_POSITION;
+            if(!(std::isfinite(samplingRangeAngle) && (samplingRangeAngle > 0.0)))
+                return error_code::MOTIONPLANNER_SAMPLING_RANGE_ANGLE;
+            if(!((periodGoalSampling > 0)))
+                return error_code::MOTIONPLANNER_PERIOD_GOAL_SAMPLING;
+            if(!(std::isfinite(sampletime) && (sampletime > 0.0)))
+                return error_code::MOTIONPLANNER_SAMPLETIME;
+            if(!(std::isfinite(maxInputPathLength) && (maxInputPathLength > 0.0)))
+                return error_code::MOTIONPLANNER_MAX_INPUT_PATH_LENGTH;
+            error_code e = controller.IsValid();
+            if(error_code::NONE != e)
+                return e;
+            return regionOfAttraction.IsValid();
         }
 
         /**
@@ -381,32 +599,13 @@ class ParameterMotionPlanner {
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
         void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
-            std::array<double,36> tmp;
             file.WriteField("double", preString + "samplingRangePosition", {1}, &samplingRangePosition, sizeof(samplingRangePosition));
             file.WriteField("double", preString + "samplingRangeAngle", {1}, &samplingRangeAngle, sizeof(samplingRangeAngle));
             file.WriteField("uint32_t", preString + "periodGoalSampling", {1}, &periodGoalSampling, sizeof(periodGoalSampling));
             file.WriteField("double", preString + "sampletime", {1}, &sampletime, sizeof(sampletime));
             file.WriteField("double", preString + "maxInputPathLength", {1}, &maxInputPathLength, sizeof(maxInputPathLength));
-            tmp[0]  = controller.matK[0];  tmp[1]  = controller.matK[12]; tmp[2]  = controller.matK[24];
-            tmp[3]  = controller.matK[1];  tmp[4]  = controller.matK[13]; tmp[5]  = controller.matK[25];
-            tmp[6]  = controller.matK[2];  tmp[7]  = controller.matK[14]; tmp[8]  = controller.matK[26];
-            tmp[9]  = controller.matK[3];  tmp[10] = controller.matK[15]; tmp[11] = controller.matK[27];
-            tmp[12] = controller.matK[4];  tmp[13] = controller.matK[16]; tmp[14] = controller.matK[28];
-            tmp[15] = controller.matK[5];  tmp[16] = controller.matK[17]; tmp[17] = controller.matK[29];
-            tmp[18] = controller.matK[6];  tmp[19] = controller.matK[18]; tmp[20] = controller.matK[30];
-            tmp[21] = controller.matK[7];  tmp[22] = controller.matK[19]; tmp[23] = controller.matK[31];
-            tmp[24] = controller.matK[8];  tmp[25] = controller.matK[20]; tmp[26] = controller.matK[32];
-            tmp[27] = controller.matK[9];  tmp[28] = controller.matK[21]; tmp[29] = controller.matK[33];
-            tmp[30] = controller.matK[10]; tmp[31] = controller.matK[22]; tmp[32] = controller.matK[34];
-            tmp[33] = controller.matK[11]; tmp[34] = controller.matK[23]; tmp[35] = controller.matK[35];
-            file.WriteField("double", preString + "controller.matK", {3,12}, &tmp[0], sizeof(controller.matK));
-            file.WriteField("double", preString + "controller.maxRadiusX", {1}, &controller.maxRadiusX, sizeof(controller.maxRadiusX));
-            file.WriteField("double", preString + "controller.maxRadiusY", {1}, &controller.maxRadiusY, sizeof(controller.maxRadiusY));
-            file.WriteField("double", preString + "controller.maxRadiusPsi", {1}, &controller.maxRadiusPsi, sizeof(controller.maxRadiusPsi));
-            file.WriteField("double", preString + "controller.minRadiusPosition", {1}, &controller.minRadiusPosition, sizeof(controller.minRadiusPosition));
-            file.WriteField("double", preString + "regionOfAttraction.rangePose", {3,1}, &regionOfAttraction.rangePose[0], sizeof(regionOfAttraction.rangePose));
-            file.WriteField("double", preString + "regionOfAttraction.rangeUVR", {3,1}, &regionOfAttraction.rangeUVR[0], sizeof(regionOfAttraction.rangeUVR));
-            file.WriteField("double", preString + "regionOfAttraction.rangeXYN", {3,1}, &regionOfAttraction.rangeXYN[0], sizeof(regionOfAttraction.rangeXYN));
+            controller.WriteToFile(file, preString + "controller.");
+            regionOfAttraction.WriteToFile(file, preString + "regionOfAttraction.");
         }
 };
 
@@ -446,17 +645,24 @@ class ParameterOnlinePlanner {
 
         /**
          * @brief Check whether this parameter is valid.
-         * @return True if parameter is valid, false otherwise.
+         * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        bool IsValid(void) const noexcept {
-            bool validOnlinePlanner = std::isfinite(maxComputationTimePathOnReset) && (maxComputationTimePathOnReset > 0.0);
-            validOnlinePlanner &= std::isfinite(maxComputationTimeMotionOnReset) && (maxComputationTimeMotionOnReset > 0.0);
-            validOnlinePlanner &= std::isfinite(maxComputationTimePath) && (maxComputationTimePath > 0.0);
-            validOnlinePlanner &= std::isfinite(maxComputationTimeMotion) && (maxComputationTimeMotion > 0.0);
-            validOnlinePlanner &= std::isfinite(additionalAheadPlanningTime) && (additionalAheadPlanningTime > 0.0);
-            validOnlinePlanner &= std::isfinite(additionalTrajectoryDuration) && (additionalTrajectoryDuration > 0.0);
-            validOnlinePlanner &= std::isfinite(timeKeepPastTrajectory) && (timeKeepPastTrajectory >= 0.0);
-            return validOnlinePlanner;
+        error_code IsValid(void) const noexcept {
+            if(!(std::isfinite(maxComputationTimePathOnReset) && (maxComputationTimePathOnReset > 0.0)))
+                return error_code::ONLINEPLANNER_MAX_COMPUTATION_TIME_PATH_RESET;
+            if(!(std::isfinite(maxComputationTimeMotionOnReset) && (maxComputationTimeMotionOnReset > 0.0)))
+                return error_code::ONLINEPLANNER_MAX_COMPUTATION_TIME_MOTION_RESET;
+            if(!(std::isfinite(maxComputationTimePath) && (maxComputationTimePath > 0.0)))
+                return error_code::ONLINEPLANNER_MAX_COMPUTATION_TIME_PATH;
+            if(!(std::isfinite(maxComputationTimeMotion) && (maxComputationTimeMotion > 0.0)))
+                return error_code::ONLINEPLANNER_MAX_COMPUTATION_TIME_MOTION;
+            if(!(std::isfinite(additionalAheadPlanningTime) && (additionalAheadPlanningTime > 0.0)))
+                return error_code::ONLINEPLANNER_ADDITIONAL_AHEAD_PLANNING_TIME;
+            if(!(std::isfinite(additionalTrajectoryDuration) && (additionalTrajectoryDuration > 0.0)))
+                return error_code::ONLINEPLANNER_ADDITIONAL_TRAJECTORY_DURATION;
+            if(!(std::isfinite(timeKeepPastTrajectory) && (timeKeepPastTrajectory >= 0.0)))
+                return error_code::ONLINEPLANNER_TIME_KEEP_PAST_TRAJECTORY;
+            return error_code::NONE;
         }
 
         /**

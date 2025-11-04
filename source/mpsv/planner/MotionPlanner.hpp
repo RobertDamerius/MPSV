@@ -16,6 +16,7 @@
 #include <mpsv/core/DataLogFile.hpp>
 #include <mpsv/core/PerformanceCounter.hpp>
 #include <mpsv/core/Time.hpp>
+#include <mpsv/core/ErrorCode.hpp>
 #include <mpsv/control/VehicleSimulator.hpp>
 #include <mpsv/control/RegionOfAttraction.hpp>
 #include <mpsv/math/Metric.hpp>
@@ -96,40 +97,29 @@ class MotionPlanner {
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Apply a parameter set to the motion planner.
-         * @param[in] parameterSet The parameter set to be applied.
-         * @return True if the input parameter set is valid and parameters have been applied, false otherwise.
+         * @param[in] parameter The parameter set to be applied.
+         * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
          * @details Call this function after a successfull initialization (using the @ref Initialize member function). Do not call this function between @ref Prepare and @ref Solve calls, otherwise the parameters used by
          * both member functions may be inconsistent! If new parameters are to be applied, always apply them BEFORE a prepare-solve-step.
          * @note The tree is cleared (all nodes except the root node are removed).
          */
-        bool ApplyParameterSet(const mpsv::planner::MotionPlannerParameterSet& parameter) noexcept {
-            if(!parameter.IsValid()){
-                return false;
+        error_code ApplyParameterSet(mpsv::planner::MotionPlannerParameterSet& parameter) noexcept {
+            error_code e;
+            if(error_code::NONE != (e = parameter.IsValid())){
+                return e;
             }
             this->parameter = parameter;
-            if(!vehicleSimulator.SetModel(
-                                        this->parameter.model.matF,
-                                        this->parameter.model.matB,
-                                        this->parameter.model.vecTimeconstantsXYN,
-                                        this->parameter.model.vecTimeconstantsInput,
-                                        this->parameter.model.lowerLimitXYN,
-                                        this->parameter.model.upperLimitXYN)){
-                return false;
+            if(error_code::NONE != (e = vehicleSimulator.SetModel(parameter.model))){
+                return e;
             }
-            if(!vehicleSimulator.SetController(this->parameter.motionPlanner.controller.matK,
-                                               this->parameter.motionPlanner.controller.maxRadiusX,
-                                               this->parameter.motionPlanner.controller.maxRadiusY,
-                                               this->parameter.motionPlanner.controller.maxRadiusPsi,
-                                               this->parameter.motionPlanner.controller.minRadiusPosition)){
-                return false;
+            if(error_code::NONE != (e = vehicleSimulator.SetController(parameter.motionPlanner.controller))){
+                return e;
             }
-            if(!regionOfAttraction.SetParameter(this->parameter.motionPlanner.regionOfAttraction.rangePose,
-                                                this->parameter.motionPlanner.regionOfAttraction.rangeUVR,
-                                                this->parameter.motionPlanner.regionOfAttraction.rangeXYN)){
-                return false;
+            if(error_code::NONE != (e = regionOfAttraction.SetParameter(parameter.motionPlanner.regionOfAttraction))){
+                return e;
             }
             state.Clear();
-            return true;
+            return error_code::NONE;
         }
 
         /**
@@ -439,7 +429,7 @@ class MotionPlanner {
          */
         mpsv::geometry::OrientedBox SetSamplingArea(const std::vector<std::array<double,3>>& path) noexcept {
             mpsv::geometry::OrientedBox box;
-            constexpr double sqrt2 = std::sqrt(2.0);
+            const double sqrt2 = std::sqrt(2.0);
             pathSampler.Reset(path, parameter.motionPlanner.samplingRangePosition, parameter.motionPlanner.samplingRangeAngle, parameter.metric.weightPsi);
             box.CreateFromPointCloud(path);
             box.Extend(parameter.motionPlanner.samplingRangePosition * sqrt2);

@@ -5,6 +5,7 @@
 #include <mpsv/geometry/StaticObstacle.hpp>
 #include <mpsv/geometry/OrientedBox.hpp>
 #include <mpsv/core/DataLogFile.hpp>
+#include <mpsv/core/ErrorCode.hpp>
 
 
 namespace mpsv {
@@ -38,23 +39,40 @@ class PathPlannerInput {
 
         /**
          * @brief Check whether the attributes are valid.
-         * @return True if all attributes are valid, false otherwise.
-         * @details Attributes are valid if all values are finite and static obstacles are indeed convex.
+         * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
+         * @details The vertex order of polygon data may be adjusted if possible.
          */
-        bool IsValid(void) noexcept {
-            bool valid = std::isfinite(initialPose[0]) && std::isfinite(initialPose[1]) && std::isfinite(initialPose[2]);
-            valid &= std::isfinite(finalPose[0]) && std::isfinite(finalPose[1]) && std::isfinite(finalPose[2]);
-            valid &= std::isfinite(originOldToNew[0]) && std::isfinite(originOldToNew[1]);
-            valid &= std::isfinite(samplingBoxCenterPose[0]) && std::isfinite(samplingBoxCenterPose[1]) && std::isfinite(samplingBoxCenterPose[2]);
-            valid &= std::isfinite(samplingBoxDimension[0]) && std::isfinite(samplingBoxDimension[1]);
+        error_code IsValid(void) noexcept {
+            if(!(std::isfinite(initialPose[0]) &&
+                 std::isfinite(initialPose[1]) &&
+                 std::isfinite(initialPose[2])))
+                return error_code::INPUT_INITIAL_POSE;
+            if(!(std::isfinite(finalPose[0]) &&
+                 std::isfinite(finalPose[1]) &&
+                 std::isfinite(finalPose[2])))
+                return error_code::INPUT_FINAL_POSE;
+            if(!(std::isfinite(originOldToNew[0]) &&
+                 std::isfinite(originOldToNew[1])))
+                return error_code::INPUT_ORIGIN_OLD_TO_NEW;
+            if(!(std::isfinite(samplingBoxCenterPose[0]) &&
+                 std::isfinite(samplingBoxCenterPose[1]) &&
+                 std::isfinite(samplingBoxCenterPose[2])))
+                return error_code::INPUT_SAMPLING_BOX_CENTER_POSE;
+            if(!(std::isfinite(samplingBoxDimension[0]) &&
+                 std::isfinite(samplingBoxDimension[1])))
+                return error_code::INPUT_SAMPLING_BOX_DIMENSION;
             mpsv::geometry::OrientedBox box;
             box.Create(samplingBoxCenterPose, samplingBoxDimension);
-            valid &= box.IsInside(initialPose);
-            valid &= box.IsInside(finalPose);
+            if(!box.IsInside(initialPose))
+                return error_code::INPUT_INITIAL_POSE_NOT_INSIDE_SAMPLING_BOX;
+            if(!box.IsInside(finalPose))
+                return error_code::INPUT_FINAL_POSE_NOT_INSIDE_SAMPLING_BOX;
             for(auto&& obstacle : staticObstacles){
-                valid &= obstacle.IsConvex() && obstacle.IsFinite();
+                if(!(obstacle.IsFinite() &&
+                     obstacle.EnsureCorrectVertexOrder()))
+                    return error_code::INPUT_STATIC_OBSTACLES;
             }
-            return valid;
+            return error_code::NONE;
         }
 
         /**

@@ -4,6 +4,7 @@
 #include <mpsv/core/MPSVCommon.hpp>
 #include <mpsv/planner/OnlinePlannerOutput.hpp>
 #include <mpsv/core/WorkerThread.hpp>
+#include <mpsv/core/ErrorCode.hpp>
 
 
 namespace mpsv {
@@ -19,9 +20,8 @@ class AsyncOnlinePlannerOutput: public mpsv::planner::OnlinePlannerOutput {
     public:
         double timestampInput;                       // The user-defined timestamp of the corresponding input data that has been used to compute the solution. The default value is quiet_NaN.
         double timestampParameter;                   // The user-defined timestamp of the corresponding parameter data that has been used to compute the solution. The default value is quiet_NaN.
-        bool timeoutInput;                           // True if the given input data timed out, false otherwise.
-        bool validInput;                             // True if the given input data is valid, false otherwise.
-        bool validParameter;                         // True if the given parameter data is valid, false otherwise.
+        error_code inputError;                       // Latest error code of the input data. If input data timed out, this value is set to error_code::NOT_AVAILABLE.
+        error_code parameterError;                   // Latest error code of the parameter data.
         mpsv::core::WorkerThreadState threadState;   // The state of the planning thread.
 
         /**
@@ -36,9 +36,8 @@ class AsyncOnlinePlannerOutput: public mpsv::planner::OnlinePlannerOutput {
             mpsv::planner::OnlinePlannerOutput::Clear();
             timestampInput = std::numeric_limits<double>::quiet_NaN();
             timestampParameter = std::numeric_limits<double>::quiet_NaN();
-            timeoutInput = false;
-            validInput = false;
-            validParameter = false;
+            inputError = error_code::NOT_AVAILABLE;
+            parameterError = error_code::NOT_AVAILABLE;
             threadState = mpsv::core::WorkerThreadState::offline;
         }
 
@@ -50,9 +49,8 @@ class AsyncOnlinePlannerOutput: public mpsv::planner::OnlinePlannerOutput {
             mpsv::planner::OnlinePlannerOutput::MoveTo(dst);
             dst.timestampInput = timestampInput;
             dst.timestampParameter = timestampParameter;
-            dst.timeoutInput = timeoutInput;
-            dst.validInput = validInput;
-            dst.validParameter = validParameter;
+            dst.inputError = inputError;
+            dst.parameterError = parameterError;
             dst.threadState = threadState;
         }
 };

@@ -10,7 +10,7 @@
 <body>
 <header>
 <div class="header_title">MPSV - Motion Planner for Surface Vehicles</div>
-<div class="header_version">Version 1.1.0</div>
+<div class="header_version">Version 2.0.0</div>
 </header>
 <button onclick="PageToTop()" id="buttonToTop"></button>
 <div class="wrapper">
@@ -33,6 +33,8 @@
 <li class="linav"><a href="library_serializeasynconlineplannerparameter.html">Serialize AsyncOnlinePlanner Parameter Bus</a></li>
 <li class="linav"><a href="library_deserializeasynconlineplanneroutput.html">Deserialize AsyncOnlinePlanner Output Bus</a></li>
 <li class="linav"><a href="library_selectcurrentpointontrajectory.html">Select Current Point On Trajectory</a></li>
+<li class="linone"></li>
+<li class="linav"><a href="error_codes.html">Error Codes</a></li>
 </ul>
 
 </div>
@@ -59,7 +61,7 @@ A bus, which defines the input for the asynchronous online planner. The elements
 <tr><td style="font-family: Courier New;">finalPose</td><td style="font-family: Courier New;">double [3]</td><td>The final pose given as {x,y,psi}.</td></tr>
 <tr><td style="font-family: Courier New;">samplingBoxCenterPose</td><td style="font-family: Courier New;">double [3]</td><td>Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.</td></tr>
 <tr><td style="font-family: Courier New;">samplingBoxDimension</td><td style="font-family: Courier New;">double [2]</td><td>Dimension of the sampling box along major and minor axes of the box.</td></tr>
-<tr><td style="font-family: Courier New;">verticesStaticObstacles</td><td style="font-family: Courier New;">double [2][8000]</td><td>Vertex data of the static obstacles. Multiple convex polygons are separated by non-finite vertices.</td></tr>
+<tr><td style="font-family: Courier New;">verticesStaticObstacles</td><td style="font-family: Courier New;">float [2][8000]</td><td>Vertex data of the static obstacles. Multiple convex polygons are separated by non-finite vertices.</td></tr>
 </table>
 
 </div>

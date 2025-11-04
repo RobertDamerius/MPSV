@@ -17,6 +17,7 @@
 /* Core */
 #include <mpsv/core/MPSVCommon.hpp>
 #include <mpsv/core/DataLogFile.hpp>
+#include <mpsv/core/ErrorCode.hpp>
 #include <mpsv/core/Event.hpp>
 #include <mpsv/core/FixedSizeTreeSE2.hpp>
 #include <mpsv/core/LookUpTable2D.hpp>

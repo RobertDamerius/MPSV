@@ -3,6 +3,8 @@
 
 #include <mpsv/core/MPSVCommon.hpp>
 #include <mpsv/math/Additional.hpp>
+#include <mpsv/planner/ParameterTypes.hpp>
+#include <mpsv/core/ErrorCode.hpp>
 
 
 namespace mpsv {
@@ -33,27 +35,17 @@ class RegionOfAttraction {
 
         /**
          * @brief Set parameters for the region of attraction.
-         * @param[in] rangePose The pose range {dx,dy,dpsi}. A given pose must be in this range {[x-dx, x+dx], [y-dy, y+dy], [psi-dpsi, psi+dpsi]} to be in the region of attraction.
-         * @param[in] rangeUVR The velocity range {du,dv,dr}. A given velocity must be in this range {[-du,du],[-dv,dv],[-dr,dr]} to be in the region of attraction.
-         * @param[in] rangeXYN The force range {dX,dY,dN}. A given force must be in this range {[-dX,dX],[-dY,dY],[-dN,dN]} to be in the region of attraction.
-         * @return True if input parameters are valid and internal parameters have been updated, false otherwise.
+         * @param[in] parameter The parameter to be set.
+         * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
          */
-        bool SetParameter(std::array<double,3> rangePose, std::array<double,3> rangeUVR, std::array<double,3> rangeXYN) noexcept {
-            bool validParameter = std::isfinite(rangePose[0]) && (rangePose[0] > 0.0);
-            validParameter &= std::isfinite(rangePose[1]) && (rangePose[1] > 0.0);
-            validParameter &= std::isfinite(rangePose[2]) && (rangePose[2] > 0.0);
-            validParameter &= std::isfinite(rangeUVR[0]) && (rangeUVR[0] > 0.0);
-            validParameter &= std::isfinite(rangeUVR[1]) && (rangeUVR[1] > 0.0);
-            validParameter &= std::isfinite(rangeUVR[2]) && (rangeUVR[2] > 0.0);
-            validParameter &= std::isfinite(rangeXYN[0]) && (rangeXYN[0] > 0.0);
-            validParameter &= std::isfinite(rangeXYN[1]) && (rangeXYN[1] > 0.0);
-            validParameter &= std::isfinite(rangeXYN[2]) && (rangeXYN[2] > 0.0);
-            if(validParameter){
-                this->rangePose = rangePose;
-                this->rangeUVR = rangeUVR;
-                this->rangeXYN = rangeXYN;
+        error_code SetParameter(const mpsv::planner::ParameterRegionOfAttraction& parameter) noexcept {
+            error_code e = parameter.IsValid();
+            if(error_code::NONE == e){
+                this->rangePose = parameter.rangePose;
+                this->rangeUVR = parameter.rangeUVR;
+                this->rangeXYN = parameter.rangeXYN;
             }
-            return validParameter;
+            return e;
         }
 
         /**
