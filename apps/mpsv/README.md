@@ -46,6 +46,9 @@ If the application is to be started without waiting for termination, the followi
 sudo nohup ./mpsv &
 ```
 
+If you want to pin the application to specific CPU cores using `taskset`, be careful, as the default behaviour of OpenMP might change.
+You may need to set the environment variable `OMP_PROC_BIND` to `true` to enable multi-threading capabilities.
+To ensure correct operation run the [benchmark application](../benchmark/README.md) to test if multi-threading works as expected.
 
 ## How To Autostart
 If you want to autostart the application via a cron job, edit the crontab via

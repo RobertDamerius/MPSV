@@ -124,6 +124,7 @@ void MainApplication::PrintSystemInfo(void){
     #else
     Print("MPSV_DONT_USE_OMP:      0\n");
     Print("OMP max threads:        %d\n",omp_get_max_threads());
+    Print("OMP_PROC_BIND:          %d\n",static_cast<int32_t>(omp_get_proc_bind()));
     #endif
     int priorityMin = sched_get_priority_min(SCHED_FIFO);
     int priorityMax = sched_get_priority_max(SCHED_FIFO);

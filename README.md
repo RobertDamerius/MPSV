@@ -23,6 +23,7 @@ MPSV requires OpenMP for parallel computing.
 It has been tested on Windows via MSYS2/MinGW64 and Ubuntu.
 The package usually comes with GCC.
 On Ubuntu it can be installed via `sudo apt install libomp-dev`, for example.
+It may be necessary to set the environment variable `OMP_PROC_BIND` to `true`.
 
 ## Overview
 The directory structure of this repository is as follows.

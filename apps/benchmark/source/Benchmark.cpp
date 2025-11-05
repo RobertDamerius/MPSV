@@ -513,6 +513,7 @@ void Benchmark::PrintSystemInfo(void){
     #else
     printf("MPSV_DONT_USE_OMP:        0\n");
     printf("OMP max threads:          %d\n",omp_get_max_threads());
+    printf("OMP_PROC_BIND:            %d\n",static_cast<int32_t>(omp_get_proc_bind()));
     #endif
     printf("\n");
 }
