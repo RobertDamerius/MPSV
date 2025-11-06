@@ -31,7 +31,7 @@ There are the following benchmark tests:
 
 > **6. Motion Planning**
 > 
-> Solves a realistic path planning problem with 126 static obstacles and 400 iterations.
+> Solves a realistic motion planning problem with 126 static obstacles and 400 iterations.
 
 ## Running the Benchmark
 Simply run the benchmark application from the command line, e.g. (Linux)
@@ -42,7 +42,13 @@ Simply run the benchmark application from the command line, e.g. (Linux)
 On some systems like debian with the PREEMPT_RT patch the default behaviour of OpenMP (OMP) might change depending on how the application is executed.
 Pay attention when using `taskset` to pin the program to specific cores.
 When running the benchmark on multiple cores, benchmark 3 should always be faster than benchmark 2.
-If this is not the case, try to explicitly set the environment variable `OMP_PROC_BIND` to `true`, for example by running:
+If this is not the case, try to explicitly set the environment variable `OMP_PROC_BIND` to `true`, for example by running
 ```
 OMP_PROC_BIND=true taskset 0xff ./benchmark
 ```
+or set `OMP_PLACES` to `threads` with
+```
+OMP_PLACES=threads taskset 0xff ./benchmark
+```
+
+**Important**: Note that the parallelization behaviour may change if the application runs with real-time thread priorites and administrative privileges.
