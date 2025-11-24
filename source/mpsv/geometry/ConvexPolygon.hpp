@@ -291,41 +291,15 @@ class ConvexPolygon {
          * @details You need to set vertices using the @ref Create member function or by construction before calling this function! If this convex polygon contains less than 3 vertices, an empty hull may be returned.
          */
         ConvexPolygon CreateTransformedConvexHull(double x0, double y0, double cosPsi0, double sinPsi0, double x1, double y1, double cosPsi1, double sinPsi1) const noexcept {
-            // Two points are treated as the same point if their coordinates (x,y) are closer than this value
-            constexpr double thresholdSamePoint = 100.0 * std::numeric_limits<double>::epsilon();
-
             // Transform vertices by two configurations and create point cloud
-            // Do not add duplicated points, all points in the cloud must be unique
             size_t numVertices = vertices.size();
             std::vector<std::array<double,2>> points;
-            points.reserve(2 * numVertices);
-            bool uniquePoint;
-            double vx, vy;
+            points.resize(2 * numVertices);
             for(size_t k = 0; k < numVertices; ++k){
-                vx = x0 + cosPsi0 * vertices[k][0] - sinPsi0 * vertices[k][1];
-                vy = y0 + sinPsi0 * vertices[k][0] + cosPsi0 * vertices[k][1];
-                uniquePoint = true;
-                for(auto&& p : points){
-                    if((std::fabs(vx - p[0]) < thresholdSamePoint) && (std::fabs(vy - p[1]) < thresholdSamePoint)){
-                        uniquePoint = false;
-                        break;
-                    }
-                }
-                if(uniquePoint){
-                    points.push_back({vx,vy});
-                }
-                vx = x1 + cosPsi1 * vertices[k][0] - sinPsi1 * vertices[k][1];
-                vy = y1 + sinPsi1 * vertices[k][0] + cosPsi1 * vertices[k][1];
-                uniquePoint = true;
-                for(auto&& p : points){
-                    if((std::fabs(vx - p[0]) < thresholdSamePoint) && (std::fabs(vy - p[1]) < thresholdSamePoint)){
-                        uniquePoint = false;
-                        break;
-                    }
-                }
-                if(uniquePoint){
-                    points.push_back({vx,vy});
-                }
+                points[k][0] = x0 + cosPsi0 * vertices[k][0] - sinPsi0 * vertices[k][1];
+                points[k][1] = y0 + sinPsi0 * vertices[k][0] + cosPsi0 * vertices[k][1];
+                points[k + numVertices][0] = x1 + cosPsi1 * vertices[k][0] - sinPsi1 * vertices[k][1];
+                points[k + numVertices][1] = y1 + sinPsi1 * vertices[k][0] + cosPsi1 * vertices[k][1];
             }
 
             // Compute the convex hull
