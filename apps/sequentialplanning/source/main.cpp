@@ -35,6 +35,17 @@ int main(int, char**){
     std::cout << "solve sequential planning problem (computation time (path): " << maxComputationTimePathPlanning << " s, computation time (motion): " << maxComputationTimeMotionPlanning << " s)\n\n";
     planner.Solve(dataOut, dataIn, maxComputationTimePathPlanning, maxComputationTimeMotionPlanning);
 
+    // write results to file
+    mpsv::core::DataLogFile f;
+    std::string filename = example::GetDataFilename();
+    if(f.Open(filename)){
+        parameter.WriteToFile(f, "parameter.");
+        dataIn.WriteToFile(f, "input.");
+        dataOut.WriteToFile(f, "output.");
+        planner.WriteToFile(f, "planner.", dataIn.staticObstacles);
+        f.Close();
+    }
+
     // print result (at most 10 trajectory points)
     std::cout << "pathPlanner.goalReached:                     " << dataOut.pathPlanner.goalReached << "\n";
     std::cout << "pathPlanner.isFeasible:                      " << dataOut.pathPlanner.isFeasible << "\n";

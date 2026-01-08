@@ -10,6 +10,7 @@ apps/motionplanning/motionplanning
 apps/motionplanning/motionplanning.exe
 apps/sequentialplanning/sequentialplanning
 apps/sequentialplanning/sequentialplanning.exe
+apps/sequentialplanning/data*
 apps/onlineplanning/onlineplanning
 apps/onlineplanning/onlineplanning.exe
 apps/asynconlineplanning/asynconlineplanning
