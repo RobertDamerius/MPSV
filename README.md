@@ -103,17 +103,16 @@ Further details are given [here](apps/mpsv/README.md).
 
 
 ## Publication
-*Robert Damerius and Torsten Jeinsch, Real-Time Path Planning for Fully Actuated Autonomous Surface Vehicles, 2022 30th Mediterranean Conference on Control and Automation (MED), 2022, doi: 10.1109/MED54222.2022.9837178*
+*Robert Damerius, Beitrag zur Bewegungsplanung autonomer Wasserfahrzeuge, Dissertation Universität Rostock, 2025, doi: 10.18453/rosdok_id00005155*
 ```
-@inproceedings{Damerius2022,
-    author    = {Damerius, Robert and Jeinsch, Torsten},
-    title     = {{Real-Time Path Planning for Fully Actuated Autonomous Surface Vehicles}}, 
-    booktitle = {2022 30th Mediterranean Conference on Control and Automation (MED)}, 
-    volume    = {},
-    number    = {},
-    pages     = {508-513},
-    year      = {2022},
-    doi       = {10.1109/MED54222.2022.9837178}
+@book{Damerius2025,
+    author    = {Damerius, Robert},
+    title     = {{Beitrag zur Bewegungsplanung autonomer Wasserfahrzeuge}}, 
+    year      = {2025},
+    address   = {Rostock},
+    school    = {Universit{\"a}t Rostock},
+    note      = {Dissertation Universit{\"a}t Rostock 2025},
+    doi       = {10.18453/rosdok_id00005155}
 }
 ```
 
@@ -130,6 +129,20 @@ Further details are given [here](apps/mpsv/README.md).
     issn      = {2405-8963},
     year      = {2023},
     doi       = {10.1016/j.ifacol.2023.10.796}
+}
+```
+
+*Robert Damerius and Torsten Jeinsch, Real-Time Path Planning for Fully Actuated Autonomous Surface Vehicles, 2022 30th Mediterranean Conference on Control and Automation (MED), 2022, doi: 10.1109/MED54222.2022.9837178*
+```
+@inproceedings{Damerius2022,
+    author    = {Damerius, Robert and Jeinsch, Torsten},
+    title     = {{Real-Time Path Planning for Fully Actuated Autonomous Surface Vehicles}}, 
+    booktitle = {2022 30th Mediterranean Conference on Control and Automation (MED)}, 
+    volume    = {},
+    number    = {},
+    pages     = {508-513},
+    year      = {2022},
+    doi       = {10.1109/MED54222.2022.9837178}
 }
 ```
 
