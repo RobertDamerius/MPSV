@@ -1,0 +1,159 @@
+<h1>AutoTune AsyncOnlinePlanner</h1>
+<h3>Library</h3>
+<span style="font-family: Courier New">MPSV / AutoTune AsyncOnlinePlanner</span>
+
+
+<h3>Description</h3>
+Calculate all tuning parameters for the MPSV AsyncOnlinePlanner based on given vehicle parameters and one intuitive tuning parameter.
+
+
+<h2>Input Ports</h2>
+<h3>timestamp</h3>
+The timestamp to be set for the parameter data whenever at least one parameter changes.
+
+<h3>controlEffort</h3>
+The amount of control effort in range <code>(0,1]</code> used to drive the vehicle in a steady-state in longitudinal direction.
+A low value makes the vehicle move slower and a high value makes the vehicle move faster.
+
+<h3>geometry_verticesVehicleShape</h3>
+A 2-by-100 matrix of type <code>double</code> containing a vertex list for multiple convex polygons, where each polygon is separated by non-finite values.
+All non-finite values of the matrix are ignored.
+Example for a simple rectangle of 10-by-2 meters: <code>[5 -5 -5 5 nan(1,96); 1 1 -1 -1 nan(1,96)]</code>
+
+<h3>geometry_collisionCheckMaxPositionDeviation</h3>
+Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 meters.
+
+<h3>geometry_collisionCheckMaxAngleDeviation</h3>
+Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree (0.0174532925199433 radians).
+
+<h3>model_matF</h3>
+3-by-12 coefficient matrix (row-major order) of model <code>nu_dot = F*n(nu) + B*tau</code>.
+
+<h3>model_matB</h3>
+3-by-3 input matrix B (row-major order) of model <code>nu_dot = F*n(nu) + B*tau</code>.
+
+<h3>model_vecSatXYN</h3>
+Absolute saturation value for input vector.
+
+<h3>model_vecTimeconstantsXYN</h3>
+Timeconstants {TX, TY, TN} for input force dynamics.
+
+<h3>model_vecTimeconstantsInput</h3>
+Timeconstants {Tf1, Tf2, Tf3} for input filter dynamics.
+
+<h3>timing_sampletime</h3>
+Sampletime to be used for fixed-step trajectory simulation.
+
+<h3>timing_maxComputationTimePath</h3>
+Maximum computation time in seconds for path planning.
+
+<h3>timing_maxComputationTimeMotion</h3>
+Maximum computation time in seconds for motion planning.
+
+<h3>metric_weightPsi</h3>
+Weighting (greater than 0) for heading angle (psi) in distance metric function.
+
+<h3>metric_weightSway</h3>
+Weighting (greater than or equal to 0) for sway movement (heading angle with respect to perpenticular direction of movement).
+
+<h3>metric_weightReverseScale</h3>
+Weighting (greater than or equal to 0) for sway and reverse movement (heading angle with respect to line angle).
+
+<h3>metric_weightReverseDecay</h3>
+Decay factor (greater than 0) for the weighting function that weights sway and reverse movement.
+
+<h3>metric_distanceScale</h3>
+Scale factor (greater than or equal to 0) for obstacle distance <code>d</code> cost in cost map: <code>scale*exp(-decay*d^2)</code>.
+
+<h3>metric_distanceDecay</h3>
+Decay factor (greater than 0) for obstacle distance <code>d</code> cost in cost map: <code>scale*exp(-decay*d^2)</code>.
+
+
+<h2>Output Ports</h2>
+<h3>asyncOnlinePlannerParameter</h3>
+A bus, which defines the parameter for the asynchronous online planner.
+This output is equal to that of the <a href="library_asynconlineplannerparameter.html">Default AsyncOnlinePlanner Parameter Bus</a> block.
+
+<h3>info</h3>
+A bus, which provides informative details about the auto tuner.
+<table>
+<tr><th>Element</th><th width="200">Data Type</th><th>Description</th></tr>
+<tr><td style="font-family: Courier New;">modelMaxUVR</td><td style="font-family: Courier New;">double</td><td>Maximum velocity that would be reached when driving with a maximum force according to the model saturation value. Each DoF is considered separately, assuming that the input matrix is mainly diagonal.</td></tr>
+<tr><td style="font-family: Courier New;">modelSteadyStateUVR</td><td style="font-family: Courier New;">double</td><td>Steady-state velocity that is reached when driving with a nominal force of <code>controlEffort*satXYN</code>. Each DoF is considered separately, assuming that the input matrix is mainly diagonal.</td></tr>
+<tr><td style="font-family: Courier New;">errorCode</td><td style="font-family: Courier New;">double</td><td>32-bit error code bitfield that indicates invalid input data. Zero means no error. Multiple errors can be raised at the same time. The list of error bits is given below.</td></tr>
+</table>
+<table>
+<tr><th>Error Bitmask</th><th>Description</th></tr>
+<tr><td style="font-family: Courier New;">0x00000001</td><td><code>controlEffort</code> is not finite or out of range <code>(0,1]</code>.</td></tr>
+<tr><td style="font-family: Courier New;">0x00000002</td><td><code>geometry_verticesVehicleShape</code> contains less than 3 finite vertices.</td></tr>
+<tr><td style="font-family: Courier New;">0x00000004</td><td><code>geometry_collisionCheckMaxPositionDeviation</code> is less than <code>0.01</code>.</td></tr>
+<tr><td style="font-family: Courier New;">0x00000008</td><td><code>geometry_collisionCheckMaxAngleDeviation</code> is less than <code>deg2rad(1)</code>.</td></tr>
+<tr><td style="font-family: Courier New;">0x00000010</td><td><code>model_matF</code> is not finite.</td></tr>
+<tr><td style="font-family: Courier New;">0x00000020</td><td><code>model_matB</code> is not finite.</td></tr>
+<tr><td style="font-family: Courier New;">0x00000040</td><td><code>model_vecSatXYN</code> is not finite or not greater than zero.</td></tr>
+<tr><td style="font-family: Courier New;">0x00000080</td><td><code>model_vecTimeconstantsXYN</code> is not finite or not greater than zero.</td></tr>
+<tr><td style="font-family: Courier New;">0x00000100</td><td><code>model_vecTimeconstantsInput</code> is not finite or not greater than zero.</td></tr>
+<tr><td style="font-family: Courier New;">0x00000200</td><td><code>timing_sampletime</code> is not finite or not greater than zero.</td></tr>
+<tr><td style="font-family: Courier New;">0x00000400</td><td><code>timing_maxComputationTimePath</code> is not finite or not greater than zero.</td></tr>
+<tr><td style="font-family: Courier New;">0x00000800</td><td><code>timing_maxComputationTimeMotion</code> is not finite or not greater than zero.</td></tr>
+<tr><td style="font-family: Courier New;">0x00001000</td><td><code>metric_weightPsi</code> is not finite or not greater than zero.</td></tr>
+<tr><td style="font-family: Courier New;">0x00002000</td><td><code>metric_weightSway</code> is not finite or not greater than or equal to zero.</td></tr>
+<tr><td style="font-family: Courier New;">0x00004000</td><td><code>metric_weightReverseScale</code> is not finite or not greater than or equal to zero.</td></tr>
+<tr><td style="font-family: Courier New;">0x00008000</td><td><code>metric_weightReverseDecay</code> is not finite or not greater than to zero.</td></tr>
+<tr><td style="font-family: Courier New;">0x00010000</td><td><code>metric_distanceScale</code> is not finite or not greater than or equal to zero.</td></tr>
+<tr><td style="font-family: Courier New;">0x00020000</td><td><code>metric_distanceDecay</code> is not finite or not greater than to zero.</td></tr>
+</table>
+
+
+<h2>Block Parameters</h2>
+The following table shows all block parameters.
+<table>
+    <tr><th>Parameter Name</th><th>Description</th></tr>
+    <tr><td style="font-family: Courier New;">timeoutInput</td><td>Timeout for input data to the solver (default is 1).</td></tr>
+    <tr><td style="font-family: Courier New;">periodGoalSampling</td><td>Goal sampling period to be used for path and motion planning (default is 30).</td></tr>
+</table>
+
+
+<h2>Details</h2>
+This section provides details about the empirical tuning.
+
+<h3>timings</h3>
+The computation time on reset is set to 20 percent of the maximum computation times.
+The additional ahead planning time is <code>max(0.2, 10*sampletime)</code>.
+
+<h3>skeletalPoints</h3>
+The skeletal points are two points <code>[xmax; ymean]</code> and <code>[xmin; ymean]</code>, where <code>xmax</code> and <code>xmin</code> are the maximum and minimum vertex coordinates of the vehicle shape vertices, respectively, and <code>ymean</code> is the average <code>y</code> coordinate of the vehicle shape vertices.
+
+<h3>costMapResolution, costMapModBreakpoints</h3>
+The modulo factor for breakpoints is set to 10 and the resolution is 1 percent of the largest vehicle dimension.
+
+<h3>matK, maxRadiusX, maxRadiusY, maxRadiusPsi</h3>
+The controller gain and guidance radii are connected to each other.
+First, the longitudinal stop distance is calculated based on the maximum force according to the saturation value of the model.
+The desired radius in x direction is then set to <code>1.2 * stopDistance</code>.
+Afterwards, the controller gain is adjusted in a bisection search until the control effort would match the specified <code>controlEffort</code> value.
+The guidance radii are calculated based on the controller gain matrix and the steady-state force and velocity.
+
+<h3>minRadiusPosition</h3>
+This value is the lowest value of <code>maxRadiusX</code>, <code>maxRadiusY</code> as well as the minimum vehicle dimension.
+
+<h3>rangePose, rangeUVR, rangeXYN</h3>
+The range is calculated based on vehicle dimension, maximum velocity and maximum force, e.g. 5 percent of the maximum value.
+For sway speed, 10 percent is used.
+The angular range is fixed to 5 degrees.
+
+<h3>samplingRangePosition, samplingRangeAngle</h3>
+The angular sampling range around a path is fixed to 30 degrees.
+The positional range is calculated based on the guidance radius.
+
+<h3>maxInputPathLength</h3>
+This length is calculated from the maximum velocity and total replanning time and the greatest guidance radius such that a subgoal pose is not within the guidance radius within the total replanning time.
+
+<h3>maxUVR (information-purpose only)</h3>
+This value represents the maximum velocity that would be reached when driving with a maximum force according to the model saturation value.
+Each DoF is considered separately, assuming that <code>matB</code> of the model is mainly diagonal.
+
+<h3>steadyStateUVR (information-purpose only)</h3>
+This value represents the steady-state velocity that is reached when driving with a nominal force of <code>controlEffort*satXYN</code>, where <code>satXYN</code> is the input saturation value of the model.
+Each DoF is considered separately, assuming that <code>matB</code> of the model is mainly diagonal.
+

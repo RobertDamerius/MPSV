@@ -30,7 +30,7 @@ function tparam = AutoTune(asv, controlEffort)
     %   on the controller gain matrix and the steady-state force and velocity.
     % 
     % > minRadiusPosition
-    %   Tis value is the lowest value of maxRadiusX, maxRadiusY as well as the minimum vehicle dimension.
+    %   This value is the lowest value of maxRadiusX, maxRadiusY as well as the minimum vehicle dimension.
     % 
     % > rangePose, rangeUVR, rangeXYN
     %   The range is calculated based on vehicle dimension, maximum velocity and maximum force, e.g. 5 percent of the
