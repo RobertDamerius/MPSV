@@ -1,4 +1,5 @@
 #include <Benchmark.hpp>
+#include <IterationPerformanceTest.hpp>
 #include <omp.h>
 #include <iostream>
 #include <chrono>
@@ -32,7 +33,7 @@ const std::string strOS("Windows");
 #else
 const std::string strOS("unknown");
 #endif
-const std::string strVersion("20231027");
+const std::string strVersion("20260512");
 const std::string strCompilerVersion(__VERSION__);
 const std::string strBuilt(__DATE__ " " __TIME__);
 
@@ -96,6 +97,12 @@ void Benchmark::Run(void){
     PrintResultData("Path Planning", t5);
     PrintResultData("Motion Planning", t6);
     PrintResultFooter();
+
+    // Iteration Performance Test
+    Idle();
+    printf("[BENCHMARK] Iteration Performance Test\n");
+    IterationPerformanceTest::Run();
+    printf("[BENCHMARK] Iteration Performance Test Completed\n\n");
 }
 
 void Benchmark::Idle(void){

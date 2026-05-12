@@ -33,6 +33,12 @@ There are the following benchmark tests:
 > 
 > Solves a realistic motion planning problem with 126 static obstacles and 400 iterations.
 
+**Additional Performance Tests**
+> **Iteration Performance Test**
+> 
+> Runs sequential planning on 100 different scenes based on real map data and writes results to a data log file.
+
+
 ## Running the Benchmark
 Simply run the benchmark application from the command line, e.g. (Linux)
 ```
