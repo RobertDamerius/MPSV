@@ -23,6 +23,7 @@
 #include <tuple>
 #include <thread>
 #include <condition_variable>
+#include <string_view>
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -33,7 +34,7 @@ namespace mpsv {
 
 
 // MPSV version number
-constexpr const char* version = "2.0.0";
+inline constexpr std::string_view version{"2.0.0"};
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
