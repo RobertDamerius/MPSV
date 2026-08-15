@@ -103,11 +103,26 @@ Further details are given [here](apps/mpsv/README.md).
 
 
 ## Publication
+*Robert Damerius, Nick Eisenblätter, Johannes R. Marx, Muhammad Khalis Mohd Fadil and Torsten Jeinsch, Real-Time Motion Planning for Fully Actuated Autonomous Surface Vehicles, 34th Mediterranean Conference on Control and Automation (MED), 2026, doi: 10.1109/MED70602.2026.11598383*
+```
+@inproceedings{Damerius2026,
+    author    = {Damerius, Robert and Eisenblätter, Nick and Marx, Johannes R. and Fadil, Muhammad Khalis Mohd and Jeinsch, Torsten},
+    booktitle = {34th Mediterranean Conference on Control and Automation (MED)},
+    title     = {{Real-Time Motion Planning for Fully Actuated Autonomous Surface Vehicles}},
+    year      = {2026},
+    month     = {June},
+    address   = {Ancona, Italy},
+    pages     = {195-200},
+    issn      = {2473-3504},
+    doi       = {10.1109/MED70602.2026.11598383}
+}
+```
+
 *Robert Damerius, Beitrag zur Bewegungsplanung autonomer Wasserfahrzeuge, Dissertation Universität Rostock, 2025, doi: 10.18453/rosdok_id00005155*
 ```
 @book{Damerius2025,
     author    = {Damerius, Robert},
-    title     = {{Beitrag zur Bewegungsplanung autonomer Wasserfahrzeuge}}, 
+    title     = {{Beitrag zur Bewegungsplanung autonomer Wasserfahrzeuge}},
     year      = {2025},
     address   = {Rostock},
     school    = {Universit{\"a}t Rostock},
@@ -118,30 +133,32 @@ Further details are given [here](apps/mpsv/README.md).
 
 *Robert Damerius, Johannes R. Marx and Torsten Jeinsch, Fast Trajectory Generation on a Path using Feedback Linearization, 22nd IFAC World Congress, 2023, doi: 10.1016/j.ifacol.2023.10.796*
 ```
-@article{Damerius2023,
+@inproceedings{Damerius2023,
     author    = {Robert Damerius and Johannes R. Marx and Torsten Jeinsch},
     title     = {{Fast Trajectory Generation on a Path using Feedback Linearization}},
-    note      = {22nd IFAC World Congress},
-    journal   = {IFAC-PapersOnLine},
+    booktitle = {22nd World Congress of the International Federation of Automatic Control},
+    address   = {Yokohama, Japan},
+    month     = {July},
     volume    = {56},
     number    = {2},
     pages     = {10990-10995},
-    issn      = {2405-8963},
     year      = {2023},
+    note      = {22nd IFAC World Congress},
+    issn      = {2405-8963},
     doi       = {10.1016/j.ifacol.2023.10.796}
 }
 ```
 
-*Robert Damerius and Torsten Jeinsch, Real-Time Path Planning for Fully Actuated Autonomous Surface Vehicles, 2022 30th Mediterranean Conference on Control and Automation (MED), 2022, doi: 10.1109/MED54222.2022.9837178*
+*Robert Damerius and Torsten Jeinsch, Real-Time Path Planning for Fully Actuated Autonomous Surface Vehicles, 30th Mediterranean Conference on Control and Automation (MED), 2022, doi: 10.1109/MED54222.2022.9837178*
 ```
 @inproceedings{Damerius2022,
     author    = {Damerius, Robert and Jeinsch, Torsten},
-    title     = {{Real-Time Path Planning for Fully Actuated Autonomous Surface Vehicles}}, 
-    booktitle = {2022 30th Mediterranean Conference on Control and Automation (MED)}, 
-    volume    = {},
-    number    = {},
+    title     = {{Real-Time Path Planning for Fully Actuated Autonomous Surface Vehicles}},
+    booktitle = {30th Mediterranean Conference on Control and Automation (MED)},
     pages     = {508-513},
     year      = {2022},
+    month     = {June},
+    address   = {Athens, Greece},
     doi       = {10.1109/MED54222.2022.9837178}
 }
 ```
