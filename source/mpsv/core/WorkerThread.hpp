@@ -63,7 +63,7 @@ class WorkerThread {
 
                 // set priority and ignore errors
                 struct sched_param param;
-                param.sched_priority = threadPriority;
+                param.sched_priority = std::clamp(threadPriority, sched_get_priority_min(SCHED_FIFO), sched_get_priority_max(SCHED_FIFO));
                 (void) pthread_setschedparam(workerThread.native_handle(), SCHED_FIFO, &param);
             }
         }

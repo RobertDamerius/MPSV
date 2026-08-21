@@ -8,15 +8,15 @@
         "socketPriority": 6,
         "allowBroadcast": false,
         "socketErrorRetryTimeMs": 1000,
-        "receiverThreadPriority": 99
+        "receiverThreadPriority": 49
     },
     "planner": {
         "pathMaxNumNodes": 200,
         "pathMaxNumSamples": 1000000,
         "motionMaxNumNodes": 200,
         "motionMaxNumSamples": 1000000,
-        "threadPriorityPlanner": 98,
-        "threadPriorityUpdater": 99,
+        "threadPriorityPlanner": 48,
+        "threadPriorityUpdater": 49,
         "ompNumThreads": -1,
         "ompDynamic": -1,
         "cpuCoreIDs": [],

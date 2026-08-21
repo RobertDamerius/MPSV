@@ -12,7 +12,7 @@ bool Planner::Start(const PlannerConfiguration plannerConf){
     }
     periodicThread = std::thread(&Planner::PeriodicUpdateThread, this);
     struct sched_param param;
-    param.sched_priority = plannerConf.threadPriorityUpdater;
+    param.sched_priority = std::clamp(plannerConf.threadPriorityUpdater, sched_get_priority_min(SCHED_FIFO), sched_get_priority_max(SCHED_FIFO));
     if(0 != pthread_setschedparam(periodicThread.native_handle(), SCHED_FIFO, &param)){
         PrintW("Could not set thread priority %d for periodic update thread!\n", plannerConf.threadPriorityUpdater);
     }

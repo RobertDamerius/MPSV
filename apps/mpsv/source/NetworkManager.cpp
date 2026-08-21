@@ -14,7 +14,7 @@ void NetworkManager::Start(const NetworkConfiguration networkConf){
         destination.port = networkConf.destinationPort;
         networkReceiveThread = std::thread(&NetworkManager::NetworkReceiveThread, this, networkConf);
         struct sched_param param;
-        param.sched_priority = networkConf.receiverThreadPriority;
+        param.sched_priority = std::clamp(networkConf.receiverThreadPriority, sched_get_priority_min(SCHED_FIFO), sched_get_priority_max(SCHED_FIFO));
         if(0 != pthread_setschedparam(networkReceiveThread.native_handle(), SCHED_FIFO, &param)){
             PrintW("Could not set thread priority %d for network manager!\n", networkConf.receiverThreadPriority);
         }
