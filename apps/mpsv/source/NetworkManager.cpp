@@ -26,7 +26,7 @@ void NetworkManager::Stop(void){
         started = false;
         terminate = true;
         udpSocket.Close();
-        udpRetryTimer.NotifyOne(0);
+        udpRetryTimer.Notify();
         if(networkReceiveThread.joinable()){
             networkReceiveThread.join();
         }

@@ -4,14 +4,12 @@
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // External Libraries
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-/* Default C/C++ headers */
 #include <iostream>
 #include <cstdint>
 #include <fstream>
 #include <string>
 #include <array>
 #include <vector>
-#include <mutex>
 #include <functional>
 #include <algorithm>
 #include <atomic>
@@ -22,8 +20,14 @@
 #include <type_traits>
 #include <tuple>
 #include <thread>
-#include <condition_variable>
+#include <pthread.h>
 #include <string_view>
+#if defined(_WIN32)
+#include <mutex>
+#include <condition_variable>
+#elif defined(__linux__)
+#include <semaphore.h>
+#endif
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

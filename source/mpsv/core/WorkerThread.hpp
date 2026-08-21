@@ -74,7 +74,7 @@ class WorkerThread {
         void Stop(void) noexcept {
             // set flags to interrupt running thread
             stopWorkerThread = true;
-            eventLeaveStandby.NotifyOne(1);
+            eventLeaveStandby.Notify();
 
             // Wait until thread terminates and terminate solver
             if(workerThread.joinable()){
@@ -101,7 +101,7 @@ class WorkerThread {
          */
         void Resume(void) noexcept {
             commandedState = mpsv::core::WorkerThreadState::running;
-            eventLeaveStandby.NotifyOne();
+            eventLeaveStandby.Notify();
         }
 
         /**
@@ -158,7 +158,7 @@ class WorkerThread {
                     case mpsv::core::WorkerThreadState::offline:
                     case mpsv::core::WorkerThreadState::standby:
                         state = mpsv::core::WorkerThreadState::standby;
-                        (void) eventLeaveStandby.Wait(); // wait for the leave event (blocking call, ignore actual returned event value)
+                        eventLeaveStandby.Wait(); // wait for the leave event (blocking call)
                         break;
                     case mpsv::core::WorkerThreadState::running:
                         state = mpsv::core::WorkerThreadState::running;

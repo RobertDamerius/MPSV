@@ -18,55 +18,94 @@ class Event {
         /**
          * @brief Create a new event object.
          */
-        Event() noexcept :_flag(-1){}
+        Event() noexcept {
+            #if defined(_WIN32)
+            notified = false;
+            #elif defined(__linux__)
+            sem_init(&sem, 0, 0);
+            #endif
+        }
 
-        /**
-         * @brief Notify one thread waiting for this event.
-         * @param[in] flag User-specific value that should be forwarded to the waiting thread. Note that -1 is used as default value and therefore to indicate timeout when calling @ref WaitFor.
-         */
-        void NotifyOne(int32_t flag = -1) noexcept {
-            {
-                std::unique_lock<std::mutex> lock(mtx);
-                notified = true;
-                _flag = flag;
-            }
-            cv.notify_one();
+        ~Event() noexcept {
+            #if defined(__linux__)
+            sem_destroy(&sem);
+            #endif
         }
 
         /**
-         * @brief Wait for a notification event. A thread calling this function waits until @ref NotifyOne is called.
-         * @return The user-specific value that has been set during the @ref NotifyOne call.
+         * @brief Notify a thread waiting for this event.
          */
-        int32_t Wait(void) noexcept {
+        void Notify(void) noexcept {
+            #if defined(_WIN32)
+            std::unique_lock<std::mutex> lock(mtx);
+            notified = true;
+            cv.notify_one();
+            #elif defined(__linux__)
+            sem_post(&sem);
+            #endif
+        }
+
+        /**
+         * @brief Wait for a notification event. A thread calling this function waits until @ref Notify is called.
+         */
+        void Wait(void) noexcept {
+            #if defined(_WIN32)
             std::unique_lock<std::mutex> lock(mtx);
             cv.wait(lock, [this](){ return this->notified; });
             notified = false;
-            int32_t ret = _flag;
-            _flag = -1;
-            return ret;
+            #elif defined(__linux__)
+            while(sem_wait(&sem) == -1){
+                if(errno != EINTR){
+                    return;
+                }
+            }
+            while(sem_trywait(&sem) == 0);
+            #endif
         }
 
         /**
-         * @brief Wait for a notification event or for a timeout. A thread calling this function waits until @ref NotifyOne is called or the wait timed out.
+         * @brief Wait for a notification event or for a timeout. A thread calling this function waits until @ref Notify is called or the wait timed out.
          * @param[in] timeoutMs Timeout in milliseconds.
-         * @return The user-specific value that has been set during the @ref NotifyOne call or -1 in case of timeout.
          */
-        int32_t WaitFor(uint32_t timeoutMs) noexcept {
+        void WaitFor(uint32_t timeoutMs) noexcept {
+            #if defined(_WIN32)
             std::unique_lock<std::mutex> lock(mtx);
             cv.wait_for(lock, std::chrono::milliseconds(timeoutMs), [this](){ return this->notified; });
             notified = false;
-            int32_t ret = _flag;
-            _flag = -1;
-            return ret;
+            #elif defined(__linux__)
+            struct timespec ts;
+            if (clock_gettime(CLOCK_MONOTONIC, &ts) == -1) {
+                return;
+            }
+            ts.tv_sec += timeoutMs / 1000;
+            ts.tv_nsec += (timeoutMs % 1000) * 1000000;
+            if(ts.tv_nsec >= 1000000000){
+                ts.tv_sec += 1;
+                ts.tv_nsec -= 1000000000;
+            }
+            while(sem_clockwait(&sem, CLOCK_MONOTONIC, &ts) == -1){
+                if(errno == EINTR){
+                    continue;
+                }
+                if(errno == ETIMEDOUT){
+                    return;
+                }
+                return;
+            }
+            while (sem_trywait(&sem) == 0);
+            #endif
         }
 
         /**
          * @brief Clear a notified event.
          */
         void Clear(void) noexcept {
+            #if defined(_WIN32)
             std::unique_lock<std::mutex> lock(mtx);
             notified = false;
-            _flag = -1;
+            #elif defined(__linux__)
+            while(sem_trywait(&sem) == 0);
+            #endif
         }
 
         /* Make this class non-copyable */
@@ -76,10 +115,13 @@ class Event {
         Event& operator=(Event&&) = delete;
 
     protected:
-        int32_t _flag;                // User-specific value set during notification. The default value is -1.
+        #if defined(_WIN32)
         std::mutex mtx;               // The mutex used for event notification.
         std::condition_variable cv;   // The condition variable used for event notification.
         bool notified;                // A boolean flag to prevent spurious wakeups.
+        #elif defined(__linux__)
+        sem_t sem;                    // The semaphore used for event notification.
+        #endif
 };
 
 

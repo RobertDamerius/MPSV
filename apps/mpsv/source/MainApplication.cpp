@@ -195,7 +195,7 @@ void MainApplication::SignalHandler(int signal){
         case SIGINT:
         case SIGTERM:
             PrintT("received signal %d: application will be terminated\n", signal);
-            mainApplication.interruptEvent.NotifyOne();
+            mainApplication.interruptEvent.Notify();
             break;
     }
 }
