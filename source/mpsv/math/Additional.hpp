@@ -32,26 +32,6 @@ inline double deg2rad(double angle) noexcept {
 
 
 /**
- * @brief Signum function for datatype double.
- * @param[in] value Input value for which to calculate the signum function.
- * @return -1.0 if value is less than zero, +1.0 if value is greater than zero, 0.0 otherwise.
- */
-inline double signd(double value) noexcept {
-    return static_cast<double>(static_cast<int32_t>(0.0 < value) - static_cast<int32_t>(value < 0.0));
-}
-
-
-/**
- * @brief Signum function for datatype double with integer return value.
- * @param[in] value Input value for which to calculate the signum function.
- * @return -1 if value is less than zero, +1 if value is greater than zero, 0 otherwise.
- */
-inline int32_t signi(double value) noexcept {
-    return (static_cast<int32_t>(0.0 < value) - static_cast<int32_t>(value < 0.0));
-}
-
-
-/**
  * @brief Calculate the inverse of a 3-by-3 matrix.
  * @param[in] matA 3-by-3 input matrix in row-major order.
  * @return <0> True if success, false otherwise. The inversion fails, if the inverse is not finite.
