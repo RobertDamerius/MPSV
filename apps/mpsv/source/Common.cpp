@@ -1,8 +1,14 @@
 #include <Common.hpp>
 
 
+namespace {
+
+
 std::mutex __mpsv_mtx_print;
-static std::chrono::time_point<std::chrono::steady_clock> __mpsv_steady_clock = std::chrono::steady_clock::now();
+std::chrono::time_point<std::chrono::steady_clock> __mpsv_steady_clock = std::chrono::steady_clock::now();
+
+
+} /* anonymous namespace */
 
 
 void __mpsv_print(const char* format, ...){
@@ -14,7 +20,7 @@ void __mpsv_print(const char* format, ...){
 }
 
 void __mpsv_print_time(const char* format, ...){
-    double t = 1e-9 * static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - __mpsv_steady_clock).count());
+    double t = std::chrono::duration<double>(std::chrono::steady_clock::now() - __mpsv_steady_clock).count();
     {
         const std::lock_guard<std::mutex> lk(__mpsv_mtx_print);
         fprintf(stderr,"  [t=%lf] ", t);
@@ -26,7 +32,7 @@ void __mpsv_print_time(const char* format, ...){
 }
 
 void __mpsv_print_verbose(const char prefix, const char* file, const int line, const char* func, const char* format, ...){
-    double t = 1e-9 * static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - __mpsv_steady_clock).count());
+    double t = std::chrono::duration<double>(std::chrono::steady_clock::now() - __mpsv_steady_clock).count();
     {
         const std::lock_guard<std::mutex> lk(__mpsv_mtx_print);
         fprintf(stderr,"%c [t=%lf] %s:%d in %s(): ", prefix, t, file, line, func);

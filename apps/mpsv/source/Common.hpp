@@ -65,9 +65,6 @@ inline constexpr std::string_view strBuilt{__DATE__ " " __TIME__};
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Macros For Thread-safe Console Prints
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-extern std::mutex __mpsv_mtx_print;
-
-
 extern void __mpsv_print(const char* format, ...);
 extern void __mpsv_print_time(const char* format, ...);
 extern void __mpsv_print_verbose(const char prefix, const char* file, const int line, const char* func, const char* format, ...);
