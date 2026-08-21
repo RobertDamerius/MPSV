@@ -108,7 +108,7 @@ void MainApplication::PrintSystemInfo(void){
     std::time_t systemTime = std::chrono::system_clock::to_time_t(timePoint);
     std::tm* gmTime = std::gmtime(&systemTime);
     Print("Application Version:    %s\n", strVersion.c_str());
-    Print("MPSV API Version:       %s\n", mpsv::version);
+    Print("MPSV API Version:       %.*s\n", static_cast<int>(mpsv::version.length()), mpsv::version.data());
     Print("Compiler Version:       %s\n", strCompilerVersion.c_str());
     Print("Built (local):          %s\n", strBuilt.c_str());
     Print("Current time (UTC):     %04u-%02u-%02u %02u:%02u:%02u\n", 1900 + gmTime->tm_year, 1 + gmTime->tm_mon, gmTime->tm_mday, gmTime->tm_hour, gmTime->tm_min, gmTime->tm_sec);
