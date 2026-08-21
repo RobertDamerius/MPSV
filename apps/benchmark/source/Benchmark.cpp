@@ -20,24 +20,6 @@ using namespace mpsv::geometry;
 using namespace mpsv::sampler;
 
 
-#if __linux__
-const std::string strOS("Linux");
-#elif __FreeBSD__
-const std::string strOS("FreeBSD");
-#elif __ANDROID__
-const std::string strOS("Android");
-#elif __APPLE__
-const std::string strOS("macOS");
-#elif _WIN32
-const std::string strOS("Windows");
-#else
-const std::string strOS("unknown");
-#endif
-const std::string strVersion("20260512");
-const std::string strCompilerVersion(__VERSION__);
-const std::string strBuilt(__DATE__ " " __TIME__);
-
-
 std::vector<mpsv::geometry::ConvexPolygon> Benchmark::convexPolygons;
 mpsv::control::VehicleSimulator Benchmark::vehicleSimulator;
 double Benchmark::preventOptimization = 0.0;
@@ -477,7 +459,7 @@ void Benchmark::PrintSystemInfo(void){
     printf("MPSV Benchmark\n\n");
 
     // Operating system
-    printf("Operating System:         %s\n", strOS.c_str());
+    printf("Operating System:         %.*s\n", static_cast<int>(strOS.length()), strOS.data());
     #if __linux__
     struct utsname info;
     (void) uname(&info);
@@ -505,10 +487,10 @@ void Benchmark::PrintSystemInfo(void){
     auto timePoint = std::chrono::system_clock::now();
     std::time_t systemTime = std::chrono::system_clock::to_time_t(timePoint);
     std::tm* gmTime = std::gmtime(&systemTime);
-    printf("Benchmark Version:        %s\n", strVersion.c_str());
+    printf("Benchmark Version:        %.*s\n", static_cast<int>(strVersion.length()), strVersion.data());
     printf("MPSV API Version:         %.*s\n", static_cast<int>(mpsv::version.length()), mpsv::version.data());
-    printf("Compiler Version:         %s\n", strCompilerVersion.c_str());
-    printf("Built (local):            %s\n", strBuilt.c_str());
+    printf("Compiler Version:         %.*s\n", static_cast<int>(strCompilerVersion.length()), strCompilerVersion.data());
+    printf("Built (local):            %.*s\n", static_cast<int>(strBuilt.length()), strBuilt.data());
     printf("Current time (UTC):       %04u-%02u-%02u %02u:%02u:%02u\n", 1900 + gmTime->tm_year, 1 + gmTime->tm_mon, gmTime->tm_mday, gmTime->tm_hour, gmTime->tm_min, gmTime->tm_sec);
     #ifdef DEBUG
     printf("DEBUG:                    1\n");
@@ -519,9 +501,9 @@ void Benchmark::PrintSystemInfo(void){
     printf("MPSV_DONT_USE_OMP:        1\n");
     #else
     printf("MPSV_DONT_USE_OMP:        0\n");
-    printf("OMP_NUM_THREADS:          %d\n",omp_get_max_threads());
-    printf("OMP_DYNAMIC:              %d\n",omp_get_dynamic());
-    printf("OMP_PROC_BIND:            %d\n",static_cast<int32_t>(omp_get_proc_bind()));
+    printf("OMP_NUM_THREADS:          %d\n", omp_get_max_threads());
+    printf("OMP_DYNAMIC:              %d\n", omp_get_dynamic());
+    printf("OMP_PROC_BIND:            %d\n", static_cast<int32_t>(omp_get_proc_bind()));
     #endif
     printf("\n");
 }

@@ -63,7 +63,7 @@ void MainApplication::PrintSystemInfo(void){
     Print("MPSV - Motion Planner for Surface Vehicles\n\n");
 
     // operating system
-    Print("operating system:       %s\n", strOS.c_str());
+    Print("operating system:       %.*s\n", static_cast<int>(strOS.length()), strOS.data());
     #if __linux__
     struct utsname info;
     (void) uname(&info);
@@ -107,10 +107,10 @@ void MainApplication::PrintSystemInfo(void){
     auto timePoint = std::chrono::system_clock::now();
     std::time_t systemTime = std::chrono::system_clock::to_time_t(timePoint);
     std::tm* gmTime = std::gmtime(&systemTime);
-    Print("Application Version:    %s\n", strVersion.c_str());
+    Print("Application Version:    %.*s\n", static_cast<int>(strVersion.length()), strVersion.data());
     Print("MPSV API Version:       %.*s\n", static_cast<int>(mpsv::version.length()), mpsv::version.data());
-    Print("Compiler Version:       %s\n", strCompilerVersion.c_str());
-    Print("Built (local):          %s\n", strBuilt.c_str());
+    Print("Compiler Version:       %.*s\n", static_cast<int>(strCompilerVersion.length()), strCompilerVersion.data());
+    Print("Built (local):          %.*s\n", static_cast<int>(strBuilt.length()), strBuilt.data());
     Print("Current time (UTC):     %04u-%02u-%02u %02u:%02u:%02u\n", 1900 + gmTime->tm_year, 1 + gmTime->tm_mon, gmTime->tm_mday, gmTime->tm_hour, gmTime->tm_min, gmTime->tm_sec);
 
     // debug and threading info
@@ -123,14 +123,14 @@ void MainApplication::PrintSystemInfo(void){
     Print("MPSV_DONT_USE_OMP:      1\n");
     #else
     Print("MPSV_DONT_USE_OMP:      0\n");
-    Print("OMP_NUM_THREADS:        %d\n",omp_get_max_threads());
-    Print("OMP_DYNAMIC:            %d\n",omp_get_dynamic());
-    Print("OMP_PROC_BIND:          %d\n",static_cast<int32_t>(omp_get_proc_bind()));
+    Print("OMP_NUM_THREADS:        %d\n", omp_get_max_threads());
+    Print("OMP_DYNAMIC:            %d\n", omp_get_dynamic());
+    Print("OMP_PROC_BIND:          %d\n", static_cast<int32_t>(omp_get_proc_bind()));
     #endif
     int priorityMin = sched_get_priority_min(SCHED_FIFO);
     int priorityMax = sched_get_priority_max(SCHED_FIFO);
-    Print("Minimum priority:       %d\n",priorityMin);
-    Print("Maximum priority:       %d\n",priorityMax);
+    Print("Minimum priority:       %d\n", priorityMin);
+    Print("Maximum priority:       %d\n", priorityMax);
     Print("\n");
 
     // application path

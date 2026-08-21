@@ -7,10 +7,22 @@
 
 
 /* Version Settings */
-extern const std::string strOS;
-extern const std::string strVersion;
-extern const std::string strCompilerVersion;
-extern const std::string strBuilt;
+#if __linux__
+inline constexpr std::string_view strOS{"Linux"};
+#elif __FreeBSD__
+inline constexpr std::string_view strOS{"FreeBSD"};
+#elif __ANDROID__
+inline constexpr std::string_view strOS{"Android"};
+#elif __APPLE__
+inline constexpr std::string_view strOS{"macOS"};
+#elif _WIN32
+inline constexpr std::string_view strOS{"Windows"};
+#else
+inline constexpr std::string_view strOS{"unknown"};
+#endif
+inline constexpr std::string_view strVersion{"1.0.0"};
+inline constexpr std::string_view strCompilerVersion{__VERSION__};
+inline constexpr std::string_view strBuilt{__DATE__ " " __TIME__};
 
 
 /**
