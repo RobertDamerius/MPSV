@@ -17,7 +17,7 @@ bool IterationPerformanceTest::LoadSceneData(void){
     printf("Loading sceneData: ");
     bool success = sceneData.Read("sceneData");
     if(success){
-        printf("OK (number of scenes: %llu)\n", sceneData.scenes.size());
+        printf("OK (number of scenes: %zu)\n", sceneData.scenes.size());
     }
     else{
         printf("ERROR: Failed to read sceneData from the current working directory!\n");
