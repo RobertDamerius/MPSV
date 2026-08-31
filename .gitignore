@@ -23,5 +23,6 @@ apps/mpsv/mpsv
 apps/mpsv/mpsv.exe
 apps/mpsv/protocol
 slprj
+matlab/cache
 *_sfun.mexa64
 *_sfun.mexw64

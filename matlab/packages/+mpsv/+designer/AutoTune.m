@@ -1,10 +1,11 @@
-function tparam = AutoTune(asv, controlEffort)
+function tparam = AutoTune(asv, controlEffort, desiredRadiusX)
     %mpsv.designer.AutoTune Calculate all tuning parameters for the MPSV motion planner based on given vehicle parameters and
     % one intuitive tuning parameter.
     % 
     % PARAMETER
-    % asv           ... Given vehicle settings structure of type mpsv.designer.ASV.
-    % controlEffort ... The amount of control effort in range (0,1] used to drive the vehicle in a steady-state in longitudinal direction.
+    % asv            ... Given vehicle settings structure of type mpsv.designer.ASV.
+    % controlEffort  ... The amount of control effort in range (0,1] used to drive the vehicle in a steady-state in longitudinal direction.
+    % desiredRadiusX ... Optional argument to specifiy a desired line-of-sight radius in longitudinal direction for path exploration.
     % 
     % RETURN
     % tunedParameters ... The tuned parameter structure of type mpsv.designer.Tuning.
@@ -25,9 +26,9 @@ function tparam = AutoTune(asv, controlEffort)
     % > matK, maxRadiusX, maxRadiusY, maxRadiusPsi
     %   The controller gain and guidance radii are connected to each other. First, the longitudinal stop distance is
     %   calculated based on the maximum force according to the saturation value of the model. The desired radius in x
-    %   direction is then set to 1.2 * stopDistance. Afterwards, the controller gain is adjusted in a bisection search
-    %   until the control effort would match the specified controlEffort value. The guidance radii are calculated based
-    %   on the controller gain matrix and the steady-state force and velocity.
+    %   direction is then set to 1.2 * stopDistance or to desiredRadiusX if given as input argument. Afterwards, the
+    %   controller gain is adjusted in a bisection search until the control effort would match the specified controlEffort
+    %   value. The guidance radii are calculated based on the controller gain matrix and the steady-state force and velocity.
     % 
     % > minRadiusPosition
     %   This value is the lowest value of maxRadiusX, maxRadiusY as well as the minimum vehicle dimension.
@@ -56,6 +57,7 @@ function tparam = AutoTune(asv, controlEffort)
     arguments (Input)
         asv (1,1) mpsv.designer.ASV
         controlEffort (1,1) double {mustBeFinite, mustBeNonnegative, mustBeLessThanOrEqual(controlEffort,1)} = 0.74
+        desiredRadiusX (1,1) double = NaN
     end
     arguments (Output)
         tparam (1,1) mpsv.designer.Tuning
@@ -83,8 +85,12 @@ function tparam = AutoTune(asv, controlEffort)
     tparam.info.maxUVR = FindSteadyStateVelocities(asv.model.vecSatXYN, asv.model);
     stopDistanceX = LongitudinalStopDistance(tparam.info.maxUVR(1), asv.model);
 
-    % bisection search: find control gain that gives a longitudinal radius greater than the stop distance
-    desiredRadiusX = 1.2 * stopDistanceX;
+    % use stop distance for desired longitudinal radius if not specified
+    if(~isfinite(desiredRadiusX) || (desiredRadiusX < 0.0))
+        desiredRadiusX = 1.2 * stopDistanceX;
+    end
+
+    % bisection search: find control gain that gives a longitudinal radius greater than the desired if possible
     speedFactorLowerBound = 0.3;
     speedFactorUpperBound = 0.95;
     for i = 1:10
@@ -209,17 +215,16 @@ function K = DesignPoseController(model, speedFactor)
     %    uz = -Kz * [dp; z1; z2; z3]
     % 
     % Kz (3-by-12) is the control gain matrix to be designed. To prevent overshoot, we set four groups of three poles on the real
-    % axis. Because the linearized system above is a pure integrator we are placing our poles based on the absolte eigenvalues of
+    % axis. Because the linearized system above is a pure integrator we are placing our poles based on the absolute eigenvalues of
     % the original non-linear system for the operating point u = v = r = 0. Then an average eigenvalue is used as a "base" group
     % pole and the three remaining groups are distributed between the base pole and the imaginary axis in the following way:
     % 
-    %    p1 = -avg_eigenvalues        p2 = p1*k        p3 = p1*k^2        p4 = p1*k^3
+    %    p1 = -avg_eigenvalues*k        p2 = p1*k        p3 = p1*k^2        p4 = p1*k^3
     % 
     % Here, k in range (0,1) is a tuning parameter. For k close to 1, poles get closer to the base pole p1 and the system gets
     % "faster". For small k, the dominant pole group gets closer to the imaginary axis and makes the system "slower". k is denoted
     % as the speed-factor.
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    %avg_eigenvalues = mean([zeros(3,1); abs(eig(model.matF(:,1:3))); 1.0 ./ model.vecTimeconstantsXYN; 1.0 ./ model.vecTimeconstantsInput]);
     avg_eigenvalues = mean([abs(eig(model.matF(:,1:3))); 1.0 ./ model.vecTimeconstantsXYN; 1.0 ./ model.vecTimeconstantsInput]);
     sf1 = speedFactor;
     sf2 = sf1*sf1;
