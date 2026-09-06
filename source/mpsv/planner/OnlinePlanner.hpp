@@ -45,7 +45,7 @@ class OnlinePlanner {
          * @param[in] motionMaxNumNodes Maximum number of nodes to be used in the tree (motion planner).
          * @param[in] motionMaxNumSamples Maximum number of random samples to be generated in advance (motion planner).
          * @return True if success, false otherwise.
-         * @details Call this function before calling any of the other member functions
+         * @details Call this function before calling any of the other member functions.
          */
         bool Initialize(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples) noexcept { return sequentialPlanner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples); }
 
