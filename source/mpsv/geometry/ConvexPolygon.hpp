@@ -186,7 +186,7 @@ class ConvexPolygon {
             for(auto&& e : edges){
                 finite &= std::isfinite(e[0]) && std::isfinite(e[1]) && std::isfinite(e[2]);
             }
-            finite &= std::isfinite(aabb.lowerBound[0]) && std::isfinite(aabb.lowerBound[1]) && std::isfinite(aabb.upperBound[0]) && std::isfinite(aabb.upperBound[1]);
+            finite &= aabb.IsFinite();
             finite &= std::isfinite(farthestVertexDistance);
             return finite && (vertices.size() > 2);
         }

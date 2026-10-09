@@ -15,9 +15,6 @@ namespace geometry {
  */
 class AABB {
     public:
-        double lowerBound[2];   // The lower bound of the axis-aligned bounding box [x, y].
-        double upperBound[2];   // The upper bound of the axis-aligned bounding box [x, y].
-
         /**
          * @brief Create a 2D axis-aligned bounding box.
          */
@@ -49,9 +46,10 @@ class AABB {
         /**
          * @brief Extend the whole AABB by an absolute value. The AABB is extended by this value in positive
          * and negative direction. Thus, the total dimension of the AABB grows by 2*e in each dimension.
-         * @param[in] e The AABB extension value. MAKE SURE THAT THIS VALUE IS POSITIVE OR AT LEAST ZERO!
+         * @param[in] e The absolute extension value.
          */
         void Extend(double e) noexcept {
+            e = std::fabs(e);
             lowerBound[0] -= e;
             lowerBound[1] -= e;
             upperBound[0] += e;
@@ -75,6 +73,12 @@ class AABB {
             std::swap(upperBound[0], aabb.upperBound[0]);
             std::swap(upperBound[1], aabb.upperBound[1]);
         }
+
+        /**
+         * @brief Check if the AABB is finite.
+         * @return True if the AABB is finite, false otherwise.
+         */
+        bool IsFinite(void) const noexcept { return std::isfinite(lowerBound[0]) && std::isfinite(lowerBound[1]) && std::isfinite(upperBound[0]) && std::isfinite(upperBound[1]); }
 
         /**
          * @brief Operator+= adds the right-hand sided AABB to this AABB (union).
@@ -102,6 +106,10 @@ class AABB {
          * @brief Operator+ for adding two AABBs.
          */
         friend AABB operator+(AABB lhs, const AABB& rhs) noexcept { lhs += rhs; return lhs; }
+
+    private:
+        double lowerBound[2];   // The lower bound of the axis-aligned bounding box [x, y].
+        double upperBound[2];   // The upper bound of the axis-aligned bounding box [x, y].
 };
 
 
