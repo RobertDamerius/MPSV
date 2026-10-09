@@ -276,11 +276,6 @@ class OrientedBox {
                 const double& x1 = points[indices[(n + 1) % numHullPoints]][0];
                 const double& y1 = points[indices[(n + 1) % numHullPoints]][1];
                 edgeAngle = std::atan2(y1 - y0, x1 - x0);
-                #ifdef MPSV_SAFE_ATAN2
-                if(!std::isfinite(edgeAngle)){
-                    edgeAngle = 0.0;
-                }
-                #endif
                 s = std::sin(edgeAngle);
                 c = std::cos(edgeAngle);
 

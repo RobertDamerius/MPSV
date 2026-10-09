@@ -52,11 +52,6 @@ template <class T, class U> inline double SwayMetric(const T& a, const U& b, dou
     double dpsi = mpsv::math::SymmetricalAngle(b[2] - a[2]);
     double L = std::sqrt(dx*dx + dy*dy);
     double alpha = std::atan2(dy,dx);
-    #ifdef MPSV_SAFE_ATAN2
-    if(!std::isfinite(alpha)){
-        alpha = 0.0;
-    }
-    #endif
 
     // symmetric sway metric
     double psiL = a[2] + dpsi;

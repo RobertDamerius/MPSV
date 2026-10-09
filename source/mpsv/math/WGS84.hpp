@@ -139,43 +139,18 @@ template <class T, class U> inline std::array<double,2> NE2LL(const T NE, const 
     double y = y0 + slon * t + clon * NE[1];
     double z = z0 + clat * NE[0];
     LL[1] = std::atan2(y,x);
-    #ifdef MPSV_SAFE_ATAN2
-    if(!std::isfinite(LL[1])){
-        LL[1] = 0.0;
-    }
-    #endif
 
     // Latitude: fixed-point iteration with Bowring's formula (typically converges within two or three iterations)
     rho = std::hypot(x, y);
     double beta = std::atan2(z, (1.0 - f) * rho);
-    #ifdef MPSV_SAFE_ATAN2
-    if(!std::isfinite(beta)){
-        beta = 0.0;
-    }
-    #endif
     double sbeta = std::sin(beta);
     double cbeta = std::cos(beta);
     LL[0] = std::atan2(z + b * ep2 * sbeta*sbeta*sbeta, rho - ae2 * cbeta*cbeta*cbeta);
-    #ifdef MPSV_SAFE_ATAN2
-    if(!std::isfinite(LL[0])){
-        LL[0] = 0.0;
-    }
-    #endif
     for(int i = 0; i < 5; ++i){
         beta = std::atan2((1.0 - f)*std::sin(LL[0]), std::cos(LL[0]));
-        #ifdef MPSV_SAFE_ATAN2
-        if(!std::isfinite(beta)){
-            beta = 0.0;
-        }
-        #endif
         sbeta = std::sin(beta);
         cbeta = std::cos(beta);
         LL[0] = std::atan2(z + b * ep2 * sbeta*sbeta*sbeta, rho - ae2 * cbeta*cbeta*cbeta);
-        #ifdef MPSV_SAFE_ATAN2
-        if(!std::isfinite(LL[0])){
-            LL[0] = 0.0;
-        }
-        #endif
     }
     return LL;
 }
@@ -219,43 +194,18 @@ template <class T, class U> inline std::array<double,3> NED2LLA(const T NED, con
     double y = y0 + dy;
     double z = z0 + dz;
     LLA[1] = std::atan2(y,x);
-    #ifdef MPSV_SAFE_ATAN2
-    if(!std::isfinite(LLA[1])){
-        LLA[1] = 0.0;
-    }
-    #endif
 
     // Latitude: fixed-point iteration with Bowring's formula (typically converges within two or three iterations)
     rho = std::hypot(x, y);
     double beta = std::atan2(z, oneMinusF * rho);
-    #ifdef MPSV_SAFE_ATAN2
-    if(!std::isfinite(beta)){
-        beta = 0.0;
-    }
-    #endif
     double sbeta = std::sin(beta);
     double cbeta = std::cos(beta);
     LLA[0] = std::atan2(z + bep2 * sbeta*sbeta*sbeta, rho - ae2 * cbeta*cbeta*cbeta);
-    #ifdef MPSV_SAFE_ATAN2
-    if(!std::isfinite(LLA[0])){
-        LLA[0] = 0.0;
-    }
-    #endif
     for(int i = 0; i < 5; ++i){
         beta = std::atan2(oneMinusF*std::sin(LLA[0]), std::cos(LLA[0]));
-        #ifdef MPSV_SAFE_ATAN2
-        if(!std::isfinite(beta)){
-            beta = 0.0;
-        }
-        #endif
         sbeta = std::sin(beta);
         cbeta = std::cos(beta);
         LLA[0] = std::atan2(z + bep2 * sbeta*sbeta*sbeta, rho - ae2 * cbeta*cbeta*cbeta);
-        #ifdef MPSV_SAFE_ATAN2
-        if(!std::isfinite(LLA[0])){
-            LLA[0] = 0.0;
-        }
-        #endif
     }
 
     // Ellipsoidal height from final value for latitude
