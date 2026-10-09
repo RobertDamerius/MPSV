@@ -701,7 +701,6 @@ class MotionPlanner {
 
                         // check all paths from all leafs to the root
                         bool anythingInfeasible = false;
-                        #ifndef MPSV_DONT_USE_OMP
                         #pragma omp parallel for shared(anythingInfeasible, tree, staticObstacles)
                         for(auto&& idxLeaf : idxLeafNodes){
                             std::vector<std::array<double,3>>& path = tree.GetRefNode(idxLeaf).pathBuffer;
@@ -710,16 +709,6 @@ class MotionPlanner {
                                 anythingInfeasible = true;
                             }
                         }
-                        #else
-                        for(auto&& idxLeaf : idxLeafNodes){
-                            std::vector<std::array<double,3>>& path = tree.GetRefNode(idxLeaf).pathBuffer;
-                            tree.GetPathFromRootToNode(path, idxLeaf);
-                            if(!PathFromRootIsFeasible(path, staticObstacles, tree.GetRefNode(idxLeaf).trajectoryBuffer)){
-                                anythingInfeasible = true;
-                                break;
-                            }
-                        }
-                        #endif
 
                         // reset parent of [index] to original parent
                         tree.GetRefNode(index).idxParent = idxOriginalParent;

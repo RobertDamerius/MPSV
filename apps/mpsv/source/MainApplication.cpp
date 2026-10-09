@@ -119,14 +119,9 @@ void MainApplication::PrintSystemInfo(void){
     #else
     Print("DEBUG:                  0\n");
     #endif
-    #ifdef MPSV_DONT_USE_OMP
-    Print("MPSV_DONT_USE_OMP:      1\n");
-    #else
-    Print("MPSV_DONT_USE_OMP:      0\n");
     Print("OMP_NUM_THREADS:        %d\n", omp_get_max_threads());
     Print("OMP_DYNAMIC:            %d\n", omp_get_dynamic());
     Print("OMP_PROC_BIND:          %d\n", static_cast<int32_t>(omp_get_proc_bind()));
-    #endif
     int priorityMin = sched_get_priority_min(SCHED_FIFO);
     int priorityMax = sched_get_priority_max(SCHED_FIFO);
     Print("Minimum priority:       %d\n", priorityMin);

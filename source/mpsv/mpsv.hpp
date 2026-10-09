@@ -3,7 +3,6 @@
  * @author Robert Damerius (damerius.mail@gmail.com)
  * @brief This is the main header file for the MPSV library. Include this header to include all features.
  * @date 2023-11-01
- * @note Define a global compilation macro MPSV_DONT_USE_OMP if you don't want to use OpenMP parallelization.
  * 
  * @copyright Copyright (c) 2023
  */

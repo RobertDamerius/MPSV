@@ -3,10 +3,8 @@
 
 #include <mpsv/core/MPSVCommon.hpp>
 #include <mpsv/core/Event.hpp>
-#ifndef MPSV_DONT_USE_OMP
 #include <omp.h>
 #include <sched.h>
-#endif
 
 
 namespace mpsv {
@@ -49,8 +47,8 @@ class WorkerThread {
          * @brief Start the worker thread with a given priority.
          * @param[in] callbackRun A callable that is executed during the running state of the worker thread.
          * @param[in] threadPriority The priority to be set for the worker thread (1: low, 99: high).
-         * @param[in] ompNumThreads The number of threads to be used for parallel computing (OMP_NUM_THREADS). This value is only set if it's greater than zero! This parameter has no effect if the software compiled with MPSV_DONT_USE_OMP set.
-         * @param[in] ompDynamic Greater than zero if dynamic adjustment of the number of threads should be enabled for parallel computing or zero to disable dynamic adjustment (OMP_DYNAMIC). If this value is set less than 0, this parameter is ignored. This parameter has no effect if the software compiled with MPSV_DONT_USE_OMP set.
+         * @param[in] ompNumThreads The number of threads to be used for parallel computing (OMP_NUM_THREADS). This value is only set if it's greater than zero!
+         * @param[in] ompDynamic Greater than zero if dynamic adjustment of the number of threads should be enabled for parallel computing or zero to disable dynamic adjustment (OMP_DYNAMIC). If this value is set less than 0, this parameter is ignored.
          * @param[in] cpuCoreIDs (linux-only) List of CPU cores on which the worker thread is eligible to run. If no or invalid IDs are specified, no thread affinity is set.
          * @details If the thread has already been started, nothing happens. The result of setting the thread priority is ignored.
          * @note The worker thread starts in standby mode. Call @ref Resume to enter the running state.
@@ -124,23 +122,17 @@ class WorkerThread {
         /**
          * @brief The thread function of the worker thread.
          * @param[in] callbackRun A callable that is executed during the running state of the worker thread.
-         * @param[in] ompNumThreads The number of threads to be used for parallel computing (OMP_NUM_THREADS). This value is only set if it's greater than zero! This parameter has no effect if the software compiled with MPSV_DONT_USE_OMP set.
-         * @param[in] ompDynamic Greater than zero if dynamic adjustment of the number of threads should be enabled for parallel computing or zero to disable dynamic adjustment (OMP_DYNAMIC). If this value is set less than 0, this parameter is ignored. This parameter has no effect if the software compiled with MPSV_DONT_USE_OMP set.
+         * @param[in] ompNumThreads The number of threads to be used for parallel computing (OMP_NUM_THREADS). This value is only set if it's greater than zero!
+         * @param[in] ompDynamic Greater than zero if dynamic adjustment of the number of threads should be enabled for parallel computing or zero to disable dynamic adjustment (OMP_DYNAMIC). If this value is set less than 0, this parameter is ignored.
          * @param[in] cpuCoreIDs (linux-only) List of CPU cores on which the worker thread is eligible to run. If no or invalid IDs are specified, no thread affinity is set.
          */
         template <typename CallbackRun> void WorkerThreadFunction(CallbackRun callbackRun, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs) noexcept {
-            #ifdef MPSV_DONT_USE_OMP
-            (void) ompNumThreads;
-            (void) ompDynamic;
-            (void) cpuCoreIDs;
-            #else
             if(ompNumThreads > 0){
                 omp_set_num_threads(static_cast<int>(ompNumThreads));
             }
             if(ompDynamic >= 0){
                 omp_set_dynamic(static_cast<int>(ompDynamic));
             }
-            #endif
             #ifdef __linux__
             if(!cpuCoreIDs.empty()){
                 cpu_set_t cores;

@@ -112,7 +112,6 @@ template <class Targ, class Tdata> class LookUpTable2D {
             //  0 0 0 0 0 0 0 0 0 0 0 0
             // 
             // The following loop only calculates the cost for marked cells (x).
-            #ifndef MPSV_DONT_USE_OMP
             int32_t numBreakpointsX = ((numX - 3) / modInterpolate) + 1;
             int32_t numBreakpointsY = ((numY - 3) / modInterpolate) + 1;
             int32_t numTotal = numBreakpointsX * numBreakpointsY;
@@ -127,28 +126,6 @@ template <class Targ, class Tdata> class LookUpTable2D {
                 double y = y0 + static_cast<double>(bi)*dY + static_cast<double>(bj)*dX;
                 lut[index] = CallbackTableData(x, y, args);
             }
-            #else
-            d = res * static_cast<double>(modInterpolate);
-            double dX = d * normal[0];
-            double dY = d * normal[1];
-            double ax = 0.0;
-            double ay = 0.0;
-            double bx, by;
-            int32_t ixmax = numX - 1;
-            int32_t iymax = numY - 1;
-            mx = modInterpolate * numY;
-            for(int32_t ix = 1, i0 = numY; ix < ixmax; ix += modInterpolate, i0 += mx){
-                bx = 0.0;
-                by = 0.0;
-                for(int32_t iy = 1; iy < iymax; iy += modInterpolate){
-                    lut[i0 + iy] = CallbackTableData(x0 + ax + bx, y0 + ay + by, args);
-                    bx -= dY;
-                    by += dX;
-                }
-                ax += dX;
-                ay += dY;
-            }
-            #endif
 
             // Linear interpolation of "non-modul" grid points
             // Going on with the actual LUT, x indicates the grids for which cost values have been calculated.
@@ -168,7 +145,6 @@ template <class Targ, class Tdata> class LookUpTable2D {
             int32_t numBlocksY = uy / modInterpolate;
             double invMod = 1.0 / static_cast<double>(modInterpolate);
             double invMod2 = 1.0 / static_cast<double>(modInterpolate * modInterpolate);
-            #ifndef MPSV_DONT_USE_OMP
             numTotal = numBlocksX * numBlocksY;
             #pragma omp parallel for shared(lut)
             for(int32_t i = 0; i < numTotal; ++i){
@@ -197,41 +173,6 @@ template <class Targ, class Tdata> class LookUpTable2D {
                     sd3 += d3;
                 }
             }
-            #else
-            int32_t ix0 = numY;
-            int32_t ix1, iy0, iy1;
-            Tdata c00, c10, c01, c11, d1, d2, d3, sd1, sd2, sd3, ssd3;
-            mx = modInterpolate * numY;
-            for(int32_t bx = 0; bx < numBlocksX; ++bx){
-                ix1 = ix0 + mx;
-                iy0 = 1;
-                for(int32_t by = 0; by < numBlocksY; ++by){
-                    iy1 = iy0 + modInterpolate;
-                    c00 = lut[ix0 + iy0];
-                    c10 = lut[ix1 + iy0];
-                    c01 = lut[ix0 + iy1];
-                    c11 = lut[ix1 + iy1];
-                    d1 = (c10 - c00) * invMod;
-                    d2 = (c01 - c00) * invMod;
-                    d3 = (c00 + c11 - c01 - c10) * invMod2;
-                    sd1 = {0.0};
-                    sd3 = {0.0};
-                    for(int32_t ix = 0; ix < mx; ix += numY){
-                        sd2 = {0.0};
-                        ssd3 = {0.0};
-                        for(int32_t iy = 0; iy < modInterpolate; ++iy){
-                            lut[ix0 + ix + iy0 + iy] = c00 + sd1 + sd2 + ssd3;
-                            sd2 += d2;
-                            ssd3 += sd3;
-                        }
-                        sd1 += d1;
-                        sd3 += d3;
-                    }
-                    iy0 += modInterpolate;
-                }
-                ix0 += mx;
-            }
-            #endif
 
             // Go on with the remaining edges. In the following two loops we assign the values for A and B which gives us the following LUT:
             // 
@@ -244,11 +185,9 @@ template <class Targ, class Tdata> class LookUpTable2D {
             //  0 - - - + + + - - - A 0
             //  0 x - - x + + x - - x 0
             //  0 0 0 0 0 0 0 0 0 0 0 0
-            #ifndef MPSV_DONT_USE_OMP
             int32_t ix0, ix1, iy0, iy1;
             Tdata c10, c01, c11, sd1;
             mx = modInterpolate * numY;
-            #endif
             Tdata vd;
             ix0 = numY;
             iy1 = numY - 2;

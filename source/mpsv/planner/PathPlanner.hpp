@@ -428,7 +428,6 @@ class PathPlanner {
             // First the cost for all lines is calculated separately and stored in the cost value of a child. Then the RecursiveCostCalculation accumulates them along all branches.
             const std::vector<int16_t>& indices = tree.GetAllNodeIndices();
             if(indices.empty()) return false;
-            #ifndef MPSV_DONT_USE_OMP
             #pragma omp parallel for if (indices.size() > 100)
             for(auto&& i : indices){
                 auto& node = tree.GetRefNode(i);
@@ -439,17 +438,6 @@ class PathPlanner {
                     child.cost += costMap.CostAlongLine(node.pose, child.pose, parameter.geometry.skeletalPoints);
                 }
             }
-            #else
-            for(auto&& i : indices){
-                auto& node = tree.GetRefNode(i);
-                for(auto&& c : node.idxChilds){
-                    auto& child = tree.GetRefNode(c);
-                    child.cost = mpsv::math::DistanceMetricSE2(node.pose, child.pose, parameter.metric.weightPsi);
-                    child.cost += mpsv::math::SwayMetric(node.pose, child.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
-                    child.cost += costMap.CostAlongLine(node.pose, child.pose, parameter.geometry.skeletalPoints);
-                }
-            }
-            #endif
             tree.GetRefNode(idxRoot).cost = 0.0;
             RecursiveCostCalculation(idxRoot);
 

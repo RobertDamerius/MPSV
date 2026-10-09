@@ -33,7 +33,6 @@ class HaltonSequence {
                 this->samples[dim].resize(maxNumSamples);
                 size_t base = primes[dim];
                 double invBase = 1.0 / static_cast<double>(base);
-                #ifndef MPSV_DONT_USE_OMP
                 #pragma omp parallel for shared(samples) if (maxNumSamples > 100000)
                 for(size_t s = 0; s < maxNumSamples; s++){
                     size_t n = s + 1;
@@ -46,19 +45,6 @@ class HaltonSequence {
                     }
                     this->samples[dim][s] = scale * q;
                 }
-                #else
-                for(size_t s = 0; s < maxNumSamples; s++){
-                    size_t n = s + 1;
-                    double q = 0.0;
-                    double bk = invBase;
-                    while(n > 0){
-                        q += bk * static_cast<double>(n % base);
-                        n = size_t(static_cast<double>(n) * invBase);
-                        bk *= invBase;
-                    }
-                    this->samples[dim][s] = scale * q;
-                }
-                #endif
                 this->samples[dim].shrink_to_fit();
             }
             samples.shrink_to_fit();
