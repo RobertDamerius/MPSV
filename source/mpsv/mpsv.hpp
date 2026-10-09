@@ -30,7 +30,6 @@
 #include <mpsv/geometry/AABB.hpp>
 #include <mpsv/geometry/ConvexPolygon.hpp>
 #include <mpsv/geometry/DouglasPeucker.hpp>
-#include <mpsv/geometry/MovingObstacle.hpp>
 #include <mpsv/geometry/OrientedBox.hpp>
 #include <mpsv/geometry/PathSmoother.hpp>
 #include <mpsv/geometry/QuickHull2D.hpp>

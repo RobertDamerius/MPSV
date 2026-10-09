@@ -6,7 +6,6 @@
 #include <mpsv/geometry/AABB.hpp>
 #include <mpsv/geometry/ConvexPolygon.hpp>
 #include <mpsv/geometry/StaticObstacle.hpp>
-#include <mpsv/geometry/MovingObstacle.hpp>
 #include <mpsv/geometry/DouglasPeucker.hpp>
 
 
@@ -199,48 +198,6 @@ class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
                 // Next segment
                 c0 = c1;
                 s0 = s1;
-            }
-            return false;
-        }
-
-        /**
-         * @brief Check collision along a given timed curve with moving obstacles. The curve is subdivided into time intervals. Each time interval is checked for collision. The time intervals may be subdivided
-         * into several segments depending on the maximum allowed position and angle deviation.
-         * @tparam T Template parameter must be of type std::array<double,N> with N >= 3.
-         * @param[in] movingObstacles The moving obstacles to be considered for collision checking. Note that the movingObstacles must be converted to time interval obstacles using the same timeinterval as indicated by numStepsCollisionWindow and sampletime.
-         * @param[in] curve The curve of poses {x,y,psi} to be simplified and checked for collision.
-         * @param[in] thresholdPosition The maximum position error to be allowed for line simplification.
-         * @param[in] thresholdAngle The maximum angular error to be allowed for line simplification.
-         * @param[in] numStepsCollisionWindow Number of steps in the curve that indicate a time interval. Note that the movingObstacles must be converted to time interval obstacles using the same timeinterval.
-         * @param[in] sampletime The sampletime in seconds, indicating the time step between two points in the curve.
-         * @return True if a collision occurs, false otherwise.
-         */
-        template <class T> bool CheckCollisionTimedCurve(const std::vector<mpsv::geometry::MovingObstacle>& movingObstacles, const std::vector<T>& curve, double thresholdPosition, double thresholdAngle, uint32_t numStepsCollisionWindow, double sampletime) const noexcept {
-            // Go through all time intervals
-            uint32_t maxNumSteps = static_cast<uint32_t>(curve.size());
-            for(uint32_t k = 0; k < maxNumSteps; k += numStepsCollisionWindow){
-                // First index of current time interval is k, last index is n
-                uint32_t n = std::min(k + numStepsCollisionWindow, maxNumSteps - 1);
-
-                // Corresponding time point (center of time interval)
-                double centerOfTimeInterval = sampletime * 0.5 * static_cast<double>(k + n);
-
-                // Go through all moving obstacles
-                for(auto&& movingObstacle : movingObstacles){
-                    for(auto&& tio : movingObstacle.timeIntervalObstacles){
-                        // Find corresponding time interval obstacles
-                        if((centerOfTimeInterval >= tio.tStart) && (centerOfTimeInterval <= tio.tEnd)){
-                            if(!tio.convexPolygons.empty()){
-                                // Check collision for this time interval
-                                std::vector<T> subCurve(curve.begin() + k, curve.begin() + n);
-                                if(CheckCollisionCurve(tio.convexPolygons, subCurve, thresholdPosition, thresholdAngle)){
-                                    return true;
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
             }
             return false;
         }
