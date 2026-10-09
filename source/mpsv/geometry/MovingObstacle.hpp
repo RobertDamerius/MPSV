@@ -42,7 +42,6 @@ class MovingObstacle : protected mpsv::geometry::ConvexPolygon {
         /**
          * @brief Construct a moving obstacle based on given vertices.
          * @param[in] vertices Container of vertices.
-         * @note IMPORTANT: IT IS NOT CHECKED WHETHER THE POLYGON IS CONVEX OR NOT! Call @ref EnsureCorrectVertexOrder to ensure the correct vertex order and check for convexity.
          */
         explicit MovingObstacle(std::vector<std::array<double, 2>> vertices) noexcept : mpsv::geometry::ConvexPolygon::ConvexPolygon(vertices), timestampUTC(0.0), sampletime(1.0) {}
 
@@ -52,7 +51,6 @@ class MovingObstacle : protected mpsv::geometry::ConvexPolygon {
          * @param[in] timestampUTC UTC timestamp (seconds of the day) indicating the starting timepoint of the trajectory.
          * @param[in] sampletime Sampletime in seconds indicating the time interval between two data points of the trajectory.
          * @param[in] trajectory Trajectory data given as a set of poses. Each element is given as {x,y,psi}.
-         * @note IMPORTANT: IT IS NOT CHECKED WHETHER THE POLYGON IS CONVEX OR NOT! Call @ref EnsureCorrectVertexOrder to ensure the correct vertex order and check for convexity.
          */
         MovingObstacle(std::vector<std::array<double, 2>> vertices, double timestampUTC, double sampletime, std::vector<std::array<double,3>> trajectory) noexcept : mpsv::geometry::ConvexPolygon::ConvexPolygon(vertices), timestampUTC(timestampUTC), sampletime(sampletime) { this->trajectory.swap(trajectory); }
 
@@ -62,8 +60,6 @@ class MovingObstacle : protected mpsv::geometry::ConvexPolygon {
          * @param[in] timestampUTC UTC timestamp (seconds of the day) indicating the starting timepoint of the trajectory.
          * @param[in] sampletime Sampletime in seconds indicating the time interval between two data points of the trajectory.
          * @param[in] trajectory Trajectory data given as a set of poses. Each element is given as {x,y,psi}.
-         * @note IMPORTANT: IT IS NOT CHECKED WHETHER THE POLYGON IS CONVEX OR NOT! Call @ref EnsureCorrectVertexOrder to ensure the correct vertex order and check for convexity.
-         * This member function only swap containers and rebuild edges.
          */
         void Create(std::vector<std::array<double, 2>>& vertices, double timestampUTC, double sampletime, std::vector<std::array<double,3>> trajectory) noexcept {
             mpsv::geometry::ConvexPolygon::Create(vertices);
@@ -131,8 +127,7 @@ class MovingObstacle : protected mpsv::geometry::ConvexPolygon {
         }
 
         /* Make some member functions public again */
-        using mpsv::geometry::ConvexPolygon::EnsureCorrectVertexOrder;
-        using mpsv::geometry::ConvexPolygon::IsConvex;
+        using mpsv::geometry::ConvexPolygon::IsValid;
 
     protected:
         double timestampUTC;                            // UTC timestamp (seconds of the day) of the @ref trajectory data.

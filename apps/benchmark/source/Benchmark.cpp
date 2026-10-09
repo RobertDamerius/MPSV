@@ -113,7 +113,7 @@ void Benchmark::GeneratePolygons(const size_t numPolygons){
         double x3 = sampler.Sample(0,k);
         double y3 = sampler.Sample(1,k++);
         convexPolygons.push_back(ConvexPolygon({{x1,y1},{x2,y2},{x3,y3}}));
-        if(!convexPolygons.back().EnsureCorrectVertexOrder()){
+        if(!convexPolygons.back().IsValid()){
             fprintf(stderr,"ERROR: Failed to build convex polygon for test set!\n");
         }
     }
@@ -631,8 +631,5 @@ void Benchmark::GenerateObstaclesForPlanning(std::vector<mpsv::geometry::StaticO
     staticObstacles.push_back(StaticObstacle({{15.3565,-19.7760},{15.3565,-19.7342},{15.8565,-19.7342}}));
     staticObstacles.push_back(StaticObstacle({{91.9692,16.9096},{91.8710,16.7393},{91.8710,16.9096}}));
     staticObstacles.push_back(StaticObstacle({{92.1956,17.3020},{92.1492,17.2216},{92.1492,17.3020}}));
-    for(auto&& p : staticObstacles){
-        p.EnsureCorrectVertexOrder();
-    }
 }
 

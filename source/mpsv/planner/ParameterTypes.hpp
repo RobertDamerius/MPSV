@@ -303,7 +303,7 @@ class ParameterGeometry {
                 return error_code::GEOMETRY_MAX_POSITION_DEVIATION;
             if(!(std::isfinite(collisionCheckMaxAngleDeviation) && (collisionCheckMaxAngleDeviation >= minAngleDeviation)))
                 return error_code::GEOMETRY_MAX_ANGLE_DEVIATION;
-            if(!(vehicleShape.IsFinite() && vehicleShape.EnsureCorrectVertexOrder()))
+            if(!vehicleShape.IsValid())
                 return error_code::GEOMETRY_VEHICLE_SHAPE;
             if(skeletalPoints.empty())
                 return error_code::GEOMETRY_SKELETAL_POINTS;

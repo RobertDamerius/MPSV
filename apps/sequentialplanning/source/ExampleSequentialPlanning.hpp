@@ -208,9 +208,6 @@ inline mpsv::planner::SequentialPlannerInput GetInput(void){
     dataIn.staticObstacles.push_back(mpsv::geometry::StaticObstacle({{-78.9368,63.4260},{-78.9368,61.4260},{-79.1040,61.4260}}));
     dataIn.staticObstacles.push_back(mpsv::geometry::StaticObstacle({{67.6384,367.4840},{66.9572,367.4840},{67.6384,367.8768}}));
     dataIn.staticObstacles.push_back(mpsv::geometry::StaticObstacle({{69.2080,368.5968},{68.8864,368.5968},{69.2080,368.7824}}));
-    for(auto&& polygon : dataIn.staticObstacles){
-        polygon.EnsureCorrectVertexOrder();
-    }
     return dataIn;
 }
 

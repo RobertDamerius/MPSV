@@ -60,8 +60,7 @@ class MotionPlannerInput {
                     return error_code::INPUT_INITIAL_PATH;
             }
             for(auto&& obstacle : staticObstacles){
-                if(!(obstacle.IsFinite() &&
-                     obstacle.EnsureCorrectVertexOrder()))
+                if(!obstacle.IsValid())
                     return error_code::INPUT_STATIC_OBSTACLES;
             }
             return error_code::NONE;

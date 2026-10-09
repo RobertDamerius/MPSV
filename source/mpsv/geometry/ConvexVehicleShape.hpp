@@ -17,10 +17,7 @@ namespace geometry {
 
 
 /**
- * @brief The convex vehicle shape represented as a single convex polygon.
- * @note IMPORTANT NOTE: All member functions assume, that the vertex data represents a valid convex polygon. The construction of a convex polygon
- * will not fail due to invalid input data. You MUST make sure that you created a valid convex polygon with AT LEAST 3 vertices. You can check
- * the vertex data for convexity and finiteness using the @ref IsConvex and @ref IsFinite member functions, respectively.
+ * @brief The convex vehicle shape is represented as a single convex polygon.
  */
 class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
     public:
@@ -32,7 +29,6 @@ class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
         /**
          * @brief Construct a convex vehicle shape based on given vertices.
          * @param[in] vertices Container of vertices.
-         * @note IMPORTANT: IT IS NOT CHECKED WHETHER THE POLYGON IS CONVEX OR NOT! Call @ref EnsureCorrectVertexOrder to ensure the correct vertex order and check for convexity.
          */
         explicit ConvexVehicleShape(std::vector<std::array<double, 2>> vertices) noexcept : mpsv::geometry::ConvexPolygon::ConvexPolygon(vertices){}
 
@@ -42,11 +38,10 @@ class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
          * @param[in] staticObstacles The static obstacles to be considered for collision checking.
          * @param[in] pose The pose of the vehicle to be used for collision checking.
          * @return True if a collision occurs, false otherwise.
-         * @note IMPORTANT: MAKE SURE THAT THE VEHICLE SHAPE IS VALID AND CONTAINS AT LEAST 3 VERTICES.
          */
         template <class T> bool CheckCollisionPose(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, T pose) const noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {pose} must be of type std::array<double,N> with N >= 3!");
-            ConvexPolygon transformedVehicleShape = CreateTransformedPolygon(pose[0], pose[1], std::cos(pose[2]), std::sin(pose[2]));
+            ConvexPolygon transformedVehicleShape = CreateTransformedPolygon(pose);
             for(auto&& polygon : staticObstacles){
                 if(transformedVehicleShape.Overlap(polygon)){
                     return true;
@@ -62,12 +57,11 @@ class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
          * @param[in] staticObstacles The static obstacles to be considered for collision checking.
          * @param[in] pose0 First pose vector, containing at least {x, y, psi}.
          * @param[in] pose1 Second pose vector, containing at least {x, y, psi}.
-         * @param[in] maxAngleDeviation Maximum angle deviation for path subdivision. MAKE SURE THAT THIS VALUE IS POSITIVE!
+         * @param[in] maxAngleDeviation Maximum angle deviation for path subdivision.
          * @return True if a collision occurs, false otherwise.
          * @details The path between two poses @ref pose0 and @ref pose1 is divided into several sections. For each section a convex hull is computed
          * for the first and last pose of the section. The number of sections between two poses depends on @ref maxAngleDeviation. The path is subdivided
          * in such a way, that the angle difference of two poses of a section is never greater than @ref maxAngleDeviation.
-         * @note IMPORTANT: MAKE SURE THAT THE VEHICLE SHAPE IS VALID AND CONTAINS AT LEAST 3 VERTICES.
          */
         template <class T, class U> bool CheckCollisionLine(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, T pose0, U pose1, double maxAngleDeviation) const noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {pose0} must be of type std::array<double,N> with N >= 3!");
@@ -78,7 +72,7 @@ class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
 
             // Get number of segments and adapt deltaPose to segment size
             std::array<double, 3> deltaPose = mpsv::math::PoseDifference(pose1, pose0);
-            int32_t numSegments = std::max(static_cast<int32_t>(1), static_cast<int32_t>(std::ceil(std::fabs(deltaPose[2]) / maxAngleDeviation)));
+            int32_t numSegments = std::max(static_cast<int32_t>(1), static_cast<int32_t>(std::ceil(std::fabs(deltaPose[2]) / std::fabs(maxAngleDeviation))));
             double d = 1.0 / static_cast<double>(numSegments);
             deltaPose[0] *= d;
             deltaPose[1] *= d;
@@ -123,7 +117,6 @@ class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
          * @param[in] lineSegments List of poses, where each pair of consecutive poses represents a line segment.
          * @return True if a collision occurs, false otherwise.
          * @details For each line segment a convex hull based on the vehicle shape is generated for the collision check.
-         * @note IMPORTANT: MAKE SURE THAT THE VEHICLE SHAPE IS VALID AND CONTAINS AT LEAST 3 VERTICES.
          */
         template <class T> bool CheckCollisionLineSegments(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const std::vector<T>& lineSegments) const noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {lineSegments} must be of type std::vector<std::array<double,N>> with N >= 3!");
@@ -165,8 +158,8 @@ class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
          * @tparam T Template parameter must be of type std::array<double,N> with N >= 3.
          * @param[in] staticObstacles The static obstacles to be considered for collision checking.
          * @param[in] curve The curve of poses {x,y,psi} to be simplified and checked for collision.
-         * @param[in] thresholdPosition The maximum position error to be allowed for line simplification. MAKE SURE THAT THIS VALUE IS POSITIVE!
-         * @param[in] thresholdAngle The maximum angular error to be allowed for line simplification. MAKE SURE THAT THIS VALUE IS POSITIVE!
+         * @param[in] thresholdPosition The maximum position error to be allowed for line simplification.
+         * @param[in] thresholdAngle The maximum angular error to be allowed for line simplification.
          * @return True if a collision occurs, false otherwise.
          * @details The curve is simplified using Douglas-Peucher. For each line segment a convex hull based on the vehicle shape is generated for the collision check.
          * As long as the 2D position error is larger than @ref thresholdPosition, the algorithm behaves equal to the default Douglas-Peucker algorithm for 2D line simplification. If the position error of a simplified line
@@ -216,8 +209,8 @@ class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
          * @tparam T Template parameter must be of type std::array<double,N> with N >= 3.
          * @param[in] movingObstacles The moving obstacles to be considered for collision checking. Note that the movingObstacles must be converted to time interval obstacles using the same timeinterval as indicated by numStepsCollisionWindow and sampletime.
          * @param[in] curve The curve of poses {x,y,psi} to be simplified and checked for collision.
-         * @param[in] thresholdPosition The maximum position error to be allowed for line simplification. MAKE SURE THAT THIS VALUE IS POSITIVE!
-         * @param[in] thresholdAngle The maximum angular error to be allowed for line simplification. MAKE SURE THAT THIS VALUE IS POSITIVE!
+         * @param[in] thresholdPosition The maximum position error to be allowed for line simplification.
+         * @param[in] thresholdAngle The maximum angular error to be allowed for line simplification.
          * @param[in] numStepsCollisionWindow Number of steps in the curve that indicate a time interval. Note that the movingObstacles must be converted to time interval obstacles using the same timeinterval.
          * @param[in] sampletime The sampletime in seconds, indicating the time step between two points in the curve.
          * @return True if a collision occurs, false otherwise.
@@ -254,7 +247,6 @@ class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
 
     protected:
         /* Hide some of the derived base member functions and make them protected. Prevent transformation of the convex vehicle shape vertices. */
-        using mpsv::geometry::ConvexPolygon::Translate;
         using mpsv::geometry::ConvexPolygon::Transform;
 
         /**

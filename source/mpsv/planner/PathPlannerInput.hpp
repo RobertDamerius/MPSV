@@ -68,8 +68,7 @@ class PathPlannerInput {
             if(!box.IsInside(finalPose))
                 return error_code::INPUT_FINAL_POSE_NOT_INSIDE_SAMPLING_BOX;
             for(auto&& obstacle : staticObstacles){
-                if(!(obstacle.IsFinite() &&
-                     obstacle.EnsureCorrectVertexOrder()))
+                if(!obstacle.IsValid())
                     return error_code::INPUT_STATIC_OBSTACLES;
             }
             return error_code::NONE;

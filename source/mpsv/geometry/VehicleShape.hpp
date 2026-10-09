@@ -27,12 +27,13 @@ class VehicleShape {
 
         /**
          * @brief Add a convex polygon to this vehicle shape.
-         * @param[in] vertices Reference to a container that contains vertices. This container is swapped internally and will be empty after this operation.
-         * @note IMPORTANT: IT IS NOT CHECKED WHETHER THE POLYGON IS CONVEX OR NOT! Call @ref EnsureCorrectVertexOrder to ensure the correct vertex order and check for convexity.
+         * @param[in] vertices Reference to a container that contains vertices. This container is swapped internally and will be empty after a successful operation.
          */
         void Add(std::vector<std::array<double, 2>>& vertices) noexcept {
-            convexVehicleShapes.push_back(mpsv::geometry::ConvexVehicleShape());
-            convexVehicleShapes.back().Create(vertices);
+            mpsv::geometry::ConvexVehicleShape newShape(vertices);
+            if(newShape.IsValid()){
+                convexVehicleShapes.push_back(std::move(newShape));
+            }
         }
 
         /**
@@ -46,39 +47,15 @@ class VehicleShape {
         }
 
         /**
-         * @brief Ensure the correct vertex order by possibly reversing the order of the internal vertices.
-         * @return True if all internal polygons are convex and the vertex order is correct or has been corrected, false otherwise. If this vehicle shape does not contain any polygons, false is returned.
+         * @brief Check whether the internal polygons of this vehicle shape are all valid.
+         * @return True if all internal polygons are valid, false otherwise. If this vehicle shape does not contain any polygons, false is returned.
          */
-        bool EnsureCorrectVertexOrder(void) noexcept {
-            bool convex = true;
+        bool IsValid(void) noexcept {
+            bool isValid = true;
             for(auto&& v : convexVehicleShapes){
-                convex &= v.EnsureCorrectVertexOrder();
+                isValid &= v.IsValid();
             }
-            return !convexVehicleShapes.empty() && convex;
-        }
-
-        /**
-         * @brief Check whether the internal polygons of this vehicle shape are all convex.
-         * @return True if all internal polygons are convex, false otherwise. If this vehicle shape does not contain any polygons, false is returned.
-         */
-        bool InternalPolygonsAreConvex(void) const noexcept{
-            bool convex = true;
-            for(auto&& v : convexVehicleShapes){
-                convex &= v.IsConvex();
-            }
-            return !convexVehicleShapes.empty() && convex;
-        }
-
-        /**
-         * @brief Check whether all internal shapes of this vehicle shape contain finite values.
-         * @return True if all values are finite, false otherwise. If this vehicle shape does not contain any polygons, false is returned.
-         */
-        bool IsFinite(void) const noexcept{
-            bool finite = true;
-            for(auto&& v : convexVehicleShapes){
-                finite &= v.IsFinite();
-            }
-            return !convexVehicleShapes.empty() && finite;
+            return !convexVehicleShapes.empty() && isValid;
         }
 
         /**
@@ -121,7 +98,7 @@ class VehicleShape {
          * @param[in] staticObstacles The static obstacles to be considered for collision checking.
          * @param[in] pose0 First pose vector, containing at least {x, y, psi}.
          * @param[in] pose1 Second pose vector, containing at least {x, y, psi}.
-         * @param[in] maxAngleDeviation Maximum angle deviation for path subdivision. MAKE SURE THAT THIS VALUE IS POSITIVE!
+         * @param[in] maxAngleDeviation Maximum angle deviation for path subdivision.
          * @return True if a collision occurs, false otherwise.
          */
         template <class T, class U> bool CheckCollisionLine(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, T pose0, U pose1, double maxAngleDeviation) const noexcept {
@@ -140,8 +117,8 @@ class VehicleShape {
          * @tparam T Template parameter must be of type std::array<double,N> with N >= 3.
          * @param[in] staticObstacles The static obstacles to be considered for collision checking.
          * @param[in] curve The curve of poses {x,y,psi} to be simplified and checked for collision.
-         * @param[in] thresholdPosition The maximum position error to be allowed for line simplification. MAKE SURE THAT THIS VALUE IS POSITIVE!
-         * @param[in] thresholdAngle The maximum angular error to be allowed for line simplification. MAKE SURE THAT THIS VALUE IS POSITIVE!
+         * @param[in] thresholdPosition The maximum position error to be allowed for line simplification.
+         * @param[in] thresholdAngle The maximum angular error to be allowed for line simplification.
          * @return True if a collision occurs, false otherwise.
          */
         template <class T> bool CheckCollisionCurve(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const std::vector<T>& curve, double thresholdPosition, double thresholdAngle) const noexcept {

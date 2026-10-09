@@ -220,9 +220,6 @@ inline mpsv::planner::AsyncOnlinePlannerInput GetInput(double timestamp){
     dataIn.staticObstacles.push_back(mpsv::geometry::StaticObstacle({{15.3565,-19.7760},{15.3565,-19.7342},{15.8565,-19.7342}}));
     dataIn.staticObstacles.push_back(mpsv::geometry::StaticObstacle({{91.9692,16.9096},{91.8710,16.7393},{91.8710,16.9096}}));
     dataIn.staticObstacles.push_back(mpsv::geometry::StaticObstacle({{92.1956,17.3020},{92.1492,17.2216},{92.1492,17.3020}}));
-    for(auto&& polygon : dataIn.staticObstacles){
-        polygon.EnsureCorrectVertexOrder();
-    }
     return dataIn;
 }
 
