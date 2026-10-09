@@ -108,28 +108,28 @@ all: $(PRODUCT)
 
 apps:
 	@echo "Building benchmark"
-	@make --no-print-directory app=benchmark
+	@make -j8 --no-print-directory app=benchmark
 	@echo ""
 	@echo "Building pathplanning"
-	@make --no-print-directory app=pathplanning
+	@make -j8 --no-print-directory app=pathplanning
 	@echo ""
 	@echo "Building motionplanning"
-	@make --no-print-directory app=motionplanning
+	@make -j8 --no-print-directory app=motionplanning
 	@echo ""
 	@echo "Building sequentialplanning"
-	@make --no-print-directory app=sequentialplanning
+	@make -j8 --no-print-directory app=sequentialplanning
 	@echo ""
 	@echo "Building onlineplanning"
-	@make --no-print-directory app=onlineplanning
+	@make -j8 --no-print-directory app=onlineplanning
 	@echo ""
 	@echo "Building asynconlineplanning"
-	@make --no-print-directory app=asynconlineplanning
+	@make -j8 --no-print-directory app=asynconlineplanning
 	@echo ""
 	@echo "Building asynconlineplanning2"
-	@make --no-print-directory app=asynconlineplanning2
+	@make -j8 --no-print-directory app=asynconlineplanning2
 	@echo ""
 	@echo "Building mpsv"
-	@make --no-print-directory app=mpsv
+	@make -j8 --no-print-directory app=mpsv
 
 clean:
 	@$(RM) $(DIRECTORY_BUILD)
