@@ -68,10 +68,8 @@ class AABB {
          * @param[inout] aabb The AABB to be used for swapping.
          */
         void Swap(AABB& aabb) noexcept {
-            std::swap(lowerBound[0], aabb.lowerBound[0]);
-            std::swap(lowerBound[1], aabb.lowerBound[1]);
-            std::swap(upperBound[0], aabb.upperBound[0]);
-            std::swap(upperBound[1], aabb.upperBound[1]);
+            std::swap(lowerBound, aabb.lowerBound);
+            std::swap(upperBound, aabb.upperBound);
         }
 
         /**
@@ -108,8 +106,8 @@ class AABB {
         friend AABB operator+(AABB lhs, const AABB& rhs) noexcept { lhs += rhs; return lhs; }
 
     private:
-        double lowerBound[2];   // The lower bound of the axis-aligned bounding box [x, y].
-        double upperBound[2];   // The upper bound of the axis-aligned bounding box [x, y].
+        std::array<double,2> lowerBound;   // The lower bound of the axis-aligned bounding box [x, y].
+        std::array<double,2> upperBound;   // The upper bound of the axis-aligned bounding box [x, y].
 };
 
 
