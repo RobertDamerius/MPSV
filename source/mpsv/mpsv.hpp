@@ -73,8 +73,6 @@
 
 /* Sampler */
 #include <mpsv/sampler/HaltonSequence.hpp>
-#include <mpsv/sampler/InformedSamplerSE2.hpp>
 #include <mpsv/sampler/PathSampler.hpp>
-#include <mpsv/sampler/UniformBallSampler3D.hpp>
 #include <mpsv/sampler/UniformBoxSamplerSE2.hpp>
 
