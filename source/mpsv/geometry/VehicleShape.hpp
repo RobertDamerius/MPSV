@@ -27,18 +27,15 @@ class VehicleShape {
 
         /**
          * @brief Add a convex polygon to this vehicle shape.
-         * @param[in] vertices Reference to a container that contains vertices. This container is swapped internally and will be empty after a successful operation.
+         * @param[inout] vertices Reference to a container that contains vertices. This container is swapped internally and will be empty after a successful operation.
          */
         void Add(std::vector<std::array<double, 2>>& vertices) noexcept {
-            mpsv::geometry::ConvexVehicleShape newShape(vertices);
-            if(newShape.IsValid()){
-                convexVehicleShapes.push_back(std::move(newShape));
-            }
+            convexVehicleShapes.push_back(mpsv::geometry::ConvexVehicleShape(vertices));
         }
 
         /**
          * @brief Create a vehicle shape based on a given set of vertices, that represent a convex polygon.
-         * @param[in] vertices Reference to a container that contains vertices. This container is swapped internally and will be empty after this operation.
+         * @param[inout] vertices Reference to a container that contains vertices. This container is swapped internally and will be empty after a successful operation.
          * @details All @ref convexVehicleShapes are removed and the given vertices are used to set one convex vehicle shape.
          */
         void Create(std::vector<std::array<double, 2>>& vertices) noexcept {
@@ -51,11 +48,11 @@ class VehicleShape {
          * @return True if all internal polygons are valid, false otherwise. If this vehicle shape does not contain any polygons, false is returned.
          */
         bool IsValid(void) noexcept {
-            bool isValid = true;
+            bool isValid = !convexVehicleShapes.empty();
             for(auto&& v : convexVehicleShapes){
                 isValid &= v.IsValid();
             }
-            return !convexVehicleShapes.empty() && isValid;
+            return isValid;
         }
 
         /**
