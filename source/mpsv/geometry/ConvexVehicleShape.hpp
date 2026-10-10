@@ -110,49 +110,6 @@ class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
         }
 
         /**
-         * @brief Check collision of line segments with obstacles without any further subdivision of line segments.
-         * @tparam T Template parameter must be of type std::array<double,N> with N >= 3.
-         * @param[in] staticObstacles The static obstacles to be considered for collision checking.
-         * @param[in] lineSegments List of poses, where each pair of consecutive poses represents a line segment.
-         * @return True if a collision occurs, false otherwise.
-         * @details For each line segment a convex hull based on the vehicle shape is generated for the collision check.
-         */
-        template <class T> bool CheckCollisionLineSegments(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const std::vector<T>& lineSegments) const noexcept {
-            static_assert(mpsv::is_vec3<T>::value,"Argument {lineSegments} must be of type std::vector<std::array<double,N>> with N >= 3!");
-            if(lineSegments.empty()){
-                return false;
-            }
-            if(1 == lineSegments.size()){
-                return CheckCollisionPose(staticObstacles, lineSegments[0]);
-            }
-
-            // Check collision for all line segments
-            double c0 = std::cos(lineSegments[0][2]);
-            double s0 = std::sin(lineSegments[0][2]);
-            double c1, s1;
-            for(size_t n = 1; n < lineSegments.size(); ++n){
-                // Current segment
-                c1 = std::cos(lineSegments[n][2]);
-                s1 = std::sin(lineSegments[n][2]);
-
-                // If there's an AABB overlap check for exact collision of convex hull from two configurations
-                if(FastOverlapCheckAABB(staticObstacles, lineSegments[n-1], lineSegments[n])){
-                    mpsv::geometry::ConvexPolygon hullPolygon = CreateTransformedConvexHull(lineSegments[n-1][0], lineSegments[n-1][1], c0, s0, lineSegments[n][0], lineSegments[n][1], c1, s1);
-                    for(auto&& polygon : staticObstacles){
-                        if(hullPolygon.Overlap(polygon)){
-                            return true;
-                        }
-                    }
-                }
-
-                // Next segment
-                c0 = c1;
-                s0 = s1;
-            }
-            return false;
-        }
-
-        /**
          * @brief Check collision along a given curve of poses with given static obstacles. The curve may be subdivided into several segments depending on the maximum allowed position and angle deviation.
          * @tparam T Template parameter must be of type std::array<double,N> with N >= 3.
          * @param[in] staticObstacles The static obstacles to be considered for collision checking.
