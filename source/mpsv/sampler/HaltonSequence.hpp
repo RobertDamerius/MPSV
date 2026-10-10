@@ -24,17 +24,23 @@ class HaltonSequence {
          * @return True if success, false otherwise. If input arguments are invalid, false is returned.
          */
         bool Initialize(size_t dimension, size_t maxNumSamples, double scale = 1.0) noexcept {
-            samples.clear();
+            Terminate();
             if(!dimension || (dimension > 16) || !maxNumSamples)
                 return false;
+            try {
+                samples.resize(dimension * maxNumSamples);
+            } catch(...) {
+                return false;
+            }
+            m_dimension = dimension;
+            m_maxNumSamples = maxNumSamples;
             constexpr size_t primes[] = {2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53};
-            this->samples.resize(dimension);
-            for(size_t dim = 0; dim < dimension; dim++){
-                this->samples[dim].resize(maxNumSamples);
-                size_t base = primes[dim];
-                double invBase = 1.0 / static_cast<double>(base);
-                #pragma omp parallel for shared(samples) if (maxNumSamples > 100000)
-                for(size_t s = 0; s < maxNumSamples; s++){
+            #pragma omp parallel for if (m_maxNumSamples > 100000)
+            for(size_t s = 0; s < m_maxNumSamples; s++){
+                size_t sample_offset = s * m_dimension;
+                for (size_t dim = 0; dim < m_dimension; dim++) {
+                    size_t base = primes[dim];
+                    double invBase = 1.0 / static_cast<double>(base);
                     size_t n = s + 1;
                     double q = 0.0;
                     double bk = invBase;
@@ -43,9 +49,8 @@ class HaltonSequence {
                         n = size_t(static_cast<double>(n) * invBase);
                         bk *= invBase;
                     }
-                    this->samples[dim][s] = scale * q;
+                    samples[sample_offset + dim] = scale * q;
                 }
-                this->samples[dim].shrink_to_fit();
             }
             samples.shrink_to_fit();
             return true;
@@ -57,6 +62,8 @@ class HaltonSequence {
         void Terminate(void) noexcept {
             samples.clear();
             samples.shrink_to_fit();
+            m_dimension = 0;
+            m_maxNumSamples = 0;
         }
 
         /**
@@ -64,12 +71,20 @@ class HaltonSequence {
          * @param[in] idxDimension Index of the dimension.
          * @param[in] idxSample Index of the sample.
          * @return The sample value in range [0,scale], where scale is set by the @ref Initialize member function.
-         * @note IMPORTANT: THE INDEX VALUES ACCESS THE INTERNAL CONTAINER DIRECTLY. MAKE SURE THE VALUES ARE IN RANGE TO PREVENT ACCESS VIOLATION!
          */
-        double Sample(size_t idxDimension, size_t idxSample) noexcept { return samples[idxDimension][idxSample]; }
+        double Sample(size_t idxDimension, size_t idxSample) const noexcept {
+            if(!m_dimension || !m_maxNumSamples){
+                return 0.0;
+            }
+            idxDimension %= m_dimension;
+            idxSample %= m_maxNumSamples;
+            return samples[idxSample * m_dimension + idxDimension];
+        }
 
     protected:
-        std::vector<std::vector<double>> samples;   // Precalculated samples for all dimensions in range [0,1].
+        std::vector<double> samples;   // Flattened precalculated samples storage.
+        size_t m_dimension = 0;        // Active dimension count.
+        size_t m_maxNumSamples = 0;    // Max samples per dimension.
 };
 
 
