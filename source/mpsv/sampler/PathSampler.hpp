@@ -137,7 +137,6 @@ class PathSampler {
          * @brief Get the sample.
          * @param[in] idxSample Index of the sample.
          * @return Resulting sample around the path. The elements are [x,y,psi].
-         * @note IMPORTANT: THE INDEX VALUES ACCESS THE INTERNAL CONTAINER DIRECTLY. MAKE SURE THE VALUES ARE IN RANGE TO PREVENT ACCESS VIOLATION!
          * @details A random path segment is selected based on the halton sequence (dimension 1). The random sample is generated in a 3-dimensional box around this
          * path segment by the halton sequence (dimension 2,3,4). The dimension of the bos corresponds to rangePosition and rangeAngle, respectively.
          */

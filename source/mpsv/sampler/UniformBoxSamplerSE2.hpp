@@ -53,12 +53,13 @@ class UniformBoxSamplerSE2 {
         /**
          * @brief Set the size of the uniform box sampler. The dimension MUST NOT be zero!
          * @param[in] box A valid oriented box with non-zero dimension.
-         * @note IMPORTANT: ENSURE THAT THE INPUT BOX IS A VALID BOX WITH NON-ZERO DIMENSION!
          */
         void SetSize(const mpsv::geometry::OrientedBox& box) noexcept {
             offset = box.GetPosition();
             std::array<double,2> dimension = box.GetDimension();
             std::array<double,2> normal = box.GetNormal();
+            dimension[0] = std::max(dimension[0], 1.0e-6);
+            dimension[1] = std::max(dimension[1], 1.0e-6);
             R[0] = normal[0] * dimension[0];
             R[1] = -normal[1] * dimension[1];
             R[2] = normal[1] * dimension[0];
@@ -74,7 +75,6 @@ class UniformBoxSamplerSE2 {
          * @brief Get a uniform sample from the box.
          * @param[in] idxSample Index of the sample.
          * @return The output sample given as {x, y, psi}.
-         * @note IMPORTANT: THE INDEX VALUE ACCESS THE INTERNAL CONTAINER DIRECTLY. MAKE SURE THE VALUES ARE IN RANGE TO PREVENT ACCESS VIOLATION!
          */
         std::array<double, 3> Sample(size_t idxSample) noexcept {
             std::array<double, 3> result;
