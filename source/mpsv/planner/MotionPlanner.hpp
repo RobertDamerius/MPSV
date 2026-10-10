@@ -63,7 +63,6 @@ class MotionPlanner {
             if((maxNumSamples < 1) || (maxNumNodes < 2)){ // there must be at least one sample and two nodes (root and a sample to be added/removed)
                 return false;
             }
-            this->maxNumSamples = maxNumSamples;
             idxNeighbors.reserve(maxNumNodes);
             if(!tree.Initialize(maxNumNodes) || !boxSampler.Initialize(maxNumSamples) || !pathSampler.Initialize(maxNumSamples)){
                 Terminate();
@@ -85,7 +84,6 @@ class MotionPlanner {
             vehicleSimulator.ClearController();
             vehicleSimulator.ClearModel();
             boxSampler.Terminate();
-            maxNumSamples = 1;
             idxNeighbors.clear();
             idxNeighbors.shrink_to_fit();
             epsPosition = epsAngle = epsDistanceMetric = std::numeric_limits<double>::epsilon();
@@ -304,7 +302,6 @@ class MotionPlanner {
         mpsv::planner::CostMap costMap;                         // The cost map to be used as additional cost term in the objective function.
         mpsv::sampler::UniformBoxSamplerSE2 boxSampler;         // The box sampler to be used to draw random samples from SE(2).
         mpsv::sampler::PathSampler pathSampler;                 // The path sampler to be used to draw random samples from SE(2).
-        uint32_t maxNumSamples;                                 // The maximum number of samples set by @ref Initialize.
         std::vector<int16_t> idxNeighbors;                      // Reserved memory for nearest neighbors.
         mpsv::control::VehicleSimulator vehicleSimulator;       // The vehicle simulator to be used for generating dynamically feasible trajectories.
         mpsv::control::RegionOfAttraction regionOfAttraction;   // The region of attraction to be used to check if a state enters the region around a pose.
@@ -552,8 +549,7 @@ class MotionPlanner {
             }
             else{
                 if(state.goalReached || state.goalSampleIteration){
-                    randomSample.pose = pathSampler.Sample(state.sampleIteration);
-                    state.sampleIteration = (state.sampleIteration + 1) % maxNumSamples;
+                    randomSample.pose = pathSampler.Sample(state.sampleIteration++);
                 }
                 else{
                     randomSample.pose = state.finalPose;

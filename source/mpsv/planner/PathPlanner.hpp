@@ -60,7 +60,6 @@ class PathPlanner {
             if((maxNumSamples < 1) || (maxNumNodes < 2)){ // there must be at least one sample and two nodes (root and a sample to be added/removed)
                 return false;
             }
-            this->maxNumSamples = maxNumSamples;
             idxNeighbors.reserve(maxNumNodes);
             if(!tree.Initialize(maxNumNodes) || !boxSampler.Initialize(maxNumSamples)){
                 Terminate();
@@ -79,7 +78,6 @@ class PathPlanner {
             state.Clear();
             parameter.Clear();
             boxSampler.Terminate();
-            maxNumSamples = 1;
             idxNeighbors.clear();
             idxNeighbors.shrink_to_fit();
             epsPosition = epsAngle = epsDistanceMetric = std::numeric_limits<double>::epsilon();
@@ -260,7 +258,6 @@ class PathPlanner {
         mpsv::planner::PathPlannerParameterSet parameter;   // Parameter set for the path planner.
         mpsv::planner::CostMap costMap;                     // The cost map to be used as additional cost term in the objective function.
         mpsv::sampler::UniformBoxSamplerSE2 boxSampler;     // The box sampler to be used to draw random samples from SE(2).
-        uint32_t maxNumSamples;                             // The maximum number of samples set by @ref Initialize.
         std::vector<int16_t> idxNeighbors;                  // Reserved memory for nearest neighbors.
         std::atomic<bool> interruptFlag;                    // If set to true, no more iterations are performed and the @ref Solve member function returns.
         std::atomic<bool> isSolving;                        // True if the path planner performs a @ref Solve step, false otherwise.
@@ -572,8 +569,7 @@ class PathPlanner {
         mpsv::planner::PathPlannerTreeNode Sampling(void) noexcept {
             mpsv::planner::PathPlannerTreeNode randomSample;
             if(state.goalReached || state.goalSampleIteration){
-                randomSample.pose = boxSampler.Sample(state.sampleIteration);
-                state.sampleIteration = (state.sampleIteration + 1) % maxNumSamples;
+                randomSample.pose = boxSampler.Sample(state.sampleIteration++);
             }
             else{
                 randomSample.pose = state.finalPose;
