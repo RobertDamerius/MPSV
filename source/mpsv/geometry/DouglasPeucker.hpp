@@ -188,39 +188,6 @@ template <class T> inline std::vector<size_t> DouglasPeuckerSE2(const std::vecto
 }
 
 
-/**
- * @brief Simplify the poses of a path by breaking the path into linear pose segments.
- * @tparam T Template parameter must be of type std::array<double,N> with N >= 3.
- * @param[in] path The input path to be simplified. A pose type must be at least of dimension 3.
- * @param[in] thresholdPosition The maximum position error to be allowed for line simplification.
- * @param[in] thresholdAngle The maximum angular error to be allowed for line simplification.
- * @return The list of poses that represent the simplified path. Each pose is given by {x,y,psi}. The output may be empty or may contain only one element.
- * @details The douglas-peucker algorithm for SE2 is used to simplify the poses of the path using the two given threshold parameters.
- */
-template <class T> inline std::vector<std::array<double,3>> PoseSimplification(const std::vector<T>& path, double thresholdPosition, double thresholdAngle) noexcept {
-    static_assert(mpsv::is_vec3<T>::value,"Argument {path} must be of type std::vector<std::array<double,N>> with N >= 3!");
-    std::vector<std::array<double,3>> result;
-
-    // Simplify poses using the douglas-peucker algorithm
-    std::vector<size_t> indices = mpsv::geometry::DouglasPeuckerSE2(path, thresholdPosition, thresholdAngle);
-
-    // If there are no indices, then the input may contain less than two points
-    if(indices.empty()){
-        if(!path.empty()){
-            result.push_back({path[0][0], path[0][1], path[0][2]});
-        }
-        return result;
-    }
-
-    // Otherwise copy poses to output
-    result.reserve(indices.size());
-    for(size_t n = 0; n < indices.size(); ++n){
-        result.push_back({path[indices[n]][0],path[indices[n]][1],path[indices[n]][2]});
-    }
-    return result;
-}
-
-
 } /* namespace: geometry */
 
 
