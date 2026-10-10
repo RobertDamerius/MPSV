@@ -320,9 +320,10 @@ class ParameterGeometry {
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
         void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+            std::vector<mpsv::geometry::ConvexVehicleShape> vehicleShapes = vehicleShape.GetConvexShapes();
             file.WriteField("double", preString + "collisionCheckMaxPositionDeviation", {1}, &collisionCheckMaxPositionDeviation, sizeof(collisionCheckMaxPositionDeviation));
             file.WriteField("double", preString + "collisionCheckMaxAngleDeviation", {1}, &collisionCheckMaxAngleDeviation, sizeof(collisionCheckMaxAngleDeviation));
-            file.WriteConvexPolygonsField(preString + "vehicleShape", vehicleShape.convexVehicleShapes);
+            file.WriteConvexPolygonsField(preString + "vehicleShape", vehicleShapes);
             file.WriteVectorField(preString + "skeletalPoints", skeletalPoints);
         }
 };

@@ -64,7 +64,7 @@ class OnlinePlannerParameterSet {
             dst.sequentialPlanner.geometry.collisionCheckMaxPositionDeviation = sequentialPlanner.geometry.collisionCheckMaxPositionDeviation;
             dst.sequentialPlanner.geometry.collisionCheckMaxAngleDeviation = sequentialPlanner.geometry.collisionCheckMaxAngleDeviation;
             dst.sequentialPlanner.geometry.skeletalPoints.swap(sequentialPlanner.geometry.skeletalPoints);
-            dst.sequentialPlanner.geometry.vehicleShape.convexVehicleShapes.swap(sequentialPlanner.geometry.vehicleShape.convexVehicleShapes);
+            dst.sequentialPlanner.geometry.vehicleShape.Swap(sequentialPlanner.geometry.vehicleShape);
             dst.sequentialPlanner.metric = sequentialPlanner.metric;
             dst.sequentialPlanner.model = sequentialPlanner.model;
             dst.sequentialPlanner.motionPlanner = sequentialPlanner.motionPlanner;

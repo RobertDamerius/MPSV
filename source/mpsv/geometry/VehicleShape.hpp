@@ -16,13 +16,14 @@ namespace geometry {
  */
 class VehicleShape {
     public:
-        std::vector<mpsv::geometry::ConvexVehicleShape> convexVehicleShapes;   // List of convex vehicle shapes.
-
         /**
-         * @brief Clear the list of convex vehicle shapes.
+         * @brief Create a vehicle shape based on a given set of vertices, that represent a convex polygon.
+         * @param[inout] vertices Reference to a container that contains vertices. This container is swapped internally and will be empty after a successful operation.
+         * @details All @ref convexVehicleShapes are removed and the given vertices are used to set one convex vehicle shape.
          */
-        void Clear(void) noexcept {
-            convexVehicleShapes.clear();
+        void Create(std::vector<std::array<double, 2>>& vertices) noexcept {
+            Clear();
+            Add(vertices);
         }
 
         /**
@@ -34,13 +35,18 @@ class VehicleShape {
         }
 
         /**
-         * @brief Create a vehicle shape based on a given set of vertices, that represent a convex polygon.
-         * @param[inout] vertices Reference to a container that contains vertices. This container is swapped internally and will be empty after a successful operation.
-         * @details All @ref convexVehicleShapes are removed and the given vertices are used to set one convex vehicle shape.
+         * @brief Clear the list of convex vehicle shapes.
          */
-        void Create(std::vector<std::array<double, 2>>& vertices) noexcept {
-            Clear();
-            Add(vertices);
+        void Clear(void) noexcept {
+            convexVehicleShapes.clear();
+        }
+
+        /**
+         * @brief Swap this vehicle shape with a given other vehicle shape.
+         * @param[in] other The vehicle shape with which to swap.
+         */
+        void Swap(mpsv::geometry::VehicleShape& other) noexcept {
+            convexVehicleShapes.swap(other.convexVehicleShapes);
         }
 
         /**
@@ -140,6 +146,17 @@ class VehicleShape {
             }
             return d;
         }
+
+        /**
+         * @brief Get a copy of the convex vehicle shapes.
+         * @return The convex vehicle shapes that represent this vehicle shape.
+         */
+        std::vector<mpsv::geometry::ConvexVehicleShape> GetConvexShapes(void) noexcept {
+            return convexVehicleShapes;
+        }
+
+    private:
+        std::vector<mpsv::geometry::ConvexVehicleShape> convexVehicleShapes;   // List of convex vehicle shapes.
 };
 
 
