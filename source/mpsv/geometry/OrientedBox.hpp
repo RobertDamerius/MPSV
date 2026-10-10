@@ -13,7 +13,7 @@ namespace geometry {
 
 
 /**
- * @brief This class represents an oriented box for a 2-dimensional euclidean space. The box is indicated by an origin (lower-left corner), a normal vector and a dimension.
+ * @brief This class represents an oriented box for a 2-dimensional euclidean space. The box is characterized by an origin (lower-left corner), a normal vector and a dimension.
  * The normal vector points to the longitudinal axis of the oriented box.
  */
 class OrientedBox {
@@ -71,10 +71,11 @@ class OrientedBox {
         template <class T, class U> void CreateFromFocalPoints(const T& point0, const U& point1, std::array<double,2> boxExtension) noexcept {
             static_assert(mpsv::is_vec2<T>::value,"Argument {point0} must be of type std::array<double,N> with N >= 2!");
             static_assert(mpsv::is_vec2<U>::value,"Argument {point1} must be of type std::array<double,N> with N >= 2!");
+            constexpr double eps = 100.0 * std::numeric_limits<double>::epsilon();
             normal[0] = point1[0] - point0[0];
             normal[1] = point1[1] - point0[1];
             double d = std::sqrt(normal[0]*normal[0] + normal[1]*normal[1]);
-            if(d < std::numeric_limits<double>::epsilon()){
+            if(d < eps){
                 d = 0.0;
                 normal[0] = 1.0;
                 normal[1] = 0.0;
