@@ -160,6 +160,14 @@ class OrientedBox {
         std::array<double,2> GetDimension(void) const noexcept { return dimension; }
 
         /**
+         * @brief Get the volume of the oriented box in SE(2).
+         * @param[in] metricWeightPsi Weighting for psi in the metric distance function.
+         * @return Volume of the oriented box.
+         * @details The volume corresponds to (x) * (y) * (wpsi * psi), where wpsi denotes the weighting for psi in the metric distance function.
+         */
+        double GetVolume(double metricWeightPsi) noexcept { return dimension[0] * dimension[1] * std::fabs(metricWeightPsi * 6.28318530717959); }
+
+        /**
          * @brief Export the oriented box as a convex polygon.
          * @return The convex polygon that represents the oriented box.
          */
