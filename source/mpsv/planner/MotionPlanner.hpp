@@ -36,6 +36,9 @@ namespace planner {
  * then the next one is to be interrupted.
  */
 class MotionPlanner {
+    private:
+        using Node = mpsv::planner::MotionPlannerTreeNode;
+
     public:
         /**
          * @brief Construct an motion planner and set default values.
@@ -483,7 +486,7 @@ class MotionPlanner {
             }
 
             // Sampling: generate random sample
-            mpsv::planner::MotionPlannerTreeNode randomSample = Sampling();
+            Node randomSample = Sampling();
 
             // Vertex Selection: select nearest node
             int16_t idxNearest = tree.FindNearestNode(randomSample, parameter.metric.weightPsi);
@@ -539,8 +542,8 @@ class MotionPlanner {
          * @brief Generate a random sample.
          * @return The random sample.
          */
-        mpsv::planner::MotionPlannerTreeNode Sampling(void) noexcept {
-            mpsv::planner::MotionPlannerTreeNode randomSample;
+        Node Sampling(void) noexcept {
+            Node randomSample;
             if(state.initialSamplesReversed.size()){
                 randomSample.pose = state.initialSamplesReversed.back();
                 state.initialSamplesReversed.pop_back();
@@ -566,13 +569,13 @@ class MotionPlanner {
          * <0> True if local planning succeeded (e.g. no collision), false otherwise.
          * <1> The resulting sample of local planning.
          */
-        std::tuple<bool, mpsv::planner::MotionPlannerTreeNode> LocalPlanning(const int16_t idxSource, const mpsv::planner::MotionPlannerTreeNode& destination, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
-            mpsv::planner::MotionPlannerTreeNode& source = tree[idxSource];
+        std::tuple<bool, Node> LocalPlanning(const int16_t idxSource, const Node& destination, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
+            Node& source = tree[idxSource];
 
             // Resulting output tuple containing success and newSample
-            std::tuple<bool, mpsv::planner::MotionPlannerTreeNode> result;
+            std::tuple<bool, Node> result;
             bool& success = std::get<0>(result);
-            mpsv::planner::MotionPlannerTreeNode& newSample = std::get<1>(result);
+            Node& newSample = std::get<1>(result);
             success = false;
 
             // Direction from source to destination
@@ -624,7 +627,7 @@ class MotionPlanner {
          * @param[in] staticObstacles The set of static obstacles to be used for collision checks.
          * @return Index to the best parent node such that the cost for the new sample becomes minimal and the edge from that parent to the new sample is feasible.
          */
-        int16_t FindBestParent(mpsv::planner::MotionPlannerTreeNode& newSample, int16_t idxNearest, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
+        int16_t FindBestParent(Node& newSample, int16_t idxNearest, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
             int16_t idxBestParent = idxNearest;
             for(auto&& index : idxNeighbors){
                 // Ignore the nearest node which is already the parent for the new node, check all others
@@ -633,7 +636,7 @@ class MotionPlanner {
                 }
 
                 // Check if cost reduction is actually possible
-                mpsv::planner::MotionPlannerTreeNode& possibleParent = tree[index];
+                Node& possibleParent = tree[index];
                 double resultCost = possibleParent.cost;
                 resultCost += mpsv::math::DistanceMetricSE2(possibleParent.pose, newSample.pose, parameter.metric.weightPsi);
                 resultCost += mpsv::math::SwayMetric(possibleParent.pose, newSample.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
@@ -664,7 +667,7 @@ class MotionPlanner {
         void Rewire(int16_t idxAddedSample, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
             // Check if the cost to anyone in the neighborhood can be reduced when steering from the best new sample to the neighborhood node
             // Or: for which node can the current best new sample be a better parent
-            mpsv::planner::MotionPlannerTreeNode& addedSample = tree[idxAddedSample];
+            Node& addedSample = tree[idxAddedSample];
             for(auto&& index : idxNeighbors){
                 // Cannot be a better parent for its own parent or for the root
                 if((tree[idxAddedSample].iParent == index) || (tree[idxAddedSample].iParent < 0)){
@@ -672,7 +675,7 @@ class MotionPlanner {
                 }
 
                 // Check if cost reduction is actually possible
-                mpsv::planner::MotionPlannerTreeNode& destination = tree[index];
+                Node& destination = tree[index];
                 double resultCost = addedSample.cost;
                 resultCost += mpsv::math::DistanceMetricSE2(addedSample.pose, destination.pose, parameter.metric.weightPsi);
                 resultCost += mpsv::math::SwayMetric(addedSample.pose, destination.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
