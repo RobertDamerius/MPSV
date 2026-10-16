@@ -11,81 +11,6 @@ namespace mpsv {
 namespace geometry {
 
 
-namespace details {
-
-
-/**
- * @brief Template helper function for recursive douglas-peucker algorithm for SE2.
- * @tparam T Template parameter must be of type std::array<double,N> with N >= 3.
- */
-template<class T> inline void DouglasPeuckerSE2Recursive(std::vector<size_t>& indices, const std::vector<T>& poses, double thresholdPosition, double thresholdAngle, const size_t idxStart, const size_t idxEnd) noexcept {
-    static_assert(mpsv::is_vec3<T>::value,"Argument {poses} must be of type std::vector<std::array<double,N>> with N >= 3!");
-
-    // Just a line: nothing to do
-    if((idxStart + 1) >= idxEnd){
-        return;
-    }
-
-    // Implicit edge function
-    double xStart = poses[idxStart][0];
-    double yStart = poses[idxStart][1];
-    double xEnd = poses[idxEnd][0];
-    double yEnd = poses[idxEnd][1];
-    double a = yEnd - yStart;
-    double b = xStart - xEnd;
-    double len = std::sqrt(a*a + b*b);
-    size_t ip = 0;
-    double dmax = -1.0;
-    double amax = -1.0;
-    if(len > 0.0){
-        len = 1.0 / len;
-        a *= len;
-        b *= len;
-        double c = -a * xStart - b * yStart;
-
-        // Search farthest point for position and largest angle error
-        for(size_t i = idxStart + 1; i < idxEnd; i++){
-            len = std::fabs(a*poses[i][0] + b*poses[i][1] + c);
-            amax = std::max(amax, std::fabs(mpsv::math::SymmetricalAngle(poses[i][2] - poses[idxStart][2])));
-            if(len > dmax){
-                dmax = len;
-                ip = i;
-            }
-        }
-    }
-    else{
-        // Search farthest point for position and largest angle error
-        for(size_t i = idxStart + 1; i < idxEnd; i++){
-            xEnd = poses[i][0] - xStart;
-            yEnd = poses[i][0] - yStart;
-            len = xEnd*xEnd + yEnd*yEnd;
-            amax = std::max(amax, std::fabs(mpsv::math::SymmetricalAngle(poses[i][2] - poses[idxStart][2])));
-            if(len > dmax){
-                dmax = len;
-                ip = i;
-            }
-        }
-    }
-
-    // If position error is too large, divide according to position
-    if(dmax >= thresholdPosition){
-        DouglasPeuckerSE2Recursive(indices, poses, thresholdPosition, thresholdAngle, idxStart, ip);
-        indices.push_back(ip);
-        DouglasPeuckerSE2Recursive(indices, poses, thresholdPosition, thresholdAngle, ip, idxEnd);
-    }
-    // Else if angle error is too large, divide remaining interval
-    else if(amax >= thresholdAngle){
-        size_t ia = idxStart + (idxEnd - idxStart) / 2;
-        DouglasPeuckerSE2Recursive(indices, poses, thresholdPosition, thresholdAngle, idxStart, ia);
-        indices.push_back(ia);
-        DouglasPeuckerSE2Recursive(indices, poses, thresholdPosition, thresholdAngle, ia, idxEnd);
-    }
-}
-
-
-} /* namespace: details */
-
-
 /**
  * @brief Run the douglas-peucker line simplification algorithm for a sequential list of poses {x,y,psi}.
  * @tparam T Template parameter must be of type std::array<double,N> with N >= 3.
@@ -102,7 +27,74 @@ template <class T> inline std::vector<size_t> DouglasPeuckerSE2(const std::vecto
     size_t numPoses = poses.size();
     if(numPoses > 1){
         indices.push_back(0);
-        mpsv::geometry::details::DouglasPeuckerSE2Recursive(indices, poses, std::fabs(thresholdPosition), std::fabs(thresholdAngle), 0, numPoses - 1);
+        const double thresholdPositionAbs = std::fabs(thresholdPosition);
+        const double thresholdAngleAbs = std::fabs(thresholdAngle);
+        std::vector<std::array<size_t,2>> intervals{{0, numPoses - 1}};
+        while(!intervals.empty()){
+            const auto interval = intervals.back();
+            intervals.pop_back();
+            const size_t idxStart = interval[0];
+            const size_t idxEnd = interval[1];
+
+            // Just a line: nothing to do
+            if((idxStart + 1) >= idxEnd){
+                continue;
+            }
+
+            // Implicit edge function
+            double xStart = poses[idxStart][0];
+            double yStart = poses[idxStart][1];
+            double xEnd = poses[idxEnd][0];
+            double yEnd = poses[idxEnd][1];
+            double a = yEnd - yStart;
+            double b = xStart - xEnd;
+            double len = std::sqrt(a*a + b*b);
+            size_t ip = 0;
+            double dmax = -1.0;
+            double amax = -1.0;
+            if(len > 0.0){
+                len = 1.0 / len;
+                a *= len;
+                b *= len;
+                const double c = -a * xStart - b * yStart;
+
+                // Search farthest point for position and largest angle error
+                for(size_t i = idxStart + 1; i < idxEnd; i++){
+                    len = std::fabs(a*poses[i][0] + b*poses[i][1] + c);
+                    amax = std::max(amax, std::fabs(mpsv::math::SymmetricalAngle(poses[i][2] - poses[idxStart][2])));
+                    if(len > dmax){
+                        dmax = len;
+                        ip = i;
+                    }
+                }
+            }
+            else{
+                // Search farthest point for position and largest angle error
+                for(size_t i = idxStart + 1; i < idxEnd; i++){
+                    xEnd = poses[i][0] - xStart;
+                    yEnd = poses[i][1] - yStart;
+                    len = std::sqrt(xEnd*xEnd + yEnd*yEnd);
+                    amax = std::max(amax, std::fabs(mpsv::math::SymmetricalAngle(poses[i][2] - poses[idxStart][2])));
+                    if(len > dmax){
+                        dmax = len;
+                        ip = i;
+                    }
+                }
+            }
+
+            if(dmax >= thresholdPositionAbs){
+                indices.push_back(ip);
+                intervals.push_back({ip, idxEnd});
+                intervals.push_back({idxStart, ip});
+            }
+            else if(amax >= thresholdAngleAbs){
+                const size_t ia = idxStart + (idxEnd - idxStart) / 2;
+                indices.push_back(ia);
+                intervals.push_back({ia, idxEnd});
+                intervals.push_back({idxStart, ia});
+            }
+        }
+        std::sort(indices.begin(), indices.end());
         indices.push_back(numPoses - 1);
     }
     return indices;
@@ -113,4 +105,3 @@ template <class T> inline std::vector<size_t> DouglasPeuckerSE2(const std::vecto
 
 
 } /* namespace: mpsv */
-
