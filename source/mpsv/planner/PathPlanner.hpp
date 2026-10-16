@@ -2,7 +2,6 @@
 
 
 #include <mpsv/core/MPSVCommon.hpp>
-#include <mpsv/planner/PathPlannerTree.hpp>
 #include <mpsv/planner/PathPlannerParameterSet.hpp>
 #include <mpsv/planner/PathPlannerState.hpp>
 #include <mpsv/planner/PathPlannerInput.hpp>
@@ -33,6 +32,9 @@ namespace planner {
  * then the next one is to be interrupted.
  */
 class PathPlanner {
+    private:
+        using Node = mpsv::core::FixedSizeTreeSE2Node;
+
     public:
         /**
          * @brief Construct a path planner and set default values.
@@ -253,7 +255,7 @@ class PathPlanner {
         void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept { tree.WriteToFile(file, preString + "tree."); parameter.WriteToFile(file, preString + "parameter."); costMap.WriteToFile(file, preString + "costMap."); }
 
     protected:
-        mpsv::planner::PathPlannerTree tree;                                // Tree for path planning.
+        mpsv::core::FixedSizeTreeSE2<Node> tree;                            // Tree for path planning.
         mpsv::planner::PathPlannerState state;                              // State of the path planner.
         mpsv::planner::PathPlannerParameterSet parameter;                   // Parameter set for the path planner.
         mpsv::planner::CostMap costMap;                                     // The cost map to be used as additional cost term in the objective function.
@@ -487,11 +489,11 @@ class PathPlanner {
             }
 
             // Sampling: generate random sample
-            mpsv::planner::PathPlannerTreeNode randomSample = Sampling();
+            Node randomSample = Sampling();
 
             // Vertex Selection: select nearest node
             int16_t idxNearest = tree.FindNearestNode(randomSample, parameter.metric.weightPsi);
-            mpsv::planner::PathPlannerTreeNode& nearestSample = tree[idxNearest];
+            Node& nearestSample = tree[idxNearest];
 
             // Local Planning: steer from nearest sample to random sample
             auto [success, newSample] = LocalPlanning(nearestSample, randomSample, staticObstacles);
@@ -544,8 +546,8 @@ class PathPlanner {
          * @brief Generate a random sample.
          * @return The random sample.
          */
-        mpsv::planner::PathPlannerTreeNode Sampling(void) noexcept {
-            mpsv::planner::PathPlannerTreeNode randomSample;
+        Node Sampling(void) noexcept {
+            Node randomSample;
             if(state.goalReached || state.goalSampleIteration){
                 randomSample.pose = boxSampler.Sample(state.sampleIteration++);
             }
@@ -565,11 +567,11 @@ class PathPlanner {
          * <0> True if local planning succeeded (e.g. no collision), false otherwise.
          * <1> The resulting sample of local planning.
          */
-        std::tuple<bool, mpsv::planner::PathPlannerTreeNode> LocalPlanning(const mpsv::planner::PathPlannerTreeNode& source, const mpsv::planner::PathPlannerTreeNode& destination, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
+        std::tuple<bool, Node> LocalPlanning(const Node& source, const Node& destination, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
             // Resulting output tuple containing success and newSample
-            std::tuple<bool, mpsv::planner::PathPlannerTreeNode> result;
+            std::tuple<bool, Node> result;
             bool& success = std::get<0>(result);
-            mpsv::planner::PathPlannerTreeNode& newSample = std::get<1>(result);
+            Node& newSample = std::get<1>(result);
             success = false;
 
             // Direction from source to destination
@@ -618,7 +620,7 @@ class PathPlanner {
          * @param[in] staticObstacles The set of static obstacles to be used for collision checks.
          * @return Index to the best parent node such that the cost for the new sample becomes minimal and the edge from that parent to the new sample is feasible.
          */
-        int16_t FindBestParent(mpsv::planner::PathPlannerTreeNode& newSample, int16_t idxNearest, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
+        int16_t FindBestParent(Node& newSample, int16_t idxNearest, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
             int16_t idxBestParent = idxNearest;
             for(auto&& index : idxNeighbors){
                 // Ignore the nearest node which is already the parent for the new node, check all others
@@ -627,7 +629,7 @@ class PathPlanner {
                 }
 
                 // Check if cost reduction is actually possible
-                mpsv::planner::PathPlannerTreeNode& possibleParent = tree[index];
+                Node& possibleParent = tree[index];
                 double resultCost = possibleParent.cost;
                 resultCost += mpsv::math::DistanceMetricSE2(possibleParent.pose, newSample.pose, parameter.metric.weightPsi);
                 resultCost += mpsv::math::SwayMetric(possibleParent.pose, newSample.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
@@ -655,7 +657,7 @@ class PathPlanner {
         void Rewire(int16_t idxAddedSample, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
             // Check if the cost to anyone in the neighborhood can be reduced when steering from the best new sample to the neighborhood node
             // Or: for which node can the current best new sample be a better parent
-            mpsv::planner::PathPlannerTreeNode& addedSample = tree[idxAddedSample];
+            Node& addedSample = tree[idxAddedSample];
             for(auto&& index : idxNeighbors){
                 // Cannot be a better parent for its own parent
                 if(tree[idxAddedSample].iParent == index){
@@ -663,7 +665,7 @@ class PathPlanner {
                 }
 
                 // Check if cost reduction is actually possible
-                mpsv::planner::PathPlannerTreeNode& destination = tree[index];
+                Node& destination = tree[index];
                 double resultCost = addedSample.cost;
                 resultCost += mpsv::math::DistanceMetricSE2(addedSample.pose, destination.pose, parameter.metric.weightPsi);
                 resultCost += mpsv::math::SwayMetric(addedSample.pose, destination.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
