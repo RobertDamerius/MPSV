@@ -17,24 +17,10 @@ namespace planner {
  */
 class MotionPlannerTreeNode: public mpsv::core::FixedSizeTreeSE2Node {
     public:
+        using mpsv::core::FixedSizeTreeSE2Node::FixedSizeTreeSE2Node;
+
         std::vector<std::array<double,3>> pathBuffer;          // Buffer for path generation. Each element is given as {x,y,psi}.
         std::vector<std::array<double,12>> trajectoryBuffer;   // Buffer for trajectory generation. Each element is given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state and input is not inserted.
-
-        /**
-         * @brief Construct a new motion planner tree node object.
-         * @param[in] numChildsReserved The number of childs to be reserved.
-         */
-        explicit MotionPlannerTreeNode(const size_t numChildsReserved = 64)  noexcept : mpsv::core::FixedSizeTreeSE2Node(numChildsReserved){}
-
-        /**
-         * @brief Construct a new motion planner tree node object.
-         * @param[in] initialStateAndInput The initial state and input to be used as configuration.
-         */
-        explicit MotionPlannerTreeNode(const std::array<double,12> initialStateAndInput) noexcept : mpsv::core::FixedSizeTreeSE2Node(0){
-            this->pose[0] = initialStateAndInput[0];
-            this->pose[1] = initialStateAndInput[1];
-            this->pose[2] = initialStateAndInput[2];
-        }
 };
 
 
@@ -45,7 +31,7 @@ class MotionPlannerTree: public mpsv::core::FixedSizeTreeSE2<mpsv::planner::Moti
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept override {
             std::vector<double> vecPoses;
             std::vector<double> vecCost;
             std::vector<int16_t> vecParentIndices;
@@ -59,7 +45,7 @@ class MotionPlannerTree: public mpsv::core::FixedSizeTreeSE2<mpsv::planner::Moti
                 vecPoses.push_back(nodes[n].pose[1]);
                 vecPoses.push_back(nodes[n].pose[2]);
                 vecCost.push_back(nodes[n].cost);
-                vecParentIndices.push_back(nodes[n].idxParent);
+                vecParentIndices.push_back(nodes[n].iParent);
 
                 // Trajectory
                 uint32_t N = static_cast<uint32_t>(nodes[n].trajectoryBuffer.size());
@@ -88,7 +74,7 @@ class MotionPlannerTree: public mpsv::core::FixedSizeTreeSE2<mpsv::planner::Moti
             }
             if(Nn){
                 file.WriteField("double", preString + "pose", {3, Nn}, &vecPoses[0], sizeof(double) * vecPoses.size());
-                file.WriteField("int16_t", preString + "idxParent", {Nn}, &vecParentIndices[0], sizeof(int16_t) * vecParentIndices.size());
+                file.WriteField("int16_t", preString + "iParent", {Nn}, &vecParentIndices[0], sizeof(int16_t) * vecParentIndices.size());
                 file.WriteField("double", preString + "cost", {Nn}, &vecCost[0], sizeof(double) * vecCost.size());
                 file.WriteField("int16_t", preString + "activeIndices", {Na}, &activeIndices[0], sizeof(int16_t) * activeIndices.size());
             }

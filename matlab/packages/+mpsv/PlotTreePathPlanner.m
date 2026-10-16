@@ -10,8 +10,8 @@ function PlotTreePathPlanner(tree)
     hold on;
     for k = 1:N
         idx = activeIndices(k);
-        if(tree.idxParent(idx) < int16(0)), continue; end
-        pointParent = tree.pose(1:2,tree.idxParent(idx) + 1);
+        if(tree.iParent(idx) < int16(0)), continue; end
+        pointParent = tree.pose(1:2,tree.iParent(idx) + 1);
         pointThis = tree.pose(1:2,idx);
         plot([pointParent(1), pointThis(1)],[pointParent(2), pointThis(2)],'Color',[0.8 0.8 0.8]);
     end

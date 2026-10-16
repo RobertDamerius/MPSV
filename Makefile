@@ -31,7 +31,7 @@ SUBDIRECTORY_APP_SOURCE := source/
 
 # Compiler flags
 CC_FLAGS        = -Wall -Wextra -fopenmp -mtune=native
-CPP_FLAGS       = -Wall -Wextra -fopenmp -mtune=native -std=c++20
+CPP_FLAGS       = -Wall -Wextra -fopenmp -mtune=native -std=c++23
 LD_FLAGS        = -Wall -Wextra -mtune=native
 LIBS_WINDOWS   := -lstdc++ -lpthread -lws2_32 -lIphlpapi -lgomp
 LIBS_LINUX     := -lstdc++ -lpthread -lgomp

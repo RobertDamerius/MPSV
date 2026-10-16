@@ -11,6 +11,7 @@
 #include <array>
 #include <vector>
 #include <functional>
+#include <ranges>
 #include <algorithm>
 #include <atomic>
 #include <chrono>

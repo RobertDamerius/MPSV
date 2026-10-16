@@ -91,8 +91,8 @@ function BuildDrivers(generateSimulinkBlocks)
 
     % compile
     cflags    = '-fopenmp -mtune=native';
-    cxxflags  = '-fopenmp -mtune=native -std=c++20';
-    ldflags   = '-fopenmp -mtune=native -std=c++20';
+    cxxflags  = '-fopenmp -mtune=native -std=c++23';
+    ldflags   = '-fopenmp -mtune=native -std=c++23';
     libraries = {'-L/usr/lib','-L/usr/local/lib','-lstdc++','-lpthread','-lgomp'};
     legacy_code('compile', defs, [{['CFLAGS=$CFLAGS ',cflags],['CXXFLAGS=$CXXFLAGS ',cxxflags],['LINKFLAGS=$LINKFLAGS ',ldflags]},libraries]);
 
