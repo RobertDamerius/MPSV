@@ -33,7 +33,7 @@ SUBDIRECTORY_APP_SOURCE := source/
 CC_FLAGS        = -Wall -Wextra -fopenmp -mtune=native
 CPP_FLAGS       = -Wall -Wextra -fopenmp -mtune=native -std=c++23
 LD_FLAGS        = -Wall -Wextra -mtune=native
-LIBS_WINDOWS   := -lstdc++ -lpthread -lws2_32 -lIphlpapi -lgomp
+LIBS_WINDOWS   := -lstdc++ -lpthread -lgomp
 LIBS_LINUX     := -lstdc++ -lpthread -lgomp
 DEP_FLAGS       = -MT $@ -MMD -MP -MF $(DIRECTORY_BUILD)$*.Td
 POSTCOMPILE     = $(MV) -f $(DIRECTORY_BUILD)$*.Td $(DIRECTORY_BUILD)$*.d
