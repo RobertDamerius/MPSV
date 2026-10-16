@@ -11,7 +11,7 @@ For references, see [below](#publication).
 
 
 ## Header-only library with MATLAB/Simulink support
-The MPSV solver is implemented as header-only library (C++) and requires a compiler that supports the C++20 language features.
+The MPSV solver is implemented as header-only library (C++) and requires a compiler that supports the C++23 language features.
 There exists a MATLAB/Simulink toolbox that allows you to run the planner in Simulink.
 To use the toolbox, open the [matlab/MPSV.prj](matlab/MPSV.prj) project file or add it as reference project to an existing MATLAB project.
 Run `mpsv.BuildDrivers()` once to build all driver blocks of the simulink library.
@@ -28,15 +28,15 @@ It may be necessary to set the environment variables `OMP_PLACES` or `OMP_PROC_B
 ## Overview
 The directory structure of this repository is as follows.
 
-| File / Directory   | Description                                                                                                    |
-| :----------------- | :------------------------------------------------------------------------------------------------------------- |
-| apps               | contains example applications and a standalone application (C++)                                               |
-| documentation      | contains an HTML-based documentation                                                                           |
-| matlab             | contains the MATLAB/Simulink project for the MPSV toolbox                                                      |
-| source             | contains the header-only library (C++)                                                                         |
-| LICENSE            | license information                                                                                            |
-| Makefile           | used to build example applications and the standalone application                                              |
-| README.md          | this file                                                                                                      |
+| File / Directory   | Description                                               |
+| :----------------- | :-------------------------------------------------------- |
+| apps               | contains example applications (C++)                       |
+| documentation      | contains an HTML-based documentation                      |
+| matlab             | contains the MATLAB/Simulink project for the MPSV toolbox |
+| source             | contains the header-only library (C++)                    |
+| LICENSE            | license information                                       |
+| Makefile           | used to build example applications                        |
+| README.md          | this file                                                 |
 
 
 ## Planning Levels
@@ -90,16 +90,6 @@ make apps
 ## Examples (MATLAB/Simulink)
 Example models for Simulink are located at [matlab/examples/](matlab/examples/).
 Make sure that you build already build the driver blocks of the Simulink library with `mpsv.BuildDrivers()`.
-
-
-## Standalone Application
-The standalone application can be used to outsource the planning problem to an external program.
-The data transfer between the standalone application and a user program is done via UDP.
-The application is located at [apps/mpsv](apps/mpsv/) and is compiled with
-```
-make app=mpsv
-```
-Further details are given [here](apps/mpsv/README.md).
 
 
 ## Publication
