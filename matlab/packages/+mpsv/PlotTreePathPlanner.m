@@ -17,4 +17,3 @@ function PlotTreePathPlanner(tree)
     end
     if(~stateHold), hold off; end
 end
-

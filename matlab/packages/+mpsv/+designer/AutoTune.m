@@ -475,4 +475,3 @@ function compensation = Acal(x_nu, matF, matB, vecTimeconstantsXYN, vecTimeconst
     compensation(2) = S0(4)*forcedResponse(1) + S0(5)*forcedResponse(2) + S0(6)*forcedResponse(3) + S1(4)*allocationModel(1) + S1(5)*allocationModel(2) + S1(6)*allocationModel(3) + M0(4)*tmp(1) + M0(5)*tmp(2) + M0(6)*tmp(3);
     compensation(3) = S0(7)*forcedResponse(1) + S0(8)*forcedResponse(2) + S0(9)*forcedResponse(3) + S1(7)*allocationModel(1) + S1(8)*allocationModel(2) + S1(9)*allocationModel(3) + M0(7)*tmp(1) + M0(8)*tmp(2) + M0(9)*tmp(3);
 end
-

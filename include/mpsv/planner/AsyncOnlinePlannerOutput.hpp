@@ -60,4 +60,3 @@ class AsyncOnlinePlannerOutput: public mpsv::planner::OnlinePlannerOutput {
 
 
 } /* namespace: mpsv */
-

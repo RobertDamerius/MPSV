@@ -55,4 +55,3 @@ class MPSV_WrapperAsynchronousOnlinePlanner {
         mpsv::planner::AsyncOnlinePlannerParameterSet plannerParameter;   // Stores the parameter data for the internal asynchronous online planner.
         mpsv::planner::AsyncOnlinePlannerOutput plannerOutput;            // Stores the output of the asynchronous online planner.
 };
-

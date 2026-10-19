@@ -6,4 +6,3 @@ function v = GetVersion()
 
     v = uint32([2,1,0]);
 end
-

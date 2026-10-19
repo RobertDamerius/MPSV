@@ -236,4 +236,3 @@ std::string GetDataFilename(void){
 
 
 } /* namespace: example */
-

@@ -33,4 +33,3 @@ extern void MPSV_AsynchronousOnlinePlannerTerminate(void* workVector);
  * @param[in] serializedParameter Serialized data (bytes) representing the parameter data.
  */
 extern void MPSV_AsynchronousOnlinePlannerStep(void* workVector, uint8_t* serializedOutput, uint8_t* serializedInput, uint8_t* serializedParameter);
-

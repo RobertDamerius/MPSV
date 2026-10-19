@@ -204,4 +204,3 @@ template <class T> mpsv::geometry::ConvexPolygon QuickHull2DPolygon(const std::v
 
 
 } /* namespace: mpsv */
-

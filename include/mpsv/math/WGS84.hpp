@@ -223,4 +223,3 @@ template <class T, class U> inline std::array<double,3> NED2LLA(const T NED, con
 
 
 } /* namespace: mpsv */
-

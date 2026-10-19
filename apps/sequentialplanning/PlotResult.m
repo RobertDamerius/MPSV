@@ -225,4 +225,3 @@ function PlotTrajectoryLine(trajectory)
     s = PositionToRatio(x,y);
     PlotColoredLine(x,y,s);
 end
-

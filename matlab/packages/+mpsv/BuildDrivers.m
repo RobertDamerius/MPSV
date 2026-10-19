@@ -177,4 +177,3 @@ function ConvertFiles(inputFile, outputFile)
     fwrite(fileID, uint8(s));
     fclose(fileID);
 end
-

@@ -137,4 +137,3 @@ class Benchmark {
          */
         static void GenerateObstaclesForPlanning(std::vector<mpsv::geometry::StaticObstacle>& staticObstacles);
 };
-

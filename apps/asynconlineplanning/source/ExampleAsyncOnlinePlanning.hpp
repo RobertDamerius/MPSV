@@ -225,4 +225,3 @@ inline mpsv::planner::AsyncOnlinePlannerInput GetInput(double timestamp){
 
 
 } /* namespace: example */
-

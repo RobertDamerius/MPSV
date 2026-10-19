@@ -152,4 +152,3 @@ function dataType = ToInternalDataType(type)
             error(['Unknown data-type "',type,'"!']);
     end
 end
-

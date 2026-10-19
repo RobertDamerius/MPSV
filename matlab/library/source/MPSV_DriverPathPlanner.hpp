@@ -25,4 +25,3 @@ extern void MPSV_PathPlannerTerminate(void* workVector);
  * @param[in] serializedDataIn Serialized data (bytes) representing the input data.
  */
 extern void MPSV_PathPlannerStep(void* workVector, uint8_t* serializedDataOut, uint8_t* serializedDataIn);
-

@@ -183,4 +183,3 @@ inline mpsv::planner::PathPlannerInput GetInput(void){
 
 
 } /* namespace: example */
-

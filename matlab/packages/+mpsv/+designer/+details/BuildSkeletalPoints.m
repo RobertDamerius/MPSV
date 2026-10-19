@@ -27,4 +27,3 @@ function [skeletalPoints, vehicleDimension] = BuildSkeletalPoints(verticesVehicl
         vehicleDimension = [xmax - xmin; ymax - ymin];
     end
 end
-

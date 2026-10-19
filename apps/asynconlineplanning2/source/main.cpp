@@ -47,4 +47,3 @@ int main(int, char**){
     planner.Stop();
     return 0;
 }
-

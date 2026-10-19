@@ -33,4 +33,3 @@ class StaticObstacle : public mpsv::geometry::ConvexPolygon {
 
 
 } /* namespace: mpsv */
-

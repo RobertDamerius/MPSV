@@ -88,4 +88,3 @@ function PlotTestScenario(data)
     linkaxes(s, 'x');
     subplot(4,3,[1,2,4,5,7,8,10,11]);
 end
-

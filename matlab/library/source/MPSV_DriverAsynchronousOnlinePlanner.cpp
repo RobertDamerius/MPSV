@@ -29,4 +29,3 @@ void MPSV_AsynchronousOnlinePlannerStep(void* workVector, uint8_t* serializedOut
     // call the step function of the wrapper class
     wrapper->Step(out, in, param);
 }
-

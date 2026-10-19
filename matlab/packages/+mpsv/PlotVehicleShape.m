@@ -16,4 +16,3 @@ function PlotVehicleShape(vehicleShape, pose)
     end
     plot(vshape, 'FaceColor', [0 0.2 0.8]);
 end
-

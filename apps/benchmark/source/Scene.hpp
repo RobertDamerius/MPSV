@@ -31,4 +31,3 @@ class Scene {
             return valid;
         }
 };
-

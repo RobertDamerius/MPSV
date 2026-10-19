@@ -211,4 +211,3 @@ inline mpsv::planner::MotionPlannerInput GetInput(void){
 
 
 } /* namespace: example */
-

@@ -150,4 +150,3 @@ void MPSV_WrapperPathPlanner::ClearOutput(serialization_path_planner_output* out
     output->numPoses = 0;
     output->timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
 }
-

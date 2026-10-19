@@ -41,4 +41,3 @@ function PlotTrajectory(trajectory, vehicleShape, sampletime)
     plot(shapes, 'FaceColor', [0.8 0.2 0.0], 'FaceAlpha', 0.1, 'EdgeAlpha', 0.1);
     if(~stateHold), hold off; end
 end
-

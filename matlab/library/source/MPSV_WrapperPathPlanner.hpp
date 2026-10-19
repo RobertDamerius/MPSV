@@ -124,4 +124,3 @@ class MPSV_WrapperPathPlanner {
          */
         void ClearOutput(serialization_path_planner_output* output, mpsv::error_code errorCode);
 };
-

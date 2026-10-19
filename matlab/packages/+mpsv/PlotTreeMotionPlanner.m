@@ -17,4 +17,3 @@ function PlotTreeMotionPlanner(tree)
     end
     if(~stateHold), hold off; end
 end
-

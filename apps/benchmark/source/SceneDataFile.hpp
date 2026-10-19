@@ -100,4 +100,3 @@ class SceneDataFile {
             return true;
         }
 };
-

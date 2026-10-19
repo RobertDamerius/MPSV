@@ -669,4 +669,3 @@ void Benchmark::GenerateObstaclesForPlanning(std::vector<mpsv::geometry::StaticO
     staticObstacles.push_back(StaticObstacle({{91.9692,16.9096},{91.8710,16.7393},{91.8710,16.9096}}));
     staticObstacles.push_back(StaticObstacle({{92.1956,17.3020},{92.1492,17.2216},{92.1492,17.3020}}));
 }
-

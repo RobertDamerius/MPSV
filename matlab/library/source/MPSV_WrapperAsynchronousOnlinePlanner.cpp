@@ -28,4 +28,3 @@ void MPSV_WrapperAsynchronousOnlinePlanner::Step(mpsv::planner::serialization_ou
     plannerOutput = planner.GetOutput();
     mpsv::planner::Serialize(output, plannerOutput);
 }
-

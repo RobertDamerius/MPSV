@@ -26,4 +26,3 @@ void MPSV_PathPlannerStep(void* workVector, uint8_t* serializedDataOut, uint8_t*
     // Call the step function of the wrapper class
     wrapper->Step(out, in);
 }
-

@@ -42,4 +42,3 @@ class IterationPerformanceTest {
          */
         static void Solve(Scene& scene, bool recreateFile);
 };
-

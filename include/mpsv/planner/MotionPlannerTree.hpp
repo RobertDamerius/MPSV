@@ -86,4 +86,3 @@ class MotionPlannerTree: public mpsv::structures::FixedSizeTreeSE2<mpsv::planner
 
 
 } /* namespace: mpsv */
-

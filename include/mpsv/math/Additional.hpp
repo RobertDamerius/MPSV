@@ -137,4 +137,3 @@ template <class T, class U> inline std::array<double,3> PoseDifference(const T& 
 
 
 } /* namespace: mpsv */
-

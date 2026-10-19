@@ -11,4 +11,3 @@ function OpenDocumentation(page)
     htmlFile = fullfile(thisDirectory, '..', '..', '..', 'documentation', 'html', page);
     web(htmlFile);
 end
-

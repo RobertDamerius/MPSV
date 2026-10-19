@@ -191,4 +191,3 @@ class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
 
 
 } /* namespace: mpsv */
-

@@ -143,4 +143,3 @@ void IterationPerformanceTest::Solve(Scene& scene, bool recreateFile){
         f.Close();
     }
 }
-

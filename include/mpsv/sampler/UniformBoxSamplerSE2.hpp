@@ -112,4 +112,3 @@ class UniformBoxSamplerSE2 {
 
 
 } /* namespace: mpsv */
-

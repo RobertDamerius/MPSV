@@ -394,4 +394,3 @@ class ConvexPolygon {
 
 
 } /* namespace: mpsv */
-

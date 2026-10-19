@@ -62,4 +62,3 @@ class ExamplePlanner: protected mpsv::planner::AsyncOnlinePlanner {
             f.Close();
         }
 };
-

@@ -123,4 +123,3 @@ template <class T, class U> inline double SwayMetric(const T& a, const U& b, dou
 
 
 } /* namespace: mpsv */
-

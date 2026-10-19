@@ -49,4 +49,3 @@ class AsyncOnlinePlannerInput: public mpsv::planner::OnlinePlannerInput {
 
 
 } /* namespace: mpsv */
-

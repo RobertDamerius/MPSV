@@ -63,4 +63,3 @@ template <size_t N> struct is_vec9<std::array<double,N>> : std::true_type { stat
 
 
 } /* namespace: mpsv */
-

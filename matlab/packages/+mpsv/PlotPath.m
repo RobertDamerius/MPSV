@@ -24,4 +24,3 @@ function PlotPath(path, vehicleShape)
     plot(shapes, 'FaceColor', [0 0.2 0.8], 'FaceAlpha', 0.1, 'EdgeAlpha', 0.1);
     if(~stateHold), hold off; end
 end
-

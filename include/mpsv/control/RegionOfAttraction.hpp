@@ -83,4 +83,3 @@ class RegionOfAttraction {
 
 
 } /* namespace: mpsv */
-

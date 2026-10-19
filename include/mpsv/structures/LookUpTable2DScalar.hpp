@@ -177,4 +177,3 @@ template <class Targ> class LookUpTable2DScalar: public mpsv::structures::LookUp
 
 
 } /* namespace: mpsv */
-
