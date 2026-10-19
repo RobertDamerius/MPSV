@@ -11,72 +11,6 @@ namespace mpsv {
 namespace geometry {
 
 
-namespace details {
-
-
-/**
- * @brief Recursive helper function for the QuickHull algorithm.
- * @tparam T This template represents the type of a point and must be of type std::array<double,N> with N being greater than 1.
- * @param[out] indices The container where to store the indices to reference points that form the convex hull.
- * @param[in] refPoints The reference points (2D) to be used.
- * @param[in] idxPoints The indices to reference points from which to determine the convex hull.
- * @param[in] idxA Index to the first point of a line that divides the point set.
- * @param[in] idxB Index to the second point of a line that divides the point set.
- * @param[in] idxFarthest Index to the reference point that is farthest away from the line dividing the point set.
- */
-template<class T> inline void QuickHull2DRecursive(std::vector<int32_t>& indices, const std::vector<T>& refPoints, std::vector<int32_t>& idxPoints, int32_t idxA, int32_t idxB, int32_t idxFarthest) noexcept {
-    static_assert(mpsv::is_vec2<T>::value,"Argument {refPoints} must be of type std::vector<std::array<double,N>> with N >= 2!");
-
-    // Terminate if no points in the list
-    int32_t N = static_cast<int32_t>(idxPoints.size());
-    if(!N) return;
-
-    // Edge from A to farthest
-    double aEdgeA = refPoints[idxFarthest][1] - refPoints[idxA][1];
-    double bEdgeA = refPoints[idxA][0] - refPoints[idxFarthest][0];
-    double cEdgeA = -aEdgeA*refPoints[idxA][0] - bEdgeA*refPoints[idxA][1];
-
-    // Edge from farthest to B
-    double aEdgeB = refPoints[idxB][1] - refPoints[idxFarthest][1];
-    double bEdgeB = refPoints[idxFarthest][0] - refPoints[idxB][0];
-    double cEdgeB = -aEdgeB*refPoints[idxFarthest][0] - bEdgeB*refPoints[idxFarthest][1];
-
-    // Use points on positive side only
-    std::vector<int32_t> idxPointsA, idxPointsB;
-    idxPointsA.reserve(N);
-    idxPointsB.reserve(N);
-    double dmaxA = 0.0, dmaxB = 0.0;
-    int32_t idxFarthestA = -1, idxFarthestB = -1;
-    for(int32_t k = 0; k < N; k++){
-        if(idxFarthest == idxPoints[k]) continue;
-        double dA = aEdgeA * refPoints[idxPoints[k]][0] + bEdgeA * refPoints[idxPoints[k]][1] + cEdgeA;
-        double dB = aEdgeB * refPoints[idxPoints[k]][0] + bEdgeB * refPoints[idxPoints[k]][1] + cEdgeB;
-        if(dA > 0){
-            idxPointsA.push_back(idxPoints[k]);
-            if(dA > dmaxA){
-                dmaxA = dA;
-                idxFarthestA = idxPoints[k];
-            }
-        }
-        if(dB > 0){
-            idxPointsB.push_back(idxPoints[k]);
-            if(dB > dmaxB){
-                dmaxB = dB;
-                idxFarthestB = idxPoints[k];
-            }
-        }
-    }
-
-    // Find hulls recursively
-    if(idxFarthestA >= 0) QuickHull2DRecursive(indices, refPoints, idxPointsA, idxA, idxFarthest, idxFarthestA);
-    indices.push_back(idxFarthest);
-    if(idxFarthestB >= 0) QuickHull2DRecursive(indices, refPoints, idxPointsB, idxFarthest, idxB, idxFarthestB);
-}
-
-
-} /* namespace: details */
-
-
 /**
  * @brief Compute the convex hull for a set of 2D points using the QuickHull algorithm.
  * @tparam T This template represents the type of a point and must be of type std::array<double,N> with N being greater than 1.
@@ -130,11 +64,78 @@ template <class T> std::vector<int32_t> QuickHull2DIndices(const std::vector<T>&
         }
     }
 
-    // Find convex hull for both sets
+    // Process both sets iteratively in the same traversal
     indices.push_back(idxMin);
-    if(idxPosFarthest >= 0) mpsv::geometry::details::QuickHull2DRecursive(indices, refPoints, indicesPos, idxMin, idxMax, idxPosFarthest);
-    indices.push_back(idxMax);
-    if(idxNegFarthest >= 0) mpsv::geometry::details::QuickHull2DRecursive(indices, refPoints, indicesNeg, idxMax, idxMin, idxNegFarthest);
+    struct Action {
+        std::vector<int32_t> points;
+        int32_t idxA;
+        int32_t idxB;
+        int32_t idxFarthest;
+        bool emit;
+    };
+    std::vector<Action> stack;
+    if(idxNegFarthest >= 0){
+        stack.push_back({std::move(indicesNeg), idxMax, idxMin, idxNegFarthest, false});
+    }
+    stack.push_back({{}, 0, 0, idxMax, true});
+    if(idxPosFarthest >= 0){
+        stack.push_back({std::move(indicesPos), idxMin, idxMax, idxPosFarthest, false});
+    }
+    while(!stack.empty()){
+        Action action = std::move(stack.back());
+        stack.pop_back();
+        if(action.emit){
+            indices.push_back(action.idxFarthest);
+            continue;
+        }
+
+        // Skip if no points are left to process
+        int32_t N = static_cast<int32_t>(action.points.size());
+        if(!N) continue;
+
+        // Compute edges of triangle formed by points A, B and Farthest
+        double aEdgeA = refPoints[action.idxFarthest][1] - refPoints[action.idxA][1];
+        double bEdgeA = refPoints[action.idxA][0] - refPoints[action.idxFarthest][0];
+        double cEdgeA = -aEdgeA*refPoints[action.idxA][0] - bEdgeA*refPoints[action.idxA][1];
+        double aEdgeB = refPoints[action.idxB][1] - refPoints[action.idxFarthest][1];
+        double bEdgeB = refPoints[action.idxFarthest][0] - refPoints[action.idxB][0];
+        double cEdgeB = -aEdgeB*refPoints[action.idxFarthest][0] - bEdgeB*refPoints[action.idxFarthest][1];
+
+        // Split points into two sets, one for each edge of the triangle
+        std::vector<int32_t> idxPointsA, idxPointsB;
+        idxPointsA.reserve(N);
+        idxPointsB.reserve(N);
+        double dmaxA = 0.0, dmaxB = 0.0;
+        int32_t idxFarthestA = -1, idxFarthestB = -1;
+        for(int32_t k = 0; k < N; k++){
+            if(action.idxFarthest == action.points[k]) continue;
+            double dA = aEdgeA * refPoints[action.points[k]][0] + bEdgeA * refPoints[action.points[k]][1] + cEdgeA;
+            double dB = aEdgeB * refPoints[action.points[k]][0] + bEdgeB * refPoints[action.points[k]][1] + cEdgeB;
+            if(dA > 0){
+                idxPointsA.push_back(action.points[k]);
+                if(dA > dmaxA){
+                    dmaxA = dA;
+                    idxFarthestA = action.points[k];
+                }
+            }
+            if(dB > 0){
+                idxPointsB.push_back(action.points[k]);
+                if(dB > dmaxB){
+                    dmaxB = dB;
+                    idxFarthestB = action.points[k];
+                }
+            }
+        }
+
+        // Push new actions to the stack
+        if(idxFarthestB >= 0){
+            stack.push_back({std::move(idxPointsB), action.idxFarthest, action.idxB, idxFarthestB, false});
+        }
+        stack.push_back({{}, 0, 0, action.idxFarthest, true});
+        if(idxFarthestA >= 0){
+            stack.push_back({std::move(idxPointsA), action.idxA, action.idxFarthest, idxFarthestA, false});
+        }
+    }
 
     // Convexity check
     if(indices.size() < 3){
