@@ -28,8 +28,7 @@ namespace planner {
 /**
  * @brief The path planning algorithm. Before solving path planning problems, initialize the planner by calling the @ref Initialize member function.
  * Then apply a parameter set by calling @ref ApplyParameterSet. To solve a planning problem, call the two member functions @ref Prepare and
- * @ref Solve. The internal iteration loop of the @ref Solve operation is interrupted if @ref Interrupt is called. If no @ref Solve operation is running,
- * then the next one is to be interrupted.
+ * @ref Solve. The internal iteration loop of the @ref Solve operation is interrupted if @ref Interrupt is called.
  */
 class PathPlanner {
     private:
@@ -197,37 +196,6 @@ class PathPlanner {
                     Iterate(dataIn.staticObstacles);
                     maxIterationTime = std::max(maxIterationTime, iterationCounter.TimeToStart());
                     if(state.outOfNodes || ((maxIterationTime + executionCounter.TimeToStart()) >= maxComputationTime)){
-                        break;
-                    }
-                }
-            }
-            AssignOutput(dataOut);
-            isSolving = false;
-            interruptFlag = false;
-        }
-
-        /**
-         * @brief Solve the path planning problem by doing a fixed number of iterations. The planner must be initialized, parameters must be set and the planner must be prepared before calling this member function.
-         * @param[out] dataOut The output data where to store results to.
-         * @param[in] dataIn The input data containing static obstacles. Only the static obstacles are used. All remaining data has already been processed by the @ref Prepare member function.
-         * @param[in] maxIterations The maximum number of iterations to be performed.
-         * @details This member function implements an iteration loop. This loop is stopped before the maximum number of iterations is reached,  or
-         * if the @ref interruptFlag is set via @ref Interrupt. In addition, the iteration loop is stopped before the maximum number of iterations if an error occurs.
-         * There are two types of errors: not feasible and out of nodes. The problem is not feasible, if the inital pose already collides with
-         * obstacles. In this case no tree is built and the solution path would be an empty set. However, the idxSolution always points to the
-         * root, thus the path returned in the output is non-empty (it contains at least the root by definition). The second error outOfNodes
-         * is set, if no more nodes are available in the memory for more iterations. This only happens if all nodes belong to the solution path.
-         * The number of nodes is limited. If the tree is full, a random node which must not belong to the solution path is removed. If this
-         * is not possible, the internal memory of the tree is out of nodes.
-         * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
-         */
-        void Solve(mpsv::planner::PathPlannerOutput& dataOut, mpsv::planner::PathPlannerInput& dataIn, uint32_t maxIterations) noexcept {
-            isSolving = true;
-            if(state.isFeasible){
-                for(uint32_t i = 0; i < maxIterations; ++i){
-                    ++state.numberOfPerformedIterations;
-                    Iterate(dataIn.staticObstacles);
-                    if(interruptFlag || state.outOfNodes){
                         break;
                     }
                 }

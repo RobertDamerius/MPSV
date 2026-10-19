@@ -29,8 +29,7 @@ namespace planner {
  * @brief The sequential planner (contains path and motion planner). When creating the planner, call the @ref Initialize member function once to setup the planner before calling
  * any other member function. Apply a valid parameter set by calling the @ref ApplyParameterSet member function. Then you can solve the problem by calling the @ref Solve
  * member function. If you wish to apply a new parameter set, call the @ref ApplyParameterSet before the @ref Solve call. You can further improve the path calling the
- * @ref ImprovePath member function after the @ref Solve member function. To interrupt a running @ref Solve operation, call the @ref Interrupt member function. If no @ref Solve operation
- * is running while perfoming an interrupt, then the next @ref Solve operation is to be interrupted.
+ * @ref ImprovePath member function after the @ref Solve member function. To interrupt a running @ref Solve operation, call the @ref Interrupt member function.
  */
 class SequentialPlanner {
     public:
@@ -151,51 +150,7 @@ class SequentialPlanner {
         }
 
         /**
-         * @brief Solve the sequential planning problem by solving a path planning problem, followed by a motion planning problem.
-         * @param[out] dataOut The output data containing the results.
-         * @param[in] dataIn The input data containing the scene of the problem.
-         * @param[in] maxNumIterationsPath The maximum number of iterations to be performed for path planning.
-         * @param[in] maxNumIterationsMotion The maximum number of iterations to be performed for motion planning.
-         * @param[in] minTrajectoryDuration The minimum duration (>= 0) of the trajectory in seconds, defaults to 0.
-         * @param[in] forceColdStart True if no warm start should be performed, false otherwise. The default value is false.
-         * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
-         */
-        void Solve(mpsv::planner::SequentialPlannerOutput& dataOut, const mpsv::planner::SequentialPlannerInput& dataIn, uint32_t maxNumIterationsPath, uint32_t maxNumIterationsMotion, double minTrajectoryDuration = 0.0, bool forceColdStart = false) noexcept {
-            // Start execution time measurement for path planning section
-            executionCounter.Start();
-
-            // Assign planner inputs
-            pathPlannerInput.initialPose[0] = dataIn.initialStateAndInput[0];
-            pathPlannerInput.initialPose[1] = dataIn.initialStateAndInput[1];
-            pathPlannerInput.initialPose[2] = dataIn.initialStateAndInput[2];
-            pathPlannerInput.finalPose = dataIn.finalPose;
-            pathPlannerInput.originOldToNew = dataIn.originOldToNew;
-            pathPlannerInput.samplingBoxCenterPose = dataIn.samplingBoxCenterPose;
-            pathPlannerInput.samplingBoxDimension = dataIn.samplingBoxDimension;
-            pathPlannerInput.staticObstacles = dataIn.staticObstacles;
-            motionPlannerInput.initialStateAndInput = dataIn.initialStateAndInput;
-            motionPlannerInput.originOldToNew = dataIn.originOldToNew;
-            motionPlannerInput.staticObstacles = dataIn.staticObstacles;
-
-            // Solve path planning problem
-            pathPlanner.Prepare(pathPlannerOutput, pathPlannerInput, forceColdStart);
-            pathPlanner.Solve(pathPlannerOutput, pathPlannerInput, maxNumIterationsPath);
-
-            // Use solution path of path planner as initial path for motion planner
-            motionPlannerInput.initialPath = pathPlannerOutput.path;
-
-            // Solve motion planning problem
-            motionPlanner.Prepare(motionPlannerOutput, motionPlannerInput, forceColdStart);
-            motionPlanner.Solve(motionPlannerOutput, motionPlannerInput, maxNumIterationsMotion, minTrajectoryDuration);
-
-            // Move values from planning results to the output data
-            pathPlannerOutput.MoveTo(dataOut.pathPlanner);
-            motionPlannerOutput.MoveTo(dataOut.motionPlanner);
-        }
-
-        /**
          * @brief Interrupt the @ref Solve operation of the sequential planner by interrupting the internal path and motion planners.
-         * If no @ref Solve operation is running, then the next @ref Solve operation is to be interrupted.
          */
         void Interrupt(void) noexcept {
             motionPlanner.Interrupt();
@@ -264,4 +219,3 @@ class SequentialPlanner {
 
 
 } /* namespace: mpsv */
-

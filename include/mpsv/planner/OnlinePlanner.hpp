@@ -110,7 +110,6 @@ class OnlinePlanner {
 
         /**
          * @brief Interrupt the @ref Solve operation of the online planner by interrupting the internal sequential planner.
-         * If no @ref Solve operation is running, then the next @ref Solve operation is to be interrupted.
          */
         void Interrupt(void) noexcept {
             sequentialPlanner.Interrupt();
@@ -404,4 +403,3 @@ class OnlinePlanner {
 
 
 } /* namespace: mpsv */
-
