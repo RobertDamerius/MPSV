@@ -26,7 +26,7 @@ MKDIR      := mkdir -p
 # Directories
 DIRECTORY_APPS          := apps/
 DIRECTORY_BUILD         := build/
-DIRECTORY_SOURCE        := source/
+DIRECTORY_INCLUDE       := include/
 SUBDIRECTORY_APP_SOURCE := source/
 
 # Compiler flags
@@ -61,10 +61,10 @@ rwildcard       = $(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,
 # Find all sources
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Library content
-DIRECTORY_ALL   = $(dir $(call rwildcard,$(DIRECTORY_SOURCE),.))
-SOURCES_BIN     = $(call rwildcard,$(DIRECTORY_SOURCE),*.bin)
-SOURCES_C       = $(call rwildcard,$(DIRECTORY_SOURCE),*.c)
-SOURCES_CPP     = $(call rwildcard,$(DIRECTORY_SOURCE),*.cpp)
+DIRECTORY_ALL   = $(dir $(call rwildcard,$(DIRECTORY_INCLUDE),.))
+SOURCES_BIN     = $(call rwildcard,$(DIRECTORY_INCLUDE),*.bin)
+SOURCES_C       = $(call rwildcard,$(DIRECTORY_INCLUDE),*.c)
+SOURCES_CPP     = $(call rwildcard,$(DIRECTORY_INCLUDE),*.cpp)
 
 # Application content
 ifneq ($(app), )
@@ -86,8 +86,8 @@ OBJECTS_CPP := $(SOURCES_CPP:.cpp=.o)
 OBJECTS_ALL  = $(addprefix $(DIRECTORY_BUILD), $(OBJECTS_BIN) $(OBJECTS_C) $(OBJECTS_CPP))
 
 # Final product
-PRODUCT      = source-only
-LINK_MESSAGE = Source-only compilation finished.\n
+PRODUCT      = header-only
+LINK_MESSAGE = header-only library is ready.\n
 LINK_COMMAND = 
 ifneq ($(app), )
     PRODUCT = $(DIRECTORY_APPS)$(app)/$(app)

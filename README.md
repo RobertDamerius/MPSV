@@ -32,8 +32,8 @@ The directory structure of this repository is as follows.
 | :----------------- | :-------------------------------------------------------- |
 | apps               | contains example applications (C++)                       |
 | documentation      | contains an HTML-based documentation                      |
+| include            | contains the header-only library (C++)                    |
 | matlab             | contains the MATLAB/Simulink project for the MPSV toolbox |
-| source             | contains the header-only library (C++)                    |
 | LICENSE            | license information                                       |
 | Makefile           | used to build example applications                        |
 | README.md          | this file                                                 |

@@ -24,7 +24,7 @@ function BuildDrivers(generateSimulinkBlocks)
     % get absolute paths
     thisDirectory = extractBefore(mfilename('fullpath'),strlength(mfilename('fullpath')) - strlength(mfilename) + 1);
     folderSimulinkLibrarySource = fullfile(thisDirectory, '..', '..', 'library', 'source');
-    folderMPSVSource = fullfile(thisDirectory, '..', '..', '..', 'source');
+    folderMPSVInclude = fullfile(thisDirectory, '..', '..', '..', 'include');
 
     % navigate to library source directory
     currentWorkingDirectory = pwd();
@@ -32,7 +32,7 @@ function BuildDrivers(generateSimulinkBlocks)
 
     % update library-internal code directory (contains a copy of the MPSV header-only library with modified filenames and include paths because code generation does not work with code subfolders)
     fprintf('update code directory: ');
-    UpdateCodeDirectory(folderSimulinkLibrarySource, folderMPSVSource);
+    UpdateCodeDirectory(folderSimulinkLibrarySource, folderMPSVInclude);
     fprintf('done\n');
 
     % generate specifications for all drivers
@@ -125,11 +125,11 @@ end
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 % PRIVATE HELPER FUNCTIONS
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-function UpdateCodeDirectory(folderSimulinkLibrarySource, folderMPSVSource)
+function UpdateCodeDirectory(folderSimulinkLibrarySource, folderMPSVInclude)
     % set input and output directory (input: original MPSV source code, output: modified source code for simulink driver)
-    info = what(folderMPSVSource);
-    if(~isempty(info)), folderMPSVSource = info.path; end
-    directoryInput = fullfile(folderMPSVSource,'mpsv');
+    info = what(folderMPSVInclude);
+    if(~isempty(info)), folderMPSVInclude = info.path; end
+    directoryInput = fullfile(folderMPSVInclude,'mpsv');
     directoryOutput = fullfile(folderSimulinkLibrarySource,'code');
 
     % re-create output directory
@@ -140,7 +140,7 @@ function UpdateCodeDirectory(folderSimulinkLibrarySource, folderMPSVSource)
     listings = dir(fullfile(directoryInput,['**',filesep,'*.hpp']));
     listings = listings(~[listings.isdir]);
     for i = 1:numel(listings)
-        [inputFile, outputFile] = GetFilenames(listings(i), folderMPSVSource, directoryOutput);
+        [inputFile, outputFile] = GetFilenames(listings(i), folderMPSVInclude, directoryOutput);
         ConvertFiles(inputFile, outputFile);
     end
 end
