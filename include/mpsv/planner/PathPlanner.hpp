@@ -11,7 +11,7 @@
 #include <mpsv/geometry/StaticObstacle.hpp>
 #include <mpsv/geometry/ConvexPolygon.hpp>
 #include <mpsv/sampler/UniformBoxSamplerSE2.hpp>
-#include <mpsv/diagnostics/DataLogFile.hpp>
+#include <mpsv/logging/File.hpp>
 #include <mpsv/runtime/PerformanceCounter.hpp>
 #include <mpsv/runtime/Time.hpp>
 #include <mpsv/common/ErrorCode.hpp>
@@ -33,7 +33,7 @@ namespace planner {
  */
 class PathPlanner {
     private:
-        using Node = mpsv::core::FixedSizeTreeSE2Node;
+        using Node = mpsv::structures::FixedSizeTreeSE2Node;
 
     public:
         /**
@@ -188,7 +188,7 @@ class PathPlanner {
         void Solve(mpsv::planner::PathPlannerOutput& dataOut, mpsv::planner::PathPlannerInput& dataIn, double maxComputationTime) noexcept {
             isSolving = true;
             if(state.isFeasible){
-                mpsv::core::PerformanceCounter executionCounter, iterationCounter;
+                mpsv::runtime::PerformanceCounter executionCounter, iterationCounter;
                 double maxIterationTime = 0.0; // maximum execution time of one iteration
                 executionCounter.Start();
                 while(!interruptFlag){
@@ -252,10 +252,10 @@ class PathPlanner {
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept { tree.WriteToFile(file, preString + "tree."); parameter.WriteToFile(file, preString + "parameter."); costMap.WriteToFile(file, preString + "costMap."); }
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept { tree.WriteToFile(file, preString + "tree."); parameter.WriteToFile(file, preString + "parameter."); costMap.WriteToFile(file, preString + "costMap."); }
 
     protected:
-        mpsv::core::FixedSizeTreeSE2<Node> tree;                            // Tree for path planning.
+        mpsv::structures::FixedSizeTreeSE2<Node> tree;                            // Tree for path planning.
         mpsv::planner::PathPlannerState state;                              // State of the path planner.
         mpsv::planner::PathPlannerParameterSet parameter;                   // Parameter set for the path planner.
         mpsv::planner::CostMap costMap;                                     // The cost map to be used as additional cost term in the objective function.
@@ -276,13 +276,9 @@ class PathPlanner {
             dataOut.numberOfPerformedIterations = state.numberOfPerformedIterations;
             dataOut.cost = tree[state.idxSolutionNode].cost;
             tree.GetPathFromRootToNode(dataOut.path, state.idxSolutionNode);
-            dataOut.timestampOfComputationUTC = mpsv::core::GetTimestampUTC();
+            dataOut.timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
         }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Prepare helper functions
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Set the sampling area.
          * @param[in] samplingBoxCenterPose Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
@@ -346,10 +342,6 @@ class PathPlanner {
             costMap.Build(samplingArea, parameter.costMap.resolution, parameter.costMap.modBreakpoints, args, maxNumCells);
         }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Warm start helper functions
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Prepare the algorithm with a warm start. This member function is called by the @ref Prepare memnber function.
          * @param[in] originOldToNew Translation between two consecutive problems. If the origin of the previous problem is different
@@ -474,46 +466,26 @@ class PathPlanner {
             return true;
         }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Iteration helper functions
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Do one iteration of the RRT* path planning algorithm.
          * @param[in] staticObstacles The set of static obstacles to be used for collision checks.
          */
         void Iterate(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
-            // Fixed-Node RRT*: ensure that tree is not full by possibly removing a random node
-            if((state.outOfNodes = !EnsureNonFullTree())){
-                return;
+            if((state.outOfNodes = (tree.IsFull() && !tree.RemoveRandomLeaf(state.idxSolutionNode)))){
+                return; // no more nodes available in the tree and no random leaf node could be removed
             }
-
-            // Sampling: generate random sample
             Node randomSample = Sampling();
-
-            // Vertex Selection: select nearest node
             int16_t idxNearest = tree.FindNearestNode(randomSample, parameter.metric.weightPsi);
             Node& nearestSample = tree[idxNearest];
-
-            // Local Planning: steer from nearest sample to random sample
             auto [success, newSample] = LocalPlanning(nearestSample, randomSample, staticObstacles);
             if(!success){
-                return;
+                return; // local planning failed (e.g. collision)
             }
-
-            // Get near vertices (neighbors of newSample)
-            double radius = tree.GetOptimalRadius();
-            if(tree.FindNearestNeighbors(idxNeighbors, newSample, radius, parameter.metric.weightPsi)){
-                return; // if the value of the new sample already exists, return
+            if(tree.FindNearestNeighbors(idxNeighbors, newSample, tree.GetOptimalRadius(), parameter.metric.weightPsi)){
+                return; // value of the new sample already exists
             }
-
-            // Find best parent node from the neighborhood (cost of newSample is updated)
-            int16_t idxBestParent = FindBestParent(newSample, idxNearest, staticObstacles);
-
-            // Insert into tree: add new sample to the tree
+            int16_t idxBestParent = FindBestParent(newSample, idxNearest, staticObstacles); // updates newSample.cost
             int16_t idxAddedSample = tree.Add(idxBestParent, newSample);
-
-            // Rewire edges in the neighborhood around the added sample
             Rewire(idxAddedSample, staticObstacles);
 
             // Check if the new sample indicates a solution
@@ -527,19 +499,6 @@ class PathPlanner {
                 state.closestDistanceToGoal = distanceToGoal;
                 state.idxSolutionNode = idxAddedSample;
             }
-        }
-
-        /**
-         * @brief Ensure that the tree is not full. A random leaf is removed if the tree is full.
-         * @return True if tree is not full and iterations may continue, false otherwise.
-         */
-        bool EnsureNonFullTree(void) noexcept {
-            if(tree.IsFull()){
-                if(!tree.RemoveRandomLeaf(state.idxSolutionNode)){ // current solution node must not be removed
-                    return false;
-                }
-            }
-            return true;
         }
 
         /**
@@ -568,22 +527,17 @@ class PathPlanner {
          * <1> The resulting sample of local planning.
          */
         std::tuple<bool, Node> LocalPlanning(const Node& source, const Node& destination, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
-            // Resulting output tuple containing success and newSample
-            std::tuple<bool, Node> result;
-            bool& success = std::get<0>(result);
-            Node& newSample = std::get<1>(result);
-            success = false;
-
-            // Direction from source to destination
-            std::array<double, 3> direction = mpsv::math::PoseDifference(destination.pose, source.pose);
+            // Output tuple containing success and newSample
+            std::tuple<bool, Node> result{};
+            auto& [success, newSample] = result;
 
             // Limit direction to maximum step size
+            std::array<double, 3> direction = mpsv::math::PoseDifference(destination.pose, source.pose);
             double z = parameter.metric.weightPsi * direction[2];
             double r = std::sqrt(direction[0]*direction[0] + direction[1]*direction[1] + z*z);
             double radius = tree.GetOptimalRadius();
-            bool stepLimited = false;
-            if(r > radius){
-                stepLimited = true;
+            bool stepLimited = (r > radius);
+            if(stepLimited){
                 radius /= r;
                 direction[0] *= radius;
                 direction[1] *= radius;
@@ -623,9 +577,8 @@ class PathPlanner {
         int16_t FindBestParent(Node& newSample, int16_t idxNearest, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
             int16_t idxBestParent = idxNearest;
             for(auto&& index : idxNeighbors){
-                // Ignore the nearest node which is already the parent for the new node, check all others
                 if(idxNearest == index){
-                    continue;
+                    continue; // the nearest node is already the parent for the new node, check all others
                 }
 
                 // Check if cost reduction is actually possible
@@ -636,9 +589,8 @@ class PathPlanner {
                 if((resultCost + epsDistanceMetric) < newSample.cost){
                     resultCost += costMap.CostAlongLine(possibleParent.pose, newSample.pose, parameter.geometry.skeletalPoints);
                     if((resultCost + epsDistanceMetric) < newSample.cost){
-                        // Check if a better connection is collision-free and update cost and parent index
                         if(parameter.geometry.vehicleShape.CheckCollisionLine(staticObstacles, newSample.pose, possibleParent.pose, parameter.geometry.collisionCheckMaxAngleDeviation)){
-                            continue;
+                            continue; // collision detected, cannot be a better parent
                         }
                         idxBestParent = index;
                         newSample.cost = resultCost;
@@ -655,13 +607,10 @@ class PathPlanner {
          * @param[in] staticObstacles The set of static obstacles to be used for collision checks.
          */
         void Rewire(int16_t idxAddedSample, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
-            // Check if the cost to anyone in the neighborhood can be reduced when steering from the best new sample to the neighborhood node
-            // Or: for which node can the current best new sample be a better parent
             Node& addedSample = tree[idxAddedSample];
             for(auto&& index : idxNeighbors){
-                // Cannot be a better parent for its own parent
                 if(tree[idxAddedSample].iParent == index){
-                    continue;
+                    continue; // cannot be a better parent for its own parent
                 }
 
                 // Check if cost reduction is actually possible
@@ -672,9 +621,8 @@ class PathPlanner {
                 if((resultCost + epsDistanceMetric) < destination.cost){
                     resultCost += costMap.CostAlongLine(addedSample.pose, destination.pose, parameter.geometry.skeletalPoints);
                     if((resultCost + epsDistanceMetric) < destination.cost){
-                        // Check if a better connection is collision-free and rewire
                         if(parameter.geometry.vehicleShape.CheckCollisionLine(staticObstacles, destination.pose, addedSample.pose, parameter.geometry.collisionCheckMaxAngleDeviation)){
-                            continue;
+                            continue; // collision detected, cannot be a better parent
                         }
                         double deltaCost = resultCost - destination.cost;
                         tree.Rewire(index, idxAddedSample, deltaCost);

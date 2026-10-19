@@ -13,7 +13,7 @@
 #include <mpsv/geometry/StaticObstacle.hpp>
 #include <mpsv/sampler/UniformBoxSamplerSE2.hpp>
 #include <mpsv/sampler/PathSampler.hpp>
-#include <mpsv/diagnostics/DataLogFile.hpp>
+#include <mpsv/logging/File.hpp>
 #include <mpsv/runtime/PerformanceCounter.hpp>
 #include <mpsv/runtime/Time.hpp>
 #include <mpsv/common/ErrorCode.hpp>
@@ -188,7 +188,7 @@ class MotionPlanner {
         void Solve(mpsv::planner::MotionPlannerOutput& dataOut, mpsv::planner::MotionPlannerInput& dataIn, double maxComputationTime, double minTrajectoryDuration = 0.0) noexcept {
             isSolving = true;
             if(state.isFeasible){
-                mpsv::core::PerformanceCounter executionCounter, iterationCounter;
+                mpsv::runtime::PerformanceCounter executionCounter, iterationCounter;
                 double maxIterationTime = 0.0; // maximum execution time of one iteration
                 executionCounter.Start();
                 while(!interruptFlag){
@@ -293,7 +293,7 @@ class MotionPlanner {
          * @param[in] staticObstacles List of static obstacles to be used for the guidance law of path exploration. All trajectories of the tree are rebuilt. Otherwise the trajectories from tree nodes are undefined.
          * @note IMPORTANT: The caller of this function must make sure that static obstacles are valid!
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { RebuildAllTreeTrajectories(staticObstacles); tree.WriteToFile(file, preString + "tree."); parameter.WriteToFile(file, preString + "parameter."); costMap.WriteToFile(file, preString + "costMap."); }
+        void WriteToFile(mpsv::logging::File& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { RebuildAllTreeTrajectories(staticObstacles); tree.WriteToFile(file, preString + "tree."); parameter.WriteToFile(file, preString + "parameter."); costMap.WriteToFile(file, preString + "costMap."); }
 
 
     protected:
@@ -335,7 +335,7 @@ class MotionPlanner {
             dataOut.referencePath.swap(tree[state.idxSolutionNode].pathBuffer);
             dataOut.trajectory.swap(tree[state.idxSolutionNode].trajectoryBuffer);
             dataOut.sampletime = parameter.motionPlanner.sampletime;
-            dataOut.timestampOfComputationUTC = mpsv::core::GetTimestampUTC();
+            dataOut.timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
         }
 
 

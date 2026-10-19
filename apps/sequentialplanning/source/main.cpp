@@ -36,7 +36,7 @@ int main(int, char**){
     planner.Solve(dataOut, dataIn, maxComputationTimePathPlanning, maxComputationTimeMotionPlanning);
 
     // write results to file
-    mpsv::core::DataLogFile f;
+    mpsv::logging::File f;
     std::string filename = example::GetDataFilename();
     if(f.Open(filename)){
         parameter.WriteToFile(f, "parameter.");

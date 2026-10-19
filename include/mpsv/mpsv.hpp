@@ -13,11 +13,11 @@
 #include <mpsv/common/Common.hpp>
 #include <mpsv/common/ErrorCode.hpp>
 
-/* Data Structures */
-#include <mpsv/data_structures/FixedSizeTreeSE2.hpp>
-#include <mpsv/data_structures/LookUpTable2D.hpp>
-#include <mpsv/data_structures/LookUpTable2DScalar.hpp>
-#include <mpsv/data_structures/LookUpTable2DVector.hpp>
+/* Structures */
+#include <mpsv/structures/FixedSizeTreeSE2.hpp>
+#include <mpsv/structures/LookUpTable2D.hpp>
+#include <mpsv/structures/LookUpTable2DScalar.hpp>
+#include <mpsv/structures/LookUpTable2DVector.hpp>
 
 /* Runtime */
 #include <mpsv/runtime/Event.hpp>
@@ -77,6 +77,6 @@
 #include <mpsv/sampler/PathSampler.hpp>
 #include <mpsv/sampler/UniformBoxSamplerSE2.hpp>
 
-/* Diagnostics */
-#include <mpsv/diagnostics/DataLogFile.hpp>
+/* Logging */
+#include <mpsv/logging/File.hpp>
 

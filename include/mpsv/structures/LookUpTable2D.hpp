@@ -3,13 +3,13 @@
 
 #include <mpsv/common/Common.hpp>
 #include <mpsv/geometry/OrientedBox.hpp>
-#include <mpsv/diagnostics/DataLogFile.hpp>
+#include <mpsv/logging/File.hpp>
 
 
 namespace mpsv {
 
 
-namespace core {
+namespace structures {
 
 
 /**
@@ -378,7 +378,7 @@ template <class Targ, class Tdata> class LookUpTable2D {
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        virtual void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept = 0;
+        virtual void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept = 0;
 
     protected:
         std::array<double,2> position;   // Corner position (lower left corner) of the actual LUT (without zero-border: corner of data cell [0,0] == corner of lut[1,1]).
@@ -419,7 +419,7 @@ template <class Targ, class Tdata> class LookUpTable2D {
 };
 
 
-} /* namespace: core */
+} /* namespace: structures */
 
 
 } /* namespace: mpsv */

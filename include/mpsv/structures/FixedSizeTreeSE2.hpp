@@ -6,13 +6,13 @@
 #include <mpsv/math/Metric.hpp>
 #include <mpsv/sampler/HaltonSequence.hpp>
 #include <mpsv/geometry/OrientedBox.hpp>
-#include <mpsv/diagnostics/DataLogFile.hpp>
+#include <mpsv/logging/File.hpp>
 
 
 namespace mpsv {
 
 
-namespace core {
+namespace structures {
 
 
 /**
@@ -452,7 +452,7 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        virtual void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+        virtual void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             std::vector<double> vecPoses;
             std::vector<double> vecCost;
             std::vector<int16_t> vecParentIndices;
@@ -556,7 +556,7 @@ template <class Tnode> class FixedSizeTreeSE2 {
 };
 
 
-} /* namespace: core */
+} /* namespace: structures */
 
 
 } /* namespace: mpsv */

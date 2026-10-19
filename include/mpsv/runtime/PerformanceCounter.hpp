@@ -7,7 +7,7 @@
 namespace mpsv {
 
 
-namespace core {
+namespace runtime {
 
 
 /**
@@ -46,7 +46,7 @@ class PerformanceCounter {
 };
 
 
-} /* namespace: core */
+} /* namespace: runtime */
 
 
 } /* namespace: mpsv */

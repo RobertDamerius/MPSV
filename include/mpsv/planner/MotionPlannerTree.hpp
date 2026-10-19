@@ -2,8 +2,8 @@
 
 
 #include <mpsv/common/Common.hpp>
-#include <mpsv/diagnostics/DataLogFile.hpp>
-#include <mpsv/data_structures/FixedSizeTreeSE2.hpp>
+#include <mpsv/logging/File.hpp>
+#include <mpsv/structures/FixedSizeTreeSE2.hpp>
 
 
 namespace mpsv {
@@ -15,23 +15,23 @@ namespace planner {
 /**
  * @brief This class represents a tree node for the motion planner.
  */
-class MotionPlannerTreeNode: public mpsv::core::FixedSizeTreeSE2Node {
+class MotionPlannerTreeNode: public mpsv::structures::FixedSizeTreeSE2Node {
     public:
-        using mpsv::core::FixedSizeTreeSE2Node::FixedSizeTreeSE2Node;
+        using mpsv::structures::FixedSizeTreeSE2Node::FixedSizeTreeSE2Node;
 
         std::vector<std::array<double,3>> pathBuffer;          // Buffer for path generation. Each element is given as {x,y,psi}.
         std::vector<std::array<double,12>> trajectoryBuffer;   // Buffer for trajectory generation. Each element is given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state and input is not inserted.
 };
 
 
-class MotionPlannerTree: public mpsv::core::FixedSizeTreeSE2<mpsv::planner::MotionPlannerTreeNode> {
+class MotionPlannerTree: public mpsv::structures::FixedSizeTreeSE2<mpsv::planner::MotionPlannerTreeNode> {
     public:
         /**
          * @brief Write data to the log file.
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept override {
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept override {
             std::vector<double> vecPoses;
             std::vector<double> vecCost;
             std::vector<int16_t> vecParentIndices;

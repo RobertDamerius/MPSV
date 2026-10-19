@@ -4,7 +4,7 @@
 #include <mpsv/common/Common.hpp>
 #include <mpsv/geometry/StaticObstacle.hpp>
 #include <mpsv/geometry/OrientedBox.hpp>
-#include <mpsv/diagnostics/DataLogFile.hpp>
+#include <mpsv/logging/File.hpp>
 #include <mpsv/common/ErrorCode.hpp>
 
 
@@ -88,7 +88,7 @@ class SequentialPlannerInput {
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             file.WriteField("double", preString + "initialStateAndInput", {12}, &initialStateAndInput[0], sizeof(initialStateAndInput));
             file.WriteField("double", preString + "finalPose", {3}, &finalPose[0], sizeof(finalPose));
             file.WriteField("double", preString + "originOldToNew", {2}, &originOldToNew[0], sizeof(originOldToNew));

@@ -19,7 +19,7 @@ int main(int, char**){
     }
 
     // construct a timer for timestamp generation
-    mpsv::core::PerformanceCounter timer;
+    mpsv::runtime::PerformanceCounter timer;
     timer.Start();
 
     // set parameter

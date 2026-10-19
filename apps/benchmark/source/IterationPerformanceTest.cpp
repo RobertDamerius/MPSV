@@ -133,7 +133,7 @@ void IterationPerformanceTest::Solve(Scene& scene, bool recreateFile){
     planner.Solve(dataOut, dataIn, maxComputationTimePathPlanning, maxComputationTimeMotionPlanning);
 
     // write results to file
-    mpsv::core::DataLogFile f;
+    mpsv::logging::File f;
     std::string filename = "dataIterationPerformanceTest";
     if(f.Open(filename, !recreateFile)){
         //parameter.WriteToFile(f, "parameter.");

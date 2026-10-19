@@ -2,7 +2,7 @@
 
 
 #include <mpsv/common/Common.hpp>
-#include <mpsv/diagnostics/DataLogFile.hpp>
+#include <mpsv/logging/File.hpp>
 #include <mpsv/geometry/VehicleShape.hpp>
 #include <mpsv/math/Additional.hpp>
 #include <mpsv/common/ErrorCode.hpp>
@@ -129,7 +129,7 @@ class ParameterModel {
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             std::array<double,36> tmp;
             tmp[0]  = matF[0];  tmp[1]  = matF[12]; tmp[2]  = matF[24];
             tmp[3]  = matF[1];  tmp[4]  = matF[13]; tmp[5]  = matF[25];
@@ -202,7 +202,7 @@ class ParameterCostMap {
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             file.WriteField("int32_t", preString + "modBreakpoints", {1}, &modBreakpoints, sizeof(modBreakpoints));
             file.WriteField("double", preString + "resolution", {1}, &resolution, sizeof(resolution));
             file.WriteField("double", preString + "distanceScale", {1}, &distanceScale, sizeof(distanceScale));
@@ -257,7 +257,7 @@ class ParameterMetric {
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             file.WriteField("double", preString + "weightPsi", {1}, &weightPsi, sizeof(weightPsi));
             file.WriteField("double", preString + "weightSway", {1}, &weightSway, sizeof(weightSway));
             file.WriteField("double", preString + "weightReverseScale", {1}, &weightReverseScale, sizeof(weightReverseScale));
@@ -319,7 +319,7 @@ class ParameterGeometry {
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             std::vector<mpsv::geometry::ConvexVehicleShape> vehicleShapes = vehicleShape.GetConvexShapes();
             file.WriteField("double", preString + "collisionCheckMaxPositionDeviation", {1}, &collisionCheckMaxPositionDeviation, sizeof(collisionCheckMaxPositionDeviation));
             file.WriteField("double", preString + "collisionCheckMaxAngleDeviation", {1}, &collisionCheckMaxAngleDeviation, sizeof(collisionCheckMaxAngleDeviation));
@@ -363,7 +363,7 @@ class ParameterPathPlanner {
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             file.WriteField("uint32_t", preString + "periodGoalSampling", {1}, &periodGoalSampling, sizeof(periodGoalSampling));
         }
 };
@@ -454,7 +454,7 @@ class ParameterController {
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             std::array<double,36> tmp;
             tmp[0]  = matK[0];  tmp[1]  = matK[12]; tmp[2]  = matK[24];
             tmp[3]  = matK[1];  tmp[4]  = matK[13]; tmp[5]  = matK[25];
@@ -534,7 +534,7 @@ class ParameterRegionOfAttraction {
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             file.WriteField("double", preString + "rangePose", {3,1}, &rangePose[0], sizeof(rangePose));
             file.WriteField("double", preString + "rangeUVR", {3,1}, &rangeUVR[0], sizeof(rangeUVR));
             file.WriteField("double", preString + "rangeXYN", {3,1}, &rangeXYN[0], sizeof(rangeXYN));
@@ -599,7 +599,7 @@ class ParameterMotionPlanner {
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             file.WriteField("double", preString + "samplingRangePosition", {1}, &samplingRangePosition, sizeof(samplingRangePosition));
             file.WriteField("double", preString + "samplingRangeAngle", {1}, &samplingRangeAngle, sizeof(samplingRangeAngle));
             file.WriteField("uint32_t", preString + "periodGoalSampling", {1}, &periodGoalSampling, sizeof(periodGoalSampling));
@@ -671,7 +671,7 @@ class ParameterOnlinePlanner {
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             file.WriteField("bool", preString + "predictInitialStateOnReset", {1}, &predictInitialStateOnReset, sizeof(predictInitialStateOnReset));
             file.WriteField("double", preString + "maxComputationTimePathOnReset", {1}, &maxComputationTimePathOnReset, sizeof(maxComputationTimePathOnReset));
             file.WriteField("double", preString + "maxComputationTimeMotionOnReset", {1}, &maxComputationTimeMotionOnReset, sizeof(maxComputationTimeMotionOnReset));

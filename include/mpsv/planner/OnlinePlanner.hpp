@@ -10,7 +10,7 @@
 #include <mpsv/planner/OnlinePlannerOutput.hpp>
 #include <mpsv/planner/ParameterTypes.hpp>
 #include <mpsv/geometry/StaticObstacle.hpp>
-#include <mpsv/diagnostics/DataLogFile.hpp>
+#include <mpsv/logging/File.hpp>
 #include <mpsv/runtime/Time.hpp>
 #include <mpsv/runtime/PerformanceCounter.hpp>
 #include <mpsv/common/ErrorCode.hpp>
@@ -148,7 +148,7 @@ class OnlinePlanner {
          * @param[in] staticObstacles List of static obstacles to be used for the guidance law of path exploration. All trajectories of the tree are rebuilt. Otherwise the trajectories from tree nodes are undefined.
          * @note IMPORTANT: The caller of this function must make sure that static obstacles are valid!
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { sequentialPlanner.WriteToFile(file, preString + "sequentialPlanner.", staticObstacles); }
+        void WriteToFile(mpsv::logging::File& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { sequentialPlanner.WriteToFile(file, preString + "sequentialPlanner.", staticObstacles); }
 
 
     protected:
@@ -158,7 +158,7 @@ class OnlinePlanner {
         mpsv::planner::SequentialPlannerInput sequentialPlannerInput;     // Input to the @ref sequentialPlanner.
         mpsv::planner::SequentialPlannerOutput sequentialPlannerOutput;   // Output of the @ref sequentialPlanner.
         mpsv::planner::ParameterOnlinePlanner parameter;                  // Parameter for the online planner.
-        mpsv::core::PerformanceCounter performanceCounter;                // Performance counter used to measure execution time.
+        mpsv::runtime::PerformanceCounter performanceCounter;                // Performance counter used to measure execution time.
 
         /**
          * @brief Get the state/input vector from the latest solution trajectory (@ref state) for a given absolute timestamp.

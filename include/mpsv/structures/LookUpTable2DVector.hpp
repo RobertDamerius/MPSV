@@ -2,14 +2,14 @@
 
 
 #include <mpsv/common/Common.hpp>
-#include <mpsv/data_structures/LookUpTable2D.hpp>
-#include <mpsv/diagnostics/DataLogFile.hpp>
+#include <mpsv/structures/LookUpTable2D.hpp>
+#include <mpsv/logging/File.hpp>
 
 
 namespace mpsv {
 
 
-namespace core {
+namespace structures {
 
 
 /**
@@ -17,7 +17,7 @@ namespace core {
  * @tparam Targ A user-defined argument that is passed to the callback function for calculating look-up table data.
  * @tparam Tdim The dimension of the value to be stored in the 2D look-up table data.
  */
-template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::core::LookUpTable2D<Targ, std::array<double,Tdim>> {
+template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::structures::LookUpTable2D<Targ, std::array<double,Tdim>> {
     static_assert(Tdim > 0, "Array dimension for one element of the the look-up table data must not be zero!");
 
     public:
@@ -297,7 +297,7 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::core:
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             for(size_t n = 0; n < Tdim; ++n){
                 std::vector<double> vecData;
                 vecData.reserve(this->lut.size());
@@ -313,7 +313,7 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::core:
 };
 
 
-} /* namespace: core */
+} /* namespace: structures */
 
 
 } /* namespace: mpsv */

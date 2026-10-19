@@ -54,7 +54,7 @@ class ExamplePlanner: protected mpsv::planner::AsyncOnlinePlanner {
                      ", trajectory=" << dataOut.trajectory.size() << " points\n";
 
             // write results to a file
-            mpsv::core::DataLogFile f;
+            mpsv::logging::File f;
             std::string filename = example::GetDataFilename();
             constexpr bool appendData = true;
             f.Open(filename, appendData);

@@ -154,7 +154,7 @@ class AsyncOnlinePlanner {
             pthread_mutex_lock(&mtxDatabase);
             result = database.output;
             result.threadState = workerThread.GetState();
-            if(result.threadState != mpsv::core::WorkerThreadState::running){
+            if(result.threadState != mpsv::runtime::WorkerThreadState::running){
                 result.timestampInput = database.input.timestamp;
                 result.timestampParameter = database.parameter.timestamp;
                 result.inputError = database.inputError;
@@ -174,7 +174,7 @@ class AsyncOnlinePlanner {
 
 
     private:
-        mpsv::core::WorkerThread workerThread;        // The internal worker thread.
+        mpsv::runtime::WorkerThread workerThread;        // The internal worker thread.
         mpsv::planner::OnlinePlanner onlinePlanner;   // The online sequential planner.
         std::atomic<bool> terminate;                  // True if the asynchronous online planner should be terminated, false otherwise.
         volatile double previousParameterTimestamp;   // Previous parameter timestamp (used to detect new parameter sets).
@@ -185,7 +185,7 @@ class AsyncOnlinePlanner {
                 mpsv::planner::AsyncOnlinePlannerInput input;              // The latest valid input data.
                 mpsv::planner::AsyncOnlinePlannerParameterSet parameter;   // The latest valid input parameter set.
                 mpsv::planner::AsyncOnlinePlannerOutput output;            // Output of the online planner.
-                mpsv::core::PerformanceCounter timeoutCounter;             // Performance counter to measure timeouts.
+                mpsv::runtime::PerformanceCounter timeoutCounter;             // Performance counter to measure timeouts.
                 mpsv::error_code inputError;                               // Error code of the latest @ref SetInput call.
                 mpsv::error_code parameterError;                           // Error code of the latest @ref SetParameter call.
                 bool resetIsRequired;                                      // True if an automatic reset is required or a reset has been commanded via @ref SetInput, false otherwise.

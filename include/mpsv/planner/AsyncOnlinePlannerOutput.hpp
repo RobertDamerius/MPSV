@@ -22,7 +22,7 @@ class AsyncOnlinePlannerOutput: public mpsv::planner::OnlinePlannerOutput {
         double timestampParameter;                   // The user-defined timestamp of the corresponding parameter data that has been used to compute the solution. The default value is quiet_NaN.
         error_code inputError;                       // Latest error code of the input data. If input data timed out, this value is set to error_code::NOT_AVAILABLE.
         error_code parameterError;                   // Latest error code of the parameter data.
-        mpsv::core::WorkerThreadState threadState;   // The state of the planning thread.
+        mpsv::runtime::WorkerThreadState threadState;   // The state of the planning thread.
 
         /**
          * @brief Construct a new output object for the asynchronous online planner and set default values.
@@ -38,7 +38,7 @@ class AsyncOnlinePlannerOutput: public mpsv::planner::OnlinePlannerOutput {
             timestampParameter = std::numeric_limits<double>::quiet_NaN();
             inputError = error_code::NOT_AVAILABLE;
             parameterError = error_code::NOT_AVAILABLE;
-            threadState = mpsv::core::WorkerThreadState::offline;
+            threadState = mpsv::runtime::WorkerThreadState::offline;
         }
 
         /**

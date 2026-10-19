@@ -14,7 +14,6 @@
 #else
 // Other
 #endif
-using namespace mpsv::core;
 using namespace mpsv::control;
 using namespace mpsv::geometry;
 using namespace mpsv::sampler;
@@ -144,7 +143,7 @@ void Benchmark::InitializeVehicleSimulator(void){
 
 double Benchmark::PolygonOverlap(void){
     // Count the number of overlaps between all convex polygons
-    mpsv::core::PerformanceCounter timer;
+    mpsv::runtime::PerformanceCounter timer;
     size_t numOverlaps = 0;
     timer.Start();
     for(size_t i = 0; i < convexPolygons.size(); ++i){
@@ -166,7 +165,7 @@ double Benchmark::CostMapSingleThread(void){
     lut.resize(N*N);
 
     // Calculate cost function for all cells of the LUT
-    mpsv::core::PerformanceCounter timer;
+    mpsv::runtime::PerformanceCounter timer;
     double res = 100.0 / static_cast<double>(N);
     timer.Start();
     for(int32_t ix = 0, i0 = 0; ix < N; ++ix, i0 += N){
@@ -188,7 +187,7 @@ double Benchmark::CostMapMultiThread(void){
     lut.resize(N*N);
 
     // Calculate cost function for all cells of the LUT
-    mpsv::core::PerformanceCounter timer;
+    mpsv::runtime::PerformanceCounter timer;
     double res = 100.0 / static_cast<double>(N);
     timer.Start();
     int32_t numTotal = N * N;
@@ -224,7 +223,7 @@ double Benchmark::ForwardSimulation(void){
     uint32_t numSimulationSteps = 10000;
     constexpr int32_t numTrials = 1000;
 
-    mpsv::core::PerformanceCounter timer;
+    mpsv::runtime::PerformanceCounter timer;
     timer.Start();
     for(int32_t i = 0; i < numTrials; ++i){
         double angle = 2.0 * 3.14159265358979323 * static_cast<double>(i) / static_cast<double>(numTrials);
@@ -246,7 +245,7 @@ double Benchmark::PathPlanning(void){
     mpsv::planner::PathPlannerParameterSet parameterSet;
     mpsv::planner::PathPlannerInput dataIn;
     mpsv::planner::PathPlannerOutput dataOut;
-    mpsv::core::PerformanceCounter executionTimer;
+    mpsv::runtime::PerformanceCounter executionTimer;
 
     // Set parameters for this benchmark
     int16_t maxNumNodes = 1000;
@@ -311,7 +310,7 @@ double Benchmark::MotionPlanning(void){
     mpsv::planner::MotionPlannerParameterSet parameterSet;
     mpsv::planner::MotionPlannerInput dataIn;
     mpsv::planner::MotionPlannerOutput dataOut;
-    mpsv::core::PerformanceCounter executionTimer;
+    mpsv::runtime::PerformanceCounter executionTimer;
 
     // Set parameters for this benchmark
     int16_t maxNumNodes = 200;

@@ -148,6 +148,6 @@ void MPSV_WrapperPathPlanner::ClearOutput(serialization_path_planner_output* out
     output->errorCode = static_cast<uint8_t>(errorCode);
     output->numberOfPerformedIterations = 0;
     output->numPoses = 0;
-    output->timestampOfComputationUTC = mpsv::core::GetTimestampUTC();
+    output->timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
 }
 

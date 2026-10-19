@@ -4,7 +4,7 @@
 #include <mpsv/common/Common.hpp>
 #include <mpsv/planner/PathPlannerOutput.hpp>
 #include <mpsv/planner/MotionPlannerOutput.hpp>
-#include <mpsv/diagnostics/DataLogFile.hpp>
+#include <mpsv/logging/File.hpp>
 
 
 namespace mpsv {
@@ -39,7 +39,7 @@ class SequentialPlannerOutput {
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             pathPlanner.WriteToFile(file, preString + "pathPlanner.");
             motionPlanner.WriteToFile(file, preString + "motionPlanner.");
         }

@@ -8,31 +8,31 @@
 namespace mpsv {
 
 
-namespace core {
+namespace logging {
 
 
 /**
  * @brief This class represents a data log file to be used to store data to a binary file.
  * The file is always opened in appending mode. That is, an existing data log file is not deleted, but new data is appended.
  */
-class DataLogFile {
+class File {
     public:
         /**
          * @brief Construct a new data log file object via default construction.
          */
-        DataLogFile() noexcept = default;
+        File() noexcept = default;
 
         /**
          * @brief Destroy the data log file object.
          * @details This will also close the data log file.
          */
-        ~DataLogFile() noexcept { Close(); }
+        ~File() noexcept { Close(); }
 
         /* Make this class non-copyable */
-        DataLogFile(const DataLogFile&) = delete;
-        DataLogFile& operator=(const DataLogFile&) = delete;
-        DataLogFile(DataLogFile&&) = delete;
-        DataLogFile& operator=(DataLogFile&&) = delete;
+        File(const File&) = delete;
+        File& operator=(const File&) = delete;
+        File(File&&) = delete;
+        File& operator=(File&&) = delete;
 
         /**
          * @brief Open the data log file and write header data.

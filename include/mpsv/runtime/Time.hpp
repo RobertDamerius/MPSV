@@ -7,7 +7,7 @@
 namespace mpsv {
 
 
-namespace core {
+namespace runtime {
 
 
 /**
@@ -59,7 +59,7 @@ inline double DifferenceTimestampUTC(double a, double b) noexcept {
 }
 
 
-} /* namespace: core */
+} /* namespace: runtime */
 
 
 } /* namespace: mpsv */

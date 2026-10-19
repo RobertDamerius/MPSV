@@ -2,7 +2,7 @@
 
 
 #include <mpsv/common/Common.hpp>
-#include <mpsv/diagnostics/DataLogFile.hpp>
+#include <mpsv/logging/File.hpp>
 
 
 namespace mpsv {
@@ -58,7 +58,7 @@ class PathPlannerOutput {
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             file.WriteField("bool", preString + "goalReached", {1}, &goalReached, sizeof(goalReached));
             file.WriteField("bool", preString + "isFeasible", {1}, &isFeasible, sizeof(isFeasible));
             file.WriteField("bool", preString + "outOfNodes", {1}, &outOfNodes, sizeof(outOfNodes));

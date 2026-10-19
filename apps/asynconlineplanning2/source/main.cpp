@@ -11,7 +11,7 @@ int main(int, char**){
     }
 
     // construct a timer for timestamp generation
-    mpsv::core::PerformanceCounter timer;
+    mpsv::runtime::PerformanceCounter timer;
     timer.Start();
 
     // get parameter and input
@@ -19,7 +19,7 @@ int main(int, char**){
     mpsv::planner::AsyncOnlinePlannerInput dataIn = example::GetInput(timer.TimeToStart());
 
     // save parameter and input to a data file
-    mpsv::core::DataLogFile f;
+    mpsv::logging::File f;
     std::string filename = example::GetDataFilename();
     f.Open(filename);
     parameter.WriteToFile(f, "parameter.");

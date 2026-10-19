@@ -23,7 +23,7 @@ int main(int, char**){
 
     // solve the online planning problem
     std::cout << "solve online planning problem (5 steps)\n\n";
-    mpsv::core::PerformanceCounter timer;
+    mpsv::runtime::PerformanceCounter timer;
     timer.Start();
     for(int i = 0; i != 5; ++i){
         // get valid input data for planning problem

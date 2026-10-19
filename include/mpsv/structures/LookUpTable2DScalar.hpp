@@ -2,21 +2,21 @@
 
 
 #include <mpsv/common/Common.hpp>
-#include <mpsv/data_structures/LookUpTable2D.hpp>
-#include <mpsv/diagnostics/DataLogFile.hpp>
+#include <mpsv/structures/LookUpTable2D.hpp>
+#include <mpsv/logging/File.hpp>
 
 
 namespace mpsv {
 
 
-namespace core {
+namespace structures {
 
 
 /**
  * @brief This class represents a 2D look-up table of precalculated scalar values.
  * @tparam Targ A user-defined argument that is passed to the callback function for calculating look-up table data.
  */
-template <class Targ> class LookUpTable2DScalar: public mpsv::core::LookUpTable2D<Targ, double> {
+template <class Targ> class LookUpTable2DScalar: public mpsv::structures::LookUpTable2D<Targ, double> {
     public:
         /**
          * @brief A more exact solution of the line integral than @ref LineIntegral. However, the computational effort is greater. This function does not assume
@@ -164,7 +164,7 @@ template <class Targ> class LookUpTable2DScalar: public mpsv::core::LookUpTable2
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString) noexcept {
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             file.WriteField("double", preString + "data", {static_cast<uint32_t>(this->numY), static_cast<uint32_t>(this->numX)}, &this->lut[0], sizeof(double) * this->lut.size());
             file.WriteField("double", preString + "resolution", {1}, &this->res, sizeof(double));
             file.WriteField("double", preString + "position", {2,1}, &this->position[0], sizeof(double) * this->position.size());
@@ -173,7 +173,7 @@ template <class Targ> class LookUpTable2DScalar: public mpsv::core::LookUpTable2
 };
 
 
-} /* namespace: core */
+} /* namespace: structures */
 
 
 } /* namespace: mpsv */

@@ -13,7 +13,7 @@
 #include <mpsv/planner/MotionPlannerParameterSet.hpp>
 #include <mpsv/planner/MotionPlannerInput.hpp>
 #include <mpsv/planner/MotionPlannerOutput.hpp>
-#include <mpsv/diagnostics/DataLogFile.hpp>
+#include <mpsv/logging/File.hpp>
 #include <mpsv/runtime/PerformanceCounter.hpp>
 #include <mpsv/common/ErrorCode.hpp>
 #include <mpsv/geometry/StaticObstacle.hpp>
@@ -246,7 +246,7 @@ class SequentialPlanner {
          * @param[in] staticObstacles List of static obstacles to be used for the guidance law of path exploration. All trajectories of the tree are rebuilt. Otherwise the trajectories from tree nodes are undefined.
          * @note IMPORTANT: The caller of this function must make sure that static obstacles are valid!
          */
-        void WriteToFile(mpsv::core::DataLogFile& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { pathPlanner.WriteToFile(file, preString + "pathPlanner."); motionPlanner.WriteToFile(file, preString + "motionPlanner.", staticObstacles); }
+        void WriteToFile(mpsv::logging::File& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { pathPlanner.WriteToFile(file, preString + "pathPlanner."); motionPlanner.WriteToFile(file, preString + "motionPlanner.", staticObstacles); }
 
 
     protected:
@@ -256,7 +256,7 @@ class SequentialPlanner {
         mpsv::planner::MotionPlannerOutput motionPlannerOutput;   // The output of the motion planner, set during @ref Solve.
         mpsv::planner::PathPlanner pathPlanner;                   // Internal path planning solver.
         mpsv::planner::MotionPlanner motionPlanner;               // Internal motion planning solver.
-        mpsv::core::PerformanceCounter executionCounter;          // Performance counter to measure the execution time during @ref Solve.
+        mpsv::runtime::PerformanceCounter executionCounter;          // Performance counter to measure the execution time during @ref Solve.
 };
 
 

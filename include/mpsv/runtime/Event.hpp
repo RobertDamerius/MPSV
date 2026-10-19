@@ -7,7 +7,7 @@
 namespace mpsv {
 
 
-namespace core {
+namespace runtime {
 
 
 /**
@@ -125,7 +125,7 @@ class Event {
 };
 
 
-} /* namespace: core */
+} /* namespace: runtime */
 
 
 } /* namespace: mpsv */
