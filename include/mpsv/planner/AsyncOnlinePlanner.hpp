@@ -174,7 +174,7 @@ class AsyncOnlinePlanner {
 
 
     private:
-        mpsv::runtime::WorkerThread workerThread;        // The internal worker thread.
+        mpsv::runtime::WorkerThread workerThread;     // The internal worker thread.
         mpsv::planner::OnlinePlanner onlinePlanner;   // The online sequential planner.
         std::atomic<bool> terminate;                  // True if the asynchronous online planner should be terminated, false otherwise.
         volatile double previousParameterTimestamp;   // Previous parameter timestamp (used to detect new parameter sets).

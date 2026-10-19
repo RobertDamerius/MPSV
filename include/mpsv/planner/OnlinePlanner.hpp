@@ -158,7 +158,7 @@ class OnlinePlanner {
         mpsv::planner::SequentialPlannerInput sequentialPlannerInput;     // Input to the @ref sequentialPlanner.
         mpsv::planner::SequentialPlannerOutput sequentialPlannerOutput;   // Output of the @ref sequentialPlanner.
         mpsv::planner::ParameterOnlinePlanner parameter;                  // Parameter for the online planner.
-        mpsv::runtime::PerformanceCounter performanceCounter;                // Performance counter used to measure execution time.
+        mpsv::runtime::PerformanceCounter performanceCounter;             // Performance counter used to measure execution time.
 
         /**
          * @brief Get the state/input vector from the latest solution trajectory (@ref state) for a given absolute timestamp.

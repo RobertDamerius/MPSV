@@ -112,9 +112,9 @@ class WorkerThread {
 
 
     private:
-        std::thread workerThread;                                    // The internal worker thread.
-        std::atomic<bool> isStarted;                                 // True if the worker thread has been started, false otherwise.
-        std::atomic<bool> stopWorkerThread;                          // True if the worker thread should be stopped, false otherwise.
+        std::thread workerThread;                                       // The internal worker thread.
+        std::atomic<bool> isStarted;                                    // True if the worker thread has been started, false otherwise.
+        std::atomic<bool> stopWorkerThread;                             // True if the worker thread should be stopped, false otherwise.
         std::atomic<mpsv::runtime::WorkerThreadState> state;            // Internal state of the worker thread.
         std::atomic<mpsv::runtime::WorkerThreadState> commandedState;   // The commanded state for this worker thread (either standby or running).
         mpsv::runtime::Event eventLeaveStandby;                         // The event to be set if the standby state is to be left.

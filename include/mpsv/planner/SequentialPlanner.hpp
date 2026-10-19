@@ -256,7 +256,7 @@ class SequentialPlanner {
         mpsv::planner::MotionPlannerOutput motionPlannerOutput;   // The output of the motion planner, set during @ref Solve.
         mpsv::planner::PathPlanner pathPlanner;                   // Internal path planning solver.
         mpsv::planner::MotionPlanner motionPlanner;               // Internal motion planning solver.
-        mpsv::runtime::PerformanceCounter executionCounter;          // Performance counter to measure the execution time during @ref Solve.
+        mpsv::runtime::PerformanceCounter executionCounter;       // Performance counter to measure the execution time during @ref Solve.
 };
 
 

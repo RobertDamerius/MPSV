@@ -15,6 +15,7 @@
 
 /* Structures */
 #include <mpsv/structures/FixedSizeTreeSE2.hpp>
+#include <mpsv/structures/CostMap.hpp>
 #include <mpsv/structures/LookUpTable2D.hpp>
 #include <mpsv/structures/LookUpTable2DScalar.hpp>
 #include <mpsv/structures/LookUpTable2DVector.hpp>
@@ -49,7 +50,6 @@
 #include <mpsv/planner/AsyncOnlinePlannerInput.hpp>
 #include <mpsv/planner/AsyncOnlinePlannerOutput.hpp>
 #include <mpsv/planner/AsyncOnlinePlannerParameterSet.hpp>
-#include <mpsv/planner/CostMap.hpp>
 #include <mpsv/planner/MotionPlanner.hpp>
 #include <mpsv/planner/MotionPlannerInput.hpp>
 #include <mpsv/planner/MotionPlannerOutput.hpp>
@@ -79,4 +79,3 @@
 
 /* Logging */
 #include <mpsv/logging/File.hpp>
-

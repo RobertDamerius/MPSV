@@ -6,7 +6,7 @@
 #include <mpsv/planner/PathPlannerState.hpp>
 #include <mpsv/planner/PathPlannerInput.hpp>
 #include <mpsv/planner/PathPlannerOutput.hpp>
-#include <mpsv/planner/CostMap.hpp>
+#include <mpsv/structures/CostMap.hpp>
 #include <mpsv/geometry/OrientedBox.hpp>
 #include <mpsv/geometry/StaticObstacle.hpp>
 #include <mpsv/geometry/ConvexPolygon.hpp>
@@ -255,10 +255,10 @@ class PathPlanner {
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept { tree.WriteToFile(file, preString + "tree."); parameter.WriteToFile(file, preString + "parameter."); costMap.WriteToFile(file, preString + "costMap."); }
 
     protected:
-        mpsv::structures::FixedSizeTreeSE2<Node> tree;                            // Tree for path planning.
+        mpsv::structures::FixedSizeTreeSE2<Node> tree;                      // Tree for path planning.
         mpsv::planner::PathPlannerState state;                              // State of the path planner.
         mpsv::planner::PathPlannerParameterSet parameter;                   // Parameter set for the path planner.
-        mpsv::planner::CostMap costMap;                                     // The cost map to be used as additional cost term in the objective function.
+        mpsv::structures::CostMap costMap;                                  // The cost map to be used as additional cost term in the objective function.
         mpsv::sampler::UniformBoxSamplerSE2 boxSampler;                     // The box sampler to be used to draw random samples from SE(2).
         std::vector<int16_t> idxNeighbors;                                  // Reserved memory for nearest neighbors.
         std::atomic<bool> interruptFlag;                                    // If set to true, no more iterations are performed and the @ref Solve member function returns.
@@ -338,7 +338,7 @@ class PathPlanner {
             }
             double additionalBoxExtension = maxSekeletalPointDistance + 2.0 * parameter.costMap.resolution;
             samplingArea.Extend(additionalBoxExtension);
-            mpsv::planner::CostMapArgument args(parameter.costMap.distanceScale, parameter.costMap.distanceDecay, staticObstacles);
+            mpsv::structures::CostMapArgument args(parameter.costMap.distanceScale, parameter.costMap.distanceDecay, staticObstacles);
             costMap.Build(samplingArea, parameter.costMap.resolution, parameter.costMap.modBreakpoints, args, maxNumCells);
         }
 
@@ -637,4 +637,3 @@ class PathPlanner {
 
 
 } /* namespace: mpsv */
-

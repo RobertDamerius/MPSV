@@ -9,7 +9,7 @@
 namespace mpsv {
 
 
-namespace planner {
+namespace structures {
 
 
 /**
@@ -40,7 +40,7 @@ class CostMapArgument {
  * where (scale >= 0) and (decay > 0) are tuning parameters and d(x,y)^2 denotes the minimum squared distance to the closest
  * edge of all polygons. The cost value inside polygons is not of importance as those configurations would collide anyway.
  */
-class CostMap: public mpsv::structures::LookUpTable2DScalar<mpsv::planner::CostMapArgument> {
+class CostMap: public mpsv::structures::LookUpTable2DScalar<mpsv::structures::CostMapArgument> {
     public:
         /**
          * @brief Calculate the cost along a given line between two poses. Two additional points are added along the longitudinal axis to consider the angle of the pose.
@@ -98,8 +98,7 @@ class CostMap: public mpsv::structures::LookUpTable2DScalar<mpsv::planner::CostM
 };
 
 
-} /* namespace: planner */
+} /* namespace: structures */
 
 
 } /* namespace: mpsv */
-

@@ -7,7 +7,7 @@
 #include <mpsv/planner/MotionPlannerState.hpp>
 #include <mpsv/planner/MotionPlannerInput.hpp>
 #include <mpsv/planner/MotionPlannerOutput.hpp>
-#include <mpsv/planner/CostMap.hpp>
+#include <mpsv/structures/CostMap.hpp>
 #include <mpsv/geometry/OrientedBox.hpp>
 #include <mpsv/geometry/ConvexPolygon.hpp>
 #include <mpsv/geometry/StaticObstacle.hpp>
@@ -300,7 +300,7 @@ class MotionPlanner {
         mpsv::planner::MotionPlannerTree tree;                              // Tree for motion planning.
         mpsv::planner::MotionPlannerState state;                            // State of the motion planner.
         mpsv::planner::MotionPlannerParameterSet parameter;                 // Parameter set for the motion planner.
-        mpsv::planner::CostMap costMap;                                     // The cost map to be used as additional cost term in the objective function.
+        mpsv::structures::CostMap costMap;                                  // The cost map to be used as additional cost term in the objective function.
         mpsv::sampler::UniformBoxSamplerSE2 boxSampler;                     // The box sampler to be used to draw random samples from SE(2).
         mpsv::sampler::PathSampler pathSampler;                             // The path sampler to be used to draw random samples from SE(2).
         std::vector<int16_t> idxNeighbors;                                  // Reserved memory for nearest neighbors.
@@ -467,7 +467,7 @@ class MotionPlanner {
             }
             double additionalBoxExtension = maxSekeletalPointDistance + 2.0 * parameter.costMap.resolution;
             samplingArea.Extend(additionalBoxExtension);
-            mpsv::planner::CostMapArgument args(parameter.costMap.distanceScale, parameter.costMap.distanceDecay, staticObstacles);
+            mpsv::structures::CostMapArgument args(parameter.costMap.distanceScale, parameter.costMap.distanceDecay, staticObstacles);
             costMap.Build(samplingArea, parameter.costMap.resolution, parameter.costMap.modBreakpoints, args, maxNumCells);
         }
 
@@ -774,4 +774,3 @@ class MotionPlanner {
 
 
 } /* namespace: mpsv */
-
