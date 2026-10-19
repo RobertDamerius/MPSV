@@ -60,23 +60,25 @@ void Benchmark::Run(void){
     // Benchmark: Path Planning
     Idle();
     printf("[BENCHMARK] (5/6) Path Planning ...\n");
-    std::vector<double> t5;
-    for(int i = 0; i < 10; ++i) t5.push_back(PathPlanning());
+    std::vector<uint32_t> i5;
+    for(int i = 0; i < 10; ++i) i5.push_back(PathPlanning());
 
     // Benchmark: Motion Planning
     Idle();
     printf("[BENCHMARK] (6/6) Motion Planning ...\n");
-    std::vector<double> t6;
-    for(int i = 0; i < 10; ++i) t6.push_back(MotionPlanning());
+    std::vector<uint32_t> i6;
+    for(int i = 0; i < 10; ++i) i6.push_back(MotionPlanning());
 
     // Print results
-    PrintResultHeader();
-    PrintResultData("Convex Polygon Overlap", t1);
-    PrintResultData("Cost Map (Single Thread)", t2);
-    PrintResultData("Cost Map (Multi Thread)", t3);
-    PrintResultData("Forward Simulation", t4);
-    PrintResultData("Path Planning", t5);
-    PrintResultData("Motion Planning", t6);
+    PrintResultHeaderTimes();
+    PrintResultDataTimes("Convex Polygon Overlap", t1);
+    PrintResultDataTimes("Cost Map (Single Thread)", t2);
+    PrintResultDataTimes("Cost Map (Multi Thread)", t3);
+    PrintResultDataTimes("Forward Simulation", t4);
+    PrintResultFooter();
+    PrintResultHeaderIterations();
+    PrintResultDataIterations("Path Planning", i5);
+    PrintResultDataIterations("Motion Planning", i6);
     PrintResultFooter();
 
     // Iteration Performance Test
@@ -240,17 +242,15 @@ double Benchmark::ForwardSimulation(void){
     return t;
 }
 
-double Benchmark::PathPlanning(void){
+uint32_t Benchmark::PathPlanning(void){
     mpsv::planner::PathPlanner planner;
     mpsv::planner::PathPlannerParameterSet parameterSet;
     mpsv::planner::PathPlannerInput dataIn;
     mpsv::planner::PathPlannerOutput dataOut;
-    mpsv::runtime::PerformanceCounter executionTimer;
 
     // Set parameters for this benchmark
     int16_t maxNumNodes = 1000;
     uint32_t maxNumSamples = 1000000;
-    uint32_t maxIterations = 50000;
     parameterSet.costMap.modBreakpoints                                = 10;
     parameterSet.costMap.resolution                                    = 0.05;
     parameterSet.costMap.distanceScale                                 = 5.0;
@@ -280,42 +280,37 @@ double Benchmark::PathPlanning(void){
     if(!planner.Initialize(maxNumNodes, maxNumSamples)){
         fprintf(stderr,"ERROR: Failed to initialize the path planner!\n");
         planner.Terminate();
-        return std::numeric_limits<double>::quiet_NaN();
+        return 0;
     }
     if(mpsv::error_code::NONE != planner.ApplyParameterSet(parameterSet)){
         fprintf(stderr,"ERROR: Failed to set parameters for the path planner!\n");
         planner.Terminate();
-        return std::numeric_limits<double>::quiet_NaN();
+        return 0;
     }
     if(mpsv::error_code::NONE != dataIn.IsValid()){
         fprintf(stderr,"ERROR: Input data for the path planner is invalid!\n");
         planner.Terminate();
-        return std::numeric_limits<double>::quiet_NaN();
+        return 0;
     }
 
     // Run actual path planning
-    executionTimer.Start();
     planner.Prepare(dataOut, dataIn, true);
-    planner.Solve(dataOut, dataIn, maxIterations);
-    double t = executionTimer.TimeToStart();
+    planner.Solve(dataOut, dataIn, 1.0);
 
     // Terminate the planner
     planner.Terminate();
-    preventOptimization += dataOut.cost;
-    return t;
+    return dataOut.numberOfPerformedIterations;
 }
 
-double Benchmark::MotionPlanning(void){
+uint32_t Benchmark::MotionPlanning(void){
     mpsv::planner::MotionPlanner planner;
     mpsv::planner::MotionPlannerParameterSet parameterSet;
     mpsv::planner::MotionPlannerInput dataIn;
     mpsv::planner::MotionPlannerOutput dataOut;
-    mpsv::runtime::PerformanceCounter executionTimer;
 
     // Set parameters for this benchmark
     int16_t maxNumNodes = 200;
     uint32_t maxNumSamples = 1000000;
-    uint32_t maxIterations = 400;
 
     parameterSet.model.matF                                            = {-0.031604977390302, 0.0, 0.0, 0.233741474945168, 0.0, 0.0, 0.0, 0.0, 0.133462292221887, -0.020792892088185, 0.0, 0.0, 0.0, -0.041708610292712, 0.017242263124379, 0.0, -0.251243228165994, -0.000476044356140, 0.0, 0.0, 0.005297185500344, 0.0, -0.167981638498434, 0.497442136687157, 0.0, 0.000017966020615, -0.023528504195578, 0.0, 0.000108223241795, 0.000649602175186, 0.0, 0.0, -0.000002281767319, 0.0, 0.000072358238719, -0.678801229030825};
     parameterSet.model.matB                                            = {0.000237948834266, -0.000004551592718, 0.000010003488944, -0.000009313932115, 0.000215194147058, -0.000024957572224, -0.000002202124158, -0.000002930260852, 0.000043018345190};
@@ -370,32 +365,29 @@ double Benchmark::MotionPlanning(void){
     if(!planner.Initialize(maxNumNodes, maxNumSamples)){
         fprintf(stderr,"ERROR: Failed to initialize the motion planner!\n");
         planner.Terminate();
-        return std::numeric_limits<double>::quiet_NaN();
+        return 0;
     }
     if(mpsv::error_code::NONE != planner.ApplyParameterSet(parameterSet)){
         fprintf(stderr,"ERROR: Failed to set parameters for the motion planner!\n");
         planner.Terminate();
-        return std::numeric_limits<double>::quiet_NaN();
+        return 0;
     }
     if(mpsv::error_code::NONE != dataIn.IsValid()){
         fprintf(stderr,"ERROR: Input data for the motion planner is invalid!\n");
         planner.Terminate();
-        return std::numeric_limits<double>::quiet_NaN();
+        return 0;
     }
 
     // Run actual motion planning
-    executionTimer.Start();
     planner.Prepare(dataOut, dataIn);
-    planner.Solve(dataOut, dataIn, maxIterations);
-    double t = executionTimer.TimeToStart();
+    planner.Solve(dataOut, dataIn, 1.0);
 
     // Terminate the planner
     planner.Terminate();
-    preventOptimization += dataOut.cost;
-    return t;
+    return dataOut.numberOfPerformedIterations;
 }
 
-void Benchmark::PrintResultHeader(void){
+void Benchmark::PrintResultHeaderTimes(void){
     printf("\n\n");
     printf("    Resulting computation times (lower is better)\n\n\n");
     printf("    BENCHMARK                            Average        Minimum        Maximum       Std. Dev.\n");
@@ -403,7 +395,15 @@ void Benchmark::PrintResultHeader(void){
     printf("    ------------------------------------------------------------------------------------------\n");
 }
 
-void Benchmark::PrintResultData(std::string name, std::vector<double>& times){
+void Benchmark::PrintResultHeaderIterations(void){
+    printf("\n\n");
+    printf("    Resulting iteration counts (higher is better)\n\n\n");
+    printf("    BENCHMARK                            Average        Minimum        Maximum       Std. Dev.\n");
+    printf("    Name\n");
+    printf("    ------------------------------------------------------------------------------------------\n");
+}
+
+void Benchmark::PrintResultDataTimes(std::string name, std::vector<double>& times){
     // Ensure a maximum string length
     auto L = name.length();
     name.resize(30, ' ');
@@ -447,6 +447,44 @@ void Benchmark::PrintResultData(std::string name, std::vector<double>& times){
     int32_t stdM = static_cast<int32_t>(std::floor(tStd * 1e3)) % 1000;
     int32_t stdU = static_cast<int32_t>(std::floor(tStd * 1e6)) % 1000;
     printf("    %s    %03d %03d %03d    %03d %03d %03d    %03d %03d %03d    %03d %03d %03d\n", name.c_str(), avgS, avgM, avgU, minS, minM, minU, maxS, maxM, maxU, stdS, stdM, stdU);
+}
+
+void Benchmark::PrintResultDataIterations(std::string name, std::vector<uint32_t>& iterations){
+    // Ensure a maximum string length
+    auto L = name.length();
+    name.resize(30, ' ');
+    if(L > 30){
+        name[27] = name[28] = name[29] = '.';
+    }
+
+    // Calculate average, min, max, std. dev values
+    double iAvg = 0.0;
+    double iMin = std::numeric_limits<double>::infinity();
+    double iMax = 0.0;
+    double iStd = 0.0;
+    for(auto&& t : iterations){
+        iAvg += t;
+        iMin = std::min(iMin, static_cast<double>(t));
+        iMax = std::max(iMax, static_cast<double>(t));
+    }
+    if(iterations.size()){
+        iAvg /= static_cast<double>(iterations.size());
+        for(auto&& t : iterations){
+            double dt = t - iAvg;
+            iStd += (dt * dt);
+        }
+        iStd = std::sqrt(iStd / static_cast<double>(iterations.size()));
+    }
+    else{
+        iMin = 0.0;
+    }
+
+    // Print result
+    int32_t avgS = static_cast<int32_t>(std::floor(iAvg));
+    int32_t minS = static_cast<int32_t>(std::floor(iMin));
+    int32_t maxS = static_cast<int32_t>(std::floor(iMax));
+    int32_t stdS = static_cast<int32_t>(std::floor(iStd));
+    printf("    %s      %09d      %09d      %09d      %09d\n", name.c_str(), avgS, minS, maxS, stdS);
 }
 
 void Benchmark::PrintResultFooter(void){

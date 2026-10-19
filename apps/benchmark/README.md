@@ -3,7 +3,7 @@ This directory contains the source code of the benchmark application.
 The application is built by running `make app=benchmark` in the repository root directory.
 The binaries will be built to this directory.
 
-The application runs different tests using single-threading and multi-threading and measures execution time.
+The application runs different tests using single-threading and multi-threading and measures execution times or iteration counts.
 Each test is performed 10 times and the average as well as min/max value and standard deviation are calculated.
 The results are printed to the console output.
 There are the following benchmark tests:
@@ -27,16 +27,16 @@ There are the following benchmark tests:
 
 > **5. Path Planning**
 > 
-> Solves a realistic path planning problem with 126 static obstacles and 50000 iterations.
+> Solves a realistic path planning problem with 126 static obstacles for one second.
 
 > **6. Motion Planning**
 > 
-> Solves a realistic motion planning problem with 126 static obstacles and 400 iterations.
+> Solves a realistic motion planning problem with 126 static obstacles for one second.
 
 **Additional Performance Tests**
 > **Iteration Performance Test**
 > 
-> Runs sequential planning on 100 different scenes based on real map data and writes results to a data log file.
+> Runs sequential planning (1 second path planning + 1 second motion planning) on 100 different scenes based on real map data and writes results to a data log file.
 
 
 ## Running the Benchmark

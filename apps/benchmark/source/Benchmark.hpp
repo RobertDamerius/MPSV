@@ -91,27 +91,35 @@ class Benchmark {
 
         /**
          * @brief Run the path planning benchmark.
-         * @return Computation time of the benchmark test.
+         * @return Number of iterations of the benchmark test.
          */
-        static double PathPlanning(void);
+        static uint32_t PathPlanning(void);
 
         /**
          * @brief Run the motion planning benchmark.
-         * @return Computation time of the benchmark test.
+         * @return Number of iterations of the benchmark test.
          */
-        static double MotionPlanning(void);
+        static uint32_t MotionPlanning(void);
 
         /**
          * @brief Print header of benchmark result table.
          */
-        static void PrintResultHeader(void);
+        static void PrintResultHeaderTimes(void);
+        static void PrintResultHeaderIterations(void);
 
         /**
          * @brief Print result of a benchmark test.
          * @param[in] name Name of the benchmark test.
          * @param[in] times List of computation times of the same benchmark.
          */
-        static void PrintResultData(std::string name, std::vector<double>& times);
+        static void PrintResultDataTimes(std::string name, std::vector<double>& times);
+
+        /**
+         * @brief Print result of a benchmark test.
+         * @param[in] name Name of the benchmark test.
+         * @param[in] iterations Number of iterations of the same benchmark.
+         */
+        static void PrintResultDataIterations(std::string name, std::vector<uint32_t>& iterations);
 
         /**
          * @brief Print footer of benchmark result table.
