@@ -84,7 +84,7 @@ class ParameterModel {
                  std::isfinite(matF[33]) &&
                  std::isfinite(matF[34]) &&
                  std::isfinite(matF[35])))
-                return error_code::MODEL_MATF;
+                return error_code::PARAM_MODEL_MATF;
             if(!(std::isfinite(matB[0]) &&
                  std::isfinite(matB[1]) &&
                  std::isfinite(matB[2]) &&
@@ -94,33 +94,33 @@ class ParameterModel {
                  std::isfinite(matB[6]) &&
                  std::isfinite(matB[7]) &&
                  std::isfinite(matB[8])))
-                return error_code::MODEL_MATB;
+                return error_code::PARAM_MODEL_MATB;
             if(!(std::isfinite(vecTimeconstantsXYN[0]) &&
                  std::isfinite(vecTimeconstantsXYN[1]) &&
                  std::isfinite(vecTimeconstantsXYN[2]) &&
                  (vecTimeconstantsXYN[0] > 0.0) &&
                  (vecTimeconstantsXYN[1] > 0.0) &&
                  (vecTimeconstantsXYN[2] > 0.0)))
-                return error_code::MODEL_VEC_TIMECONSTANTS_XYN;
+                return error_code::PARAM_MODEL_VEC_TIMECONSTANTS_XYN;
             if(!(std::isfinite(vecTimeconstantsInput[0]) &&
                  std::isfinite(vecTimeconstantsInput[1]) &&
                  std::isfinite(vecTimeconstantsInput[2]) &&
                  (vecTimeconstantsInput[0] > 0.0) &&
                  (vecTimeconstantsInput[1] > 0.0) &&
                  (vecTimeconstantsInput[2] > 0.0)))
-                return error_code::MODEL_VEC_TIMECONSTANTS_INPUT;
+                return error_code::PARAM_MODEL_VEC_TIMECONSTANTS_INPUT;
             if(!(std::isfinite(lowerLimitXYN[0]) &&
                  std::isfinite(lowerLimitXYN[1]) &&
                  std::isfinite(lowerLimitXYN[2])))
-                return error_code::MODEL_LOWER_LIMIT_XYN;
+                return error_code::PARAM_MODEL_LOWER_LIMIT_XYN;
             if(!(std::isfinite(upperLimitXYN[0]) &&
                  std::isfinite(upperLimitXYN[1]) &&
                  std::isfinite(upperLimitXYN[2])))
-                return error_code::MODEL_UPPER_LIMIT_XYN;
+                return error_code::PARAM_MODEL_UPPER_LIMIT_XYN;
             if(!((upperLimitXYN[0] >= lowerLimitXYN[0]) &&
                  (upperLimitXYN[1] >= lowerLimitXYN[1]) &&
                  (upperLimitXYN[2] >= lowerLimitXYN[2])))
-                return error_code::MODEL_LOWER_GREATER_UPPER_LIMIT;
+                return error_code::PARAM_MODEL_LOWER_GREATER_UPPER_LIMIT;
             return error_code::NONE;
         }
 
@@ -187,13 +187,13 @@ class ParameterCostMap {
          */
         error_code IsValid(void) const noexcept {
             if(!(modBreakpoints > 0))
-                return error_code::COSTMAP_MOD_BREAKPOINTS;
+                return error_code::PARAM_COSTMAP_MOD_BREAKPOINTS;
             if(!(std::isfinite(resolution) && (resolution > 1e-3)))
-                return error_code::COSTMAP_RESOLUTION;
+                return error_code::PARAM_COSTMAP_RESOLUTION;
             if(!(std::isfinite(distanceScale) && (distanceScale >= 0.0)))
-                return error_code::COSTMAP_DISTANCE_SCALE;
+                return error_code::PARAM_COSTMAP_DISTANCE_SCALE;
             if(!(std::isfinite(distanceDecay) && (distanceDecay > 0.0)))
-                return error_code::COSTMAP_DISTANCE_DECAY;
+                return error_code::PARAM_COSTMAP_DISTANCE_DECAY;
             return error_code::NONE;
         }
 
@@ -242,13 +242,13 @@ class ParameterMetric {
          */
         error_code IsValid(void) const noexcept {
             if(!(std::isfinite(weightPsi) && (weightPsi > 0.0)))
-                return error_code::METRIC_WEIGHT_PSI;
+                return error_code::PARAM_METRIC_WEIGHT_PSI;
             if(!(std::isfinite(weightSway) && (weightSway >= 0.0)))
-                return error_code::METRIC_WEIGHT_SWAY;
+                return error_code::PARAM_METRIC_WEIGHT_SWAY;
             if(!(std::isfinite(weightReverseScale) && (weightReverseScale >= 0.0)))
-                return error_code::METRIC_WEIGHT_REVERSE_SCALE;
+                return error_code::PARAM_METRIC_WEIGHT_REVERSE_SCALE;
             if(!(std::isfinite(weightReverseDecay) && (weightReverseDecay > 0.0)))
-                return error_code::METRIC_WEIGHT_REVERSE_DECAY;
+                return error_code::PARAM_METRIC_WEIGHT_REVERSE_DECAY;
             return error_code::NONE;
         }
 
@@ -300,16 +300,16 @@ class ParameterGeometry {
             constexpr double minPositionDeviation = 0.01; // Minimum position deviation for path subdivision during collision checking.
             constexpr double minAngleDeviation = 0.0174532925199433; // Minimum angle deviation for path subdivision during collision checking (= 1 deg).
             if(!(std::isfinite(collisionCheckMaxPositionDeviation) && (collisionCheckMaxPositionDeviation >= minPositionDeviation)))
-                return error_code::GEOMETRY_MAX_POSITION_DEVIATION;
+                return error_code::PARAM_GEOMETRY_MAX_POSITION_DEVIATION;
             if(!(std::isfinite(collisionCheckMaxAngleDeviation) && (collisionCheckMaxAngleDeviation >= minAngleDeviation)))
-                return error_code::GEOMETRY_MAX_ANGLE_DEVIATION;
+                return error_code::PARAM_GEOMETRY_MAX_ANGLE_DEVIATION;
             if(!vehicleShape.IsValid())
-                return error_code::GEOMETRY_VEHICLE_SHAPE;
+                return error_code::PARAM_GEOMETRY_VEHICLE_SHAPE;
             if(skeletalPoints.empty())
-                return error_code::GEOMETRY_SKELETAL_POINTS;
+                return error_code::PARAM_GEOMETRY_SKELETAL_POINTS;
             for(auto&& p : skeletalPoints){
                 if(!(std::isfinite(p[0]) && std::isfinite(p[1])))
-                    return error_code::GEOMETRY_SKELETAL_POINTS;
+                    return error_code::PARAM_GEOMETRY_SKELETAL_POINTS;
             }
             return error_code::NONE;
         }
@@ -354,7 +354,7 @@ class ParameterPathPlanner {
          */
         error_code IsValid(void) const noexcept {
             if(!(periodGoalSampling > 0))
-                return error_code::PATHPLANNER_PERIOD_GOAL_SAMPLING;
+                return error_code::PARAM_PATHPLANNER_PERIOD_GOAL_SAMPLING;
             return error_code::NONE;
         }
 
@@ -437,15 +437,15 @@ class ParameterController {
                  std::isfinite(matK[33]) &&
                  std::isfinite(matK[34]) &&
                  std::isfinite(matK[35])))
-                return error_code::CONTROLLER_MAT_K;
+                return error_code::PARAM_CONTROLLER_MAT_K;
             if(!(std::isfinite(maxRadiusX) && (maxRadiusX > 0.0)))
-                return error_code::CONTROLLER_MAX_RADIUS_X;
+                return error_code::PARAM_CONTROLLER_MAX_RADIUS_X;
             if(!(std::isfinite(maxRadiusY) && (maxRadiusY > 0.0)))
-                return error_code::CONTROLLER_MAX_RADIUS_Y;
+                return error_code::PARAM_CONTROLLER_MAX_RADIUS_Y;
             if(!(std::isfinite(maxRadiusPsi) && (maxRadiusPsi > 0.0)))
-                return error_code::CONTROLLER_MAX_RADIUS_PSI;
+                return error_code::PARAM_CONTROLLER_MAX_RADIUS_PSI;
             if(!(std::isfinite(minRadiusPosition) && (minRadiusPosition > 0.0)))
-                return error_code::CONTROLLER_MIN_RADIUS_POSITION;
+                return error_code::PARAM_CONTROLLER_MIN_RADIUS_POSITION;
             return error_code::NONE;
         }
 
@@ -511,21 +511,21 @@ class ParameterRegionOfAttraction {
                  (rangePose[0] > 0.0) &&
                  (rangePose[1] > 0.0) &&
                  (rangePose[2] > 0.0)))
-                return error_code::REGION_OF_ATTRACTION_RANGE_POSE;
+                return error_code::PARAM_REGION_OF_ATTRACTION_RANGE_POSE;
             if(!(std::isfinite(rangeUVR[0]) &&
                  std::isfinite(rangeUVR[1]) &&
                  std::isfinite(rangeUVR[2]) &&
                  (rangeUVR[0] > 0.0) &&
                  (rangeUVR[1] > 0.0) &&
                  (rangeUVR[2] > 0.0)))
-                return error_code::REGION_OF_ATTRACTION_RANGE_UVR;
+                return error_code::PARAM_REGION_OF_ATTRACTION_RANGE_UVR;
             if(!(std::isfinite(rangeXYN[0]) &&
                  std::isfinite(rangeXYN[1]) &&
                  std::isfinite(rangeXYN[2]) &&
                  (rangeXYN[0] > 0.0) &&
                  (rangeXYN[1] > 0.0) &&
                  (rangeXYN[2] > 0.0)))
-                return error_code::REGION_OF_ATTRACTION_RANGE_XYN;
+                return error_code::PARAM_REGION_OF_ATTRACTION_RANGE_XYN;
             return error_code::NONE;
         }
 
@@ -579,15 +579,15 @@ class ParameterMotionPlanner {
          */
         error_code IsValid(void) const noexcept {
             if(!(std::isfinite(samplingRangePosition) && (samplingRangePosition > 0.0)))
-                return error_code::MOTIONPLANNER_SAMPLING_RANGE_POSITION;
+                return error_code::PARAM_MOTIONPLANNER_SAMPLING_RANGE_POSITION;
             if(!(std::isfinite(samplingRangeAngle) && (samplingRangeAngle > 0.0)))
-                return error_code::MOTIONPLANNER_SAMPLING_RANGE_ANGLE;
+                return error_code::PARAM_MOTIONPLANNER_SAMPLING_RANGE_ANGLE;
             if(!((periodGoalSampling > 0)))
-                return error_code::MOTIONPLANNER_PERIOD_GOAL_SAMPLING;
+                return error_code::PARAM_MOTIONPLANNER_PERIOD_GOAL_SAMPLING;
             if(!(std::isfinite(sampletime) && (sampletime > 0.0)))
-                return error_code::MOTIONPLANNER_SAMPLETIME;
+                return error_code::PARAM_MOTIONPLANNER_SAMPLETIME;
             if(!(std::isfinite(maxInputPathLength) && (maxInputPathLength > 0.0)))
-                return error_code::MOTIONPLANNER_MAX_INPUT_PATH_LENGTH;
+                return error_code::PARAM_MOTIONPLANNER_MAX_INPUT_PATH_LENGTH;
             error_code e = controller.IsValid();
             if(error_code::NONE != e)
                 return e;
@@ -650,19 +650,19 @@ class ParameterOnlinePlanner {
          */
         error_code IsValid(void) const noexcept {
             if(!(std::isfinite(maxComputationTimePathOnReset) && (maxComputationTimePathOnReset > 0.0)))
-                return error_code::ONLINEPLANNER_MAX_COMPUTATION_TIME_PATH_RESET;
+                return error_code::PARAM_ONLINEPLANNER_MAX_COMPUTATION_TIME_PATH_RESET;
             if(!(std::isfinite(maxComputationTimeMotionOnReset) && (maxComputationTimeMotionOnReset > 0.0)))
-                return error_code::ONLINEPLANNER_MAX_COMPUTATION_TIME_MOTION_RESET;
+                return error_code::PARAM_ONLINEPLANNER_MAX_COMPUTATION_TIME_MOTION_RESET;
             if(!(std::isfinite(maxComputationTimePath) && (maxComputationTimePath > 0.0)))
-                return error_code::ONLINEPLANNER_MAX_COMPUTATION_TIME_PATH;
+                return error_code::PARAM_ONLINEPLANNER_MAX_COMPUTATION_TIME_PATH;
             if(!(std::isfinite(maxComputationTimeMotion) && (maxComputationTimeMotion > 0.0)))
-                return error_code::ONLINEPLANNER_MAX_COMPUTATION_TIME_MOTION;
+                return error_code::PARAM_ONLINEPLANNER_MAX_COMPUTATION_TIME_MOTION;
             if(!(std::isfinite(additionalAheadPlanningTime) && (additionalAheadPlanningTime > 0.0)))
-                return error_code::ONLINEPLANNER_ADDITIONAL_AHEAD_PLANNING_TIME;
+                return error_code::PARAM_ONLINEPLANNER_ADDITIONAL_AHEAD_PLANNING_TIME;
             if(!(std::isfinite(additionalTrajectoryDuration) && (additionalTrajectoryDuration > 0.0)))
-                return error_code::ONLINEPLANNER_ADDITIONAL_TRAJECTORY_DURATION;
+                return error_code::PARAM_ONLINEPLANNER_ADDITIONAL_TRAJECTORY_DURATION;
             if(!(std::isfinite(timeKeepPastTrajectory) && (timeKeepPastTrajectory >= 0.0)))
-                return error_code::ONLINEPLANNER_TIME_KEEP_PAST_TRAJECTORY;
+                return error_code::PARAM_ONLINEPLANNER_TIME_KEEP_PAST_TRAJECTORY;
             return error_code::NONE;
         }
 

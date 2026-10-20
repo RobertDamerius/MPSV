@@ -41,9 +41,9 @@ class AsyncOnlinePlannerParameterSet: public mpsv::planner::OnlinePlannerParamet
          */
         error_code IsValid(void) noexcept {
             if(!std::isfinite(timestamp))
-                return error_code::ASYNCPLANNER_TIMESTAMP;
+                return error_code::PARAM_ASYNCPLANNER_TIMESTAMP;
             if(!std::isfinite(timeoutInput))
-                return error_code::ASYNCPLANNER_TIMEOUT_INPUT;
+                return error_code::PARAM_ASYNCPLANNER_TIMEOUT_INPUT;
             return mpsv::planner::OnlinePlannerParameterSet::IsValid();
         }
 

@@ -76,7 +76,7 @@ class VehicleSimulator {
                  std::isfinite(invMatB[7]) &&
                  std::isfinite(invMatB[8]))){
                 ClearModel();
-                return error_code::MODEL_INV_MATB;
+                return error_code::PARAM_MODEL_INV_MATB;
             }
 
             // Set internal parameters
