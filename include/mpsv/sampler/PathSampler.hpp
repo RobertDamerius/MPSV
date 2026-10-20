@@ -28,7 +28,7 @@ class PathSampler {
          * @return True if success, false otherwise. If input arguments are invalid, false is returned.
          */
         bool Initialize(size_t maxNumSamples) noexcept {
-            return m_haltonSequence.Initialize(4, maxNumSamples);
+            return m_haltonSequence.Initialize(maxNumSamples);
         }
 
         /**
@@ -187,14 +187,14 @@ class PathSampler {
 
     protected:
         struct Segment {
-            double ratio;                               // Ratio of the volume of this path segment compared to the volume of all segments in range [0, 1].
-            std::array<double,9> A;                     // Matrix (row-major order) for sampling of this path segment according to A*s + b.
-            std::array<double,3> b;                     // Vector for sampling of this path segment according to A*s + b.
-            std::array<double,9> invA;                  // Inverse matrix (row-major order) of @ref A.
+            double ratio;                                    // Ratio of the volume of this path segment compared to the volume of all segments in range [0, 1].
+            std::array<double,9> A;                          // Matrix (row-major order) for sampling of this path segment according to A*s + b.
+            std::array<double,3> b;                          // Vector for sampling of this path segment according to A*s + b.
+            std::array<double,9> invA;                       // Inverse matrix (row-major order) of @ref A.
         };
-        double m_volume;                                  // Volume of the whole sampling area.
-        std::vector<Segment> m_segments;                  // List of path segments.
-        mpsv::sampler::HaltonSequence m_haltonSequence;   // The internal halton sequence used to sample poses from path segments.
+        double m_volume;                                     // Volume of the whole sampling area.
+        std::vector<Segment> m_segments;                     // List of path segments.
+        mpsv::sampler::HaltonSequence<4> m_haltonSequence;   // The internal halton sequence used to sample poses from path segments.
 };
 
 

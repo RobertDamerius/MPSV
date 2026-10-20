@@ -37,7 +37,7 @@ class UniformBoxSamplerSE2 {
             m_R[0] = m_R[3] = m_invR[0] = m_invR[3] = 1.0;
             m_R[1] = m_R[2] = m_invR[1] = m_invR[2] = 0.0;
             m_offset[0] = m_offset[1] = 0.0;
-            return m_haltonSequence.Initialize(3, maxNumSamples);
+            return m_haltonSequence.Initialize(maxNumSamples);
         }
 
         /**
@@ -101,10 +101,10 @@ class UniformBoxSamplerSE2 {
         }
 
     protected:
-        mpsv::sampler::HaltonSequence m_haltonSequence;   // Internal halton sequence sampler.
-        std::array<double, 4> m_R;                        // Scaled rotation matrix (row major order). A sample within the box is calculated by R*sample + offset.
-        std::array<double, 4> m_invR;                     // Inverse scaled rotation matrix (row major order).
-        std::array<double, 2> m_offset;                   // The origin of the box. This is the lower-left corner in the box frame.
+        mpsv::sampler::HaltonSequence<3> m_haltonSequence;   // Internal halton sequence sampler.
+        std::array<double, 4> m_R;                           // Scaled rotation matrix (row major order). A sample within the box is calculated by R*sample + offset.
+        std::array<double, 4> m_invR;                        // Inverse scaled rotation matrix (row major order).
+        std::array<double, 2> m_offset;                      // The origin of the box. This is the lower-left corner in the box frame.
 };
 
 

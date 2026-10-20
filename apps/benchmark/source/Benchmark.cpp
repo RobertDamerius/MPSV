@@ -99,8 +99,8 @@ void Benchmark::GeneratePolygons(const size_t numPolygons){
     m_convexPolygons.reserve(numPolygons);
 
     // Initialize a sampler for random numbers in range [{0,0}, {100,100}].
-    HaltonSequence sampler;
-    if(!sampler.Initialize(2, 3 * numPolygons, 100.0)){
+    HaltonSequence<2> sampler;
+    if(!sampler.Initialize(3 * numPolygons, 100.0)){
         fprintf(stderr,"ERROR: Failed to initialize the halton sequence!\n");
         return;
     }
