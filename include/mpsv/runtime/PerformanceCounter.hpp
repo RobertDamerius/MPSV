@@ -23,12 +23,12 @@ class PerformanceCounter {
         /**
          * @brief Reset the internal time point to 1970-01-01.
          */
-        void Reset(void) noexcept { t0 = std::chrono::time_point<std::chrono::steady_clock>(); }
+        void Reset(void) noexcept { m_t0 = std::chrono::time_point<std::chrono::steady_clock>(); }
 
         /**
          * @brief Start the performance counter by setting the internal timepoint to now.
          */
-        void Start(void) noexcept { t0 = std::chrono::steady_clock::now(); }
+        void Start(void) noexcept { m_t0 = std::chrono::steady_clock::now(); }
 
         /**
          * @brief Get the time (in seconds) to the internal timepoint. If the performance counter is reset, this time
@@ -38,11 +38,11 @@ class PerformanceCounter {
          */
         double TimeToStart(void) noexcept {
             auto t1 = std::chrono::steady_clock::now();
-            return 1e-9 * static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count());
+            return 1e-9 * static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - m_t0).count());
         }
 
     protected:
-        std::chrono::time_point<std::chrono::steady_clock> t0;   // Time point when performance counter was started.
+        std::chrono::time_point<std::chrono::steady_clock> m_t0;   // Time point when performance counter was started.
 };
 
 

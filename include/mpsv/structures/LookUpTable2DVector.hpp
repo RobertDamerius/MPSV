@@ -32,8 +32,8 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
          */
         template <class T, class U> double LineIntegralForDimension(const T& p0, const U& p1, size_t indexDimension) const noexcept {
             // Convert to index position ({0,0} indicates origin of lower-left corner of LUT data cell (lut[0]), {0.5,0.5} would be the center of the lower-left cell, all data corresponds to the center of a cell)
-            std::array<double,2> iPos0 = this->ConvertToLUTPosition(p0) / this->res;
-            std::array<double,2> iPos1 = this->ConvertToLUTPosition(p1) / this->res;
+            std::array<double,2> iPos0 = this->ConvertToLUTPosition(p0) / this->m_res;
+            std::array<double,2> iPos1 = this->ConvertToLUTPosition(p1) / this->m_res;
 
             // Flooring the fractional index position (iPos) gives the true index
             int32_t ix0 = static_cast<int32_t>(std::floor(iPos0[0]));
@@ -80,32 +80,32 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
             double ds;
             double t = 0;
             double sum = 0.0;
-            int32_t i = std::clamp(ix0, 0, this->numX - 1) * this->numY; // safe index clamped to valid range, all indices (ix0,ix1) that are outside the range are clamped to the zero border
-            int32_t j = std::clamp(iy0, 0, this->numY - 1); // safe index clamped to valid range, all indices (iy0,iy1) that are outside the range are clamped to the zero border
+            int32_t i = std::clamp(ix0, 0, this->m_numX - 1) * this->m_numY; // safe index clamped to valid range, all indices (ix0,ix1) that are outside the range are clamped to the zero border
+            int32_t j = std::clamp(iy0, 0, this->m_numY - 1); // safe index clamped to valid range, all indices (iy0,iy1) that are outside the range are clamped to the zero border
             while(t <= 1.0){
                 if((ix0 == ix1) && (iy0 == iy1)){ // goal cell reached
                     ds = (1.0 - t) * L;
-                    sum += this->lut[i + j][indexDimension] * ds;
+                    sum += this->m_lut[i + j][indexDimension] * ds;
                     break;
                 }
                 if(tx < ty){ // next cell border in x direction
                     ds = (tx - t) * L;
-                    sum += this->lut[i + j][indexDimension] * ds;
+                    sum += this->m_lut[i + j][indexDimension] * ds;
                     t = tx;
                     tx += dtx;
                     ix0 += sx;
-                    i = std::clamp(ix0, 0, this->numX - 1) * this->numY;
+                    i = std::clamp(ix0, 0, this->m_numX - 1) * this->m_numY;
                 }
                 else{ // next cell border in y direction
                     ds = (ty - t) * L;
-                    sum += this->lut[i + j][indexDimension] * ds;
+                    sum += this->m_lut[i + j][indexDimension] * ds;
                     t = ty;
                     ty += dty;
                     iy0 += sy;
-                    j = std::clamp(iy0, 0, this->numY - 1);
+                    j = std::clamp(iy0, 0, this->m_numY - 1);
                 }
             }
-            return sum * this->res; // sum is calculated for cell units, transform to meters by taking cell resolution into account
+            return sum * this->m_res; // sum is calculated for cell units, transform to meters by taking cell resolution into account
         }
 
         /**
@@ -124,8 +124,8 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
             static_assert(mpsv::is_vec2<U>::value,"Argument {p1} must be of type std::array<double,N> with N >= 2!");
 
             // Convert to index position ({0,0} indicates origin of lower-left corner of LUT data cell (lut[0]), {0.5,0.5} would be the center of the lower-left cell, all data corresponds to the center of a cell)
-            std::array<double,2> iPos0 = this->ConvertToLUTPosition(p0) / this->res;
-            std::array<double,2> iPos1 = this->ConvertToLUTPosition(p1) / this->res;
+            std::array<double,2> iPos0 = this->ConvertToLUTPosition(p0) / this->m_res;
+            std::array<double,2> iPos1 = this->ConvertToLUTPosition(p1) / this->m_res;
 
             // The center of the cell indicates the data, transform index position to the center such that all corners of the new grid cell correspond to true data points
             iPos0[0] -= 0.5;
@@ -190,18 +190,18 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
             // Raytracing, start at t=0. The next cell to go is defined by tx,ty (the next intersection cell border is either in x or y direction)
             double t = 0;
             double sum = 0.0;
-            int32_t i0 = std::clamp(ix0, 0, this->numX - 1) * this->numY;   // safe lower border x-index for clamped to valid range, all indices (i0,i1) that are outside the range are clamped to the zero border
-            int32_t j0 = std::clamp(iy0, 0, this->numY - 1);                // safe lower border y-index clamped to valid range, all indices (j0,j1) that are outside the range are clamped to the zero border
-            int32_t i1 = std::clamp(ix0+1, 0, this->numX - 1) * this->numY; // safe lower border x-index for clamped to valid range, all indices (i0,i1) that are outside the range are clamped to the zero border
-            int32_t j1 = std::clamp(iy0+1, 0, this->numY - 1);              // safe lower border y-index clamped to valid range, all indices (j0,j1) that are outside the range are clamped to the zero border
+            int32_t i0 = std::clamp(ix0, 0, this->m_numX - 1) * this->m_numY;   // safe lower border x-index for clamped to valid range, all indices (i0,i1) that are outside the range are clamped to the zero border
+            int32_t j0 = std::clamp(iy0, 0, this->m_numY - 1);                // safe lower border y-index clamped to valid range, all indices (j0,j1) that are outside the range are clamped to the zero border
+            int32_t i1 = std::clamp(ix0+1, 0, this->m_numX - 1) * this->m_numY; // safe lower border x-index for clamped to valid range, all indices (i0,i1) that are outside the range are clamped to the zero border
+            int32_t j1 = std::clamp(iy0+1, 0, this->m_numY - 1);              // safe lower border y-index clamped to valid range, all indices (j0,j1) that are outside the range are clamped to the zero border
             while(t <= 1.0){
                 if((ix0 == ix1) && (iy0 == iy1)){ // goal cell reached
                     double x1 = x0 + vx * (1.0 - t);
                     double y1 = y0 + vy * (1.0 - t);
-                    double L00 = this->lut[i0 + j0][indexDimension];
-                    double L01 = this->lut[i0 + j1][indexDimension];
-                    double L10 = this->lut[i1 + j0][indexDimension];
-                    double L11 = this->lut[i1 + j1][indexDimension];
+                    double L00 = this->m_lut[i0 + j0][indexDimension];
+                    double L01 = this->m_lut[i0 + j1][indexDimension];
+                    double L10 = this->m_lut[i1 + j0][indexDimension];
+                    double L11 = this->m_lut[i1 + j1][indexDimension];
                     double dx = x1 - x0;
                     double dy = y1 - y0;
                     double tmp = (x0*y0 + x1*y1);
@@ -211,10 +211,10 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
                 if(tx < ty){ // next cell border in x direction
                     double x1 = xe;
                     double y1 = y0 + vy * (tx - t);
-                    double L00 = this->lut[i0 + j0][indexDimension];
-                    double L01 = this->lut[i0 + j1][indexDimension];
-                    double L10 = this->lut[i1 + j0][indexDimension];
-                    double L11 = this->lut[i1 + j1][indexDimension];
+                    double L00 = this->m_lut[i0 + j0][indexDimension];
+                    double L01 = this->m_lut[i0 + j1][indexDimension];
+                    double L10 = this->m_lut[i1 + j0][indexDimension];
+                    double L11 = this->m_lut[i1 + j1][indexDimension];
                     double dx = x1 - x0;
                     double dy = y1 - y0;
                     double tmp = (x0*y0 + x1*y1);
@@ -224,16 +224,16 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
                     t = tx;
                     tx += dtx;
                     ix0 += sx;
-                    i0 = std::clamp(ix0, 0, this->numX - 1) * this->numY;
-                    i1 = std::clamp(ix0+1, 0, this->numX - 1) * this->numY;
+                    i0 = std::clamp(ix0, 0, this->m_numX - 1) * this->m_numY;
+                    i1 = std::clamp(ix0+1, 0, this->m_numX - 1) * this->m_numY;
                 }
                 else{ // next cell border in y direction
                     double x1 = x0 + vx * (ty - t);
                     double y1 = ye;
-                    double L00 = this->lut[i0 + j0][indexDimension];
-                    double L01 = this->lut[i0 + j1][indexDimension];
-                    double L10 = this->lut[i1 + j0][indexDimension];
-                    double L11 = this->lut[i1 + j1][indexDimension];
+                    double L00 = this->m_lut[i0 + j0][indexDimension];
+                    double L01 = this->m_lut[i0 + j1][indexDimension];
+                    double L10 = this->m_lut[i1 + j0][indexDimension];
+                    double L11 = this->m_lut[i1 + j1][indexDimension];
                     double dx = x1 - x0;
                     double dy = y1 - y0;
                     double tmp = (x0*y0 + x1*y1);
@@ -243,11 +243,11 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
                     t = ty;
                     ty += dty;
                     iy0 += sy;
-                    j0 = std::clamp(iy0, 0, this->numY - 1);
-                    j1 = std::clamp(iy0+1, 0, this->numY - 1);
+                    j0 = std::clamp(iy0, 0, this->m_numY - 1);
+                    j1 = std::clamp(iy0+1, 0, this->m_numY - 1);
                 }
             }
-            return sum * this->res / 6.0; // sum is calculated for cell units, transform to meters by taking cell resolution into account, div by 6 comes from integral (constant that is moved to outside the sum)
+            return sum * this->m_res / 6.0; // sum is calculated for cell units, transform to meters by taking cell resolution into account, div by 6 comes from integral (constant that is moved to outside the sum)
         }
 
         /**
@@ -261,7 +261,7 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
             static_assert(mpsv::is_vec2<T>::value,"Argument {position} must be of type std::array<double,N> with N >= 2!");
 
             // Convert to index position ({0,0} indicates origin of lower-left corner of LUT data cell (lut[0]), {0.5,0.5} would be the center of the lower-left cell, all data corresponds to the center of a cell)
-            std::array<double,2> indexPosition = this->ConvertToLUTPosition(position) / this->res;
+            std::array<double,2> indexPosition = this->ConvertToLUTPosition(position) / this->m_res;
 
             // The center of the cell indicates the data, transform index position to the center such that all corners of the new grid cell correspond to true data points
             indexPosition[0] -= 0.5;
@@ -273,18 +273,18 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
             int32_t iy0 = static_cast<int32_t>(std::floor(indexPosition[1]));
             double dx = indexPosition[0] - static_cast<double>(ix0);
             double dy = indexPosition[1] - static_cast<double>(iy0);
-            int32_t ix1 = std::clamp(ix0 + 1, 0, this->numX - 1);
-            int32_t iy1 = std::clamp(iy0 + 1, 0, this->numY - 1);
-            ix0 = std::clamp(ix0, 0, this->numX - 1);
-            iy0 = std::clamp(iy0, 0, this->numY - 1);
+            int32_t ix1 = std::clamp(ix0 + 1, 0, this->m_numX - 1);
+            int32_t iy1 = std::clamp(iy0 + 1, 0, this->m_numY - 1);
+            ix0 = std::clamp(ix0, 0, this->m_numX - 1);
+            iy0 = std::clamp(iy0, 0, this->m_numY - 1);
 
             // Get table data for all four corners
-            int32_t ix0_numY = ix0 * this->numY;
-            int32_t ix1_numY = ix1 * this->numY;
-            const double& lut00 = this->lut[ix0_numY + iy0][indexDimension];
-            const double& lut10 = this->lut[ix1_numY + iy0][indexDimension];
-            const double& lut01 = this->lut[ix0_numY + iy1][indexDimension];
-            const double& lut11 = this->lut[ix1_numY + iy1][indexDimension];
+            int32_t ix0_numY = ix0 * this->m_numY;
+            int32_t ix1_numY = ix1 * this->m_numY;
+            const double& lut00 = this->m_lut[ix0_numY + iy0][indexDimension];
+            const double& lut10 = this->m_lut[ix1_numY + iy0][indexDimension];
+            const double& lut01 = this->m_lut[ix0_numY + iy1][indexDimension];
+            const double& lut11 = this->m_lut[ix1_numY + iy1][indexDimension];
 
             // Linear interpolation along lower and upper x border followed by linear interpolation in y direction
             double y0 = lut00 + dx * (lut10 - lut00);
@@ -300,15 +300,15 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             for(size_t n = 0; n < Tdim; ++n){
                 std::vector<double> vecData;
-                vecData.reserve(this->lut.size());
-                for(size_t i = 0; i < this->lut.size(); ++i){
-                    vecData.push_back(this->lut[i][n]);
+                vecData.reserve(this->m_lut.size());
+                for(size_t i = 0; i < this->m_lut.size(); ++i){
+                    vecData.push_back(this->m_lut[i][n]);
                 }
-                file.WriteField("double", preString + "data{" + std::to_string(n+1) + "}", {static_cast<uint32_t>(this->numY), static_cast<uint32_t>(this->numX)}, &vecData[0], sizeof(double) * vecData.size());
+                file.WriteField("double", preString + "data{" + std::to_string(n+1) + "}", {static_cast<uint32_t>(this->m_numY), static_cast<uint32_t>(this->m_numX)}, &vecData[0], sizeof(double) * vecData.size());
             }
-            file.WriteField("double", preString + "resolution", {1}, &this->res, sizeof(double));
-            file.WriteField("double", preString + "position", {2,1}, &this->position[0], sizeof(double) * this->position.size());
-            file.WriteField("double", preString + "normal", {2,1}, &this->normal[0], sizeof(double) * this->normal.size());
+            file.WriteField("double", preString + "resolution", {1}, &this->m_res, sizeof(double));
+            file.WriteField("double", preString + "position", {2,1}, &this->m_position[0], sizeof(double) * this->m_position.size());
+            file.WriteField("double", preString + "normal", {2,1}, &this->m_normal[0], sizeof(double) * this->m_normal.size());
         }
 };
 

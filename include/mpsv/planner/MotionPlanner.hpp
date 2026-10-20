@@ -65,9 +65,9 @@ class MotionPlanner {
             if((maxNumSamples < 1) || (maxNumNodes < 2)){ // there must be at least one sample and two nodes (root and a sample to be added/removed)
                 return false;
             }
-            idxNeighbors.reserve(maxNumNodes);
-            tree.Clear(maxNumNodes);
-            if(!boxSampler.Initialize(maxNumSamples) || !pathSampler.Initialize(maxNumSamples)){
+            m_idxNeighbors.reserve(maxNumNodes);
+            m_tree.Clear(maxNumNodes);
+            if(!m_boxSampler.Initialize(maxNumSamples) || !m_pathSampler.Initialize(maxNumSamples)){
                 Terminate();
                 return false;
             }
@@ -78,18 +78,18 @@ class MotionPlanner {
          * @brief Terminate the motion planner. All containers and parameters are cleared. Call this function, if the motion planner is no longer needed.
          */
         void Terminate(void) noexcept {
-            interruptFlag = false;
-            isSolving = false;
-            tree.Clear();
-            state.Clear();
-            parameter.Clear();
-            regionOfAttraction.Clear();
-            vehicleSimulator.ClearController();
-            vehicleSimulator.ClearModel();
-            boxSampler.Terminate();
-            idxNeighbors.clear();
-            idxNeighbors.shrink_to_fit();
-            epsDistanceMetric = std::numeric_limits<double>::epsilon();
+            m_interruptFlag = false;
+            m_isSolving = false;
+            m_tree.Clear();
+            m_state.Clear();
+            m_parameter.Clear();
+            m_regionOfAttraction.Clear();
+            m_vehicleSimulator.ClearController();
+            m_vehicleSimulator.ClearModel();
+            m_boxSampler.Terminate();
+            m_idxNeighbors.clear();
+            m_idxNeighbors.shrink_to_fit();
+            m_epsDistanceMetric = std::numeric_limits<double>::epsilon();
         }
 
 
@@ -109,17 +109,17 @@ class MotionPlanner {
             if(error_code::NONE != (e = parameter.IsValid())){
                 return e;
             }
-            this->parameter = parameter;
-            if(error_code::NONE != (e = vehicleSimulator.SetModel(parameter.model))){
+            m_parameter = parameter;
+            if(error_code::NONE != (e = m_vehicleSimulator.SetModel(parameter.model))){
                 return e;
             }
-            if(error_code::NONE != (e = vehicleSimulator.SetController(parameter.motionPlanner.controller))){
+            if(error_code::NONE != (e = m_vehicleSimulator.SetController(parameter.motionPlanner.controller))){
                 return e;
             }
-            if(error_code::NONE != (e = regionOfAttraction.SetParameter(parameter.motionPlanner.regionOfAttraction))){
+            if(error_code::NONE != (e = m_regionOfAttraction.SetParameter(parameter.motionPlanner.regionOfAttraction))){
                 return e;
             }
-            state.Clear();
+            m_state.Clear();
             return error_code::NONE;
         }
 
@@ -134,8 +134,8 @@ class MotionPlanner {
          */
         void Prepare(mpsv::planner::MotionPlannerOutput& dataOut, mpsv::planner::MotionPlannerInput& dataIn, bool forceColdStart = false) noexcept {
             // Set initial state/input
-            state.Clear(!forceColdStart); // keep latest solution if no cold start is forced
-            state.initialStateAndInput = dataIn.initialStateAndInput;
+            m_state.Clear(!forceColdStart); // keep latest solution if no cold start is forced
+            m_state.initialStateAndInput = dataIn.initialStateAndInput;
 
             // Initial path is useless if it does not start at initial pose
             if(!InitialPathStartsAtInitialPose(dataIn)){
@@ -148,25 +148,25 @@ class MotionPlanner {
             }
 
             // Trim the solution path by limiting the total length of the path and set the new final pose
-            TrimPath(dataIn.initialPath, parameter.motionPlanner.maxInputPathLength);
-            state.finalPose = dataIn.initialPath.back();
+            TrimPath(dataIn.initialPath, m_parameter.motionPlanner.maxInputPathLength);
+            m_state.finalPose = dataIn.initialPath.back();
 
             // Set sampling area and initial sample set, build costmap
             mpsv::geometry::OrientedBox samplingArea = SetSamplingArea(dataIn.initialPath);
             SetInitialSampleSet(dataIn.initialPath, dataIn.originOldToNew, forceColdStart);
             SetNumericLimits(samplingArea);
-            tree.SetCSpaceVolume(pathSampler.GetVolume());
+            m_tree.SetCSpaceVolume(m_pathSampler.GetVolume());
             BuildCostMap(samplingArea, dataIn.staticObstacles);
 
             // Reset tree and check feasibility
-            state.idxSolutionNode = tree.Reset(state.initialStateAndInput);
-            state.closestDistanceToGoal = mpsv::math::DistanceMetricSE2(state.initialStateAndInput, state.finalPose, parameter.metric.weightPsi);
-            state.goalReached = (state.closestDistanceToGoal < epsDistanceMetric);
-            state.isFeasible = !parameter.geometry.vehicleShape.CheckCollisionPose(dataIn.staticObstacles, state.initialStateAndInput); // initial pose must not collide for the problem to be feasible
+            m_state.idxSolutionNode = m_tree.Reset(m_state.initialStateAndInput);
+            m_state.closestDistanceToGoal = mpsv::math::DistanceMetricSE2(m_state.initialStateAndInput, m_state.finalPose, m_parameter.metric.weightPsi);
+            m_state.goalReached = (m_state.closestDistanceToGoal < m_epsDistanceMetric);
+            m_state.isFeasible = !m_parameter.geometry.vehicleShape.CheckCollisionPose(dataIn.staticObstacles, m_state.initialStateAndInput); // initial pose must not collide for the problem to be feasible
 
             // Set initial path (initial pose) and trajectory (empty)
-            tree.GetPathFromRootToNode(tree[state.idxSolutionNode].pathBuffer, state.idxSolutionNode); // set reference path
-            tree[state.idxSolutionNode].trajectoryBuffer.clear();
+            m_tree.GetPathFromRootToNode(m_tree[m_state.idxSolutionNode].pathBuffer, m_state.idxSolutionNode); // set reference path
+            m_tree[m_state.idxSolutionNode].trajectoryBuffer.clear();
             AssignOutput(dataOut);
         }
 
@@ -176,7 +176,7 @@ class MotionPlanner {
          * @param[in] dataIn The input data containing static obstacles. Only the static obstacles are used. All remaining data has already been processed by the @ref Prepare member function.
          * @param[in] maxComputationTime The maximum computation time in seconds allowed before leaving the iteration loop.
          * @param[in] minTrajectoryDuration The minimum duration (>= 0) of the trajectory in seconds, defaults to 0. If the simulation time is too large (more than 0x0000FFFF steps), then the problem is infeasible.
-         * @details This member function implements an iteration loop. This loop is stopped, if the @ref interruptFlag is set via @ref Interrupt. The iteration loop is stopped
+         * @details This member function implements an iteration loop. This loop is stopped, if the @ref m_interruptFlag is set via @ref Interrupt. The iteration loop is stopped
          * if the upper computation time limit is exceeded or if an error occurs. There are two types of errors: not feasible and out of nodes.
          * The problem is not feasible, if the inital pose already collides with obstacles. In this case no tree is built and the solution trajectory would be
          * an empty set. The second error outOfNodes is set, if no more nodes are available in the memory for more iterations.
@@ -185,32 +185,32 @@ class MotionPlanner {
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
         void Solve(mpsv::planner::MotionPlannerOutput& dataOut, mpsv::planner::MotionPlannerInput& dataIn, double maxComputationTime, double minTrajectoryDuration = 0.0) noexcept {
-            isSolving = true;
-            if(state.isFeasible){
+            m_isSolving = true;
+            if(m_state.isFeasible){
                 mpsv::runtime::PerformanceCounter executionCounter, iterationCounter;
                 double maxIterationTime = 0.0; // maximum execution time of one iteration
                 executionCounter.Start();
-                while(!interruptFlag){
-                    ++state.numberOfPerformedIterations;
+                while(!m_interruptFlag){
+                    ++m_state.numberOfPerformedIterations;
                     iterationCounter.Start();
                     Iterate(dataIn.staticObstacles);
                     maxIterationTime = std::max(maxIterationTime, iterationCounter.TimeToStart());
-                    if(state.outOfNodes || ((maxIterationTime + executionCounter.TimeToStart()) >= maxComputationTime)){
+                    if(m_state.outOfNodes || ((maxIterationTime + executionCounter.TimeToStart()) >= maxComputationTime)){
                         break;
                     }
                 }
                 BuildFinalTrajectory(dataIn.staticObstacles, minTrajectoryDuration);
             }
             AssignOutput(dataOut);
-            isSolving = false;
-            interruptFlag = false;
+            m_isSolving = false;
+            m_interruptFlag = false;
         }
 
         /**
          * @brief Interrupt a running @ref Solve operation of the motion planner.
-         * @note The internal @ref interruptFlag is automatically reset at the end of a @ref Solve operation.
+         * @note The internal @ref m_interruptFlag is automatically reset at the end of a @ref Solve operation.
          */
-        void Interrupt(void) noexcept { interruptFlag.store(isSolving); }
+        void Interrupt(void) noexcept { m_interruptFlag.store(m_isSolving); }
 
 
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -225,9 +225,9 @@ class MotionPlanner {
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
         std::tuple<double,std::array<double,9>> PredictMotion(const std::array<double,12>& initialStateAndInput, double predictionHorizon) noexcept {
-            uint32_t numSimulationSteps = static_cast<uint32_t>(std::max(0.0, std::floor(predictionHorizon / parameter.motionPlanner.sampletime)));
-            double simulationTime = static_cast<double>(numSimulationSteps) * parameter.motionPlanner.sampletime;
-            std::array<double,9> finalState = vehicleSimulator.PredictMotion(initialStateAndInput, parameter.motionPlanner.sampletime, numSimulationSteps);
+            uint32_t numSimulationSteps = static_cast<uint32_t>(std::max(0.0, std::floor(predictionHorizon / m_parameter.motionPlanner.sampletime)));
+            double simulationTime = static_cast<double>(numSimulationSteps) * m_parameter.motionPlanner.sampletime;
+            std::array<double,9> finalState = m_vehicleSimulator.PredictMotion(initialStateAndInput, m_parameter.motionPlanner.sampletime, numSimulationSteps);
             return std::make_tuple(simulationTime, finalState);
         }
 
@@ -243,9 +243,9 @@ class MotionPlanner {
          */
         std::tuple<bool,double> PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double predictionHorizon) noexcept {
             constexpr uint32_t maxNumSimulationSteps = 0x0000FFFF;
-            uint32_t numSimulationSteps = static_cast<uint32_t>(std::max(1.0, std::floor(predictionHorizon / parameter.motionPlanner.sampletime)));
-            bool success = vehicleSimulator.PredictMotionTrajectory(trajectory, initialStateAndInput, parameter.motionPlanner.sampletime, numSimulationSteps, maxNumSimulationSteps);
-            double totalSimulationTime = parameter.motionPlanner.sampletime * static_cast<double>(trajectory.size());
+            uint32_t numSimulationSteps = static_cast<uint32_t>(std::max(1.0, std::floor(predictionHorizon / m_parameter.motionPlanner.sampletime)));
+            bool success = m_vehicleSimulator.PredictMotionTrajectory(trajectory, initialStateAndInput, m_parameter.motionPlanner.sampletime, numSimulationSteps, maxNumSimulationSteps);
+            double totalSimulationTime = m_parameter.motionPlanner.sampletime * static_cast<double>(trajectory.size());
             return std::make_tuple(success, totalSimulationTime);
         }
 
@@ -260,48 +260,48 @@ class MotionPlanner {
          * @param[in] staticObstacles List of static obstacles to be used for the guidance law of path exploration. All trajectories of the tree are rebuilt. Otherwise the trajectories from tree nodes are undefined.
          * @note IMPORTANT: The caller of this function must make sure that static obstacles are valid!
          */
-        void WriteToFile(mpsv::logging::File& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { RebuildAllTreeTrajectories(staticObstacles); tree.WriteToFile(file, preString + "tree."); parameter.WriteToFile(file, preString + "parameter."); costMap.WriteToFile(file, preString + "costMap."); }
+        void WriteToFile(mpsv::logging::File& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { RebuildAllTreeTrajectories(staticObstacles); m_tree.WriteToFile(file, preString + "tree."); m_parameter.WriteToFile(file, preString + "parameter."); m_costMap.WriteToFile(file, preString + "costMap."); }
 
 
     protected:
-        mpsv::planner::MotionPlannerTree tree;                              // Tree for motion planning.
-        mpsv::planner::MotionPlannerState state;                            // State of the motion planner.
-        mpsv::planner::MotionPlannerParameterSet parameter;                 // Parameter set for the motion planner.
-        mpsv::structures::CostMap costMap;                                  // The cost map to be used as additional cost term in the objective function.
-        mpsv::sampler::UniformBoxSamplerSE2 boxSampler;                     // The box sampler to be used to draw random samples from SE(2).
-        mpsv::sampler::PathSampler pathSampler;                             // The path sampler to be used to draw random samples from SE(2).
-        std::vector<int16_t> idxNeighbors;                                  // Reserved memory for nearest neighbors.
-        mpsv::control::VehicleSimulator vehicleSimulator;                   // The vehicle simulator to be used for generating dynamically feasible trajectories.
-        mpsv::control::RegionOfAttraction regionOfAttraction;               // The region of attraction to be used to check if a state enters the region around a pose.
-        std::atomic<bool> interruptFlag;                                    // If set to true, no more iterations are performed and the @ref Solve member function returns.
-        std::atomic<bool> isSolving;                                        // True if the motion planner performs a @ref Solve step, false otherwise.
-        double epsDistanceMetric{std::numeric_limits<double>::epsilon()};   // Eps (numeric threshold) for distance metric.
+        mpsv::planner::MotionPlannerTree m_tree;                              // Tree for motion planning.
+        mpsv::planner::MotionPlannerState m_state;                            // State of the motion planner.
+        mpsv::planner::MotionPlannerParameterSet m_parameter;                 // Parameter set for the motion planner.
+        mpsv::structures::CostMap m_costMap;                                  // The cost map to be used as additional cost term in the objective function.
+        mpsv::sampler::UniformBoxSamplerSE2 m_boxSampler;                     // The box sampler to be used to draw random samples from SE(2).
+        mpsv::sampler::PathSampler m_pathSampler;                             // The path sampler to be used to draw random samples from SE(2).
+        std::vector<int16_t> m_idxNeighbors;                                  // Reserved memory for nearest neighbors.
+        mpsv::control::VehicleSimulator m_vehicleSimulator;                   // The vehicle simulator to be used for generating dynamically feasible trajectories.
+        mpsv::control::RegionOfAttraction m_regionOfAttraction;               // The region of attraction to be used to check if a state enters the region around a pose.
+        std::atomic<bool> m_interruptFlag;                                    // If set to true, no more iterations are performed and the @ref Solve member function returns.
+        std::atomic<bool> m_isSolving;                                        // True if the motion planner performs a @ref Solve step, false otherwise.
+        double m_epsDistanceMetric{std::numeric_limits<double>::epsilon()};   // Eps (numeric threshold) for distance metric.
 
         /**
          * @brief Build the final trajectory. This member function calculates the reference path and the trajectory for the current solution node.
          * @param[in] minTrajectoryDuration The minimum duration (>= 0) of the trajectory in seconds.
-         * @details If the trajectory is infeasible, then the isFeasible flag of the @ref state is set.
+         * @details If the trajectory is infeasible, then the isFeasible flag of the @ref m_state is set.
          */
         void BuildFinalTrajectory(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, double minTrajectoryDuration){
-            uint32_t minNumSteps = static_cast<uint32_t>(std::ceil(std::max(0.0, minTrajectoryDuration) / parameter.motionPlanner.sampletime));
-            tree.GetPathFromRootToNode(tree[state.idxSolutionNode].pathBuffer, state.idxSolutionNode);
-            state.isFeasible = PathFromRootIsFeasible(tree[state.idxSolutionNode].pathBuffer, staticObstacles, tree[state.idxSolutionNode].trajectoryBuffer, minNumSteps);
+            uint32_t minNumSteps = static_cast<uint32_t>(std::ceil(std::max(0.0, minTrajectoryDuration) / m_parameter.motionPlanner.sampletime));
+            m_tree.GetPathFromRootToNode(m_tree[m_state.idxSolutionNode].pathBuffer, m_state.idxSolutionNode);
+            m_state.isFeasible = PathFromRootIsFeasible(m_tree[m_state.idxSolutionNode].pathBuffer, staticObstacles, m_tree[m_state.idxSolutionNode].trajectoryBuffer, minNumSteps);
         }
 
         /**
-         * @brief Assign output data based on the internal @ref state and the @ref tree.
+         * @brief Assign output data based on the internal @ref m_state and the @ref m_tree.
          * @param[out] dataOut Output data to be assigned.
          * @details The corresponding path and trajectory buffer of the solution node are swapped with the path and trajectory outputs, respectively.
          */
         void AssignOutput(mpsv::planner::MotionPlannerOutput& dataOut) noexcept {
-            dataOut.goalReached = state.goalReached;
-            dataOut.isFeasible = state.isFeasible;
-            dataOut.outOfNodes = state.outOfNodes;
-            dataOut.numberOfPerformedIterations = state.numberOfPerformedIterations;
-            dataOut.cost = tree[state.idxSolutionNode].cost;
-            dataOut.referencePath.swap(tree[state.idxSolutionNode].pathBuffer);
-            dataOut.trajectory.swap(tree[state.idxSolutionNode].trajectoryBuffer);
-            dataOut.sampletime = parameter.motionPlanner.sampletime;
+            dataOut.goalReached = m_state.goalReached;
+            dataOut.isFeasible = m_state.isFeasible;
+            dataOut.outOfNodes = m_state.outOfNodes;
+            dataOut.numberOfPerformedIterations = m_state.numberOfPerformedIterations;
+            dataOut.cost = m_tree[m_state.idxSolutionNode].cost;
+            dataOut.referencePath.swap(m_tree[m_state.idxSolutionNode].pathBuffer);
+            dataOut.trajectory.swap(m_tree[m_state.idxSolutionNode].trajectoryBuffer);
+            dataOut.sampletime = m_parameter.motionPlanner.sampletime;
             dataOut.timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
         }
 
@@ -318,8 +318,8 @@ class MotionPlanner {
             if(dataIn.initialPath.empty()){
                 return false;
             }
-            double distance = mpsv::math::DistanceMetricSE2(dataIn.initialPath[0], dataIn.initialStateAndInput, parameter.metric.weightPsi);
-            if(std::fabs(distance) >= epsDistanceMetric){
+            double distance = mpsv::math::DistanceMetricSE2(dataIn.initialPath[0], dataIn.initialStateAndInput, m_parameter.metric.weightPsi);
+            if(std::fabs(distance) >= m_epsDistanceMetric){
                 return false;
             }
             return true;
@@ -364,25 +364,25 @@ class MotionPlanner {
          * probability of being collision free compared to the initial path of the path planner.
          */
         void SetInitialSampleSet(const std::vector<std::array<double,3>>& initialPath, std::array<double,2> originOldToNew, bool forceColdStart) noexcept {
-            state.initialSamplesReversed.clear();
+            m_state.initialSamplesReversed.clear();
             if(!forceColdStart){
                 // Transform tree to new origin and use old solution path as initial sample set
-                tree.TransformToNewOrigin(originOldToNew);
-                tree.GetPathFromRootToNode(tree[state.idxSolutionNode].pathBuffer, state.idxSolutionNode);
+                m_tree.TransformToNewOrigin(originOldToNew);
+                m_tree.GetPathFromRootToNode(m_tree[m_state.idxSolutionNode].pathBuffer, m_state.idxSolutionNode);
 
                 // Use old solution path as initial sample set if those poses are inside the new path sampling area
-                for(auto&& pose : tree[state.idxSolutionNode].pathBuffer){
-                    if(pathSampler.IsInside(pose)){
-                        state.initialSamplesReversed.push_back(pose);
+                for(auto&& pose : m_tree[m_state.idxSolutionNode].pathBuffer){
+                    if(m_pathSampler.IsInside(pose)){
+                        m_state.initialSamplesReversed.push_back(pose);
                     }
                 }
             }
 
             // Insert initial path to sample set (exclude first pose, that would be the initial pose)
-            state.initialSamplesReversed.insert(state.initialSamplesReversed.end(), initialPath.begin() + 1, initialPath.end());
+            m_state.initialSamplesReversed.insert(m_state.initialSamplesReversed.end(), initialPath.begin() + 1, initialPath.end());
 
             // Reverse the order such that the end of the container contains the first poses to be sampled
-            std::reverse(state.initialSamplesReversed.begin(), state.initialSamplesReversed.end());
+            std::reverse(m_state.initialSamplesReversed.begin(), m_state.initialSamplesReversed.end());
         }
 
         /**
@@ -393,10 +393,10 @@ class MotionPlanner {
         mpsv::geometry::OrientedBox SetSamplingArea(const std::vector<std::array<double,3>>& path) noexcept {
             mpsv::geometry::OrientedBox box;
             const double sqrt2 = std::sqrt(2.0);
-            pathSampler.Reset(path, parameter.motionPlanner.samplingRangePosition, parameter.motionPlanner.samplingRangeAngle, parameter.metric.weightPsi);
+            m_pathSampler.Reset(path, m_parameter.motionPlanner.samplingRangePosition, m_parameter.motionPlanner.samplingRangeAngle, m_parameter.metric.weightPsi);
             box.CreateFromPointCloud(path);
-            box.Extend(parameter.motionPlanner.samplingRangePosition * sqrt2);
-            boxSampler.SetSize(box);
+            box.Extend(m_parameter.motionPlanner.samplingRangePosition * sqrt2);
+            m_boxSampler.SetSize(box);
             return box;
         }
 
@@ -413,10 +413,10 @@ class MotionPlanner {
             double epsAngle = std::numeric_limits<double>::epsilon() * 6.28318530717959;
 
             // Eps for distance metric sqrt(dx^2 + dy^2 + (w*dpsi)^2)
-            double epsWeightedAngle = std::max(1.0, parameter.metric.weightPsi) * epsAngle;
-            epsDistanceMetric = std::sqrt(2.0*epsPosition*epsPosition + epsWeightedAngle*epsWeightedAngle);
+            double epsWeightedAngle = std::max(1.0, m_parameter.metric.weightPsi) * epsAngle;
+            m_epsDistanceMetric = std::sqrt(2.0*epsPosition*epsPosition + epsWeightedAngle*epsWeightedAngle);
 
-            tree.SetNumericLimit(epsDistanceMetric);
+            m_tree.SetNumericLimit(m_epsDistanceMetric);
         }
 
         /**
@@ -429,13 +429,13 @@ class MotionPlanner {
             // cost map evaluation and by some safety threshold of two more cells.
             constexpr size_t maxNumCells = 125000000; // limit to 1 GB
             double maxSekeletalPointDistance = 0.0;
-            for(auto&& p : parameter.geometry.skeletalPoints){
+            for(auto&& p : m_parameter.geometry.skeletalPoints){
                 maxSekeletalPointDistance = std::max(maxSekeletalPointDistance, std::sqrt(p[0]*p[0] + p[1]*p[1]));
             }
-            double additionalBoxExtension = maxSekeletalPointDistance + 2.0 * parameter.costMap.resolution;
+            double additionalBoxExtension = maxSekeletalPointDistance + 2.0 * m_parameter.costMap.resolution;
             samplingArea.Extend(additionalBoxExtension);
-            mpsv::structures::CostMapArgument args(parameter.costMap.distanceScale, parameter.costMap.distanceDecay, staticObstacles);
-            costMap.Build(samplingArea, parameter.costMap.resolution, parameter.costMap.modBreakpoints, args, maxNumCells);
+            mpsv::structures::CostMapArgument args(m_parameter.costMap.distanceScale, m_parameter.costMap.distanceDecay, staticObstacles);
+            m_costMap.Build(samplingArea, m_parameter.costMap.resolution, m_parameter.costMap.modBreakpoints, args, maxNumCells);
         }
 
 
@@ -448,7 +448,7 @@ class MotionPlanner {
          */
         void Iterate(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
             // Fixed-Node RRT*: ensure that tree is not full by possibly removing a random node
-            if((state.outOfNodes = !EnsureNonFullTree())){
+            if((m_state.outOfNodes = !EnsureNonFullTree())){
                 return;
             }
 
@@ -456,7 +456,7 @@ class MotionPlanner {
             Node randomSample = Sampling();
 
             // Vertex Selection: select nearest node
-            int16_t idxNearest = tree.FindNearestNode(randomSample, parameter.metric.weightPsi);
+            int16_t idxNearest = m_tree.FindNearestNode(randomSample, m_parameter.metric.weightPsi);
 
             // Local Planning: steer from nearest sample to random sample
             auto [success, newSample] = LocalPlanning(idxNearest, randomSample, staticObstacles);
@@ -465,8 +465,8 @@ class MotionPlanner {
             }
 
             // Get near vertices (neighbors of newSample)
-            double radius = tree.GetOptimalRadius();
-            if(tree.FindNearestNeighbors(idxNeighbors, newSample, radius, parameter.metric.weightPsi)){
+            double radius = m_tree.GetOptimalRadius();
+            if(m_tree.FindNearestNeighbors(m_idxNeighbors, newSample, radius, m_parameter.metric.weightPsi)){
                 return; // if the value of the new sample already exists, return
             }
 
@@ -474,21 +474,21 @@ class MotionPlanner {
             int16_t idxBestParent = FindBestParent(newSample, idxNearest, staticObstacles);
 
             // Insert into tree: add new sample to the tree
-            int16_t idxAddedSample = tree.Add(idxBestParent, newSample);
+            int16_t idxAddedSample = m_tree.Add(idxBestParent, newSample);
 
             // Rewire edges in the neighborhood around the added sample
             Rewire(idxAddedSample, staticObstacles);
 
             // Check if the new sample indicates a solution
-            double distanceToGoal = mpsv::math::DistanceMetricSE2(tree[idxAddedSample].pose, state.finalPose, parameter.metric.weightPsi);
-            if(distanceToGoal < epsDistanceMetric){
-                state.goalReached = true;
-                state.closestDistanceToGoal = distanceToGoal;
-                state.idxSolutionNode = idxAddedSample;
+            double distanceToGoal = mpsv::math::DistanceMetricSE2(m_tree[idxAddedSample].pose, m_state.finalPose, m_parameter.metric.weightPsi);
+            if(distanceToGoal < m_epsDistanceMetric){
+                m_state.goalReached = true;
+                m_state.closestDistanceToGoal = distanceToGoal;
+                m_state.idxSolutionNode = idxAddedSample;
             }
-            if(distanceToGoal < state.closestDistanceToGoal){
-                state.closestDistanceToGoal = distanceToGoal;
-                state.idxSolutionNode = idxAddedSample;
+            if(distanceToGoal < m_state.closestDistanceToGoal){
+                m_state.closestDistanceToGoal = distanceToGoal;
+                m_state.idxSolutionNode = idxAddedSample;
             }
         }
 
@@ -497,8 +497,8 @@ class MotionPlanner {
          * @return True if tree is not full and iterations may continue, false otherwise.
          */
         bool EnsureNonFullTree(void) noexcept {
-            if(tree.IsFull()){
-                if(!tree.RemoveRandomLeaf(state.idxSolutionNode)){ // current solution node must not be removed
+            if(m_tree.IsFull()){
+                if(!m_tree.RemoveRandomLeaf(m_state.idxSolutionNode)){ // current solution node must not be removed
                     return false;
                 }
             }
@@ -511,18 +511,18 @@ class MotionPlanner {
          */
         Node Sampling(void) noexcept {
             Node randomSample;
-            if(state.initialSamplesReversed.size()){
-                randomSample.pose = state.initialSamplesReversed.back();
-                state.initialSamplesReversed.pop_back();
+            if(m_state.initialSamplesReversed.size()){
+                randomSample.pose = m_state.initialSamplesReversed.back();
+                m_state.initialSamplesReversed.pop_back();
             }
             else{
-                if(state.goalReached || state.goalSampleIteration){
-                    randomSample.pose = pathSampler.Sample(state.sampleIteration++);
+                if(m_state.goalReached || m_state.goalSampleIteration){
+                    randomSample.pose = m_pathSampler.Sample(m_state.sampleIteration++);
                 }
                 else{
-                    randomSample.pose = state.finalPose;
+                    randomSample.pose = m_state.finalPose;
                 }
-                state.goalSampleIteration = (state.goalSampleIteration + 1) % parameter.motionPlanner.periodGoalSampling;
+                m_state.goalSampleIteration = (m_state.goalSampleIteration + 1) % m_parameter.motionPlanner.periodGoalSampling;
             }
             return randomSample;
         }
@@ -537,7 +537,7 @@ class MotionPlanner {
          * <1> The resulting sample of local planning.
          */
         std::tuple<bool, Node> LocalPlanning(const int16_t idxSource, const Node& destination, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
-            Node& source = tree[idxSource];
+            Node& source = m_tree[idxSource];
 
             // Resulting output tuple containing success and newSample
             std::tuple<bool, Node> result;
@@ -549,9 +549,9 @@ class MotionPlanner {
             std::array<double, 3> direction = mpsv::math::PoseDifference(destination.pose, source.pose);
 
             // Limit direction to maximum step size
-            double z = parameter.metric.weightPsi * direction[2];
+            double z = m_parameter.metric.weightPsi * direction[2];
             double r = std::sqrt(direction[0]*direction[0] + direction[1]*direction[1] + z*z);
-            double radius = tree.GetOptimalRadius();
+            double radius = m_tree.GetOptimalRadius();
             bool stepLimited = false;
             if(r > radius){
                 stepLimited = true;
@@ -567,22 +567,22 @@ class MotionPlanner {
             newSample.pose[2] = mpsv::math::SymmetricalAngle(source.pose[2] + direction[2]);
 
             // Check feasibility and calculate cost
-            double costDistance = mpsv::math::DistanceMetricSE2(source.pose, newSample.pose, parameter.metric.weightPsi);
-            if(costDistance <= epsDistanceMetric){
+            double costDistance = mpsv::math::DistanceMetricSE2(source.pose, newSample.pose, m_parameter.metric.weightPsi);
+            if(costDistance <= m_epsDistanceMetric){
                 return result; // do not allow zero movement
             }
-            std::vector<std::array<double,3>>& path = tree[idxSource].pathBuffer;
-            tree.GetPathFromRootToNode(path, idxSource);
+            std::vector<std::array<double,3>>& path = m_tree[idxSource].pathBuffer;
+            m_tree.GetPathFromRootToNode(path, idxSource);
             path.push_back(newSample.pose);
-            if(!PathFromRootIsFeasible(path, staticObstacles, tree[idxSource].trajectoryBuffer)){
+            if(!PathFromRootIsFeasible(path, staticObstacles, m_tree[idxSource].trajectoryBuffer)){
                 return result;
             }
-            double costHeading = mpsv::math::SwayMetric(source.pose, newSample.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
-            double costClearance = costMap.CostAlongLine(source.pose, newSample.pose, parameter.geometry.skeletalPoints);
+            double costHeading = mpsv::math::SwayMetric(source.pose, newSample.pose, m_parameter.metric.weightSway, m_parameter.metric.weightReverseScale, m_parameter.metric.weightReverseDecay);
+            double costClearance = m_costMap.CostAlongLine(source.pose, newSample.pose, m_parameter.geometry.skeletalPoints);
             newSample.cost = source.cost + costDistance + costHeading + costClearance;
 
             // If the step was limited during goal sampling, then continue goal sampling in the next iteration
-            state.goalSampleIteration -= static_cast<uint32_t>(stepLimited && (1 == state.goalSampleIteration));
+            m_state.goalSampleIteration -= static_cast<uint32_t>(stepLimited && (1 == m_state.goalSampleIteration));
             success = true;
             return result;
         }
@@ -596,25 +596,25 @@ class MotionPlanner {
          */
         int16_t FindBestParent(Node& newSample, int16_t idxNearest, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
             int16_t idxBestParent = idxNearest;
-            for(auto&& index : idxNeighbors){
+            for(auto&& index : m_idxNeighbors){
                 // Ignore the nearest node which is already the parent for the new node, check all others
                 if(idxNearest == index){
                     continue;
                 }
 
                 // Check if cost reduction is actually possible
-                Node& possibleParent = tree[index];
+                Node& possibleParent = m_tree[index];
                 double resultCost = possibleParent.cost;
-                resultCost += mpsv::math::DistanceMetricSE2(possibleParent.pose, newSample.pose, parameter.metric.weightPsi);
-                resultCost += mpsv::math::SwayMetric(possibleParent.pose, newSample.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
-                if((resultCost + epsDistanceMetric) < newSample.cost){
-                    resultCost += costMap.CostAlongLine(possibleParent.pose, newSample.pose, parameter.geometry.skeletalPoints);
-                    if((resultCost + epsDistanceMetric) < newSample.cost){
+                resultCost += mpsv::math::DistanceMetricSE2(possibleParent.pose, newSample.pose, m_parameter.metric.weightPsi);
+                resultCost += mpsv::math::SwayMetric(possibleParent.pose, newSample.pose, m_parameter.metric.weightSway, m_parameter.metric.weightReverseScale, m_parameter.metric.weightReverseDecay);
+                if((resultCost + m_epsDistanceMetric) < newSample.cost){
+                    resultCost += m_costMap.CostAlongLine(possibleParent.pose, newSample.pose, m_parameter.geometry.skeletalPoints);
+                    if((resultCost + m_epsDistanceMetric) < newSample.cost){
                         // Check if a better connection is feasible and update cost and parent index
-                        std::vector<std::array<double,3>>& path = tree[index].pathBuffer;
-                        tree.GetPathFromRootToNode(path, index);
+                        std::vector<std::array<double,3>>& path = m_tree[index].pathBuffer;
+                        m_tree.GetPathFromRootToNode(path, index);
                         path.push_back(newSample.pose);
-                        if(!PathFromRootIsFeasible(path, staticObstacles, tree[index].trajectoryBuffer)){
+                        if(!PathFromRootIsFeasible(path, staticObstacles, m_tree[index].trajectoryBuffer)){
                             continue;
                         }
                         idxBestParent = index;
@@ -634,61 +634,61 @@ class MotionPlanner {
         void Rewire(int16_t idxAddedSample, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
             // Check if the cost to anyone in the neighborhood can be reduced when steering from the best new sample to the neighborhood node
             // Or: for which node can the current best new sample be a better parent
-            Node& addedSample = tree[idxAddedSample];
-            for(auto&& index : idxNeighbors){
+            Node& addedSample = m_tree[idxAddedSample];
+            for(auto&& index : m_idxNeighbors){
                 // Cannot be a better parent for its own parent or for the root
-                if((tree[idxAddedSample].iParent == index) || (tree[idxAddedSample].iParent < 0)){
+                if((m_tree[idxAddedSample].iParent == index) || (m_tree[idxAddedSample].iParent < 0)){
                     continue;
                 }
 
                 // Check if cost reduction is actually possible
-                Node& destination = tree[index];
+                Node& destination = m_tree[index];
                 double resultCost = addedSample.cost;
-                resultCost += mpsv::math::DistanceMetricSE2(addedSample.pose, destination.pose, parameter.metric.weightPsi);
-                resultCost += mpsv::math::SwayMetric(addedSample.pose, destination.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
-                if((resultCost + epsDistanceMetric) < destination.cost){
-                    resultCost += costMap.CostAlongLine(addedSample.pose, destination.pose, parameter.geometry.skeletalPoints);
-                    if((resultCost + epsDistanceMetric) < destination.cost){
+                resultCost += mpsv::math::DistanceMetricSE2(addedSample.pose, destination.pose, m_parameter.metric.weightPsi);
+                resultCost += mpsv::math::SwayMetric(addedSample.pose, destination.pose, m_parameter.metric.weightSway, m_parameter.metric.weightReverseScale, m_parameter.metric.weightReverseDecay);
+                if((resultCost + m_epsDistanceMetric) < destination.cost){
+                    resultCost += m_costMap.CostAlongLine(addedSample.pose, destination.pose, m_parameter.geometry.skeletalPoints);
+                    if((resultCost + m_epsDistanceMetric) < destination.cost){
                         // get all leaf nodes from [index]
                         std::vector<int16_t> idxLeafNodes;
-                        tree.GetLeafIndices(idxLeafNodes, index);
+                        m_tree.GetLeafIndices(idxLeafNodes, index);
 
                         // change parent of [index] temporarily to idxAddedSample
-                        int16_t idxOriginalParent = tree[index].iParent;
-                        tree[index].iParent = idxAddedSample;
+                        int16_t idxOriginalParent = m_tree[index].iParent;
+                        m_tree[index].iParent = idxAddedSample;
 
                         // if original parent only has one child (index) it would become a leaf node and must be checked for feasibility as well
-                        if((tree[idxOriginalParent].iFirstChild >= 0) && (tree[tree[idxOriginalParent].iFirstChild].iNextSibling < 0)){
+                        if((m_tree[idxOriginalParent].iFirstChild >= 0) && (m_tree[m_tree[idxOriginalParent].iFirstChild].iNextSibling < 0)){
                             idxLeafNodes.push_back(idxOriginalParent);
                         }
 
                         // check all paths from all leafs to the root
                         bool anythingInfeasible = false;
-                        #pragma omp parallel for shared(anythingInfeasible, tree, staticObstacles)
+                        #pragma omp parallel for shared(anythingInfeasible, m_tree, staticObstacles)
                         for(auto&& idxLeaf : idxLeafNodes){
-                            std::vector<std::array<double,3>>& path = tree[idxLeaf].pathBuffer;
-                            tree.GetPathFromRootToNode(path, idxLeaf);
-                            if(!PathFromRootIsFeasible(path, staticObstacles, tree[idxLeaf].trajectoryBuffer)){
+                            std::vector<std::array<double,3>>& path = m_tree[idxLeaf].pathBuffer;
+                            m_tree.GetPathFromRootToNode(path, idxLeaf);
+                            if(!PathFromRootIsFeasible(path, staticObstacles, m_tree[idxLeaf].trajectoryBuffer)){
                                 anythingInfeasible = true;
                             }
                         }
 
                         // reset parent of [index] to original parent
-                        tree[index].iParent = idxOriginalParent;
+                        m_tree[index].iParent = idxOriginalParent;
 
                         // at least one infeasible connection means fail: rewire not saftely possible
                         if(anythingInfeasible){
                             continue;
                         }
                         double deltaCost = resultCost - destination.cost;
-                        tree.Rewire(index, idxAddedSample, deltaCost);
+                        m_tree.Rewire(index, idxAddedSample, deltaCost);
                     }
                 }
             }
         }
 
         /**
-         * @brief Check whether a given path starting from the root node is feasible. The initial state corresponding to the root node is given in @ref state.
+         * @brief Check whether a given path starting from the root node is feasible. The initial state corresponding to the root node is given in @ref m_state.
          * @param[in] path The path starting from the root node. This path is used for trajectory generation using a path controller and a nonlinear model of the vehicle.
          * @param[in] staticObstacles Static obstacles to be considered for collision checks.
          * @param[inout] trajectoryBuffer A buffer to be used for trajectory generation.
@@ -696,11 +696,11 @@ class MotionPlanner {
          * @return True if path is dynamically feasible, e.g. the resulting trajectory is feasible along that path, false otherwise.
          */
         bool PathFromRootIsFeasible(const std::vector<std::array<double,3>>& path, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, std::vector<std::array<double,12>>& trajectoryBuffer, uint32_t minNumSimulationSteps = 1) noexcept {
-            uint32_t numSteps = vehicleSimulator.ExplorePathToEnd(trajectoryBuffer, state.initialStateAndInput, path, regionOfAttraction, staticObstacles, parameter.motionPlanner.sampletime, minNumSimulationSteps);
+            uint32_t numSteps = m_vehicleSimulator.ExplorePathToEnd(trajectoryBuffer, m_state.initialStateAndInput, path, m_regionOfAttraction, staticObstacles, m_parameter.motionPlanner.sampletime, minNumSimulationSteps);
             if(numSteps >= 0x0000FFFF){
                 return false;
             }
-            if(parameter.geometry.vehicleShape.CheckCollisionCurve(staticObstacles, trajectoryBuffer, parameter.geometry.collisionCheckMaxPositionDeviation, parameter.geometry.collisionCheckMaxAngleDeviation)){
+            if(m_parameter.geometry.vehicleShape.CheckCollisionCurve(staticObstacles, trajectoryBuffer, m_parameter.geometry.collisionCheckMaxPositionDeviation, m_parameter.geometry.collisionCheckMaxAngleDeviation)){
                 return false;
             }
             return true;
@@ -711,11 +711,11 @@ class MotionPlanner {
          * @param[in] staticObstacles List of static obstacles to be used for the guidance law of path exploration.
          */
         void RebuildAllTreeTrajectories(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
-            const std::vector<int16_t>& indices = tree.GetActiveIndices();
+            const std::vector<int16_t>& indices = m_tree.GetActiveIndices();
             for(auto&& i : indices){
-                tree[i].trajectoryBuffer.clear();
-                if((tree[i].iFirstChild < 0) || (i == state.idxSolutionNode)){
-                    GenerateTrajectoryFromRoot(tree[i].trajectoryBuffer, i, staticObstacles);
+                m_tree[i].trajectoryBuffer.clear();
+                if((m_tree[i].iFirstChild < 0) || (i == m_state.idxSolutionNode)){
+                    GenerateTrajectoryFromRoot(m_tree[i].trajectoryBuffer, i, staticObstacles);
                 }
             }
         }
@@ -728,11 +728,11 @@ class MotionPlanner {
          */
         void GenerateTrajectoryFromRoot(std::vector<std::array<double,12>>& trajectory, int16_t idxNode, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
             // Get the path from the root
-            std::vector<std::array<double,3>>& pathBuffer = tree[idxNode].pathBuffer;
-            tree.GetPathFromRootToNode(pathBuffer, idxNode);
+            std::vector<std::array<double,3>>& pathBuffer = m_tree[idxNode].pathBuffer;
+            m_tree.GetPathFromRootToNode(pathBuffer, idxNode);
 
             // Simulate trajectory
-            (void) vehicleSimulator.ExplorePathToEnd(trajectory, state.initialStateAndInput, pathBuffer, regionOfAttraction, staticObstacles, parameter.motionPlanner.sampletime);
+            (void) m_vehicleSimulator.ExplorePathToEnd(trajectory, m_state.initialStateAndInput, pathBuffer, m_regionOfAttraction, staticObstacles, m_parameter.motionPlanner.sampletime);
         }
 };
 

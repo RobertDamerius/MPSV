@@ -28,7 +28,7 @@ class PathSampler {
          * @return True if success, false otherwise. If input arguments are invalid, false is returned.
          */
         bool Initialize(size_t maxNumSamples) noexcept {
-            return haltonSequence.Initialize(4, maxNumSamples);
+            return m_haltonSequence.Initialize(4, maxNumSamples);
         }
 
         /**
@@ -40,32 +40,32 @@ class PathSampler {
          * @details THE PATH MUST CONTAIN AT LEAST ONE NODE. OTHERWISE SAMPLING WONT BE POSSIBLE!
          */
         void Reset(const std::vector<std::array<double,3>>& path, double rangePosition, double rangeAngle, double metricWeightPsi) noexcept {
-            segments.clear();
+            m_segments.clear();
             if(1 == path.size()){
-                segments.push_back(Segment());
-                segments.back().A[0] = 2.0 * rangePosition;
-                segments.back().A[1] = 0.0;
-                segments.back().A[2] = 0.0;
-                segments.back().A[3] = 0.0;
-                segments.back().A[4] = 2.0 * rangePosition;
-                segments.back().A[5] = 0.0;
-                segments.back().A[6] = 0.0;
-                segments.back().A[7] = 0.0;
-                segments.back().A[8] = 2.0 * rangeAngle;
-                segments.back().invA[0] = 1.0 / segments.back().A[0];
-                segments.back().invA[1] = 0.0;
-                segments.back().invA[2] = 0.0;
-                segments.back().invA[3] = 0.0;
-                segments.back().invA[4] = 1.0 / segments.back().A[4];
-                segments.back().invA[5] = 0.0;
-                segments.back().invA[6] = 0.0;
-                segments.back().invA[7] = 0.0;
-                segments.back().invA[8] = 1.0 / segments.back().A[8];
-                segments.back().b[0] = path[0][0] - rangePosition;
-                segments.back().b[1] = path[0][1] - rangePosition;
-                segments.back().b[2] = path[0][2] - rangeAngle;
-                segments.back().ratio = 1.0;
-                volume = 8.0 * rangePosition * rangePosition * rangeAngle * metricWeightPsi;
+                m_segments.push_back(Segment());
+                m_segments.back().A[0] = 2.0 * rangePosition;
+                m_segments.back().A[1] = 0.0;
+                m_segments.back().A[2] = 0.0;
+                m_segments.back().A[3] = 0.0;
+                m_segments.back().A[4] = 2.0 * rangePosition;
+                m_segments.back().A[5] = 0.0;
+                m_segments.back().A[6] = 0.0;
+                m_segments.back().A[7] = 0.0;
+                m_segments.back().A[8] = 2.0 * rangeAngle;
+                m_segments.back().invA[0] = 1.0 / m_segments.back().A[0];
+                m_segments.back().invA[1] = 0.0;
+                m_segments.back().invA[2] = 0.0;
+                m_segments.back().invA[3] = 0.0;
+                m_segments.back().invA[4] = 1.0 / m_segments.back().A[4];
+                m_segments.back().invA[5] = 0.0;
+                m_segments.back().invA[6] = 0.0;
+                m_segments.back().invA[7] = 0.0;
+                m_segments.back().invA[8] = 1.0 / m_segments.back().A[8];
+                m_segments.back().b[0] = path[0][0] - rangePosition;
+                m_segments.back().b[1] = path[0][1] - rangePosition;
+                m_segments.back().b[2] = path[0][2] - rangeAngle;
+                m_segments.back().ratio = 1.0;
+                m_volume = 8.0 * rangePosition * rangePosition * rangeAngle * metricWeightPsi;
             }
             else{
                 constexpr double eps = std::numeric_limits<double>::epsilon();
@@ -100,11 +100,11 @@ class PathSampler {
                     nw[0] = -nu[2]*nv[1];
                     nw[1] = nu[2]*nv[0];
                     nw[2] = nu[0]*nv[1] - nu[1]*nv[0];
-                    segments.push_back(Segment());
-                    segments.back().ratio = V;
-                    segments.back().b[0] = path[i-1][0] - rangePosition * (nu[0] + nv[0] + nw[0]);
-                    segments.back().b[1] = path[i-1][1] - rangePosition * (nu[1] + nv[1] + nw[1]);
-                    segments.back().b[2] = path[i-1][2] - rangeAngle * (nu[2] + nv[2] + nw[2]);
+                    m_segments.push_back(Segment());
+                    m_segments.back().ratio = V;
+                    m_segments.back().b[0] = path[i-1][0] - rangePosition * (nu[0] + nv[0] + nw[0]);
+                    m_segments.back().b[1] = path[i-1][1] - rangePosition * (nu[1] + nv[1] + nw[1]);
+                    m_segments.back().b[2] = path[i-1][2] - rangeAngle * (nu[2] + nv[2] + nw[2]);
                     d = (2.0 + L);
                     nu[0] *= d;
                     nu[1] *= d;
@@ -115,21 +115,21 @@ class PathSampler {
                     nw[0] *= 2.0;
                     nw[1] *= 2.0;
                     nw[2] *= 2.0;
-                    segments.back().A[0] = rangePosition * nu[0];
-                    segments.back().A[1] = rangePosition * nv[0];
-                    segments.back().A[2] = rangePosition * nw[0];
-                    segments.back().A[3] = rangePosition * nu[1];
-                    segments.back().A[4] = rangePosition * nv[1];
-                    segments.back().A[5] = rangePosition * nw[1];
-                    segments.back().A[6] = rangeAngle * nu[2];
-                    segments.back().A[7] = rangeAngle * nv[2];
-                    segments.back().A[8] = rangeAngle * nw[2];
-                    std::tie(std::ignore, segments.back().invA) = mpsv::math::MatrixInverse3x3(segments.back().A);
+                    m_segments.back().A[0] = rangePosition * nu[0];
+                    m_segments.back().A[1] = rangePosition * nv[0];
+                    m_segments.back().A[2] = rangePosition * nw[0];
+                    m_segments.back().A[3] = rangePosition * nu[1];
+                    m_segments.back().A[4] = rangePosition * nv[1];
+                    m_segments.back().A[5] = rangePosition * nw[1];
+                    m_segments.back().A[6] = rangeAngle * nu[2];
+                    m_segments.back().A[7] = rangeAngle * nv[2];
+                    m_segments.back().A[8] = rangeAngle * nw[2];
+                    std::tie(std::ignore, m_segments.back().invA) = mpsv::math::MatrixInverse3x3(m_segments.back().A);
                 }
-                for(auto&& segment : segments){
+                for(auto&& segment : m_segments){
                     segment.ratio /= V;
                 }
-                volume = V * rangePosition * rangePosition * rangeAngle * metricWeightPsi;
+                m_volume = V * rangePosition * rangePosition * rangeAngle * metricWeightPsi;
             }
         }
 
@@ -142,16 +142,16 @@ class PathSampler {
          */
         std::array<double,3> Sample(size_t idxSample) noexcept {
             std::array<double, 3> sample;
-            double s = haltonSequence.Sample(3, idxSample);
-            int32_t N = static_cast<int32_t>(segments.size());
+            double s = m_haltonSequence.Sample(3, idxSample);
+            int32_t N = static_cast<int32_t>(m_segments.size());
             int32_t i = 0;
-            for(i = 0; (i < N) && (segments[i].ratio < s); ++i);
-            double sx = haltonSequence.Sample(0, idxSample);
-            double sy = haltonSequence.Sample(1, idxSample);
-            double sz = haltonSequence.Sample(2, idxSample);
-            sample[0] = segments[i].b[0] + segments[i].A[0] * sx + segments[i].A[1] * sy + segments[i].A[2] * sz;
-            sample[1] = segments[i].b[1] + segments[i].A[3] * sx + segments[i].A[4] * sy + segments[i].A[5] * sz;
-            sample[2] = mpsv::math::SymmetricalAngle(segments[i].b[2] + segments[i].A[6] * sx + segments[i].A[7] * sy + segments[i].A[8] * sz);
+            for(i = 0; (i < N) && (m_segments[i].ratio < s); ++i);
+            double sx = m_haltonSequence.Sample(0, idxSample);
+            double sy = m_haltonSequence.Sample(1, idxSample);
+            double sz = m_haltonSequence.Sample(2, idxSample);
+            sample[0] = m_segments[i].b[0] + m_segments[i].A[0] * sx + m_segments[i].A[1] * sy + m_segments[i].A[2] * sz;
+            sample[1] = m_segments[i].b[1] + m_segments[i].A[3] * sx + m_segments[i].A[4] * sy + m_segments[i].A[5] * sz;
+            sample[2] = mpsv::math::SymmetricalAngle(m_segments[i].b[2] + m_segments[i].A[6] * sx + m_segments[i].A[7] * sy + m_segments[i].A[8] * sz);
             return sample;
         }
 
@@ -165,7 +165,7 @@ class PathSampler {
             static_assert(mpsv::is_vec3<T>::value,"Argument {pose} must be of type std::array<double,N> with N >= 3!");
             bool isInside = false;
             std::array<double,3> tmp, s;
-            for(auto&& box : segments){
+            for(auto&& box : m_segments){
                 tmp[0] = pose[0] - box.b[0];
                 tmp[1] = pose[1] - box.b[1];
                 tmp[2] = mpsv::math::SymmetricalAngle(pose[2] - box.b[2]);
@@ -183,7 +183,7 @@ class PathSampler {
          * @details The volume corresponds to (x) * (y) * (wpsi * psi), where wpsi denotes the weighting for psi in the metric distance function.
          * Note that this value is the sum of volumes of all overlapping sampling boxes around the path. Due to overlapping, the true volume would be smaller.
          */
-        double GetVolume(void){ return volume; }
+        double GetVolume(void){ return m_volume; }
 
     protected:
         struct Segment {
@@ -192,9 +192,9 @@ class PathSampler {
             std::array<double,3> b;                     // Vector for sampling of this path segment according to A*s + b.
             std::array<double,9> invA;                  // Inverse matrix (row-major order) of @ref A.
         };
-        double volume;                                  // Volume of the whole sampling area.
-        std::vector<Segment> segments;                  // List of path segments.
-        mpsv::sampler::HaltonSequence haltonSequence;   // The internal halton sequence used to sample poses from path segments.
+        double m_volume;                                  // Volume of the whole sampling area.
+        std::vector<Segment> m_segments;                  // List of path segments.
+        mpsv::sampler::HaltonSequence m_haltonSequence;   // The internal halton sequence used to sample poses from path segments.
 };
 
 

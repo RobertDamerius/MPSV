@@ -67,31 +67,31 @@ template <class Tnode> class FixedSizeTreeSE2 {
          */
         void Clear(int16_t maxNumNodes = 1) noexcept {
             maxNumNodes = std::max<int16_t>(1, maxNumNodes);
-            freeIndices.clear();
-            freeIndices.reserve(maxNumNodes);
+            m_freeIndices.clear();
+            m_freeIndices.reserve(maxNumNodes);
             for(int16_t i = maxNumNodes - 1; i >= 0; --i){
-                freeIndices.push_back(i);
+                m_freeIndices.push_back(i);
             }
-            activeIndices.clear();
-            activeIndices.reserve(maxNumNodes);
-            leafIndices.clear();
-            leafIndices.reserve(maxNumNodes);
-            traversalStack.clear();
-            traversalStack.reserve(maxNumNodes);
-            nodes.resize(maxNumNodes);
-            rootNodeIndex = -1;
-            lutR3.resize(maxNumNodes);
-            lutOptimalRadius.resize(maxNumNodes);
-            lutRandom.resize(maxNumNodes);
+            m_activeIndices.clear();
+            m_activeIndices.reserve(maxNumNodes);
+            m_leafIndices.clear();
+            m_leafIndices.reserve(maxNumNodes);
+            m_traversalStack.clear();
+            m_traversalStack.reserve(maxNumNodes);
+            m_nodes.resize(maxNumNodes);
+            m_rootNodeIndex = -1;
+            m_lutR3.resize(maxNumNodes);
+            m_lutOptimalRadius.resize(maxNumNodes);
+            m_lutRandom.resize(maxNumNodes);
             std::mt19937_64 gen(0);
             std::uniform_real_distribution<double> dist(0.0, 1.0);
             for(int16_t n = 0; n < maxNumNodes; ++n){
                 double k = static_cast<double>(std::max<int16_t>(3, n));
-                lutR3[n] = std::cbrt(2.54647908947033 * std::log(k) / k); // 2.54647908947033 = 2^d*(1+1/d)/(4/3 * pi), with d=3
-                lutOptimalRadius[n] = std::numeric_limits<double>::infinity(); // actual value set by @ref SetCSpaceVolume
-                lutRandom[n] = dist(gen);
+                m_lutR3[n] = std::cbrt(2.54647908947033 * std::log(k) / k); // 2.54647908947033 = 2^d*(1+1/d)/(4/3 * pi), with d=3
+                m_lutOptimalRadius[n] = std::numeric_limits<double>::infinity(); // actual value set by @ref SetCSpaceVolume
+                m_lutRandom[n] = dist(gen);
             }
-            idxRandom = 0;
+            m_idxRandom = 0;
         }
 
         /**
@@ -102,23 +102,23 @@ template <class Tnode> class FixedSizeTreeSE2 {
          */
         template <class T> int16_t Reset(const T& initialPose) noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {initialPose} must be of type std::array<double,N> with N >= 3!");
-            int16_t numNodes = static_cast<int16_t>(nodes.size());
-            freeIndices.resize(numNodes);
+            int16_t numNodes = static_cast<int16_t>(m_nodes.size());
+            m_freeIndices.resize(numNodes);
             for(int16_t i = 0; i < numNodes; ++i){
-                freeIndices[i] = numNodes - 1 - i;
+                m_freeIndices[i] = numNodes - 1 - i;
             }
-            activeIndices.clear();
-            leafIndices.clear();
+            m_activeIndices.clear();
+            m_leafIndices.clear();
             Tnode node(initialPose);
-            rootNodeIndex = Add(-1, node);
-            return rootNodeIndex;
+            m_rootNodeIndex = Add(-1, node);
+            return m_rootNodeIndex;
         }
 
         /**
          * @brief Check whether the tree is full (no more nodes can be added) or not.
          * @return True if tree is full, false otherwise.
          */
-        bool IsFull(void) noexcept { return freeIndices.empty(); }
+        bool IsFull(void) noexcept { return m_freeIndices.empty(); }
 
         /**
          * @brief Add a new node to the tree.
@@ -127,27 +127,27 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @return The index to the added node, or -1 if the operation failed.
          */
         int16_t Add(int16_t idxParent, const Tnode& node) noexcept {
-            if(freeIndices.empty()) return -1;
-            int16_t idx = freeIndices.back();
-            freeIndices.pop_back();
-            nodes[idx].pose = node.pose;
-            nodes[idx].cost = node.cost;
-            nodes[idx].iParent = idxParent;
-            nodes[idx].iFirstChild = -1;
-            nodes[idx].iPrevSibling = -1;
-            nodes[idx].iNextSibling = -1;
+            if(m_freeIndices.empty()) return -1;
+            int16_t idx = m_freeIndices.back();
+            m_freeIndices.pop_back();
+            m_nodes[idx].pose = node.pose;
+            m_nodes[idx].cost = node.cost;
+            m_nodes[idx].iParent = idxParent;
+            m_nodes[idx].iFirstChild = -1;
+            m_nodes[idx].iPrevSibling = -1;
+            m_nodes[idx].iNextSibling = -1;
             AddToActiveList(idx);
             AddToLeafList(idx);
             if(idxParent >= 0){
-                if(nodes[idxParent].iFirstChild < 0){
+                if(m_nodes[idxParent].iFirstChild < 0){
                     RemoveFromLeafList(idxParent);
                 }
-                int16_t oldFirstChild = nodes[idxParent].iFirstChild;
-                nodes[idx].iNextSibling = oldFirstChild;
+                int16_t oldFirstChild = m_nodes[idxParent].iFirstChild;
+                m_nodes[idx].iNextSibling = oldFirstChild;
                 if(oldFirstChild >= 0){
-                    nodes[oldFirstChild].iPrevSibling = idx;
+                    m_nodes[oldFirstChild].iPrevSibling = idx;
                 }
-                nodes[idxParent].iFirstChild = idx;
+                m_nodes[idxParent].iFirstChild = idx;
             }
             return idx;
         }
@@ -161,8 +161,8 @@ template <class Tnode> class FixedSizeTreeSE2 {
         int16_t FindNearestNode(const Tnode& node, const double metricWeightPsi) noexcept {
             int16_t result = -1;
             double distance = std::numeric_limits<double>::infinity();
-            for(auto&& i : activeIndices){
-                double d = mpsv::math::DistanceMetricSE2(nodes[i].pose, node.pose, metricWeightPsi);
+            for(auto&& i : m_activeIndices){
+                double d = mpsv::math::DistanceMetricSE2(m_nodes[i].pose, node.pose, metricWeightPsi);
                 if(d < distance){
                     distance = d;
                     result = i;
@@ -182,12 +182,12 @@ template <class Tnode> class FixedSizeTreeSE2 {
         bool FindNearestNeighbors(std::vector<int16_t>& idxNeighbors, const Tnode& node, const double radius, const double metricWeightPsi) noexcept {
             idxNeighbors.clear();
             bool result = false;
-            for(auto&& i : activeIndices){
-                double R = mpsv::math::DistanceMetricSE2(nodes[i].pose, node.pose, metricWeightPsi);
+            for(auto&& i : m_activeIndices){
+                double R = mpsv::math::DistanceMetricSE2(m_nodes[i].pose, node.pose, metricWeightPsi);
                 if(R <= radius){
                     idxNeighbors.push_back(i);
                 }
-                result |= (R <= epsDistanceMetric);
+                result |= (R <= m_epsDistanceMetric);
             }
             return result;
         }
@@ -203,28 +203,28 @@ template <class Tnode> class FixedSizeTreeSE2 {
             DetachFromParent(idxNodeToRewire);
 
             // Make the new parent connection
-            if(nodes[idxNewParent].iFirstChild < 0){
+            if(m_nodes[idxNewParent].iFirstChild < 0){
                 RemoveFromLeafList(idxNewParent);
             }
-            nodes[idxNodeToRewire].iParent = idxNewParent;
-            nodes[idxNodeToRewire].iPrevSibling = -1;
-            nodes[idxNodeToRewire].iNextSibling = nodes[idxNewParent].iFirstChild;
-            if(nodes[idxNewParent].iFirstChild >= 0){
-                nodes[nodes[idxNewParent].iFirstChild].iPrevSibling = idxNodeToRewire;
+            m_nodes[idxNodeToRewire].iParent = idxNewParent;
+            m_nodes[idxNodeToRewire].iPrevSibling = -1;
+            m_nodes[idxNodeToRewire].iNextSibling = m_nodes[idxNewParent].iFirstChild;
+            if(m_nodes[idxNewParent].iFirstChild >= 0){
+                m_nodes[m_nodes[idxNewParent].iFirstChild].iPrevSibling = idxNodeToRewire;
             }
-            nodes[idxNewParent].iFirstChild = idxNodeToRewire;
+            m_nodes[idxNewParent].iFirstChild = idxNodeToRewire;
 
             // Update cost for all child branches
-            traversalStack.clear();
-            traversalStack.push_back(idxNodeToRewire);
-            while(!traversalStack.empty()){
-                int16_t current = traversalStack.back();
-                traversalStack.pop_back();
-                nodes[current].cost += additionalCost;
-                int16_t child = nodes[current].iFirstChild;
+            m_traversalStack.clear();
+            m_traversalStack.push_back(idxNodeToRewire);
+            while(!m_traversalStack.empty()){
+                int16_t current = m_traversalStack.back();
+                m_traversalStack.pop_back();
+                m_nodes[current].cost += additionalCost;
+                int16_t child = m_nodes[current].iFirstChild;
                 while(child >= 0){
-                    traversalStack.push_back(child);
-                    child = nodes[child].iNextSibling;
+                    m_traversalStack.push_back(child);
+                    child = m_nodes[child].iNextSibling;
                 }
             }
         }
@@ -236,18 +236,18 @@ template <class Tnode> class FixedSizeTreeSE2 {
          */
         bool RemoveRandomLeaf(int16_t idxSolutionNode) noexcept {
             // Select a random leaf index to be removed
-            size_t numLeaves = leafIndices.size();
-            size_t removeLeafIndex = static_cast<size_t>(lutRandom[idxRandom] * numLeaves);
-            idxRandom = (idxRandom + 1) % lutRandom.size();
+            size_t numLeaves = m_leafIndices.size();
+            size_t removeLeafIndex = static_cast<size_t>(m_lutRandom[m_idxRandom] * numLeaves);
+            m_idxRandom = (m_idxRandom + 1) % m_lutRandom.size();
 
             // Find a leaf that is not the solution node or the root node
             for(size_t i = 0; i < numLeaves; ++i){
-                if((leafIndices[removeLeafIndex] != idxSolutionNode) && (leafIndices[removeLeafIndex] != rootNodeIndex)){
-                    int16_t idxRemove = leafIndices[removeLeafIndex];
+                if((m_leafIndices[removeLeafIndex] != idxSolutionNode) && (m_leafIndices[removeLeafIndex] != m_rootNodeIndex)){
+                    int16_t idxRemove = m_leafIndices[removeLeafIndex];
                     DetachFromParent(idxRemove);
                     RemoveFromLeafList(idxRemove);
                     RemoveFromActiveList(idxRemove);
-                    freeIndices.push_back(idxRemove);
+                    m_freeIndices.push_back(idxRemove);
                     return true;
                 }
 
@@ -264,25 +264,25 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @param[in] nodeIndex The index to the root of the subtree to be removed.
          */
         void DeleteSubtree(int16_t nodeIndex) noexcept {
-            if((nodeIndex < 0) || (nodeIndex >= static_cast<int16_t>(nodes.size())) || (nodeIndex == rootNodeIndex) || (nodes[nodeIndex].iActiveList < 0)){
+            if((nodeIndex < 0) || (nodeIndex >= static_cast<int16_t>(m_nodes.size())) || (nodeIndex == m_rootNodeIndex) || (m_nodes[nodeIndex].iActiveList < 0)){
                 return;
             }
             DetachFromParent(nodeIndex);
-            traversalStack.clear();
-            traversalStack.push_back(nodeIndex);
-            while(!traversalStack.empty()){
-                int16_t current = traversalStack.back();
-                traversalStack.pop_back();
-                int16_t child = nodes[current].iFirstChild;
+            m_traversalStack.clear();
+            m_traversalStack.push_back(nodeIndex);
+            while(!m_traversalStack.empty()){
+                int16_t current = m_traversalStack.back();
+                m_traversalStack.pop_back();
+                int16_t child = m_nodes[current].iFirstChild;
                 while(child >= 0){
-                    traversalStack.push_back(child);
-                    child = nodes[child].iNextSibling;
+                    m_traversalStack.push_back(child);
+                    child = m_nodes[child].iNextSibling;
                 }
-                if(nodes[current].iLeafList >= 0){
+                if(m_nodes[current].iLeafList >= 0){
                     RemoveFromLeafList(current);
                 }
                 RemoveFromActiveList(current);
-                freeIndices.push_back(current);
+                m_freeIndices.push_back(current);
             }
         }
 
@@ -298,18 +298,18 @@ template <class Tnode> class FixedSizeTreeSE2 {
          */
         template <class T> int16_t ChangeRoot(const T& newRootPose, int16_t childIndex, const double metricWeightPsi) noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {newRootPose} must be of type std::array<double,N> with N >= 3!");
-            if((childIndex < 0) || (childIndex >= static_cast<int16_t>(nodes.size())) || (nodes[childIndex].iActiveList < 0)){
+            if((childIndex < 0) || (childIndex >= static_cast<int16_t>(m_nodes.size())) || (m_nodes[childIndex].iActiveList < 0)){
                 return Reset(newRootPose);
             }
-            const int16_t oldRootIndex = rootNodeIndex;
+            const int16_t oldRootIndex = m_rootNodeIndex;
             int16_t newRootIndex = -1;
 
             // Decide whether to use an existing node (close enough) or generate a new one
-            if(mpsv::math::DistanceMetricSE2(newRootPose, nodes[childIndex].pose, metricWeightPsi) <= epsDistanceMetric){
+            if(mpsv::math::DistanceMetricSE2(newRootPose, m_nodes[childIndex].pose, metricWeightPsi) <= m_epsDistanceMetric){
                 // Reuse existing node as new root
                 newRootIndex = childIndex;
-                std::ranges::copy(newRootPose | std::views::take(3), nodes[newRootIndex].pose.begin());
-                nodes[newRootIndex].cost = 0.0;
+                std::ranges::copy(newRootPose | std::views::take(3), m_nodes[newRootIndex].pose.begin());
+                m_nodes[newRootIndex].cost = 0.0;
 
                 // Detach from its old parent
                 DetachFromParent(newRootIndex);
@@ -319,17 +319,17 @@ template <class Tnode> class FixedSizeTreeSE2 {
                         return Reset(newRootPose);
                     }
                 }
-                newRootIndex = freeIndices.back();
-                freeIndices.pop_back();
+                newRootIndex = m_freeIndices.back();
+                m_freeIndices.pop_back();
                 AddToActiveList(newRootIndex);
 
                 // Initialize new root
-                std::ranges::copy(newRootPose | std::views::take(3), nodes[newRootIndex].pose.begin());
-                nodes[newRootIndex].cost = 0.0;
-                nodes[newRootIndex].iParent = -1;
-                nodes[newRootIndex].iFirstChild = -1;
-                nodes[newRootIndex].iPrevSibling = -1;
-                nodes[newRootIndex].iNextSibling = -1;
+                std::ranges::copy(newRootPose | std::views::take(3), m_nodes[newRootIndex].pose.begin());
+                m_nodes[newRootIndex].cost = 0.0;
+                m_nodes[newRootIndex].iParent = -1;
+                m_nodes[newRootIndex].iFirstChild = -1;
+                m_nodes[newRootIndex].iPrevSibling = -1;
+                m_nodes[newRootIndex].iNextSibling = -1;
                 AddToLeafList(newRootIndex);
 
                 // Rewire the target node to the new root with 0.0 additional cost
@@ -337,11 +337,11 @@ template <class Tnode> class FixedSizeTreeSE2 {
             }
 
             // Prune everything that remained under the old root before childIndex was disconnected.
-            rootNodeIndex = newRootIndex;
+            m_rootNodeIndex = newRootIndex;
             if(oldRootIndex != childIndex){
                 DeleteSubtree(oldRootIndex);
             }
-            return rootNodeIndex;
+            return m_rootNodeIndex;
         }
 
         /**
@@ -350,8 +350,8 @@ template <class Tnode> class FixedSizeTreeSE2 {
          */
         void SetCSpaceVolume(double volumeCSpace) noexcept {
             double cbrtV = std::cbrt(std::fabs(volumeCSpace));
-            for(size_t n = 0; n < lutOptimalRadius.size(); ++n){
-                lutOptimalRadius[n] = cbrtV * lutR3[n];
+            for(size_t n = 0; n < m_lutOptimalRadius.size(); ++n){
+                m_lutOptimalRadius[n] = cbrtV * m_lutR3[n];
             }
         }
 
@@ -360,7 +360,7 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @param[in] epsDistanceMetric Numeric limit for the distance metric.
          */
         void SetNumericLimit(const double epsDistanceMetric) noexcept {
-            this->epsDistanceMetric = std::max(std::numeric_limits<double>::epsilon(), epsDistanceMetric);
+            m_epsDistanceMetric = std::max(std::numeric_limits<double>::epsilon(), epsDistanceMetric);
         }
 
         /**
@@ -368,36 +368,36 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @return Optimal radius according to the weighted euclidean distance metric sqrt(x^2 + y^2 + (weightPsi * psi)^2).
          * @note The volume of the configuration space has to be set in advance via @ref SetCSpaceVolume.
          */
-        double GetOptimalRadius(void) noexcept { return lutOptimalRadius[std::min(activeIndices.size(), lutOptimalRadius.size() - 1)]; }
+        double GetOptimalRadius(void) noexcept { return m_lutOptimalRadius[std::min(m_activeIndices.size(), m_lutOptimalRadius.size() - 1)]; }
 
         /**
          * @brief Transform the tree to a new origin (translation only). The poses of all active nodes are transformed.
          * @param[in] posOldToNew Position from old origin to new origin.
          */
         void TransformToNewOrigin(std::array<double,2> posOldToNew) noexcept {
-            for(auto&& i : activeIndices){
-                nodes[i].pose[0] -= posOldToNew[0];
-                nodes[i].pose[1] -= posOldToNew[1];
+            for(auto&& i : m_activeIndices){
+                m_nodes[i].pose[0] -= posOldToNew[0];
+                m_nodes[i].pose[1] -= posOldToNew[1];
             }
         }
 
         /* Non-const operator[]: allows modifying the node */
-        Tnode& operator[](int16_t index) noexcept { return nodes[index]; }
+        Tnode& operator[](int16_t index) noexcept { return m_nodes[index]; }
 
         /* Const operator[]: allows reading the node when the tree is const */
-        const Tnode& operator[](int16_t index) const noexcept { return nodes[index]; }
+        const Tnode& operator[](int16_t index) const noexcept { return m_nodes[index]; }
 
         /**
          * @brief Get indices to all active nodes in the tree.
          * @return A constant reference to the internal container of active nodes.
          */
-        const std::vector<int16_t>& GetActiveIndices(void) const noexcept { return activeIndices; }
+        const std::vector<int16_t>& GetActiveIndices(void) const noexcept { return m_activeIndices; }
 
         /**
          * @brief Get indices to all leaf nodes in the tree.
          * @return A constant reference to the internal container of leaf nodes.
          */
-        const std::vector<int16_t>& GetLeafIndices(void) const noexcept { return leafIndices; }
+        const std::vector<int16_t>& GetLeafIndices(void) const noexcept { return m_leafIndices; }
 
         /**
          * @brief Get all leaf indices of a specific node in the tree.
@@ -406,22 +406,22 @@ template <class Tnode> class FixedSizeTreeSE2 {
          */
         void GetLeafIndices(std::vector<int16_t>& leafIndicesOut, int16_t nodeIndex) noexcept{
             leafIndicesOut.clear();
-            traversalStack.clear();
-            if((nodeIndex < 0) || (nodeIndex >= static_cast<int16_t>(nodes.size())) || (nodes[nodeIndex].iActiveList < 0)){
+            m_traversalStack.clear();
+            if((nodeIndex < 0) || (nodeIndex >= static_cast<int16_t>(m_nodes.size())) || (m_nodes[nodeIndex].iActiveList < 0)){
                 return;
             }
-            traversalStack.push_back(nodeIndex);
-            while(!traversalStack.empty()){
-                int16_t current = traversalStack.back();
-                traversalStack.pop_back();
-                if(nodes[current].iFirstChild < 0){
+            m_traversalStack.push_back(nodeIndex);
+            while(!m_traversalStack.empty()){
+                int16_t current = m_traversalStack.back();
+                m_traversalStack.pop_back();
+                if(m_nodes[current].iFirstChild < 0){
                     leafIndicesOut.push_back(current);
                     continue;
                 }
-                int16_t child = nodes[current].iFirstChild;
+                int16_t child = m_nodes[current].iFirstChild;
                 while(child >= 0){
-                    traversalStack.push_back(child);
-                    child = nodes[child].iNextSibling;
+                    m_traversalStack.push_back(child);
+                    child = m_nodes[child].iNextSibling;
                 }
             }
         }
@@ -433,17 +433,17 @@ template <class Tnode> class FixedSizeTreeSE2 {
          */
         void GetPathFromRootToNode(std::vector<std::array<double, 3>>& path, int16_t nodeIndex) noexcept {
             path.clear();
-            if(nodeIndex < 0 || nodeIndex >= static_cast<int16_t>(nodes.size()) || (nodes[nodeIndex].iActiveList < 0)){
+            if(nodeIndex < 0 || nodeIndex >= static_cast<int16_t>(m_nodes.size()) || (m_nodes[nodeIndex].iActiveList < 0)){
                 return;
             }
-            traversalStack.clear();
+            m_traversalStack.clear();
             while(nodeIndex >= 0){
-                traversalStack.push_back(nodeIndex);
-                nodeIndex = nodes[nodeIndex].iParent;
+                m_traversalStack.push_back(nodeIndex);
+                nodeIndex = m_nodes[nodeIndex].iParent;
             }
-            path.reserve(traversalStack.size());
-            for(auto it = traversalStack.rbegin(); it != traversalStack.rend(); ++it){
-                path.push_back(nodes[*it].pose);
+            path.reserve(m_traversalStack.size());
+            for(auto it = m_traversalStack.rbegin(); it != m_traversalStack.rend(); ++it){
+                path.push_back(m_nodes[*it].pose);
             }
         }
 
@@ -456,46 +456,46 @@ template <class Tnode> class FixedSizeTreeSE2 {
             std::vector<double> vecPoses;
             std::vector<double> vecCost;
             std::vector<int16_t> vecParentIndices;
-            uint32_t Na = static_cast<uint32_t>(activeIndices.size());
-            uint32_t Nn = static_cast<uint32_t>(nodes.size());
+            uint32_t Na = static_cast<uint32_t>(m_activeIndices.size());
+            uint32_t Nn = static_cast<uint32_t>(m_nodes.size());
             vecPoses.reserve(3 * Nn);
             vecCost.reserve(Nn);
             vecParentIndices.reserve(Nn);
             for(uint32_t n = 0; n != Nn; ++n){
-                vecPoses.push_back(nodes[n].pose[0]);
-                vecPoses.push_back(nodes[n].pose[1]);
-                vecPoses.push_back(nodes[n].pose[2]);
-                vecCost.push_back(nodes[n].cost);
-                vecParentIndices.push_back(nodes[n].iParent);
+                vecPoses.push_back(m_nodes[n].pose[0]);
+                vecPoses.push_back(m_nodes[n].pose[1]);
+                vecPoses.push_back(m_nodes[n].pose[2]);
+                vecCost.push_back(m_nodes[n].cost);
+                vecParentIndices.push_back(m_nodes[n].iParent);
             }
             if(Nn){
                 file.WriteField("double", preString + "pose", {3, Nn}, &vecPoses[0], sizeof(double) * vecPoses.size());
                 file.WriteField("int16_t", preString + "iParent", {Nn}, &vecParentIndices[0], sizeof(int16_t) * vecParentIndices.size());
                 file.WriteField("double", preString + "cost", {Nn}, &vecCost[0], sizeof(double) * vecCost.size());
-                file.WriteField("int16_t", preString + "activeIndices", {Na}, &activeIndices[0], sizeof(int16_t) * activeIndices.size());
+                file.WriteField("int16_t", preString + "activeIndices", {Na}, &m_activeIndices[0], sizeof(int16_t) * m_activeIndices.size());
             }
         }
 
     protected:
-        std::vector<int16_t> freeIndices;                                   // Stores the indices of free nodes in the tree.
-        std::vector<int16_t> activeIndices;                                 // Stores the indices of active nodes in the tree.
-        std::vector<int16_t> leafIndices;                                   // Stores the indices of leaf nodes in the tree.
-        std::vector<int16_t> traversalStack;                                // Pre-allocated stack for traversing through branches.
-        std::vector<Tnode> nodes;                                           // Internal storage for all nodes.
-        std::vector<double> lutR3;                                          // Look-up table containing values to be used to calculate the step-size for the near neighbor search. Optimal radius is given by r = Vc^(1/3) * lutR3[n] with n being the cardinality of the tree and Vc being the volume of the search space.
-        std::vector<double> lutOptimalRadius;                               // Look-up table containing the optimal radius for nearest neighbors searches based on the current cardinality (number of nodes) of the tree. This value is based on the volume of the search space.
-        std::vector<double> lutRandom;                                      // A container of precomputed random numbers. Those random numbers are used to remove random leaf nodes from the tree.
-        size_t idxRandom{0};                                                // Current index of the random number.
-        int16_t rootNodeIndex{-1};                                          // Index of the root node.
-        double epsDistanceMetric{std::numeric_limits<double>::epsilon()};   // Numeric limit for distance metric.
+        std::vector<int16_t> m_freeIndices;                                   // Stores the indices of free nodes in the tree.
+        std::vector<int16_t> m_activeIndices;                                 // Stores the indices of active nodes in the tree.
+        std::vector<int16_t> m_leafIndices;                                   // Stores the indices of leaf nodes in the tree.
+        std::vector<int16_t> m_traversalStack;                                // Pre-allocated stack for traversing through branches.
+        std::vector<Tnode> m_nodes;                                           // Internal storage for all nodes.
+        std::vector<double> m_lutR3;                                          // Look-up table containing values to be used to calculate the step-size for the near neighbor search. Optimal radius is given by r = Vc^(1/3) * lutR3[n] with n being the cardinality of the tree and Vc being the volume of the search space.
+        std::vector<double> m_lutOptimalRadius;                               // Look-up table containing the optimal radius for nearest neighbors searches based on the current cardinality (number of nodes) of the tree. This value is based on the volume of the search space.
+        std::vector<double> m_lutRandom;                                      // A container of precomputed random numbers. Those random numbers are used to remove random leaf nodes from the tree.
+        size_t m_idxRandom{0};                                                // Current index of the random number.
+        int16_t m_rootNodeIndex{-1};                                          // Index of the root node.
+        double m_epsDistanceMetric{std::numeric_limits<double>::epsilon()};   // Numeric limit for distance metric.
 
         /**
          * @brief Add a node to the active list.
          * @param[in] idx Index of the node to be added to the active list.
          */
         void AddToActiveList(int16_t idx) noexcept {
-            nodes[idx].iActiveList = static_cast<int16_t>(activeIndices.size());
-            activeIndices.push_back(idx);
+            m_nodes[idx].iActiveList = static_cast<int16_t>(m_activeIndices.size());
+            m_activeIndices.push_back(idx);
         }
 
         /**
@@ -503,8 +503,8 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @param[in] idx Index of the node to be added to the leaf list.
          */
         void AddToLeafList(int16_t idx) noexcept {
-            nodes[idx].iLeafList = static_cast<int16_t>(leafIndices.size());
-            leafIndices.push_back(idx);
+            m_nodes[idx].iLeafList = static_cast<int16_t>(m_leafIndices.size());
+            m_leafIndices.push_back(idx);
         }
 
         /**
@@ -512,10 +512,10 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @param[in] idx Index of the node to be removed from the active list.
          */
         void RemoveFromActiveList(int16_t idx) noexcept {
-            nodes[activeIndices.back()].iActiveList = nodes[idx].iActiveList;
-            activeIndices[nodes[activeIndices.back()].iActiveList] = activeIndices.back();
-            nodes[idx].iActiveList = -1;
-            activeIndices.pop_back();
+            m_nodes[m_activeIndices.back()].iActiveList = m_nodes[idx].iActiveList;
+            m_activeIndices[m_nodes[m_activeIndices.back()].iActiveList] = m_activeIndices.back();
+            m_nodes[idx].iActiveList = -1;
+            m_activeIndices.pop_back();
         }
 
         /**
@@ -523,10 +523,10 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @param[in] idx Index of the node to be removed from the leaf list.
          */
         void RemoveFromLeafList(int16_t idx) noexcept {
-            nodes[leafIndices.back()].iLeafList = nodes[idx].iLeafList;
-            leafIndices[nodes[leafIndices.back()].iLeafList] = leafIndices.back();
-            nodes[idx].iLeafList = -1;
-            leafIndices.pop_back();
+            m_nodes[m_leafIndices.back()].iLeafList = m_nodes[idx].iLeafList;
+            m_leafIndices[m_nodes[m_leafIndices.back()].iLeafList] = m_leafIndices.back();
+            m_nodes[idx].iLeafList = -1;
+            m_leafIndices.pop_back();
         }
 
         /**
@@ -534,24 +534,24 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @param[in] nodeIndex Index of the node to be detached from its parent.
          */
         void DetachFromParent(int16_t nodeIndex) noexcept {
-            int16_t parentIndex = nodes[nodeIndex].iParent;
+            int16_t parentIndex = m_nodes[nodeIndex].iParent;
             if(parentIndex < 0) return;
-            int16_t prev = nodes[nodeIndex].iPrevSibling;
-            int16_t next = nodes[nodeIndex].iNextSibling;
+            int16_t prev = m_nodes[nodeIndex].iPrevSibling;
+            int16_t next = m_nodes[nodeIndex].iNextSibling;
             if(prev < 0){
-                nodes[parentIndex].iFirstChild = next;
+                m_nodes[parentIndex].iFirstChild = next;
             } else {
-                nodes[prev].iNextSibling = next;
+                m_nodes[prev].iNextSibling = next;
             }
             if(next >= 0){
-                nodes[next].iPrevSibling = prev;
+                m_nodes[next].iPrevSibling = prev;
             }
-            if(nodes[parentIndex].iFirstChild < 0){
+            if(m_nodes[parentIndex].iFirstChild < 0){
                 AddToLeafList(parentIndex);
             }
-            nodes[nodeIndex].iParent = -1;
-            nodes[nodeIndex].iPrevSibling = -1;
-            nodes[nodeIndex].iNextSibling = -1;
+            m_nodes[nodeIndex].iParent = -1;
+            m_nodes[nodeIndex].iPrevSibling = -1;
+            m_nodes[nodeIndex].iNextSibling = -1;
         }
 };
 

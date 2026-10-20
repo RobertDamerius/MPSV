@@ -19,7 +19,7 @@ class VehicleShape {
         /**
          * @brief Create a vehicle shape based on a given set of vertices, that represent a convex polygon.
          * @param[inout] vertices Reference to a container that contains vertices. This container is swapped internally and will be empty after a successful operation.
-         * @details All @ref convexVehicleShapes are removed and the given vertices are used to set one convex vehicle shape.
+         * @details All @ref m_convexVehicleShapes are removed and the given vertices are used to set one convex vehicle shape.
          */
         void Create(std::vector<std::array<double, 2>>& vertices) noexcept {
             Clear();
@@ -31,14 +31,14 @@ class VehicleShape {
          * @param[inout] vertices Reference to a container that contains vertices. This container is swapped internally and will be empty after a successful operation.
          */
         void Add(std::vector<std::array<double, 2>>& vertices) noexcept {
-            convexVehicleShapes.push_back(mpsv::geometry::ConvexVehicleShape(vertices));
+            m_convexVehicleShapes.push_back(mpsv::geometry::ConvexVehicleShape(vertices));
         }
 
         /**
          * @brief Clear the list of convex vehicle shapes.
          */
         void Clear(void) noexcept {
-            convexVehicleShapes.clear();
+            m_convexVehicleShapes.clear();
         }
 
         /**
@@ -46,7 +46,7 @@ class VehicleShape {
          * @param[in] other The vehicle shape with which to swap.
          */
         void Swap(mpsv::geometry::VehicleShape& other) noexcept {
-            convexVehicleShapes.swap(other.convexVehicleShapes);
+            m_convexVehicleShapes.swap(other.m_convexVehicleShapes);
         }
 
         /**
@@ -54,8 +54,8 @@ class VehicleShape {
          * @return True if all internal polygons are valid, false otherwise. If this vehicle shape does not contain any polygons, false is returned.
          */
         bool IsValid(void) noexcept {
-            bool isValid = !convexVehicleShapes.empty();
-            for(auto&& v : convexVehicleShapes){
+            bool isValid = !m_convexVehicleShapes.empty();
+            for(auto&& v : m_convexVehicleShapes){
                 isValid &= v.IsValid();
             }
             return isValid;
@@ -69,7 +69,7 @@ class VehicleShape {
          */
         template <class T> bool IsInside(const T point) const noexcept {
             static_assert(mpsv::is_vec2<T>::value,"Argument {point} must be of type std::array<double,N> with N >= 2!");
-            for(auto&& v : convexVehicleShapes){
+            for(auto&& v : m_convexVehicleShapes){
                 if(v.IsInside(point)){
                     return true;
                 }
@@ -86,7 +86,7 @@ class VehicleShape {
          */
         template <class T> bool CheckCollisionPose(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, T pose) const noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {pose} must be of type std::array<double,N> with N >= 3!");
-            for(auto&& v : convexVehicleShapes){
+            for(auto&& v : m_convexVehicleShapes){
                 if(v.CheckCollisionPose(staticObstacles, pose)){
                     return true;
                 }
@@ -107,7 +107,7 @@ class VehicleShape {
         template <class T, class U> bool CheckCollisionLine(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, T pose0, U pose1, double maxAngleDeviation) const noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {pose0} must be of type std::array<double,N> with N >= 3!");
             static_assert(mpsv::is_vec3<U>::value,"Argument {pose1} must be of type std::array<double,N> with N >= 3!");
-            for(auto&& v : convexVehicleShapes){
+            for(auto&& v : m_convexVehicleShapes){
                 if(v.CheckCollisionLine(staticObstacles, pose0, pose1, maxAngleDeviation)){
                     return true;
                 }
@@ -126,7 +126,7 @@ class VehicleShape {
          */
         template <class T> bool CheckCollisionCurve(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const std::vector<T>& curve, double thresholdPosition, double thresholdAngle) const noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {curve} must be of type std::vector<std::array<double,N>> with N >= 3!");
-            for(auto&& v : convexVehicleShapes){
+            for(auto&& v : m_convexVehicleShapes){
                 if(v.CheckCollisionCurve(staticObstacles, curve, thresholdPosition, thresholdAngle)){
                     return true;
                 }
@@ -141,7 +141,7 @@ class VehicleShape {
          */
         double GetFarthestVertexDistance(void) const noexcept {
             double d = 0.0;
-            for(auto&& v : convexVehicleShapes){
+            for(auto&& v : m_convexVehicleShapes){
                 d = std::max(d, v.GetFarthestVertexDistance());
             }
             return d;
@@ -152,11 +152,11 @@ class VehicleShape {
          * @return The convex vehicle shapes that represent this vehicle shape.
          */
         std::vector<mpsv::geometry::ConvexVehicleShape> GetConvexShapes(void) noexcept {
-            return convexVehicleShapes;
+            return m_convexVehicleShapes;
         }
 
     private:
-        std::vector<mpsv::geometry::ConvexVehicleShape> convexVehicleShapes;   // List of convex vehicle shapes.
+        std::vector<mpsv::geometry::ConvexVehicleShape> m_convexVehicleShapes;   // List of convex vehicle shapes.
 };
 
 

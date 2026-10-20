@@ -28,10 +28,10 @@ class AABB {
          * @param[in] yUpper Upper value for y dimension.
          */
         AABB(double xLower, double yLower, double xUpper, double yUpper) noexcept {
-            lowerBound[0] = std::min(xLower,xUpper);
-            upperBound[0] = std::max(xLower,xUpper);
-            lowerBound[1] = std::min(yLower,yUpper);
-            upperBound[1] = std::max(yLower,yUpper);
+            m_lowerBound[0] = std::min(xLower,xUpper);
+            m_upperBound[0] = std::max(xLower,xUpper);
+            m_lowerBound[1] = std::min(yLower,yUpper);
+            m_upperBound[1] = std::max(yLower,yUpper);
         }
 
         /**
@@ -39,8 +39,8 @@ class AABB {
          * @param[in] point x and y coordinate of a 2D point.
          */
         void Reset(std::array<double,2> point) noexcept {
-            lowerBound[0] = upperBound[0] = point[0];
-            lowerBound[1] = upperBound[1] = point[1];
+            m_lowerBound[0] = m_upperBound[0] = point[0];
+            m_lowerBound[1] = m_upperBound[1] = point[1];
         }
 
         /**
@@ -50,10 +50,10 @@ class AABB {
          */
         void Extend(double e) noexcept {
             e = std::fabs(e);
-            lowerBound[0] -= e;
-            lowerBound[1] -= e;
-            upperBound[0] += e;
-            upperBound[1] += e;
+            m_lowerBound[0] -= e;
+            m_lowerBound[1] -= e;
+            m_upperBound[0] += e;
+            m_upperBound[1] += e;
         }
 
         /**
@@ -61,31 +61,31 @@ class AABB {
          * @param[in] aabb Another axis-aligned bounding box for which to check intersection.
          * @return True if the AABB does overlap with this one, false otherwise.
          */
-        bool Overlap(const AABB& aabb) const noexcept { return !((aabb.lowerBound[0] > upperBound[0]) || (lowerBound[0] > aabb.upperBound[0]) || (aabb.lowerBound[1] > upperBound[1]) || (lowerBound[1] > aabb.upperBound[1])); };
+        bool Overlap(const AABB& aabb) const noexcept { return !((aabb.m_lowerBound[0] > m_upperBound[0]) || (m_lowerBound[0] > aabb.m_upperBound[0]) || (aabb.m_lowerBound[1] > m_upperBound[1]) || (m_lowerBound[1] > aabb.m_upperBound[1])); };
 
         /**
          * @brief Swap this AABB with a given AABB.
          * @param[inout] aabb The AABB to be used for swapping.
          */
         void Swap(AABB& aabb) noexcept {
-            std::swap(lowerBound, aabb.lowerBound);
-            std::swap(upperBound, aabb.upperBound);
+            std::swap(m_lowerBound, aabb.m_lowerBound);
+            std::swap(m_upperBound, aabb.m_upperBound);
         }
 
         /**
          * @brief Check if the AABB is finite.
          * @return True if the AABB is finite, false otherwise.
          */
-        bool IsFinite(void) const noexcept { return std::isfinite(lowerBound[0]) && std::isfinite(lowerBound[1]) && std::isfinite(upperBound[0]) && std::isfinite(upperBound[1]); }
+        bool IsFinite(void) const noexcept { return std::isfinite(m_lowerBound[0]) && std::isfinite(m_lowerBound[1]) && std::isfinite(m_upperBound[0]) && std::isfinite(m_upperBound[1]); }
 
         /**
          * @brief Operator+= adds the right-hand sided AABB to this AABB (union).
          */
         AABB& operator+=(const AABB& rhs) noexcept {
-            lowerBound[0] = std::min(lowerBound[0], rhs.lowerBound[0]);
-            lowerBound[1] = std::min(lowerBound[1], rhs.lowerBound[1]);
-            upperBound[0] = std::max(upperBound[0], rhs.upperBound[0]);
-            upperBound[1] = std::max(upperBound[1], rhs.upperBound[1]);
+            m_lowerBound[0] = std::min(m_lowerBound[0], rhs.m_lowerBound[0]);
+            m_lowerBound[1] = std::min(m_lowerBound[1], rhs.m_lowerBound[1]);
+            m_upperBound[0] = std::max(m_upperBound[0], rhs.m_upperBound[0]);
+            m_upperBound[1] = std::max(m_upperBound[1], rhs.m_upperBound[1]);
             return *this;
         }
 
@@ -93,10 +93,10 @@ class AABB {
          * @brief Operator+= adds the right-hand sided point (x,y) to this AABB (union).
          */
         AABB& operator+=(const std::array<double,2>& rhs) noexcept {
-            lowerBound[0] = std::min(lowerBound[0], rhs[0]);
-            lowerBound[1] = std::min(lowerBound[1], rhs[1]);
-            upperBound[0] = std::max(upperBound[0], rhs[0]);
-            upperBound[1] = std::max(upperBound[1], rhs[1]);
+            m_lowerBound[0] = std::min(m_lowerBound[0], rhs[0]);
+            m_lowerBound[1] = std::min(m_lowerBound[1], rhs[1]);
+            m_upperBound[0] = std::max(m_upperBound[0], rhs[0]);
+            m_upperBound[1] = std::max(m_upperBound[1], rhs[1]);
             return *this;
         }
 
@@ -106,8 +106,8 @@ class AABB {
         friend AABB operator+(AABB lhs, const AABB& rhs) noexcept { lhs += rhs; return lhs; }
 
     private:
-        std::array<double,2> lowerBound;   // The lower bound of the axis-aligned bounding box [x, y].
-        std::array<double,2> upperBound;   // The upper bound of the axis-aligned bounding box [x, y].
+        std::array<double,2> m_lowerBound;   // The lower bound of the axis-aligned bounding box [x, y].
+        std::array<double,2> m_upperBound;   // The upper bound of the axis-aligned bounding box [x, y].
 };
 
 

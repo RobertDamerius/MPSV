@@ -19,9 +19,9 @@ using namespace mpsv::geometry;
 using namespace mpsv::sampler;
 
 
-std::vector<mpsv::geometry::ConvexPolygon> Benchmark::convexPolygons;
-mpsv::control::VehicleSimulator Benchmark::vehicleSimulator;
-double Benchmark::preventOptimization = 0.0;
+std::vector<mpsv::geometry::ConvexPolygon> Benchmark::m_convexPolygons;
+mpsv::control::VehicleSimulator Benchmark::m_vehicleSimulator;
+double Benchmark::m_preventOptimization = 0.0;
 
 
 void Benchmark::Run(void){
@@ -95,8 +95,8 @@ void Benchmark::Idle(void){
 
 void Benchmark::GeneratePolygons(const size_t numPolygons){
     // Clear polygon container and reserve memory
-    convexPolygons.clear();
-    convexPolygons.reserve(numPolygons);
+    m_convexPolygons.clear();
+    m_convexPolygons.reserve(numPolygons);
 
     // Initialize a sampler for random numbers in range [{0,0}, {100,100}].
     HaltonSequence sampler;
@@ -113,8 +113,8 @@ void Benchmark::GeneratePolygons(const size_t numPolygons){
         double y2 = sampler.Sample(1,k++);
         double x3 = sampler.Sample(0,k);
         double y3 = sampler.Sample(1,k++);
-        convexPolygons.push_back(ConvexPolygon({{x1,y1},{x2,y2},{x3,y3}}));
-        if(!convexPolygons.back().IsValid()){
+        m_convexPolygons.push_back(ConvexPolygon({{x1,y1},{x2,y2},{x3,y3}}));
+        if(!m_convexPolygons.back().IsValid()){
             fprintf(stderr,"ERROR: Failed to build convex polygon for test set!\n");
         }
     }
@@ -135,10 +135,10 @@ void Benchmark::InitializeVehicleSimulator(void){
     controller.maxRadiusY        = 6.0;
     controller.maxRadiusPsi      = 1.0;
     controller.minRadiusPosition = 2.0;
-    if(mpsv::error_code::NONE != vehicleSimulator.SetModel(model)){
+    if(mpsv::error_code::NONE != m_vehicleSimulator.SetModel(model)){
         fprintf(stderr,"ERROR: Failed to set model parameters!\n");
     }
-    if(mpsv::error_code::NONE != vehicleSimulator.SetController(controller)){
+    if(mpsv::error_code::NONE != m_vehicleSimulator.SetController(controller)){
         fprintf(stderr,"ERROR: Failed to set controller parameters!\n");
     }
 }
@@ -148,15 +148,15 @@ double Benchmark::PolygonOverlap(void){
     mpsv::runtime::PerformanceCounter timer;
     size_t numOverlaps = 0;
     timer.Start();
-    for(size_t i = 0; i < convexPolygons.size(); ++i){
-        for(size_t j = i + 1; j < convexPolygons.size(); ++j){
-            if(convexPolygons[i].Overlap(convexPolygons[j])){
+    for(size_t i = 0; i < m_convexPolygons.size(); ++i){
+        for(size_t j = i + 1; j < m_convexPolygons.size(); ++j){
+            if(m_convexPolygons[i].Overlap(m_convexPolygons[j])){
                 numOverlaps++;
             }
         }
     }
     double t = timer.TimeToStart();
-    preventOptimization += static_cast<double>(numOverlaps);
+    m_preventOptimization += static_cast<double>(numOverlaps);
     return t;
 }
 
@@ -178,7 +178,7 @@ double Benchmark::CostMapSingleThread(void){
         }
     }
     double t = timer.TimeToStart();
-    preventOptimization += lut[0];
+    m_preventOptimization += lut[0];
     return t;
 }
 
@@ -202,13 +202,13 @@ double Benchmark::CostMapMultiThread(void){
         lut[ix*N + iy] = CostFunction(x, y);
     }
     double t = timer.TimeToStart();
-    preventOptimization += lut[0];
+    m_preventOptimization += lut[0];
     return t;
 }
 
 double Benchmark::CostFunction(double x, double y){
     double squaredDistance = std::numeric_limits<double>::infinity();
-    for(auto&& polygon : convexPolygons){
+    for(auto&& polygon : m_convexPolygons){
         squaredDistance = std::min(squaredDistance, polygon.MinimumSquaredDistanceToEdges(x,y));
     }
     if(std::isfinite(squaredDistance)){
@@ -235,10 +235,10 @@ double Benchmark::ForwardSimulation(void){
         initialStateAndInput[3] = 1.5 * std::cos(3.0 * angle + 1.0);
         initialStateAndInput[4] = 0.5 * std::cos(5.0 * angle + 2.0);
         initialStateAndInput[5] = 0.02 * std::cos(7.0 * angle + 3.0);
-        result = vehicleSimulator.PredictMotion(initialStateAndInput, sampletime, numSimulationSteps);
+        result = m_vehicleSimulator.PredictMotion(initialStateAndInput, sampletime, numSimulationSteps);
     }
     double t = timer.TimeToStart();
-    preventOptimization += result[0];
+    m_preventOptimization += result[0];
     return t;
 }
 

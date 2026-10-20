@@ -50,8 +50,8 @@ class MPSV_WrapperAsynchronousOnlinePlanner {
         void Step(mpsv::planner::serialization_output* output, mpsv::planner::serialization_input* input, mpsv::planner::serialization_parameter* parameter);
 
     protected:
-        mpsv::planner::AsyncOnlinePlanner planner;                        // The internal asynchronous online planner.
-        mpsv::planner::AsyncOnlinePlannerInput plannerInput;              // Stores the input data for the internal asynchronous online planner.
-        mpsv::planner::AsyncOnlinePlannerParameterSet plannerParameter;   // Stores the parameter data for the internal asynchronous online planner.
-        mpsv::planner::AsyncOnlinePlannerOutput plannerOutput;            // Stores the output of the asynchronous online planner.
+        mpsv::planner::AsyncOnlinePlanner m_planner;                        // The internal asynchronous online planner.
+        mpsv::planner::AsyncOnlinePlannerInput m_plannerInput;              // Stores the input data for the internal asynchronous online planner.
+        mpsv::planner::AsyncOnlinePlannerParameterSet m_plannerParameter;   // Stores the parameter data for the internal asynchronous online planner.
+        mpsv::planner::AsyncOnlinePlannerOutput m_plannerOutput;            // Stores the output of the asynchronous online planner.
 };

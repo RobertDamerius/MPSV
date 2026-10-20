@@ -15,7 +15,7 @@ class IterationPerformanceTest {
         static void Run(void);
 
     private:
-        static SceneDataFile sceneData;   // Scene data file containing scenarios of realistic planning problems.
+        static SceneDataFile m_sceneData;   // Scene data file containing scenarios of realistic planning problems.
 
         /**
          * @brief Load scene data file.

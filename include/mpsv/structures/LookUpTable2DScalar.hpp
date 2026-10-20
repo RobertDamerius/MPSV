@@ -33,8 +33,8 @@ template <class Targ> class LookUpTable2DScalar: public mpsv::structures::LookUp
             static_assert(mpsv::is_vec2<U>::value,"Argument {p1} must be of type std::array<double,N> with N >= 2!");
 
             // Convert to index position ({0,0} indicates origin of lower-left corner of LUT data cell (lut[0]), {0.5,0.5} would be the center of the lower-left cell, all data corresponds to the center of a cell)
-            std::array<double,2> iPos0 = this->ConvertToLUTPosition(p0) / this->res;
-            std::array<double,2> iPos1 = this->ConvertToLUTPosition(p1) / this->res;
+            std::array<double,2> iPos0 = this->ConvertToLUTPosition(p0) / this->m_res;
+            std::array<double,2> iPos1 = this->ConvertToLUTPosition(p1) / this->m_res;
 
             // The center of the cell indicates the data, transform index position to the center such that all corners of the new grid cell correspond to true data points
             iPos0[0] -= 0.5;
@@ -99,18 +99,18 @@ template <class Targ> class LookUpTable2DScalar: public mpsv::structures::LookUp
             // Raytracing, start at t=0. The next cell to go is defined by tx,ty (the next intersection cell border is either in x or y direction)
             double t = 0;
             double sum = 0.0;
-            int32_t i0 = std::clamp(ix0, 0, this->numX - 1) * this->numY;   // safe lower border x-index for clamped to valid range, all indices (i0,i1) that are outside the range are clamped to the zero border
-            int32_t j0 = std::clamp(iy0, 0, this->numY - 1);                // safe lower border y-index clamped to valid range, all indices (j0,j1) that are outside the range are clamped to the zero border
-            int32_t i1 = std::clamp(ix0+1, 0, this->numX - 1) * this->numY; // safe lower border x-index for clamped to valid range, all indices (i0,i1) that are outside the range are clamped to the zero border
-            int32_t j1 = std::clamp(iy0+1, 0, this->numY - 1);              // safe lower border y-index clamped to valid range, all indices (j0,j1) that are outside the range are clamped to the zero border
+            int32_t i0 = std::clamp(ix0, 0, this->m_numX - 1) * this->m_numY;   // safe lower border x-index for clamped to valid range, all indices (i0,i1) that are outside the range are clamped to the zero border
+            int32_t j0 = std::clamp(iy0, 0, this->m_numY - 1);                // safe lower border y-index clamped to valid range, all indices (j0,j1) that are outside the range are clamped to the zero border
+            int32_t i1 = std::clamp(ix0+1, 0, this->m_numX - 1) * this->m_numY; // safe lower border x-index for clamped to valid range, all indices (i0,i1) that are outside the range are clamped to the zero border
+            int32_t j1 = std::clamp(iy0+1, 0, this->m_numY - 1);              // safe lower border y-index clamped to valid range, all indices (j0,j1) that are outside the range are clamped to the zero border
             while(t <= 1.0){
                 if((ix0 == ix1) && (iy0 == iy1)){ // goal cell reached
                     double x1 = x0 + vx * (1.0 - t);
                     double y1 = y0 + vy * (1.0 - t);
-                    double L00 = this->lut[i0 + j0];
-                    double L01 = this->lut[i0 + j1];
-                    double L10 = this->lut[i1 + j0];
-                    double L11 = this->lut[i1 + j1];
+                    double L00 = this->m_lut[i0 + j0];
+                    double L01 = this->m_lut[i0 + j1];
+                    double L10 = this->m_lut[i1 + j0];
+                    double L11 = this->m_lut[i1 + j1];
                     double dx = x1 - x0;
                     double dy = y1 - y0;
                     double tmp = (x0*y0 + x1*y1);
@@ -120,10 +120,10 @@ template <class Targ> class LookUpTable2DScalar: public mpsv::structures::LookUp
                 if(tx < ty){ // next cell border in x direction
                     double x1 = xe;
                     double y1 = y0 + vy * (tx - t);
-                    double L00 = this->lut[i0 + j0];
-                    double L01 = this->lut[i0 + j1];
-                    double L10 = this->lut[i1 + j0];
-                    double L11 = this->lut[i1 + j1];
+                    double L00 = this->m_lut[i0 + j0];
+                    double L01 = this->m_lut[i0 + j1];
+                    double L10 = this->m_lut[i1 + j0];
+                    double L11 = this->m_lut[i1 + j1];
                     double dx = x1 - x0;
                     double dy = y1 - y0;
                     double tmp = (x0*y0 + x1*y1);
@@ -133,16 +133,16 @@ template <class Targ> class LookUpTable2DScalar: public mpsv::structures::LookUp
                     t = tx;
                     tx += dtx;
                     ix0 += sx;
-                    i0 = std::clamp(ix0, 0, this->numX - 1) * this->numY;
-                    i1 = std::clamp(ix0+1, 0, this->numX - 1) * this->numY;
+                    i0 = std::clamp(ix0, 0, this->m_numX - 1) * this->m_numY;
+                    i1 = std::clamp(ix0+1, 0, this->m_numX - 1) * this->m_numY;
                 }
                 else{ // next cell border in y direction
                     double x1 = x0 + vx * (ty - t);
                     double y1 = ye;
-                    double L00 = this->lut[i0 + j0];
-                    double L01 = this->lut[i0 + j1];
-                    double L10 = this->lut[i1 + j0];
-                    double L11 = this->lut[i1 + j1];
+                    double L00 = this->m_lut[i0 + j0];
+                    double L01 = this->m_lut[i0 + j1];
+                    double L10 = this->m_lut[i1 + j0];
+                    double L11 = this->m_lut[i1 + j1];
                     double dx = x1 - x0;
                     double dy = y1 - y0;
                     double tmp = (x0*y0 + x1*y1);
@@ -152,11 +152,11 @@ template <class Targ> class LookUpTable2DScalar: public mpsv::structures::LookUp
                     t = ty;
                     ty += dty;
                     iy0 += sy;
-                    j0 = std::clamp(iy0, 0, this->numY - 1);
-                    j1 = std::clamp(iy0+1, 0, this->numY - 1);
+                    j0 = std::clamp(iy0, 0, this->m_numY - 1);
+                    j1 = std::clamp(iy0+1, 0, this->m_numY - 1);
                 }
             }
-            return sum * this->res / 6.0; // sum is calculated for cell units, transform to meters by taking cell resolution into account, div by 6 comes from integral (constant that is moved to outside the sum)
+            return sum * this->m_res / 6.0; // sum is calculated for cell units, transform to meters by taking cell resolution into account, div by 6 comes from integral (constant that is moved to outside the sum)
         }
 
         /**
@@ -165,10 +165,10 @@ template <class Targ> class LookUpTable2DScalar: public mpsv::structures::LookUp
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
-            file.WriteField("double", preString + "data", {static_cast<uint32_t>(this->numY), static_cast<uint32_t>(this->numX)}, &this->lut[0], sizeof(double) * this->lut.size());
-            file.WriteField("double", preString + "resolution", {1}, &this->res, sizeof(double));
-            file.WriteField("double", preString + "position", {2,1}, &this->position[0], sizeof(double) * this->position.size());
-            file.WriteField("double", preString + "normal", {2,1}, &this->normal[0], sizeof(double) * this->normal.size());
+            file.WriteField("double", preString + "data", {static_cast<uint32_t>(this->m_numY), static_cast<uint32_t>(this->m_numX)}, &this->m_lut[0], sizeof(double) * this->m_lut.size());
+            file.WriteField("double", preString + "resolution", {1}, &this->m_res, sizeof(double));
+            file.WriteField("double", preString + "position", {2,1}, &this->m_position[0], sizeof(double) * this->m_position.size());
+            file.WriteField("double", preString + "normal", {2,1}, &this->m_normal[0], sizeof(double) * this->m_normal.size());
         }
 };
 

@@ -22,9 +22,9 @@ class OrientedBox {
          * @brief Create an oriented box. By default the box orientation is zero.
          */
         OrientedBox() noexcept {
-            origin.fill(0.0);
-            normal = {1.0, 0.0};
-            dimension.fill(0.0);
+            m_origin.fill(0.0);
+            m_normal = {1.0, 0.0};
+            m_dimension.fill(0.0);
         }
 
         /**
@@ -33,11 +33,11 @@ class OrientedBox {
          * @param[in] dimension Dimension of the box along the major and minor axes (x,y) of the box.
          */
         void Create(std::array<double,3> centerPose, std::array<double,2> dimension) noexcept {
-            normal[0] = std::cos(centerPose[2]);
-            normal[1] = std::sin(centerPose[2]);
-            this->dimension = dimension;
-            origin[0] = centerPose[0] - (normal[0]*dimension[0] - normal[1]*dimension[1]) / 2.0;
-            origin[1] = centerPose[1] - (normal[1]*dimension[0] + normal[0]*dimension[1]) / 2.0;
+            m_normal[0] = std::cos(centerPose[2]);
+            m_normal[1] = std::sin(centerPose[2]);
+            m_dimension = dimension;
+            m_origin[0] = centerPose[0] - (m_normal[0]*dimension[0] - m_normal[1]*dimension[1]) / 2.0;
+            m_origin[1] = centerPose[1] - (m_normal[1]*dimension[0] + m_normal[0]*dimension[1]) / 2.0;
         }
 
         /**
@@ -49,14 +49,14 @@ class OrientedBox {
          */
         void Create(std::array<double,2> origin, std::array<double,2> normal, std::array<double,2> dimension) noexcept {
             constexpr double eps = 100.0 * std::numeric_limits<double>::epsilon();
-            this->origin = origin;
-            this->normal = {1.0, 0.0};
-            this->dimension = dimension;
+            m_origin = origin;
+            m_normal = {1.0, 0.0};
+            m_dimension = dimension;
             double L = normal[0]*normal[0] + normal[1]*normal[1];
             if(L >= eps){
                 L = 1.0 / std::sqrt(L);
-                this->normal[0] = L * normal[0];
-                this->normal[1] = L * normal[1];
+                m_normal[0] = L * normal[0];
+                m_normal[1] = L * normal[1];
             }
         }
 
@@ -72,26 +72,26 @@ class OrientedBox {
             static_assert(mpsv::is_vec2<T>::value,"Argument {point0} must be of type std::array<double,N> with N >= 2!");
             static_assert(mpsv::is_vec2<U>::value,"Argument {point1} must be of type std::array<double,N> with N >= 2!");
             constexpr double eps = 100.0 * std::numeric_limits<double>::epsilon();
-            normal[0] = point1[0] - point0[0];
-            normal[1] = point1[1] - point0[1];
-            double d = std::sqrt(normal[0]*normal[0] + normal[1]*normal[1]);
+            m_normal[0] = point1[0] - point0[0];
+            m_normal[1] = point1[1] - point0[1];
+            double d = std::sqrt(m_normal[0]*m_normal[0] + m_normal[1]*m_normal[1]);
             if(d < eps){
                 d = 0.0;
-                normal[0] = 1.0;
-                normal[1] = 0.0;
+                m_normal[0] = 1.0;
+                m_normal[1] = 0.0;
             }
             else{
-                normal[0] /= d;
-                normal[1] /= d;
+                m_normal[0] /= d;
+                m_normal[1] /= d;
             }
-            double b1 = normal[0]*boxExtension[0];
-            double b2 = normal[1]*boxExtension[0];
-            double b3 = normal[0]*boxExtension[1];
-            double b4 = normal[1]*boxExtension[1];
-            origin[0] = point0[0] - b1 + b4;
-            origin[1] = point0[1] - b2 - b3;
-            dimension[0] = boxExtension[0] + boxExtension[0] + d;
-            dimension[1] = boxExtension[1] + boxExtension[1];
+            double b1 = m_normal[0]*boxExtension[0];
+            double b2 = m_normal[1]*boxExtension[0];
+            double b3 = m_normal[0]*boxExtension[1];
+            double b4 = m_normal[1]*boxExtension[1];
+            m_origin[0] = point0[0] - b1 + b4;
+            m_origin[1] = point0[1] - b2 - b3;
+            m_dimension[0] = boxExtension[0] + boxExtension[0] + d;
+            m_dimension[1] = boxExtension[1] + boxExtension[1];
         }
 
         /**
@@ -119,10 +119,10 @@ class OrientedBox {
         void Extend(double e) noexcept {
             e = std::fabs(e);
             double e2 = e + e;
-            dimension[0] += e2;
-            dimension[1] += e2;
-            origin[0] -= e * (normal[0] - normal[1]);
-            origin[1] -= e * (normal[1] + normal[0]);
+            m_dimension[0] += e2;
+            m_dimension[1] += e2;
+            m_origin[0] -= e * (m_normal[0] - m_normal[1]);
+            m_origin[1] -= e * (m_normal[1] + m_normal[0]);
         }
 
         /**
@@ -134,30 +134,30 @@ class OrientedBox {
         template <class T> bool IsInside(const T point) const noexcept {
             static_assert(mpsv::is_vec2<T>::value,"Argument {point} must be of type std::array<double,N> with N >= 2!");
             std::array<double,2> p, s;
-            p[0] = point[0] - origin[0];
-            p[1] = point[1] - origin[1];
-            s[0] = p[0]*normal[0] + p[1]*normal[1];
-            s[1] = p[1]*normal[0] - p[0]*normal[1];
-            return (s[0] >= 0.0) && (s[0] <= dimension[0]) && (s[1] >= 0.0) && (s[1] <= dimension[1]);
+            p[0] = point[0] - m_origin[0];
+            p[1] = point[1] - m_origin[1];
+            s[0] = p[0]*m_normal[0] + p[1]*m_normal[1];
+            s[1] = p[1]*m_normal[0] - p[0]*m_normal[1];
+            return (s[0] >= 0.0) && (s[0] <= m_dimension[0]) && (s[1] >= 0.0) && (s[1] <= m_dimension[1]);
         }
 
         /**
          * @brief Get the position of the box.
          * @return The absolute 2D position of the oriented box that corresponds to the lower-left corner in box coordinates
          */
-        std::array<double,2> GetPosition(void) const noexcept { return origin; }
+        std::array<double,2> GetPosition(void) const noexcept { return m_origin; }
 
         /**
          * @brief Get the normal vector of the box.
          * @return The normal vector that represents the orientation of the box. This vector points to the longitudinal direction of the box.
          */
-        std::array<double,2> GetNormal(void) const noexcept { return normal; }
+        std::array<double,2> GetNormal(void) const noexcept { return m_normal; }
 
         /**
          * @brief Get the dimension of the box.
          * @return The dimension of the oriented box given in box coordinates. The first element corresponds to the longitudinal dimension.
          */
-        std::array<double,2> GetDimension(void) const noexcept { return dimension; }
+        std::array<double,2> GetDimension(void) const noexcept { return m_dimension; }
 
         /**
          * @brief Get the volume of the oriented box in SE(2).
@@ -165,7 +165,7 @@ class OrientedBox {
          * @return Volume of the oriented box.
          * @details The volume corresponds to (x) * (y) * (wpsi * psi), where wpsi denotes the weighting for psi in the metric distance function.
          */
-        double GetVolume(double metricWeightPsi) noexcept { return dimension[0] * dimension[1] * std::fabs(metricWeightPsi * 6.28318530717959); }
+        double GetVolume(double metricWeightPsi) noexcept { return m_dimension[0] * m_dimension[1] * std::fabs(metricWeightPsi * 6.28318530717959); }
 
         /**
          * @brief Export the oriented box as a convex polygon.
@@ -173,21 +173,21 @@ class OrientedBox {
          */
         mpsv::geometry::ConvexPolygon ExportAsConvexPolygon(void) noexcept {
             std::vector<std::array<double,2>> vertices;
-            double xLon = normal[0]*dimension[0];
-            double yLon = normal[1]*dimension[0];
-            double xLat = -normal[1]*dimension[1];
-            double yLat = normal[0]*dimension[1];
-            vertices.push_back(origin);
-            vertices.push_back({origin[0] + xLon, origin[1] + yLon});
-            vertices.push_back({origin[0] + xLon + xLat, origin[1] + yLon + yLat});
-            vertices.push_back({origin[0] + xLat, origin[1] + yLat});
+            double xLon = m_normal[0]*m_dimension[0];
+            double yLon = m_normal[1]*m_dimension[0];
+            double xLat = -m_normal[1]*m_dimension[1];
+            double yLat = m_normal[0]*m_dimension[1];
+            vertices.push_back(m_origin);
+            vertices.push_back({m_origin[0] + xLon, m_origin[1] + yLon});
+            vertices.push_back({m_origin[0] + xLon + xLat, m_origin[1] + yLon + yLat});
+            vertices.push_back({m_origin[0] + xLat, m_origin[1] + yLat});
             return mpsv::geometry::ConvexPolygon(vertices);
         }
 
     protected:
-        std::array<double,2> origin;      // The origin of the box. This is the lower-left corner in the box frame.
-        std::array<double,2> normal;      // The normal vector that specifies the orientation of the box. The normal vector lies in the x-axis (longitudinal direction) of the box frame.
-        std::array<double,2> dimension;   // The dimension of the box given in box frame coordinates {xdim, ydim}.
+        std::array<double,2> m_origin;      // The origin of the box. This is the lower-left corner in the box frame.
+        std::array<double,2> m_normal;      // The normal vector that specifies the orientation of the box. The normal vector lies in the x-axis (longitudinal direction) of the box frame.
+        std::array<double,2> m_dimension;   // The dimension of the box given in box frame coordinates {xdim, ydim}.
 
         /**
          * @brief Set properties for one possible variant of an oriented box. This function is a fallback function.
@@ -198,14 +198,14 @@ class OrientedBox {
             static_assert(mpsv::is_vec2<T>::value,"Argument {points} must be of type std::vector<std::array<double,N>> with N >= 2!");
             auto [idxA, idxB, squaredDistance] = FindFarthestPoints(points);
             constexpr double eps = 100.0 * std::numeric_limits<double>::epsilon();
-            origin.fill(0.0);
-            normal = {1.0, 0.0};
-            dimension.fill(0.0);
+            m_origin.fill(0.0);
+            m_normal = {1.0, 0.0};
+            m_dimension.fill(0.0);
             if((idxA < 0) || (idxB < 0)){
                 return;
             }
             if(squaredDistance < eps){
-                origin = {points[idxA][0], points[idxA][1]};
+                m_origin = {points[idxA][0], points[idxA][1]};
                 return;
             }
 
@@ -222,12 +222,12 @@ class OrientedBox {
             }
 
             // Calculate box parameters
-            dimension[0] = std::sqrt(squaredDistance);
-            dimension[1] = std::fabs(fMax - fMax); // prevent -0.0
-            normal[0] = -bEdge / dimension[0];
-            normal[1] = aEdge / dimension[0];
-            origin[0] = points[idxA][0] + normal[1] * fMax;
-            origin[1] = points[idxA][1] - normal[0] * fMax;
+            m_dimension[0] = std::sqrt(squaredDistance);
+            m_dimension[1] = std::fabs(fMax - fMax); // prevent -0.0
+            m_normal[0] = -bEdge / m_dimension[0];
+            m_normal[1] = aEdge / m_dimension[0];
+            m_origin[0] = points[idxA][0] + m_normal[1] * fMax;
+            m_origin[1] = points[idxA][1] - m_normal[0] * fMax;
         }
 
         /**
@@ -263,7 +263,7 @@ class OrientedBox {
         }
 
         /**
-         * @brief Find a minimum-area oriented box and set properties @ref origin, @ref normal and @ref dimension.
+         * @brief Find a minimum-area oriented box and set properties @ref m_origin, @ref m_normal and @ref m_dimension.
          * @tparam T Template parameter must be of type std::array<double,N> with N >= 2.
          * @param[in] points Input point cloud around which the minimum-area oriented box is to be generated.
          * @param[in] indices Indices to those points indicating a convex hull.
@@ -273,9 +273,9 @@ class OrientedBox {
 
             // Go through all edges of the convex hull and find the bounding box with the orientation of that edge angle that minimizes the area of the box
             double minArea = std::numeric_limits<double>::infinity();
-            normal = {1.0, 0.0};
-            origin.fill(0.0);
-            dimension.fill(0.0);
+            m_normal = {1.0, 0.0};
+            m_origin.fill(0.0);
+            m_dimension.fill(0.0);
             int32_t numHullPoints = static_cast<int32_t>(indices.size());
             double edgeAngle, s, c, xmin, xmax, ymin, ymax, xk, yk, x, y, area;
             for(int32_t n = 0; n < numHullPoints; ++n){
@@ -312,9 +312,9 @@ class OrientedBox {
                 // Check if new minimum area has been found, rotate and translate back the origin
                 if(area < minArea){
                     minArea = area;
-                    normal = {c, s};
-                    origin = {c*xmin - s*ymin + x0, s*xmin + c*ymin + y0};
-                    dimension = {xk, yk};
+                    m_normal = {c, s};
+                    m_origin = {c*xmin - s*ymin + x0, s*xmin + c*ymin + y0};
+                    m_dimension = {xk, yk};
                 }
             }
         }

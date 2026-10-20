@@ -25,10 +25,10 @@ template <class Targ, class Tdata> class LookUpTable2D {
          * @brief Construct a new 2-dimensional look-up table object.
          */
         LookUpTable2D() noexcept {
-            position[0] = position[1] = normal[1] = 0.0;
-            normal[0] = res = 1.0;
-            numX = numY = 0;
-            lut.push_back({0.0});
+            m_position[0] = m_position[1] = m_normal[1] = 0.0;
+            m_normal[0] = m_res = 1.0;
+            m_numX = m_numY = 0;
+            m_lut.push_back({0.0});
         }
 
         /**
@@ -69,34 +69,34 @@ template <class Targ, class Tdata> class LookUpTable2D {
                     r2 = (-b - sr) / (a + a);
                 }
             }
-            this->res = std::max(1.0e-3, std::max(resolution, std::max(r1, r2)));
+            m_res = std::max(1.0e-3, std::max(resolution, std::max(r1, r2)));
 
             // Get box parameters and calculate the LUT dimension based on size, resolution and modulo factor
-            position = orientedBox.GetPosition();
-            normal = orientedBox.GetNormal();
-            int32_t ux = static_cast<int32_t>(std::ceil(dimension[0] / res));
-            int32_t uy = static_cast<int32_t>(std::ceil(dimension[1] / res));
+            m_position = orientedBox.GetPosition();
+            m_normal = orientedBox.GetNormal();
+            int32_t ux = static_cast<int32_t>(std::ceil(dimension[0] / m_res));
+            int32_t uy = static_cast<int32_t>(std::ceil(dimension[1] / m_res));
             int32_t mx = (ux - 1) % modInterpolate;
             int32_t my = (uy - 1) % modInterpolate;
             ux += mx ? (modInterpolate - mx) : 0;
             uy += my ? (modInterpolate - my) : 0;
-            numX = 2 + std::max(static_cast<int32_t>(1), ux);
-            numY = 2 + std::max(static_cast<int32_t>(1), uy);
+            m_numX = 2 + std::max(static_cast<int32_t>(1), ux);
+            m_numY = 2 + std::max(static_cast<int32_t>(1), uy);
 
             // Initialize LUT and set edges to zero
-            lut.resize(numX * numY);
-            int32_t i0 = static_cast<int32_t>(lut.size()) - numY;
-            for(int32_t i = 0; i < numY; ++i){
-                lut[i] = lut[i0 + i] = {0.0};
+            m_lut.resize(m_numX * m_numY);
+            int32_t i0 = static_cast<int32_t>(m_lut.size()) - m_numY;
+            for(int32_t i = 0; i < m_numY; ++i){
+                m_lut[i] = m_lut[i0 + i] = {0.0};
             }
-            for(int32_t i = 0, i0 = 0; i < numX; ++i, i0 += numY){
-                lut[i0] = lut[i0 + numY - 1] = {0.0};
+            for(int32_t i = 0, i0 = 0; i < m_numX; ++i, i0 += m_numY){
+                m_lut[i0] = m_lut[i0 + m_numY - 1] = {0.0};
             }
 
             // Center position (x0,y0) of corner grid data cell [0,0] == center position of lut[1,1]
-            double d = 0.5 * res;
-            double x0 = position[0] + d * (normal[0] - normal[1]);
-            double y0 = position[1] + d * (normal[1] + normal[0]);
+            double d = 0.5 * m_res;
+            double x0 = m_position[0] + d * (m_normal[0] - m_normal[1]);
+            double y0 = m_position[1] + d * (m_normal[1] + m_normal[0]);
 
             // Calculate cost on specific grid points (modulo grid points)
             // A 2-by-3 grid with a modulo factor of 3 looks like this (note that there is a border of zeros around the actual data):
@@ -112,19 +112,19 @@ template <class Targ, class Tdata> class LookUpTable2D {
             //  0 0 0 0 0 0 0 0 0 0 0 0
             // 
             // The following loop only calculates the cost for marked cells (x).
-            int32_t numBreakpointsX = ((numX - 3) / modInterpolate) + 1;
-            int32_t numBreakpointsY = ((numY - 3) / modInterpolate) + 1;
+            int32_t numBreakpointsX = ((m_numX - 3) / modInterpolate) + 1;
+            int32_t numBreakpointsY = ((m_numY - 3) / modInterpolate) + 1;
             int32_t numTotal = numBreakpointsX * numBreakpointsY;
-            double dX = res * normal[0];
-            double dY = res * normal[1];
-            #pragma omp parallel for shared(lut)
+            double dX = m_res * m_normal[0];
+            double dY = m_res * m_normal[1];
+            #pragma omp parallel for shared(m_lut)
             for(int32_t i = 0; i < numTotal; ++i){
                 int32_t bi = (i / numBreakpointsY) * modInterpolate;
                 int32_t bj = (i % numBreakpointsY) * modInterpolate;
-                int32_t index = (bi + 1) * numY + (bj + 1);
+                int32_t index = (bi + 1) * m_numY + (bj + 1);
                 double x = x0 + static_cast<double>(bi)*dX - static_cast<double>(bj)*dY;
                 double y = y0 + static_cast<double>(bi)*dY + static_cast<double>(bj)*dX;
-                lut[index] = CallbackTableData(x, y, args);
+                m_lut[index] = CallbackTableData(x, y, args);
             }
 
             // Linear interpolation of "non-modul" grid points
@@ -146,26 +146,26 @@ template <class Targ, class Tdata> class LookUpTable2D {
             double invMod = 1.0 / static_cast<double>(modInterpolate);
             double invMod2 = 1.0 / static_cast<double>(modInterpolate * modInterpolate);
             numTotal = numBlocksX * numBlocksY;
-            #pragma omp parallel for shared(lut)
+            #pragma omp parallel for shared(m_lut)
             for(int32_t i = 0; i < numTotal; ++i){
                 int32_t i00 = (i / numBlocksY) * modInterpolate + 1;
                 int32_t j00 = (i % numBlocksY) * modInterpolate + 1;
-                int32_t index = i00 * numY + j00;
-                int32_t mn = modInterpolate * numY;
-                Tdata c00 = lut[index];
-                Tdata c10 = lut[index + mn];
-                Tdata c01 = lut[index + modInterpolate];
-                Tdata c11 = lut[index + mn + modInterpolate];
+                int32_t index = i00 * m_numY + j00;
+                int32_t mn = modInterpolate * m_numY;
+                Tdata c00 = m_lut[index];
+                Tdata c10 = m_lut[index + mn];
+                Tdata c01 = m_lut[index + modInterpolate];
+                Tdata c11 = m_lut[index + mn + modInterpolate];
                 Tdata d1 = (c10 - c00) * invMod;
                 Tdata d2 = (c01 - c00) * invMod;
                 Tdata d3 = (c00 + c11 - c01 - c10) * invMod2;
                 Tdata sd1 = {0.0};
                 Tdata sd3 = {0.0};
-                for(int32_t ix = 0, w = 0; ix < modInterpolate; ++ix, w += numY){
+                for(int32_t ix = 0, w = 0; ix < modInterpolate; ++ix, w += m_numY){
                     Tdata sd2 = {0.0};
                     Tdata ssd3 = {0.0};
                     for(int32_t iy = 0; iy < modInterpolate; ++iy){
-                        lut[index + w + iy] = c00 + sd1 + sd2 + ssd3;
+                        m_lut[index + w + iy] = c00 + sd1 + sd2 + ssd3;
                         sd2 += d2;
                         ssd3 += sd3;
                     }
@@ -187,32 +187,32 @@ template <class Targ, class Tdata> class LookUpTable2D {
             //  0 0 0 0 0 0 0 0 0 0 0 0
             int32_t ix0, ix1, iy0, iy1;
             Tdata c10, c01, c11, sd1;
-            mx = modInterpolate * numY;
+            mx = modInterpolate * m_numY;
             Tdata vd;
-            ix0 = numY;
-            iy1 = numY - 2;
+            ix0 = m_numY;
+            iy1 = m_numY - 2;
             for(int32_t bx = 0; bx < numBlocksX; ++bx){
                 ix1 = ix0 + mx;
-                c01 = lut[ix0 + iy1];
-                c11 = lut[ix1 + iy1];
+                c01 = m_lut[ix0 + iy1];
+                c11 = m_lut[ix1 + iy1];
                 vd = (c11 - c01) * invMod;
                 sd1 = vd;
-                for(int32_t ix = numY; ix < mx; ix += numY){
-                    lut[ix0 + ix + iy1] = c01 + sd1;
+                for(int32_t ix = m_numY; ix < mx; ix += m_numY){
+                    m_lut[ix0 + ix + iy1] = c01 + sd1;
                     sd1 += vd;
                 }
                 ix0 += mx;
             }
             iy0 = 1;
-            ix1 = (numX - 2) * numY;
+            ix1 = (m_numX - 2) * m_numY;
             for(int32_t by = 0; by < numBlocksY; ++by){
                 iy1 = iy0 + modInterpolate;
-                c10 = lut[ix1 + iy0];
-                c11 = lut[ix1 + iy1];
+                c10 = m_lut[ix1 + iy0];
+                c11 = m_lut[ix1 + iy1];
                 vd = (c11 - c10) * invMod;
                 sd1 = vd;
                 for(int32_t iy = 1; iy < modInterpolate; ++iy){
-                    lut[ix1 + iy0 + iy] = c10 + sd1;
+                    m_lut[ix1 + iy0 + iy] = c10 + sd1;
                     sd1 += vd;
                 }
                 iy0 += modInterpolate;
@@ -229,12 +229,12 @@ template <class Targ, class Tdata> class LookUpTable2D {
             static_assert(mpsv::is_vec2<T>::value,"Argument {position} must be of type std::array<double,N> with N >= 2!");
 
             // Convert to index position ({0,0} indicates origin of lower-left corner of LUT data cell (lut[0]), {0.5,0.5} would be the center of the lower-left cell, all data corresponds to the center of a cell)
-            std::array<double,2> indexPosition = ConvertToLUTPosition(position) / res;
+            std::array<double,2> indexPosition = ConvertToLUTPosition(position) / m_res;
 
             // Floor down to lower-left position of a cell to obtain indices and ensure them to be in a valid range: ix in [0 ... numX), iy in [0 ... numY)
-            int32_t ix = std::clamp(static_cast<int32_t>(std::floor(indexPosition[0])), 0, numX - 1);
-            int32_t iy = std::clamp(static_cast<int32_t>(std::floor(indexPosition[1])), 0, numY - 1);
-            return lut[ix*numY + iy];
+            int32_t ix = std::clamp(static_cast<int32_t>(std::floor(indexPosition[0])), 0, m_numX - 1);
+            int32_t iy = std::clamp(static_cast<int32_t>(std::floor(indexPosition[1])), 0, m_numY - 1);
+            return m_lut[ix*m_numY + iy];
         }
 
         /**
@@ -248,8 +248,8 @@ template <class Targ, class Tdata> class LookUpTable2D {
 
             // Convert to index position ({0,0} indicates origin of lower-left corner of LUT data cell (lut[0]), {0.5,0.5} would be the center of the lower-left cell, all data corresponds to the center of a cell)
             std::array<double,2> indexPosition = ConvertToLUTPosition(position);
-            indexPosition[0] /= res;
-            indexPosition[1] /= res;
+            indexPosition[0] /= m_res;
+            indexPosition[1] /= m_res;
 
             // The center of the cell indicates the data, transform index position to the center such that all corners of the new grid cell correspond to true data points
             indexPosition[0] -= 0.5;
@@ -261,18 +261,18 @@ template <class Targ, class Tdata> class LookUpTable2D {
             int32_t iy0 = static_cast<int32_t>(std::floor(indexPosition[1]));
             double dx = indexPosition[0] - static_cast<double>(ix0);
             double dy = indexPosition[1] - static_cast<double>(iy0);
-            int32_t ix1 = std::clamp(ix0 + 1, 0, numX - 1);
-            int32_t iy1 = std::clamp(iy0 + 1, 0, numY - 1);
-            ix0 = std::clamp(ix0, 0, numX - 1);
-            iy0 = std::clamp(iy0, 0, numY - 1);
+            int32_t ix1 = std::clamp(ix0 + 1, 0, m_numX - 1);
+            int32_t iy1 = std::clamp(iy0 + 1, 0, m_numY - 1);
+            ix0 = std::clamp(ix0, 0, m_numX - 1);
+            iy0 = std::clamp(iy0, 0, m_numY - 1);
 
             // Get table data for all four corners
-            int32_t ix0_numY = ix0 * numY;
-            int32_t ix1_numY = ix1 * numY;
-            const Tdata& lut00 = lut[ix0_numY + iy0];
-            const Tdata& lut10 = lut[ix1_numY + iy0];
-            const Tdata& lut01 = lut[ix0_numY + iy1];
-            const Tdata& lut11 = lut[ix1_numY + iy1];
+            int32_t ix0_numY = ix0 * m_numY;
+            int32_t ix1_numY = ix1 * m_numY;
+            const Tdata& lut00 = m_lut[ix0_numY + iy0];
+            const Tdata& lut10 = m_lut[ix1_numY + iy0];
+            const Tdata& lut01 = m_lut[ix0_numY + iy1];
+            const Tdata& lut11 = m_lut[ix1_numY + iy1];
 
             // Linear interpolation along lower and upper x border followed by linear interpolation in y direction
             Tdata y0 = lut00 + dx * (lut10 - lut00);
@@ -294,11 +294,11 @@ template <class Targ, class Tdata> class LookUpTable2D {
 
             // Convert to index position ({0,0} indicates origin of lower-left corner of LUT data cell (lut[0]), {0.5,0.5} would be the center of the lower-left cell, all data corresponds to the center of a cell)
             std::array<double,2> iPos0 = ConvertToLUTPosition(p0);
-            iPos0[0] /= res;
-            iPos0[1] /= res;
+            iPos0[0] /= m_res;
+            iPos0[1] /= m_res;
             std::array<double,2> iPos1 = ConvertToLUTPosition(p1);
-            iPos1[0] /= res;
-            iPos1[1] /= res;
+            iPos1[0] /= m_res;
+            iPos1[1] /= m_res;
 
             // Flooring the fractional index position (iPos) gives the true index
             int32_t ix0 = static_cast<int32_t>(std::floor(iPos0[0]));
@@ -345,32 +345,32 @@ template <class Targ, class Tdata> class LookUpTable2D {
             double ds;
             double t = 0;
             Tdata sum = 0.0;
-            int32_t i = std::clamp(ix0, 0, numX - 1) * numY; // safe index clamped to valid range, all indices (ix0,ix1) that are outside the range are clamped to the zero border
-            int32_t j = std::clamp(iy0, 0, numY - 1); // safe index clamped to valid range, all indices (iy0,iy1) that are outside the range are clamped to the zero border
+            int32_t i = std::clamp(ix0, 0, m_numX - 1) * m_numY; // safe index clamped to valid range, all indices (ix0,ix1) that are outside the range are clamped to the zero border
+            int32_t j = std::clamp(iy0, 0, m_numY - 1); // safe index clamped to valid range, all indices (iy0,iy1) that are outside the range are clamped to the zero border
             while(t <= 1.0){
                 if((ix0 == ix1) && (iy0 == iy1)){ // goal cell reached
                     ds = (1.0 - t) * L;
-                    sum += lut[i + j] * ds;
+                    sum += m_lut[i + j] * ds;
                     break;
                 }
                 if(tx < ty){ // next cell border in x direction
                     ds = (tx - t) * L;
-                    sum += lut[i + j] * ds;
+                    sum += m_lut[i + j] * ds;
                     t = tx;
                     tx += dtx;
                     ix0 += sx;
-                    i = std::clamp(ix0, 0, numX - 1) * numY;
+                    i = std::clamp(ix0, 0, m_numX - 1) * m_numY;
                 }
                 else{ // next cell border in y direction
                     ds = (ty - t) * L;
-                    sum += lut[i + j] * ds;
+                    sum += m_lut[i + j] * ds;
                     t = ty;
                     ty += dty;
                     iy0 += sy;
-                    j = std::clamp(iy0, 0, numY - 1);
+                    j = std::clamp(iy0, 0, m_numY - 1);
                 }
             }
-            return sum * res; // sum is calculated for cell units, transform to meters by taking cell resolution into account
+            return sum * m_res; // sum is calculated for cell units, transform to meters by taking cell resolution into account
         }
 
         /**
@@ -381,12 +381,12 @@ template <class Targ, class Tdata> class LookUpTable2D {
         virtual void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept = 0;
 
     protected:
-        std::array<double,2> position;   // Corner position (lower left corner) of the actual LUT (without zero-border: corner of data cell [0,0] == corner of lut[1,1]).
-        std::array<double,2> normal;     // Normal vector in longitudinal direction of the LUT.
-        double res;                      // Resolution of the grid map (dimension of one cell).
-        int32_t numX;                    // Number of grid cells in X (longitudinal) direction.
-        int32_t numY;                    // Number of grid cells in Y (lateral) direction.
-        std::vector<Tdata> lut;          // Table data that also contains a zero-border (index = ix*numY + iy). ix and iy indicate the lower-left index position of the cell, however, the actual data of that cell has been evaluated for the center of the cell.
+        std::array<double,2> m_position;   // Corner position (lower left corner) of the actual LUT (without zero-border: corner of data cell [0,0] == corner of lut[1,1]).
+        std::array<double,2> m_normal;     // Normal vector in longitudinal direction of the LUT.
+        double m_res;                      // Resolution of the grid map (dimension of one cell).
+        int32_t m_numX;                    // Number of grid cells in X (longitudinal) direction.
+        int32_t m_numY;                    // Number of grid cells in Y (lateral) direction.
+        std::vector<Tdata> m_lut;          // Table data that also contains a zero-border (index = ix*numY + iy). ix and iy indicate the lower-left index position of the cell, however, the actual data of that cell has been evaluated for the center of the cell.
 
         /**
          * @brief Callback function for evaluating the look-up table data for a specific 2D position.
@@ -403,17 +403,17 @@ template <class Targ, class Tdata> class LookUpTable2D {
          * @param[in] p The point in meters to be converted, given in the earth-fixed reference frame.
          * @return Resulting 2-dimensional position in meters according to the LUT data with respect to the lower-left corner of the zero-border.
          * @details The input position is rotated into the coordinate system of the LUT and is translated such that the lower-left of the LUT, which is the zero-border data, indicates the origin {0,0}.
-         * The lut position devided by the resolution (@ref res) gives the true index position {ix,iy} for the LUT data (@ref lut).
+         * The lut position devided by the resolution (@ref m_res) gives the true index position {ix,iy} for the LUT data (@ref m_lut).
          */
         template <class T> std::array<double,2> ConvertToLUTPosition(const T& p) const noexcept {
             // Convert {p} to LUT position {result} including zero-border
-            // {this->position} is without zero-border, {result} is with zero-border: therefore one cell of [res,res] has to be added
+            // {m_position} is without zero-border, {result} is with zero-border: therefore one cell of [res,res] has to be added
             static_assert(mpsv::is_vec2<T>::value,"Argument {p} must be of type std::array<double,N> with N >= 2!");
             std::array<double,2> result;
-            double ex = p[0] - position[0];
-            double ey = p[1] - position[1];
-            result[0] = res + normal[0]*ex + normal[1]*ey;
-            result[1] = res - normal[1]*ex + normal[0]*ey;
+            double ex = p[0] - m_position[0];
+            double ey = p[1] - m_position[1];
+            result[0] = m_res + m_normal[0]*ex + m_normal[1]*ey;
+            result[1] = m_res - m_normal[1]*ex + m_normal[0]*ey;
             return result;
         }
 };

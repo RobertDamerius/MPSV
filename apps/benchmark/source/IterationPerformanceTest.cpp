@@ -1,28 +1,28 @@
 #include <IterationPerformanceTest.hpp>
 
 
-SceneDataFile IterationPerformanceTest::sceneData;
+SceneDataFile IterationPerformanceTest::m_sceneData;
 
 
 void IterationPerformanceTest::Run(void){
     if(IterationPerformanceTest::LoadSceneData()){
-        for(size_t i = 0; i < sceneData.scenes.size(); ++i){
-            std::cout << "solve " << (i + 1) << " / " << sceneData.scenes.size() << "\n";
-            IterationPerformanceTest::Solve(sceneData.scenes[i], !i);
+        for(size_t i = 0; i < m_sceneData.scenes.size(); ++i){
+            std::cout << "solve " << (i + 1) << " / " << m_sceneData.scenes.size() << "\n";
+            IterationPerformanceTest::Solve(m_sceneData.scenes[i], !i);
         }
     }
 }
 
 bool IterationPerformanceTest::LoadSceneData(void){
     printf("Loading sceneData: ");
-    bool success = sceneData.Read("sceneData");
+    bool success = m_sceneData.Read("sceneData");
     if(success){
-        printf("OK (number of scenes: %zu)\n", sceneData.scenes.size());
+        printf("OK (number of scenes: %zu)\n", m_sceneData.scenes.size());
     }
     else{
         printf("ERROR: Failed to read sceneData from the current working directory!\n");
     }
-    bool valid = sceneData.IsValid();
+    bool valid = m_sceneData.IsValid();
     if(!valid){
         printf("ERROR: The scene data is not valid!\n");
     }

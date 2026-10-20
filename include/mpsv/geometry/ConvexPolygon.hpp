@@ -26,7 +26,7 @@ class ConvexPolygon {
          * @brief Default construction for a convex polygon.
          */
         ConvexPolygon() noexcept {
-            farthestVertexDistance = 0.0;
+            m_farthestVertexDistance = 0.0;
         }
 
         /**
@@ -45,10 +45,10 @@ class ConvexPolygon {
          */
         void Create(std::vector<std::array<double, 2>>& vertices) noexcept {
             // Clear existing data
-            this->vertices.clear();
-            edges.clear();
-            farthestVertexDistance = 0.0;
-            aabb.Reset({0.0, 0.0});
+            m_vertices.clear();
+            m_edges.clear();
+            m_farthestVertexDistance = 0.0;
+            m_aabb.Reset({0.0, 0.0});
 
             // Validate input
             const auto& vRef = vertices;
@@ -96,17 +96,17 @@ class ConvexPolygon {
             }
 
             // Store vertices and set container sizes
-            this->vertices.swap(vertices);
-            size_t numVertices = this->vertices.size();
-            edges.resize(numVertices);
+            m_vertices.swap(vertices);
+            size_t numVertices = m_vertices.size();
+            m_edges.resize(numVertices);
 
             // Update all properties of the convex polygon (AABB, edges, ...)
-            farthestVertexDistance = std::sqrt(this->vertices[0][0]*this->vertices[0][0] + this->vertices[0][1]*this->vertices[0][1]);
-            aabb.Reset(this->vertices[0]);
+            m_farthestVertexDistance = std::sqrt(m_vertices[0][0]*m_vertices[0][0] + m_vertices[0][1]*m_vertices[0][1]);
+            m_aabb.Reset(m_vertices[0]);
             for(size_t k = 1; k < numVertices; ++k){
                 RebuildEdge(k - 1, k);
-                aabb += this->vertices[k];
-                farthestVertexDistance = std::max(farthestVertexDistance, std::sqrt(this->vertices[k][0]*this->vertices[k][0] + this->vertices[k][1]*this->vertices[k][1]));
+                m_aabb += m_vertices[k];
+                m_farthestVertexDistance = std::max(m_farthestVertexDistance, std::sqrt(m_vertices[k][0]*m_vertices[k][0] + m_vertices[k][1]*m_vertices[k][1]));
             }
             RebuildEdge(numVertices - 1, 0);
         }
@@ -115,7 +115,7 @@ class ConvexPolygon {
          * @brief Check if this polygon is valid, e.g. contains valid data.
          * @return True if this polygon represents a valid convex polygon, false otherwise.
          */
-        bool IsValid(void) const noexcept { return (vertices.size() > 2); }
+        bool IsValid(void) const noexcept { return (m_vertices.size() > 2); }
 
         /**
          * @brief Check whether a point is inside the convex polygon or not.
@@ -125,11 +125,11 @@ class ConvexPolygon {
          */
         template <class T> bool IsInside(const T point) const noexcept {
             static_assert(mpsv::is_vec2<T>::value,"Argument {point} must be of type std::array<double,N> with N >= 2!");
-            if(edges.empty()){
+            if(m_edges.empty()){
                 return false;
             }
             bool outside = false;
-            for(auto&& edgeParameter : edges){
+            for(auto&& edgeParameter : m_edges){
                 outside |= ((edgeParameter[0] * point[0] + edgeParameter[1] * point[1] + edgeParameter[2]) > 0.0);
             }
             return !outside;
@@ -139,30 +139,30 @@ class ConvexPolygon {
          * @brief Transform all vertices of the convex polygon. The transformation is specified by a rotation around the origin {0,0} followed by a translation.
          * @tparam T Template parameter must be of type std::array<double,N> with N >= 3.
          * @param[in] pose The pose to be used for transformation.
-         * @details All edges are rebuild after the transformation of all vertices. @ref farthestVertexDistance ist updated.
+         * @details All edges are rebuild after the transformation of all vertices. @ref m_farthestVertexDistance ist updated.
          * @note This member function has no effect, if this polygon is not valid.
          */
         template <class T> void Transform(T pose) noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {pose} must be of type std::array<double,N> with N >= 3!");
-            size_t numVertices = vertices.size();
+            size_t numVertices = m_vertices.size();
             bool validInput = std::isfinite(pose[0]) && std::isfinite(pose[1]) && std::isfinite(pose[2]);
             if(validInput && (numVertices > 2)){
                 double cosPsi = std::cos(pose[2]);
                 double sinPsi = std::sin(pose[2]);
-                double vx = vertices[0][0];
-                double vy = vertices[0][1];
-                vertices[0][0] = pose[0] + cosPsi * vx - sinPsi * vy;
-                vertices[0][1] = pose[1] + sinPsi * vx + cosPsi * vy;
-                aabb.Reset(vertices[0]);
-                farthestVertexDistance = std::sqrt(vertices[0][0]*vertices[0][0] + vertices[0][1]*vertices[0][1]);
+                double vx = m_vertices[0][0];
+                double vy = m_vertices[0][1];
+                m_vertices[0][0] = pose[0] + cosPsi * vx - sinPsi * vy;
+                m_vertices[0][1] = pose[1] + sinPsi * vx + cosPsi * vy;
+                m_aabb.Reset(m_vertices[0]);
+                m_farthestVertexDistance = std::sqrt(m_vertices[0][0]*m_vertices[0][0] + m_vertices[0][1]*m_vertices[0][1]);
                 for(size_t k = 1; k < numVertices; ++k){
-                    vx = vertices[k][0];
-                    vy = vertices[k][1];
-                    vertices[k][0] = pose[0] + cosPsi * vx - sinPsi * vy;
-                    vertices[k][1] = pose[1] + sinPsi * vx + cosPsi * vy;
+                    vx = m_vertices[k][0];
+                    vy = m_vertices[k][1];
+                    m_vertices[k][0] = pose[0] + cosPsi * vx - sinPsi * vy;
+                    m_vertices[k][1] = pose[1] + sinPsi * vx + cosPsi * vy;
                     RebuildEdge(k - 1, k);
-                    aabb += vertices[k];
-                    farthestVertexDistance = std::max(farthestVertexDistance, std::sqrt(vertices[k][0]*vertices[k][0] + vertices[k][1]*vertices[k][1]));
+                    m_aabb += m_vertices[k];
+                    m_farthestVertexDistance = std::max(m_farthestVertexDistance, std::sqrt(m_vertices[k][0]*m_vertices[k][0] + m_vertices[k][1]*m_vertices[k][1]));
                 }
                 RebuildEdge(numVertices - 1, 0);
             }
@@ -196,14 +196,14 @@ class ConvexPolygon {
          */
         ConvexPolygon CreateTransformedConvexHull(double x0, double y0, double cosPsi0, double sinPsi0, double x1, double y1, double cosPsi1, double sinPsi1) const noexcept {
             // Transform vertices by two configurations and create point cloud
-            size_t numVertices = vertices.size();
+            size_t numVertices = m_vertices.size();
             std::vector<std::array<double,2>> points;
             points.resize(2 * numVertices);
             for(size_t k = 0; k < numVertices; ++k){
-                points[k][0] = x0 + cosPsi0 * vertices[k][0] - sinPsi0 * vertices[k][1];
-                points[k][1] = y0 + sinPsi0 * vertices[k][0] + cosPsi0 * vertices[k][1];
-                points[k + numVertices][0] = x1 + cosPsi1 * vertices[k][0] - sinPsi1 * vertices[k][1];
-                points[k + numVertices][1] = y1 + sinPsi1 * vertices[k][0] + cosPsi1 * vertices[k][1];
+                points[k][0] = x0 + cosPsi0 * m_vertices[k][0] - sinPsi0 * m_vertices[k][1];
+                points[k][1] = y0 + sinPsi0 * m_vertices[k][0] + cosPsi0 * m_vertices[k][1];
+                points[k + numVertices][0] = x1 + cosPsi1 * m_vertices[k][0] - sinPsi1 * m_vertices[k][1];
+                points[k + numVertices][1] = y1 + sinPsi1 * m_vertices[k][0] + cosPsi1 * m_vertices[k][1];
             }
 
             // Compute the convex hull
@@ -222,73 +222,73 @@ class ConvexPolygon {
             }
 
             // Check if AABBs overlap
-            if(!aabb.Overlap(polygon.aabb)){
+            if(!m_aabb.Overlap(polygon.m_aabb)){
                 return false;
             }
 
             // Type Edge-Vertex (edges of this with vertices of polygon input)
-            size_t numVertices = polygon.vertices.size();
-            size_t thisNumVertices = vertices.size();
+            size_t numVertices = polygon.m_vertices.size();
+            size_t thisNumVertices = m_vertices.size();
             double vx, vy, v1x, v1y, v2x, v2y;
             bool inCFree = false;
             for(size_t n = 0; (n < thisNumVertices) && !inCFree; ++n){
-                const double& nx = edges[n][0];
-                const double& ny = edges[n][1];
-                const double& x1 = vertices[n][0];
-                const double& y1 = vertices[n][1];
-                vx = polygon.vertices[0][0] - x1;
-                vy = polygon.vertices[0][1] - y1;
-                v1x = polygon.vertices[numVertices-1][0] - polygon.vertices[0][0];
-                v1y = polygon.vertices[numVertices-1][1] - polygon.vertices[0][1];
-                v2x = polygon.vertices[1][0] - polygon.vertices[0][0];
-                v2y = polygon.vertices[1][1] - polygon.vertices[0][1];
+                const double& nx = m_edges[n][0];
+                const double& ny = m_edges[n][1];
+                const double& x1 = m_vertices[n][0];
+                const double& y1 = m_vertices[n][1];
+                vx = polygon.m_vertices[0][0] - x1;
+                vy = polygon.m_vertices[0][1] - y1;
+                v1x = polygon.m_vertices[numVertices-1][0] - polygon.m_vertices[0][0];
+                v1y = polygon.m_vertices[numVertices-1][1] - polygon.m_vertices[0][1];
+                v2x = polygon.m_vertices[1][0] - polygon.m_vertices[0][0];
+                v2y = polygon.m_vertices[1][1] - polygon.m_vertices[0][1];
                 inCFree |= (((nx*vx + ny*vy) > 0.0) && ((nx*v1x + ny*v1y) >= 0.0) && ((nx*v2x + ny*v2y) >= 0.0));
                 for(size_t k = 1; (k < (numVertices - 1)) && !inCFree; k++){
-                    vx = polygon.vertices[k][0] - x1;
-                    vy = polygon.vertices[k][1] - y1;
-                    v1x = polygon.vertices[k-1][0] - polygon.vertices[k][0];
-                    v1y = polygon.vertices[k-1][1] - polygon.vertices[k][1];
-                    v2x = polygon.vertices[k+1][0] - polygon.vertices[k][0];
-                    v2y = polygon.vertices[k+1][1] - polygon.vertices[k][1];
+                    vx = polygon.m_vertices[k][0] - x1;
+                    vy = polygon.m_vertices[k][1] - y1;
+                    v1x = polygon.m_vertices[k-1][0] - polygon.m_vertices[k][0];
+                    v1y = polygon.m_vertices[k-1][1] - polygon.m_vertices[k][1];
+                    v2x = polygon.m_vertices[k+1][0] - polygon.m_vertices[k][0];
+                    v2y = polygon.m_vertices[k+1][1] - polygon.m_vertices[k][1];
                     inCFree |= (((nx*vx + ny*vy) > 0.0) && ((nx*v1x + ny*v1y) >= 0.0) && ((nx*v2x + ny*v2y) >= 0.0));
                 }
-                vx = polygon.vertices[numVertices-1][0] - x1;
-                vy = polygon.vertices[numVertices-1][1] - y1;
-                v1x = polygon.vertices[numVertices-2][0] - polygon.vertices[numVertices-1][0];
-                v1y = polygon.vertices[numVertices-2][1] - polygon.vertices[numVertices-1][1];
-                v2x = polygon.vertices[0][0] - polygon.vertices[numVertices-1][0];
-                v2y = polygon.vertices[0][1] - polygon.vertices[numVertices-1][1];
+                vx = polygon.m_vertices[numVertices-1][0] - x1;
+                vy = polygon.m_vertices[numVertices-1][1] - y1;
+                v1x = polygon.m_vertices[numVertices-2][0] - polygon.m_vertices[numVertices-1][0];
+                v1y = polygon.m_vertices[numVertices-2][1] - polygon.m_vertices[numVertices-1][1];
+                v2x = polygon.m_vertices[0][0] - polygon.m_vertices[numVertices-1][0];
+                v2y = polygon.m_vertices[0][1] - polygon.m_vertices[numVertices-1][1];
                 inCFree |= (((nx*vx + ny*vy) > 0.0) && ((nx*v1x + ny*v1y) >= 0.0) && ((nx*v2x + ny*v2y) >= 0.0));
             }
 
             // Type Vertex-Edge (vertices of this with edges of polygon input)
             for(size_t n = 0; (n < numVertices) && !inCFree; ++n){
-                const double& nx = polygon.edges[n][0];
-                const double& ny = polygon.edges[n][1];
-                const double& x1 = polygon.vertices[n][0];
-                const double& y1 = polygon.vertices[n][1];
-                vx = vertices[0][0] - x1;
-                vy = vertices[0][1] - y1;
-                v1x = vertices[thisNumVertices-1][0] - vertices[0][0];
-                v1y = vertices[thisNumVertices-1][1] - vertices[0][1];
-                v2x = vertices[1][0] - vertices[0][0];
-                v2y = vertices[1][1] - vertices[0][1];
+                const double& nx = polygon.m_edges[n][0];
+                const double& ny = polygon.m_edges[n][1];
+                const double& x1 = polygon.m_vertices[n][0];
+                const double& y1 = polygon.m_vertices[n][1];
+                vx = m_vertices[0][0] - x1;
+                vy = m_vertices[0][1] - y1;
+                v1x = m_vertices[thisNumVertices-1][0] - m_vertices[0][0];
+                v1y = m_vertices[thisNumVertices-1][1] - m_vertices[0][1];
+                v2x = m_vertices[1][0] - m_vertices[0][0];
+                v2y = m_vertices[1][1] - m_vertices[0][1];
                 inCFree |= (((nx*vx + ny*vy) > 0.0) && ((nx*v1x + ny*v1y) >= 0.0) && ((nx*v2x + ny*v2y) >= 0.0));
                 for(size_t k = 1; (k < (thisNumVertices - 1)) && !inCFree; k++){
-                    vx = vertices[k][0] - x1;
-                    vy = vertices[k][1] - y1;
-                    v1x = vertices[k-1][0] - vertices[k][0];
-                    v1y = vertices[k-1][1] - vertices[k][1];
-                    v2x = vertices[k+1][0] - vertices[k][0];
-                    v2y = vertices[k+1][1] - vertices[k][1];
+                    vx = m_vertices[k][0] - x1;
+                    vy = m_vertices[k][1] - y1;
+                    v1x = m_vertices[k-1][0] - m_vertices[k][0];
+                    v1y = m_vertices[k-1][1] - m_vertices[k][1];
+                    v2x = m_vertices[k+1][0] - m_vertices[k][0];
+                    v2y = m_vertices[k+1][1] - m_vertices[k][1];
                     inCFree |= (((nx*vx + ny*vy) > 0.0) && ((nx*v1x + ny*v1y) >= 0.0) && ((nx*v2x + ny*v2y) >= 0.0));
                 }
-                vx = vertices[thisNumVertices-1][0] - x1;
-                vy = vertices[thisNumVertices-1][1] - y1;
-                v1x = vertices[thisNumVertices-2][0] - vertices[thisNumVertices-1][0];
-                v1y = vertices[thisNumVertices-2][1] - vertices[thisNumVertices-1][1];
-                v2x = vertices[0][0] - vertices[thisNumVertices-1][0];
-                v2y = vertices[0][1] - vertices[thisNumVertices-1][1];
+                vx = m_vertices[thisNumVertices-1][0] - x1;
+                vy = m_vertices[thisNumVertices-1][1] - y1;
+                v1x = m_vertices[thisNumVertices-2][0] - m_vertices[thisNumVertices-1][0];
+                v1y = m_vertices[thisNumVertices-2][1] - m_vertices[thisNumVertices-1][1];
+                v2x = m_vertices[0][0] - m_vertices[thisNumVertices-1][0];
+                v2y = m_vertices[0][1] - m_vertices[thisNumVertices-1][1];
                 inCFree |= (((nx*vx + ny*vy) > 0.0) && ((nx*v1x + ny*v1y) >= 0.0) && ((nx*v2x + ny*v2y) >= 0.0));
             }
 
@@ -301,7 +301,7 @@ class ConvexPolygon {
          * @param[in] aabb Axis-aligned bounding box to be checked for overlapping.
          * @return True if AABBs overlap, false otherwise. If this polygon is invalid, false is returned.
          */
-        bool OverlapAABB(mpsv::geometry::AABB& aabb) const noexcept { return IsValid() && this->aabb.Overlap(aabb); }
+        bool OverlapAABB(mpsv::geometry::AABB& aabb) const noexcept { return IsValid() && m_aabb.Overlap(aabb); }
 
         /**
          * @brief Calculate the minimum squared distance to all edges of this convex polygon.
@@ -310,24 +310,24 @@ class ConvexPolygon {
          * @return The minimum squared distance to all edges of this convex polygon or infinity, if this convex polygon is invalid.
          */
         double MinimumSquaredDistanceToEdges(double x, double y) const noexcept {
-            size_t numVertices = vertices.size();
+            size_t numVertices = m_vertices.size();
             if(numVertices < 3){
                 return std::numeric_limits<double>::infinity();
             }
-            double ax = x - vertices[numVertices - 1][0];
-            double ay = y - vertices[numVertices - 1][1];
-            double bx = vertices[0][0] - vertices[numVertices - 1][0];
-            double by = vertices[0][1] - vertices[numVertices - 1][1];
+            double ax = x - m_vertices[numVertices - 1][0];
+            double ay = y - m_vertices[numVertices - 1][1];
+            double bx = m_vertices[0][0] - m_vertices[numVertices - 1][0];
+            double by = m_vertices[0][1] - m_vertices[numVertices - 1][1];
             double aa = ax*ax + ay*ay;
             double ab = ax*bx + ay*by;
             double bb = bx*bx + by*by;
             double lambda = std::clamp(ab / bb, 0.0, 1.0);
             double minSquaredDistance = aa + (bb*lambda - 2.0 * ab)*lambda;
             for(size_t k = 1; k < numVertices; ++k){
-                ax = x - vertices[k - 1][0];
-                ay = y - vertices[k - 1][1];
-                bx = vertices[k][0] - vertices[k - 1][0];
-                by = vertices[k][1] - vertices[k - 1][1];
+                ax = x - m_vertices[k - 1][0];
+                ay = y - m_vertices[k - 1][1];
+                bx = m_vertices[k][0] - m_vertices[k - 1][0];
+                by = m_vertices[k][1] - m_vertices[k - 1][1];
                 aa = ax*ax + ay*ay;
                 ab = ax*bx + ay*by;
                 bb = bx*bx + by*by;
@@ -342,36 +342,36 @@ class ConvexPolygon {
          * @return Farthest distance to all vertices from the origin {0,0} or 0, if this polygon is invalid.
          * @details The distance is calculated, if the vertex data is changed, e.g. during @ref Create, @ref Translate, @ref Transform, ...
          */
-        double GetFarthestVertexDistance(void) const noexcept { return farthestVertexDistance; }
+        double GetFarthestVertexDistance(void) const noexcept { return m_farthestVertexDistance; }
 
         /**
          * @brief Get a copy of the internal vertices.
          * @return Copy of the internal vertices.
          */
-        std::vector<std::array<double, 2>> GetVertices(void) const noexcept { return this->vertices; }
+        std::vector<std::array<double, 2>> GetVertices(void) const noexcept { return m_vertices; }
 
         /**
          * @brief Get the 2D axis-aligned bounding box of this convex polygon.
          * @return 2D axis-aligned bounding box of this convex polygon.
          */
-        mpsv::geometry::AABB GetAABB(void) noexcept { return aabb; }
+        mpsv::geometry::AABB GetAABB(void) noexcept { return m_aabb; }
 
         /**
          * @brief Swap this convex polygon with a given convex polygon.
          * @param[inout] polygon The polygon to be used for swapping.
          */
         void Swap(ConvexPolygon& polygon) noexcept {
-            vertices.swap(polygon.vertices);
-            edges.swap(polygon.edges);
-            aabb.Swap(polygon.aabb);
-            std::swap(farthestVertexDistance, polygon.farthestVertexDistance);
+            m_vertices.swap(polygon.m_vertices);
+            m_edges.swap(polygon.m_edges);
+            m_aabb.Swap(polygon.m_aabb);
+            std::swap(m_farthestVertexDistance, polygon.m_farthestVertexDistance);
         }
 
     protected:
-        std::vector<std::array<double, 2>> vertices;   // Container of vertices. One data point indicates vertex coordinates (x, y).
-        std::vector<std::array<double, 3>> edges;      // Container of edges. One data point (a,b,c) indicates edge parameters (function coefficient a of implicit equation a*x + b*y + c = 0). The size of this container is equal to that of @ref vertices. Edge [i] goes from vertex [i] to vertex [i+1].
-        mpsv::geometry::AABB aabb;                     // The 2D axis-aligned bounding box of the polygon.
-        double farthestVertexDistance;                 // Distance to the farthest vertex from the origin. The distance is calculated, if the vertex data is changed, e.g. during @ref Create, @ref Translate, @ref Transform, ...
+        std::vector<std::array<double, 2>> m_vertices;   // Container of vertices. One data point indicates vertex coordinates (x, y).
+        std::vector<std::array<double, 3>> m_edges;      // Container of edges. One data point (a,b,c) indicates edge parameters (function coefficient a of implicit equation a*x + b*y + c = 0). The size of this container is equal to that of @ref m_vertices. Edge [i] goes from vertex [i] to vertex [i+1].
+        mpsv::geometry::AABB m_aabb;                     // The 2D axis-aligned bounding box of the polygon.
+        double m_farthestVertexDistance;                 // Distance to the farthest vertex from the origin. The distance is calculated, if the vertex data is changed, e.g. during @ref Create, @ref Translate, @ref Transform, ...
 
         /**
          * @brief Rebuild edge parameters based on vertex indices.
@@ -379,13 +379,13 @@ class ConvexPolygon {
          * @param[in] idxNext Index of the next vertex where the edge ends.
          */
         void RebuildEdge(size_t idx, size_t idxNext) noexcept {
-            double nx = vertices[idxNext][1] - vertices[idx][1];
-            double ny = vertices[idx][0] - vertices[idxNext][0];
+            double nx = m_vertices[idxNext][1] - m_vertices[idx][1];
+            double ny = m_vertices[idx][0] - m_vertices[idxNext][0];
             double len = std::sqrt(nx*nx + ny*ny);
             double invlen = 1.0 / (len + static_cast<double>(len == 0.0));
-            edges[idx][0] = invlen * nx;
-            edges[idx][1] = invlen * ny;
-            edges[idx][2] = -edges[idx][0] * vertices[idx][0] - edges[idx][1] * vertices[idx][1];
+            m_edges[idx][0] = invlen * nx;
+            m_edges[idx][1] = invlen * ny;
+            m_edges[idx][2] = -m_edges[idx][0] * m_vertices[idx][0] - m_edges[idx][1] * m_vertices[idx][1];
         }
 };
 

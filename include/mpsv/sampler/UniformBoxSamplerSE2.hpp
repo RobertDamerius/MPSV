@@ -23,9 +23,9 @@ class UniformBoxSamplerSE2 {
          * @brief Construct a uniform box sampler for SE2.
          */
         UniformBoxSamplerSE2() noexcept {
-            R[0] = R[3] = invR[0] = invR[3] = 1.0;
-            R[1] = R[2] = invR[1] = invR[2] = 0.0;
-            offset[0] = offset[1] = 0.0;
+            m_R[0] = m_R[3] = m_invR[0] = m_invR[3] = 1.0;
+            m_R[1] = m_R[2] = m_invR[1] = m_invR[2] = 0.0;
+            m_offset[0] = m_offset[1] = 0.0;
         }
 
         /**
@@ -34,20 +34,20 @@ class UniformBoxSamplerSE2 {
          * @return True if success, false otherwise.
          */
         bool Initialize(size_t maxNumSamples) noexcept {
-            R[0] = R[3] = invR[0] = invR[3] = 1.0;
-            R[1] = R[2] = invR[1] = invR[2] = 0.0;
-            offset[0] = offset[1] = 0.0;
-            return haltonSequence.Initialize(3, maxNumSamples);
+            m_R[0] = m_R[3] = m_invR[0] = m_invR[3] = 1.0;
+            m_R[1] = m_R[2] = m_invR[1] = m_invR[2] = 0.0;
+            m_offset[0] = m_offset[1] = 0.0;
+            return m_haltonSequence.Initialize(3, maxNumSamples);
         }
 
         /**
          * @brief Terminate the uniform box sampler. All precalculated samples are removed and internal values are set to default values.
          */
         void Terminate(void) noexcept {
-            haltonSequence.Terminate();
-            R[0] = R[3] = invR[0] = invR[3] = 1.0;
-            R[1] = R[2] = invR[1] = invR[2] = 0.0;
-            offset[0] = offset[1] = 0.0;
+            m_haltonSequence.Terminate();
+            m_R[0] = m_R[3] = m_invR[0] = m_invR[3] = 1.0;
+            m_R[1] = m_R[2] = m_invR[1] = m_invR[2] = 0.0;
+            m_offset[0] = m_offset[1] = 0.0;
         }
 
         /**
@@ -55,20 +55,20 @@ class UniformBoxSamplerSE2 {
          * @param[in] box A valid oriented box with non-zero dimension.
          */
         void SetSize(const mpsv::geometry::OrientedBox& box) noexcept {
-            offset = box.GetPosition();
+            m_offset = box.GetPosition();
             std::array<double,2> dimension = box.GetDimension();
             std::array<double,2> normal = box.GetNormal();
             dimension[0] = std::max(dimension[0], 1.0e-6);
             dimension[1] = std::max(dimension[1], 1.0e-6);
-            R[0] = normal[0] * dimension[0];
-            R[1] = -normal[1] * dimension[1];
-            R[2] = normal[1] * dimension[0];
-            R[3] = normal[0] * dimension[1];
-            double invDetR = 1.0 / (R[0]*R[3] - R[1]*R[2]);
-            invR[0] = R[3] * invDetR;
-            invR[1] = -R[1] * invDetR;
-            invR[2] = -R[2] * invDetR;
-            invR[3] = R[0] * invDetR;
+            m_R[0] = normal[0] * dimension[0];
+            m_R[1] = -normal[1] * dimension[1];
+            m_R[2] = normal[1] * dimension[0];
+            m_R[3] = normal[0] * dimension[1];
+            double invDetR = 1.0 / (m_R[0]*m_R[3] - m_R[1]*m_R[2]);
+            m_invR[0] = m_R[3] * invDetR;
+            m_invR[1] = -m_R[1] * invDetR;
+            m_invR[2] = -m_R[2] * invDetR;
+            m_invR[3] = m_R[0] * invDetR;
         }
 
         /**
@@ -78,11 +78,11 @@ class UniformBoxSamplerSE2 {
          */
         std::array<double, 3> Sample(size_t idxSample) noexcept {
             std::array<double, 3> result;
-            double s0 = haltonSequence.Sample(0, idxSample);
-            double s1 = haltonSequence.Sample(1, idxSample);
-            double s2 = haltonSequence.Sample(2, idxSample);
-            result[0] = R[0]*s0 + R[1]*s1 + offset[0];
-            result[1] = R[2]*s0 + R[3]*s1 + offset[1];
+            double s0 = m_haltonSequence.Sample(0, idxSample);
+            double s1 = m_haltonSequence.Sample(1, idxSample);
+            double s2 = m_haltonSequence.Sample(2, idxSample);
+            result[0] = m_R[0]*s0 + m_R[1]*s1 + m_offset[0];
+            result[1] = m_R[2]*s0 + m_R[3]*s1 + m_offset[1];
             result[2] = mpsv::math::SymmetricalAngle(6.28318530717959 * s2);
             return result;
         }
@@ -93,18 +93,18 @@ class UniformBoxSamplerSE2 {
          * @return True if given pose is inside the sampling area, false otherwise.
          */
         bool IsInside(const std::array<double,3>& pose) noexcept {
-            double x = pose[0] - offset[0];
-            double y = pose[1] - offset[1];
-            double sx = invR[0]*x + invR[1]*y;
-            double sy = invR[2]*x + invR[3]*y;
+            double x = pose[0] - m_offset[0];
+            double y = pose[1] - m_offset[1];
+            double sx = m_invR[0]*x + m_invR[1]*y;
+            double sy = m_invR[2]*x + m_invR[3]*y;
             return (sx >= 0.0) && (sx <= 1.0) && (sy >= 0.0) && (sy <= 1.0);
         }
 
     protected:
-        mpsv::sampler::HaltonSequence haltonSequence;   // Internal halton sequence sampler.
-        std::array<double, 4> R;                        // Scaled rotation matrix (row major order). A sample within the box is calculated by R*sample + offset.
-        std::array<double, 4> invR;                     // Inverse scaled rotation matrix (row major order).
-        std::array<double, 2> offset;                   // The origin of the box. This is the lower-left corner in the box frame.
+        mpsv::sampler::HaltonSequence m_haltonSequence;   // Internal halton sequence sampler.
+        std::array<double, 4> m_R;                        // Scaled rotation matrix (row major order). A sample within the box is calculated by R*sample + offset.
+        std::array<double, 4> m_invR;                     // Inverse scaled rotation matrix (row major order).
+        std::array<double, 2> m_offset;                   // The origin of the box. This is the lower-left corner in the box frame.
 };
 
 

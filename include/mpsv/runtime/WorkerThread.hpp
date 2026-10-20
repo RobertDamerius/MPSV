@@ -32,10 +32,10 @@ class WorkerThread {
          * @brief Construct a new worker thread object.
          */
         WorkerThread() noexcept {
-            isStarted = false;
-            stopWorkerThread = false;
-            state = mpsv::runtime::WorkerThreadState::offline;
-            commandedState = mpsv::runtime::WorkerThreadState::standby;
+            m_isStarted = false;
+            m_stopWorkerThread = false;
+            m_state = mpsv::runtime::WorkerThreadState::offline;
+            m_commandedState = mpsv::runtime::WorkerThreadState::standby;
         }
 
         /**
@@ -54,15 +54,15 @@ class WorkerThread {
          * @note The worker thread starts in standby mode. Call @ref Resume to enter the running state.
          */
         template <typename CallbackRun> void Start(CallbackRun callbackRun, int32_t threadPriority, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs) noexcept {
-            if(!isStarted){
+            if(!m_isStarted){
                 // start the worker thread
-                isStarted = true;
-                workerThread = std::thread(&WorkerThread::WorkerThreadFunction<CallbackRun>, this, callbackRun, ompNumThreads, ompDynamic, cpuCoreIDs);
+                m_isStarted = true;
+                m_workerThread = std::thread(&WorkerThread::WorkerThreadFunction<CallbackRun>, this, callbackRun, ompNumThreads, ompDynamic, cpuCoreIDs);
 
                 // set priority and ignore errors
                 struct sched_param param;
                 param.sched_priority = std::clamp(threadPriority, sched_get_priority_min(SCHED_FIFO), sched_get_priority_max(SCHED_FIFO));
-                (void) pthread_setschedparam(workerThread.native_handle(), SCHED_FIFO, &param);
+                (void) pthread_setschedparam(m_workerThread.native_handle(), SCHED_FIFO, &param);
             }
         }
 
@@ -71,19 +71,19 @@ class WorkerThread {
          */
         void Stop(void) noexcept {
             // set flags to interrupt running thread
-            stopWorkerThread = true;
-            eventLeaveStandby.Notify();
+            m_stopWorkerThread = true;
+            m_eventLeaveStandby.Notify();
 
             // Wait until thread terminates and terminate solver
-            if(workerThread.joinable()){
-                workerThread.join();
+            if(m_workerThread.joinable()){
+                m_workerThread.join();
             }
 
             // set default values
-            isStarted = false;
-            stopWorkerThread = false;
-            state = mpsv::runtime::WorkerThreadState::offline;
-            commandedState = mpsv::runtime::WorkerThreadState::standby;
+            m_isStarted = false;
+            m_stopWorkerThread = false;
+            m_state = mpsv::runtime::WorkerThreadState::offline;
+            m_commandedState = mpsv::runtime::WorkerThreadState::standby;
         }
 
         /**
@@ -91,15 +91,15 @@ class WorkerThread {
          * @details The next time the thread is scheduled, it goes into standby mode. A running user callback (@ref ThreadCallbackRunning) cannot be interrupted.
          */
         void Suspend(void) noexcept {
-            commandedState = mpsv::runtime::WorkerThreadState::standby;
+            m_commandedState = mpsv::runtime::WorkerThreadState::standby;
         }
 
         /**
          * @brief Resume a suspended thread and enter the running state.
          */
         void Resume(void) noexcept {
-            commandedState = mpsv::runtime::WorkerThreadState::running;
-            eventLeaveStandby.Notify();
+            m_commandedState = mpsv::runtime::WorkerThreadState::running;
+            m_eventLeaveStandby.Notify();
         }
 
         /**
@@ -107,17 +107,17 @@ class WorkerThread {
          * @return The current state of the worker thread.
          */
         mpsv::runtime::WorkerThreadState GetState(void) noexcept {
-            return state;
+            return m_state;
         }
 
 
     private:
-        std::thread workerThread;                                       // The internal worker thread.
-        std::atomic<bool> isStarted;                                    // True if the worker thread has been started, false otherwise.
-        std::atomic<bool> stopWorkerThread;                             // True if the worker thread should be stopped, false otherwise.
-        std::atomic<mpsv::runtime::WorkerThreadState> state;            // Internal state of the worker thread.
-        std::atomic<mpsv::runtime::WorkerThreadState> commandedState;   // The commanded state for this worker thread (either standby or running).
-        mpsv::runtime::Event eventLeaveStandby;                         // The event to be set if the standby state is to be left.
+        std::thread m_workerThread;                                       // The internal worker thread.
+        std::atomic<bool> m_isStarted;                                    // True if the worker thread has been started, false otherwise.
+        std::atomic<bool> m_stopWorkerThread;                             // True if the worker thread should be stopped, false otherwise.
+        std::atomic<mpsv::runtime::WorkerThreadState> m_state;            // Internal state of the worker thread.
+        std::atomic<mpsv::runtime::WorkerThreadState> m_commandedState;   // The commanded state for this worker thread (either standby or running).
+        mpsv::runtime::Event m_eventLeaveStandby;                         // The event to be set if the standby state is to be left.
 
         /**
          * @brief The thread function of the worker thread.
@@ -145,20 +145,20 @@ class WorkerThread {
             #else
             (void) cpuCoreIDs;
             #endif
-            while(!stopWorkerThread){
-                switch(commandedState){
+            while(!m_stopWorkerThread){
+                switch(m_commandedState){
                     case mpsv::runtime::WorkerThreadState::offline:
                     case mpsv::runtime::WorkerThreadState::standby:
-                        state = mpsv::runtime::WorkerThreadState::standby;
-                        eventLeaveStandby.Wait(); // wait for the leave event (blocking call)
+                        m_state = mpsv::runtime::WorkerThreadState::standby;
+                        m_eventLeaveStandby.Wait(); // wait for the leave event (blocking call)
                         break;
                     case mpsv::runtime::WorkerThreadState::running:
-                        state = mpsv::runtime::WorkerThreadState::running;
+                        m_state = mpsv::runtime::WorkerThreadState::running;
                         callbackRun();
                         break;
                 }
             }
-            state = mpsv::runtime::WorkerThreadState::offline;
+            m_state = mpsv::runtime::WorkerThreadState::offline;
         }
 };
 

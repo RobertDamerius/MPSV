@@ -36,9 +36,9 @@ class Benchmark {
         static void Run(void);
 
     protected:
-        static std::vector<mpsv::geometry::ConvexPolygon> convexPolygons;   // List of randomly generated polygons for benchmark tests.
-        static mpsv::control::VehicleSimulator vehicleSimulator;            // Vehicle simulator to be used for benchmark tests.
-        static double preventOptimization;                                  // Temporary value used to prevent the compiler from optimizing out certain code sections.
+        static std::vector<mpsv::geometry::ConvexPolygon> m_convexPolygons;   // List of randomly generated polygons for benchmark tests.
+        static mpsv::control::VehicleSimulator m_vehicleSimulator;            // Vehicle simulator to be used for benchmark tests.
+        static double m_preventOptimization;                                  // Temporary value used to prevent the compiler from optimizing out certain code sections.
 
         /**
          * @brief Generate a specific number of polygons.

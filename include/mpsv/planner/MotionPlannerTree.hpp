@@ -35,35 +35,35 @@ class MotionPlannerTree: public mpsv::structures::FixedSizeTreeSE2<mpsv::planner
             std::vector<double> vecPoses;
             std::vector<double> vecCost;
             std::vector<int16_t> vecParentIndices;
-            uint32_t Na = static_cast<uint32_t>(activeIndices.size());
-            uint32_t Nn = static_cast<uint32_t>(nodes.size());
+            uint32_t Na = static_cast<uint32_t>(m_activeIndices.size());
+            uint32_t Nn = static_cast<uint32_t>(m_nodes.size());
             vecPoses.reserve(3 * Nn);
             vecCost.reserve(Nn);
             vecParentIndices.reserve(Nn);
             for(uint32_t n = 0; n != Nn; ++n){
-                vecPoses.push_back(nodes[n].pose[0]);
-                vecPoses.push_back(nodes[n].pose[1]);
-                vecPoses.push_back(nodes[n].pose[2]);
-                vecCost.push_back(nodes[n].cost);
-                vecParentIndices.push_back(nodes[n].iParent);
+                vecPoses.push_back(m_nodes[n].pose[0]);
+                vecPoses.push_back(m_nodes[n].pose[1]);
+                vecPoses.push_back(m_nodes[n].pose[2]);
+                vecCost.push_back(m_nodes[n].cost);
+                vecParentIndices.push_back(m_nodes[n].iParent);
 
                 // Trajectory
-                uint32_t N = static_cast<uint32_t>(nodes[n].trajectoryBuffer.size());
+                uint32_t N = static_cast<uint32_t>(m_nodes[n].trajectoryBuffer.size());
                 std::vector<double> vecTrajectory;
                 vecTrajectory.reserve(N * 12);
                 for(uint32_t i = 0; i != N; ++i){
-                    vecTrajectory.push_back(nodes[n].trajectoryBuffer[i][0]);
-                    vecTrajectory.push_back(nodes[n].trajectoryBuffer[i][1]);
-                    vecTrajectory.push_back(nodes[n].trajectoryBuffer[i][2]);
-                    vecTrajectory.push_back(nodes[n].trajectoryBuffer[i][3]);
-                    vecTrajectory.push_back(nodes[n].trajectoryBuffer[i][4]);
-                    vecTrajectory.push_back(nodes[n].trajectoryBuffer[i][5]);
-                    vecTrajectory.push_back(nodes[n].trajectoryBuffer[i][6]);
-                    vecTrajectory.push_back(nodes[n].trajectoryBuffer[i][7]);
-                    vecTrajectory.push_back(nodes[n].trajectoryBuffer[i][8]);
-                    vecTrajectory.push_back(nodes[n].trajectoryBuffer[i][9]);
-                    vecTrajectory.push_back(nodes[n].trajectoryBuffer[i][10]);
-                    vecTrajectory.push_back(nodes[n].trajectoryBuffer[i][11]);
+                    vecTrajectory.push_back(m_nodes[n].trajectoryBuffer[i][0]);
+                    vecTrajectory.push_back(m_nodes[n].trajectoryBuffer[i][1]);
+                    vecTrajectory.push_back(m_nodes[n].trajectoryBuffer[i][2]);
+                    vecTrajectory.push_back(m_nodes[n].trajectoryBuffer[i][3]);
+                    vecTrajectory.push_back(m_nodes[n].trajectoryBuffer[i][4]);
+                    vecTrajectory.push_back(m_nodes[n].trajectoryBuffer[i][5]);
+                    vecTrajectory.push_back(m_nodes[n].trajectoryBuffer[i][6]);
+                    vecTrajectory.push_back(m_nodes[n].trajectoryBuffer[i][7]);
+                    vecTrajectory.push_back(m_nodes[n].trajectoryBuffer[i][8]);
+                    vecTrajectory.push_back(m_nodes[n].trajectoryBuffer[i][9]);
+                    vecTrajectory.push_back(m_nodes[n].trajectoryBuffer[i][10]);
+                    vecTrajectory.push_back(m_nodes[n].trajectoryBuffer[i][11]);
                 }
                 if(!N){
                     vecTrajectory.clear();
@@ -76,7 +76,7 @@ class MotionPlannerTree: public mpsv::structures::FixedSizeTreeSE2<mpsv::planner
                 file.WriteField("double", preString + "pose", {3, Nn}, &vecPoses[0], sizeof(double) * vecPoses.size());
                 file.WriteField("int16_t", preString + "iParent", {Nn}, &vecParentIndices[0], sizeof(int16_t) * vecParentIndices.size());
                 file.WriteField("double", preString + "cost", {Nn}, &vecCost[0], sizeof(double) * vecCost.size());
-                file.WriteField("int16_t", preString + "activeIndices", {Na}, &activeIndices[0], sizeof(int16_t) * activeIndices.size());
+                file.WriteField("int16_t", preString + "activeIndices", {Na}, &m_activeIndices[0], sizeof(int16_t) * m_activeIndices.size());
             }
         }
 };

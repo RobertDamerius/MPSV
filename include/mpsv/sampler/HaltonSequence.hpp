@@ -28,7 +28,7 @@ class HaltonSequence {
             if(!dimension || (dimension > 16) || !maxNumSamples)
                 return false;
             try {
-                samples.resize(dimension * maxNumSamples);
+                m_samples.resize(dimension * maxNumSamples);
             } catch(...) {
                 return false;
             }
@@ -49,10 +49,10 @@ class HaltonSequence {
                         n = size_t(static_cast<double>(n) * invBase);
                         bk *= invBase;
                     }
-                    samples[sample_offset + dim] = scale * q;
+                    m_samples[sample_offset + dim] = scale * q;
                 }
             }
-            samples.shrink_to_fit();
+            m_samples.shrink_to_fit();
             return true;
         }
 
@@ -60,8 +60,8 @@ class HaltonSequence {
          * @brief Terminate the halton sequence. This removes all precalculated samples.
          */
         void Terminate(void) noexcept {
-            samples.clear();
-            samples.shrink_to_fit();
+            m_samples.clear();
+            m_samples.shrink_to_fit();
             m_dimension = 0;
             m_maxNumSamples = 0;
         }
@@ -78,11 +78,11 @@ class HaltonSequence {
             }
             idxDimension %= m_dimension;
             idxSample %= m_maxNumSamples;
-            return samples[idxSample * m_dimension + idxDimension];
+            return m_samples[idxSample * m_dimension + idxDimension];
         }
 
     protected:
-        std::vector<double> samples;   // Flattened precalculated samples storage.
+        std::vector<double> m_samples;   // Flattened precalculated samples storage.
         size_t m_dimension = 0;        // Active dimension count.
         size_t m_maxNumSamples = 0;    // Max samples per dimension.
 };

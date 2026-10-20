@@ -53,7 +53,7 @@ class SequentialPlanner {
          */
         bool Initialize(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples) noexcept {
             Terminate();
-            if(!pathPlanner.Initialize(pathMaxNumNodes, pathMaxNumSamples) || !motionPlanner.Initialize(motionMaxNumNodes, motionMaxNumSamples)){
+            if(!m_pathPlanner.Initialize(pathMaxNumNodes, pathMaxNumSamples) || !m_motionPlanner.Initialize(motionMaxNumNodes, motionMaxNumSamples)){
                 Terminate();
                 return false;
             }
@@ -64,8 +64,8 @@ class SequentialPlanner {
          * @brief Terminate the sequential planner. This also resets the interrupt flags to false.
          */
         void Terminate(void) noexcept {
-            pathPlanner.Terminate();
-            motionPlanner.Terminate();
+            m_pathPlanner.Terminate();
+            m_motionPlanner.Terminate();
         }
 
 
@@ -92,13 +92,13 @@ class SequentialPlanner {
             parameterMotion.motionPlanner = parameter.motionPlanner;
 
             // apply parameter set to path planner
-            error_code e = pathPlanner.ApplyParameterSet(parameterPath);
+            error_code e = m_pathPlanner.ApplyParameterSet(parameterPath);
             if(error_code::NONE != e){
                 return e;
             }
 
             // apply parameter set to motion planner
-            e = motionPlanner.ApplyParameterSet(parameterMotion);
+            e = m_motionPlanner.ApplyParameterSet(parameterMotion);
             if(error_code::NONE != e){
                 return e;
             }
@@ -116,45 +116,45 @@ class SequentialPlanner {
          */
         void Solve(mpsv::planner::SequentialPlannerOutput& dataOut, const mpsv::planner::SequentialPlannerInput& dataIn, double maxComputationTimePathPlanning, double maxComputationTimeMotionPlanning, double minTrajectoryDuration = 0.0) noexcept {
             // Start execution time measurement for path planning section
-            executionCounter.Start();
+            m_executionCounter.Start();
 
             // Assign planner inputs
-            pathPlannerInput.initialPose[0] = dataIn.initialStateAndInput[0];
-            pathPlannerInput.initialPose[1] = dataIn.initialStateAndInput[1];
-            pathPlannerInput.initialPose[2] = dataIn.initialStateAndInput[2];
-            pathPlannerInput.finalPose = dataIn.finalPose;
-            pathPlannerInput.originOldToNew = dataIn.originOldToNew;
-            pathPlannerInput.samplingBoxCenterPose = dataIn.samplingBoxCenterPose;
-            pathPlannerInput.samplingBoxDimension = dataIn.samplingBoxDimension;
-            pathPlannerInput.staticObstacles = dataIn.staticObstacles;
-            motionPlannerInput.initialStateAndInput = dataIn.initialStateAndInput;
-            motionPlannerInput.originOldToNew = dataIn.originOldToNew;
-            motionPlannerInput.staticObstacles = dataIn.staticObstacles;
+            m_pathPlannerInput.initialPose[0] = dataIn.initialStateAndInput[0];
+            m_pathPlannerInput.initialPose[1] = dataIn.initialStateAndInput[1];
+            m_pathPlannerInput.initialPose[2] = dataIn.initialStateAndInput[2];
+            m_pathPlannerInput.finalPose = dataIn.finalPose;
+            m_pathPlannerInput.originOldToNew = dataIn.originOldToNew;
+            m_pathPlannerInput.samplingBoxCenterPose = dataIn.samplingBoxCenterPose;
+            m_pathPlannerInput.samplingBoxDimension = dataIn.samplingBoxDimension;
+            m_pathPlannerInput.staticObstacles = dataIn.staticObstacles;
+            m_motionPlannerInput.initialStateAndInput = dataIn.initialStateAndInput;
+            m_motionPlannerInput.originOldToNew = dataIn.originOldToNew;
+            m_motionPlannerInput.staticObstacles = dataIn.staticObstacles;
 
             // Solve path planning problem
-            pathPlanner.Prepare(pathPlannerOutput, pathPlannerInput);
-            double remainingTimeForProblemSolving = maxComputationTimePathPlanning - executionCounter.TimeToStart();
-            pathPlanner.Solve(pathPlannerOutput, pathPlannerInput, remainingTimeForProblemSolving);
+            m_pathPlanner.Prepare(m_pathPlannerOutput, m_pathPlannerInput);
+            double remainingTimeForProblemSolving = maxComputationTimePathPlanning - m_executionCounter.TimeToStart();
+            m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, remainingTimeForProblemSolving);
 
             // Use solution path of path planner as initial path for motion planner
-            motionPlannerInput.initialPath = pathPlannerOutput.path;
+            m_motionPlannerInput.initialPath = m_pathPlannerOutput.path;
 
             // Solve motion planning problem
-            motionPlanner.Prepare(motionPlannerOutput, motionPlannerInput);
-            remainingTimeForProblemSolving = maxComputationTimePathPlanning + maxComputationTimeMotionPlanning - executionCounter.TimeToStart();
-            motionPlanner.Solve(motionPlannerOutput, motionPlannerInput, remainingTimeForProblemSolving, minTrajectoryDuration);
+            m_motionPlanner.Prepare(m_motionPlannerOutput, m_motionPlannerInput);
+            remainingTimeForProblemSolving = maxComputationTimePathPlanning + maxComputationTimeMotionPlanning - m_executionCounter.TimeToStart();
+            m_motionPlanner.Solve(m_motionPlannerOutput, m_motionPlannerInput, remainingTimeForProblemSolving, minTrajectoryDuration);
 
             // Move values from planning results to the output data
-            pathPlannerOutput.MoveTo(dataOut.pathPlanner);
-            motionPlannerOutput.MoveTo(dataOut.motionPlanner);
+            m_pathPlannerOutput.MoveTo(dataOut.pathPlanner);
+            m_motionPlannerOutput.MoveTo(dataOut.motionPlanner);
         }
 
         /**
          * @brief Interrupt the @ref Solve operation of the sequential planner by interrupting the internal path and motion planners.
          */
         void Interrupt(void) noexcept {
-            motionPlanner.Interrupt();
-            pathPlanner.Interrupt();
+            m_motionPlanner.Interrupt();
+            m_pathPlanner.Interrupt();
         }
 
 
@@ -166,7 +166,7 @@ class SequentialPlanner {
          * @param[in] maxComputationTime The maximum computation time in seconds before stopping the solve iteration loop.
          * @details The path improvement can be interrupted by calling the @ref Interrupt member function.
          */
-        void ImprovePath(double maxComputationTime) noexcept { pathPlanner.Solve(pathPlannerOutput, pathPlannerInput, maxComputationTime); }
+        void ImprovePath(double maxComputationTime) noexcept { m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, maxComputationTime); }
 
         /**
          * @brief Predict the motion of the vehicle for a given prediction horizon assuming the control input to be constant all the time.
@@ -176,7 +176,7 @@ class SequentialPlanner {
          * @return [1] The predicted state given as {x,y,psi,u,v,r,X,Y,N}.
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
-        std::tuple<double,std::array<double,9>> PredictMotion(const std::array<double,12>& initialStateAndInput, double predictionHorizon) noexcept { return motionPlanner.PredictMotion(initialStateAndInput, predictionHorizon); }
+        std::tuple<double,std::array<double,9>> PredictMotion(const std::array<double,12>& initialStateAndInput, double predictionHorizon) noexcept { return m_motionPlanner.PredictMotion(initialStateAndInput, predictionHorizon); }
 
         /**
          * @brief Predict the motion trajectory of the vehicle for a given prediction horizon assuming the control input to be constant all the time. At least one simulation step is computed.
@@ -188,7 +188,7 @@ class SequentialPlanner {
          * [1] The total time that has been simulated.
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
-        std::tuple<bool,double> PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double predictionHorizon) noexcept { return motionPlanner.PredictMotionTrajectory(trajectory, initialStateAndInput, predictionHorizon); }
+        std::tuple<bool,double> PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double predictionHorizon) noexcept { return m_motionPlanner.PredictMotionTrajectory(trajectory, initialStateAndInput, predictionHorizon); }
 
 
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -201,17 +201,17 @@ class SequentialPlanner {
          * @param[in] staticObstacles List of static obstacles to be used for the guidance law of path exploration. All trajectories of the tree are rebuilt. Otherwise the trajectories from tree nodes are undefined.
          * @note IMPORTANT: The caller of this function must make sure that static obstacles are valid!
          */
-        void WriteToFile(mpsv::logging::File& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { pathPlanner.WriteToFile(file, preString + "pathPlanner."); motionPlanner.WriteToFile(file, preString + "motionPlanner.", staticObstacles); }
+        void WriteToFile(mpsv::logging::File& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { m_pathPlanner.WriteToFile(file, preString + "pathPlanner."); m_motionPlanner.WriteToFile(file, preString + "motionPlanner.", staticObstacles); }
 
 
     protected:
-        mpsv::planner::PathPlannerInput pathPlannerInput;         // The input to the path planner, set during @ref Solve.
-        mpsv::planner::PathPlannerOutput pathPlannerOutput;       // The output of the path planner, set during @ref Solve and @ref Improve.
-        mpsv::planner::MotionPlannerInput motionPlannerInput;     // The input to the motion planner, set during @ref Solve.
-        mpsv::planner::MotionPlannerOutput motionPlannerOutput;   // The output of the motion planner, set during @ref Solve.
-        mpsv::planner::PathPlanner pathPlanner;                   // Internal path planning solver.
-        mpsv::planner::MotionPlanner motionPlanner;               // Internal motion planning solver.
-        mpsv::runtime::PerformanceCounter executionCounter;       // Performance counter to measure the execution time during @ref Solve.
+        mpsv::planner::PathPlannerInput m_pathPlannerInput;         // The input to the path planner, set during @ref Solve.
+        mpsv::planner::PathPlannerOutput m_pathPlannerOutput;       // The output of the path planner, set during @ref Solve and @ref Improve.
+        mpsv::planner::MotionPlannerInput m_motionPlannerInput;     // The input to the motion planner, set during @ref Solve.
+        mpsv::planner::MotionPlannerOutput m_motionPlannerOutput;   // The output of the motion planner, set during @ref Solve.
+        mpsv::planner::PathPlanner m_pathPlanner;                   // Internal path planning solver.
+        mpsv::planner::MotionPlanner m_motionPlanner;               // Internal motion planning solver.
+        mpsv::runtime::PerformanceCounter m_executionCounter;       // Performance counter to measure the execution time during @ref Solve.
 };
 
 

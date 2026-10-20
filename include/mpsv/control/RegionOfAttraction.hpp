@@ -28,9 +28,9 @@ class RegionOfAttraction {
          * @brief Clear the region of attraction and set all box constraints to default values (zero).
          */
         void Clear(void) noexcept {
-            rangePose.fill(0.0);
-            rangeUVR.fill(0.0);
-            rangeXYN.fill(0.0);
+            m_rangePose.fill(0.0);
+            m_rangeUVR.fill(0.0);
+            m_rangeXYN.fill(0.0);
         }
 
         /**
@@ -41,9 +41,9 @@ class RegionOfAttraction {
         error_code SetParameter(const mpsv::planner::ParameterRegionOfAttraction& parameter) noexcept {
             error_code e = parameter.IsValid();
             if(error_code::NONE == e){
-                this->rangePose = parameter.rangePose;
-                this->rangeUVR = parameter.rangeUVR;
-                this->rangeXYN = parameter.rangeXYN;
+                m_rangePose = parameter.rangePose;
+                m_rangeUVR = parameter.rangeUVR;
+                m_rangeXYN = parameter.rangeXYN;
             }
             return e;
         }
@@ -69,13 +69,13 @@ class RegionOfAttraction {
             double dX = std::fabs(state[6]);
             double dY = std::fabs(state[7]);
             double dN = std::fabs(state[8]);
-            return ((dx < rangePose[0]) && (dy < rangePose[1]) && (dpsi < rangePose[2]) && (dvn < rangeUVR[0]) && (dve < rangeUVR[1]) && (dr < rangeUVR[2]) && (dX < rangeXYN[0]) && (dY < rangeXYN[1]) && (dN < rangeXYN[2]));
+            return ((dx < m_rangePose[0]) && (dy < m_rangePose[1]) && (dpsi < m_rangePose[2]) && (dvn < m_rangeUVR[0]) && (dve < m_rangeUVR[1]) && (dr < m_rangeUVR[2]) && (dX < m_rangeXYN[0]) && (dY < m_rangeXYN[1]) && (dN < m_rangeXYN[2]));
         }
 
     protected:
-        std::array<double,3> rangePose;   // The pose range {dx,dy,dpsi}. A given pose must be in this range {[x-dx, x+dx], [y-dy, y+dy], [psi-dpsi, psi+dpsi]} to be in the region of attraction.
-        std::array<double,3> rangeUVR;    // The velocity range {du,dv,dr}. A given velocity must be in this range {[-du,du],[-dv,dv],[-dr,dr]} to be in the region of attraction.
-        std::array<double,3> rangeXYN;    // The force range {dX,dY,dN}. A given force must be in this range {[-dX,dX],[-dY,dY],[-dN,dN]} to be in the region of attraction.
+        std::array<double,3> m_rangePose;   // The pose range {dx,dy,dpsi}. A given pose must be in this range {[x-dx, x+dx], [y-dy, y+dy], [psi-dpsi, psi+dpsi]} to be in the region of attraction.
+        std::array<double,3> m_rangeUVR;    // The velocity range {du,dv,dr}. A given velocity must be in this range {[-du,du],[-dv,dv],[-dr,dr]} to be in the region of attraction.
+        std::array<double,3> m_rangeXYN;    // The force range {dX,dY,dN}. A given force must be in this range {[-dX,dX],[-dY,dY],[-dN,dN]} to be in the region of attraction.
 };
 
 

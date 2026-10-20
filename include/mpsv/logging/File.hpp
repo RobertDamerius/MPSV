@@ -41,8 +41,8 @@ class File {
          * @return True if success, false otherwise.
          */
         bool Open(const std::string& fileName, bool append = false) noexcept {
-            ofs.open(fileName, (append ? (std::ofstream::binary | std::ofstream::ate | std::ofstream::app) : (std::ofstream::binary | std::ofstream::ate)));
-            if(!ofs.is_open()){
+            m_ofs.open(fileName, (append ? (std::ofstream::binary | std::ofstream::ate | std::ofstream::app) : (std::ofstream::binary | std::ofstream::ate)));
+            if(!m_ofs.is_open()){
                 return false;
             }
             WriteHeaderData();
@@ -52,7 +52,7 @@ class File {
         /**
          * @brief Close the data log file.
          */
-        void Close(void) noexcept { ofs.close(); }
+        void Close(void) noexcept { m_ofs.close(); }
 
         /**
          * @brief Write one field to the data log file.
@@ -75,27 +75,27 @@ class File {
 
             // Write field start
             constexpr char fieldStart[] = {'#','#'};
-            ofs.write(&fieldStart[0], sizeof(fieldStart));
+            m_ofs.write(&fieldStart[0], sizeof(fieldStart));
 
             // Write field size
-            ofs.write(reinterpret_cast<const char*>(&fieldSize), sizeof(fieldSize));
+            m_ofs.write(reinterpret_cast<const char*>(&fieldSize), sizeof(fieldSize));
 
             // Write type
-            ofs.write(reinterpret_cast<const char*>(&lengthOfType), sizeof(lengthOfType));
-            ofs.write(type.c_str(), type.size());
+            m_ofs.write(reinterpret_cast<const char*>(&lengthOfType), sizeof(lengthOfType));
+            m_ofs.write(type.c_str(), type.size());
 
             // Write name
-            ofs.write(reinterpret_cast<const char*>(&lengthOfName), sizeof(lengthOfName));
-            ofs.write(name.c_str(), name.size());
+            m_ofs.write(reinterpret_cast<const char*>(&lengthOfName), sizeof(lengthOfName));
+            m_ofs.write(name.c_str(), name.size());
 
             // Write dimension
-            ofs.write(reinterpret_cast<const char*>(&numberOfDimensions), sizeof(numberOfDimensions));
+            m_ofs.write(reinterpret_cast<const char*>(&numberOfDimensions), sizeof(numberOfDimensions));
             for(auto&& d : dimension)
-                ofs.write(reinterpret_cast<const char*>(&d), sizeof(d));
+                m_ofs.write(reinterpret_cast<const char*>(&d), sizeof(d));
 
             // Write value
-            ofs.write(reinterpret_cast<const char*>(&valueSize), sizeof(valueSize));
-            ofs.write(static_cast<const char*>(value), valueSize);
+            m_ofs.write(reinterpret_cast<const char*>(&valueSize), sizeof(valueSize));
+            m_ofs.write(static_cast<const char*>(value), valueSize);
         }
 
         /**
@@ -144,7 +144,7 @@ class File {
         }
 
     protected:
-        std::ofstream ofs;   // The internal output file stream object for writing data to a file.
+        std::ofstream m_ofs;   // The internal output file stream object for writing data to a file.
 
         /**
          * @brief Write header data to the output file.
@@ -165,12 +165,12 @@ class File {
             const uint32_t headerSize = sizeof(year) + sizeof(month) + sizeof(day) + sizeof(timestampUTC);
 
             // Write header data
-            ofs.write(&logStart[0], sizeof(logStart));
-            ofs.write(reinterpret_cast<const char*>(&headerSize), sizeof(headerSize));
-            ofs.write(reinterpret_cast<const char*>(&year), sizeof(year));
-            ofs.write(reinterpret_cast<const char*>(&month), sizeof(month));
-            ofs.write(reinterpret_cast<const char*>(&day), sizeof(day));
-            ofs.write(reinterpret_cast<const char*>(&timestampUTC), sizeof(timestampUTC));
+            m_ofs.write(&logStart[0], sizeof(logStart));
+            m_ofs.write(reinterpret_cast<const char*>(&headerSize), sizeof(headerSize));
+            m_ofs.write(reinterpret_cast<const char*>(&year), sizeof(year));
+            m_ofs.write(reinterpret_cast<const char*>(&month), sizeof(month));
+            m_ofs.write(reinterpret_cast<const char*>(&day), sizeof(day));
+            m_ofs.write(reinterpret_cast<const char*>(&timestampUTC), sizeof(timestampUTC));
         }
 };
 

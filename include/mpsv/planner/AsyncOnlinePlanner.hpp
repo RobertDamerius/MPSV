@@ -31,10 +31,10 @@ class AsyncOnlinePlanner {
             pthread_mutexattr_t attr;
             pthread_mutexattr_init(&attr);
             pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT);
-            pthread_mutex_init(&mtxDatabase, &attr);
+            pthread_mutex_init(&m_mtxDatabase, &attr);
             pthread_mutexattr_destroy(&attr);
-            terminate = false;
-            previousParameterTimestamp = std::numeric_limits<double>::quiet_NaN();
+            m_terminate = false;
+            m_previousParameterTimestamp = std::numeric_limits<double>::quiet_NaN();
         }
 
         /**
@@ -43,7 +43,7 @@ class AsyncOnlinePlanner {
          */
         virtual ~AsyncOnlinePlanner() noexcept {
             Terminate();
-            pthread_mutex_destroy(&mtxDatabase);
+            pthread_mutex_destroy(&m_mtxDatabase);
         }
 
         /**
@@ -60,14 +60,14 @@ class AsyncOnlinePlanner {
          * @details Call this function before calling any of the other member functions.
          */
         bool Initialize(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, int32_t threadPriority, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs) noexcept {
-            terminate = false;
-            pthread_mutex_lock(&mtxDatabase);
-            database.Clear();
-            pthread_mutex_unlock(&mtxDatabase);
-            if(!onlinePlanner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples)){
+            m_terminate = false;
+            pthread_mutex_lock(&m_mtxDatabase);
+            m_database.Clear();
+            pthread_mutex_unlock(&m_mtxDatabase);
+            if(!m_onlinePlanner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples)){
                 return false;
             }
-            workerThread.Start(std::bind(&AsyncOnlinePlanner::WorkerThreadRun, this), threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
+            m_workerThread.Start(std::bind(&AsyncOnlinePlanner::WorkerThreadRun, this), threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
             return true;
         }
 
@@ -75,15 +75,15 @@ class AsyncOnlinePlanner {
          * @brief Terminate the asynchronous online planner.
          */
         void Terminate(void) noexcept {
-            terminate = true;
-            onlinePlanner.Interrupt();
-            workerThread.Stop();
-            onlinePlanner.Terminate();
-            pthread_mutex_lock(&mtxDatabase);
-            database.Clear();
-            pthread_mutex_unlock(&mtxDatabase);
-            terminate = false;
-            previousParameterTimestamp = std::numeric_limits<double>::quiet_NaN();
+            m_terminate = true;
+            m_onlinePlanner.Interrupt();
+            m_workerThread.Stop();
+            m_onlinePlanner.Terminate();
+            pthread_mutex_lock(&m_mtxDatabase);
+            m_database.Clear();
+            pthread_mutex_unlock(&m_mtxDatabase);
+            m_terminate = false;
+            m_previousParameterTimestamp = std::numeric_limits<double>::quiet_NaN();
         }
 
         /**
@@ -99,28 +99,28 @@ class AsyncOnlinePlanner {
             error_code inputError = input.IsValid();
 
             // move valid input to internal database
-            pthread_mutex_lock(&mtxDatabase);
-            database.inputError = inputError;
+            pthread_mutex_lock(&m_mtxDatabase);
+            m_database.inputError = inputError;
             if(error_code::NONE == inputError){
                 if(input.reset){ // detected reset: interrupt planner
-                    database.resetIsRequired = true; // make sure the reset is not lost if SetInput is called with high frequency
-                    onlinePlanner.Interrupt();
+                    m_database.resetIsRequired = true; // make sure the reset is not lost if SetInput is called with high frequency
+                    m_onlinePlanner.Interrupt();
                 }
-                input.MoveTo(database.input);
-                database.timeoutCounter.Start();
+                input.MoveTo(m_database.input);
+                m_database.timeoutCounter.Start();
             }
-            bool suspendWorkerThread = (error_code::NONE != database.inputError) || (error_code::NONE != database.parameterError) || !database.input.enable;
-            pthread_mutex_unlock(&mtxDatabase);
+            bool suspendWorkerThread = (error_code::NONE != m_database.inputError) || (error_code::NONE != m_database.parameterError) || !m_database.input.enable;
+            pthread_mutex_unlock(&m_mtxDatabase);
 
             // suspend or resume worker thread
             if(suspendWorkerThread){
-                workerThread.Suspend();
-                pthread_mutex_lock(&mtxDatabase);
-                database.resetIsRequired = true; // reset is required when leaving the standby mode
-                pthread_mutex_unlock(&mtxDatabase);
+                m_workerThread.Suspend();
+                pthread_mutex_lock(&m_mtxDatabase);
+                m_database.resetIsRequired = true; // reset is required when leaving the standby mode
+                pthread_mutex_unlock(&m_mtxDatabase);
             }
             else{
-                workerThread.Resume();
+                m_workerThread.Resume();
             }
         }
 
@@ -132,17 +132,17 @@ class AsyncOnlinePlanner {
         void SetParameter(mpsv::planner::AsyncOnlinePlannerParameterSet& parameter) noexcept {
             // check for data validity
             error_code parameterError = parameter.IsValid();
-            bool timestampChanged = !std::isfinite(previousParameterTimestamp) || (previousParameterTimestamp != parameter.timestamp);
+            bool timestampChanged = !std::isfinite(m_previousParameterTimestamp) || (m_previousParameterTimestamp != parameter.timestamp);
 
             // move valid parameters to internal database
-            pthread_mutex_lock(&mtxDatabase);
-            database.parameterError = parameterError;
+            pthread_mutex_lock(&m_mtxDatabase);
+            m_database.parameterError = parameterError;
             if((error_code::NONE == parameterError) && timestampChanged){
-                previousParameterTimestamp = parameter.timestamp;
-                parameter.MoveTo(database.parameter);
-                database.parameterUpdateRequired = true;
+                m_previousParameterTimestamp = parameter.timestamp;
+                parameter.MoveTo(m_database.parameter);
+                m_database.parameterUpdateRequired = true;
             }
-            pthread_mutex_unlock(&mtxDatabase);
+            pthread_mutex_unlock(&m_mtxDatabase);
         }
 
         /**
@@ -151,16 +151,16 @@ class AsyncOnlinePlanner {
          */
         mpsv::planner::AsyncOnlinePlannerOutput GetOutput(void){
             mpsv::planner::AsyncOnlinePlannerOutput result;
-            pthread_mutex_lock(&mtxDatabase);
-            result = database.output;
-            result.threadState = workerThread.GetState();
+            pthread_mutex_lock(&m_mtxDatabase);
+            result = m_database.output;
+            result.threadState = m_workerThread.GetState();
             if(result.threadState != mpsv::runtime::WorkerThreadState::running){
-                result.timestampInput = database.input.timestamp;
-                result.timestampParameter = database.parameter.timestamp;
-                result.inputError = database.inputError;
-                result.parameterError = database.parameterError;
+                result.timestampInput = m_database.input.timestamp;
+                result.timestampParameter = m_database.parameter.timestamp;
+                result.inputError = m_database.inputError;
+                result.parameterError = m_database.parameterError;
             }
-            pthread_mutex_unlock(&mtxDatabase);
+            pthread_mutex_unlock(&m_mtxDatabase);
             return result;
         }
 
@@ -174,10 +174,10 @@ class AsyncOnlinePlanner {
 
 
     private:
-        mpsv::runtime::WorkerThread workerThread;     // The internal worker thread.
-        mpsv::planner::OnlinePlanner onlinePlanner;   // The online sequential planner.
-        std::atomic<bool> terminate;                  // True if the asynchronous online planner should be terminated, false otherwise.
-        volatile double previousParameterTimestamp;   // Previous parameter timestamp (used to detect new parameter sets).
+        mpsv::runtime::WorkerThread m_workerThread;     // The internal worker thread.
+        mpsv::planner::OnlinePlanner m_onlinePlanner;   // The online sequential planner.
+        std::atomic<bool> m_terminate;                  // True if the asynchronous online planner should be terminated, false otherwise.
+        volatile double m_previousParameterTimestamp;   // Previous parameter timestamp (used to detect new parameter sets).
 
         /* internal database */
         class Database {
@@ -209,8 +209,8 @@ class AsyncOnlinePlanner {
                     resetIsRequired = true;
                     parameterUpdateRequired = false;
                 }
-        } database;
-        pthread_mutex_t mtxDatabase;   // Protect @ref database.
+        } m_database;
+        pthread_mutex_t m_mtxDatabase;   // Protect @ref m_database.
 
 
         /**
@@ -218,7 +218,7 @@ class AsyncOnlinePlanner {
          */
         void WorkerThreadRun(void) noexcept {
             // do nothing if thread should be terminated
-            if(terminate){
+            if(m_terminate){
                 return;
             }
 
@@ -227,40 +227,40 @@ class AsyncOnlinePlanner {
             mpsv::planner::AsyncOnlinePlannerOutput dataOut;
 
             // get input, apply parameters, handle errors
-            pthread_mutex_lock(&mtxDatabase);
-            if(database.timeoutCounter.TimeToStart() >= database.parameter.timeoutInput){
-                database.inputError = (database.inputError == error_code::NONE) ? error_code::NOT_AVAILABLE : database.inputError;
+            pthread_mutex_lock(&m_mtxDatabase);
+            if(m_database.timeoutCounter.TimeToStart() >= m_database.parameter.timeoutInput){
+                m_database.inputError = (m_database.inputError == error_code::NONE) ? error_code::NOT_AVAILABLE : m_database.inputError;
             }
-            if(database.parameterUpdateRequired){
-                database.parameterError = onlinePlanner.ApplyParameterSet(database.parameter);
-                database.parameterUpdateRequired = false;
+            if(m_database.parameterUpdateRequired){
+                m_database.parameterError = m_onlinePlanner.ApplyParameterSet(m_database.parameter);
+                m_database.parameterUpdateRequired = false;
             }
-            bool suspend = (error_code::NONE != database.inputError) || (error_code::NONE != database.parameterError) || !database.input.enable;
-            bool reset = database.resetIsRequired;
-            database.resetIsRequired = false;
-            dataIn = database.input;
-            dataOut.timestampInput = database.input.timestamp;
-            dataOut.timestampParameter = database.parameter.timestamp;
-            dataOut.inputError = database.inputError;
-            dataOut.parameterError = database.parameterError;
-            pthread_mutex_unlock(&mtxDatabase);
+            bool suspend = (error_code::NONE != m_database.inputError) || (error_code::NONE != m_database.parameterError) || !m_database.input.enable;
+            bool reset = m_database.resetIsRequired;
+            m_database.resetIsRequired = false;
+            dataIn = m_database.input;
+            dataOut.timestampInput = m_database.input.timestamp;
+            dataOut.timestampParameter = m_database.parameter.timestamp;
+            dataOut.inputError = m_database.inputError;
+            dataOut.parameterError = m_database.parameterError;
+            pthread_mutex_unlock(&m_mtxDatabase);
 
             // perform a reset if commanded and solve the planning problem
             if(!suspend){
                 if(reset){
-                    onlinePlanner.Reset();
+                    m_onlinePlanner.Reset();
                 }
-                onlinePlanner.Solve(dataOut, dataIn);
+                m_onlinePlanner.Solve(dataOut, dataIn);
             }
 
             // move result to internal database and run callback
-            pthread_mutex_lock(&mtxDatabase);
+            pthread_mutex_lock(&m_mtxDatabase);
             if(dataOut.error || suspend){
-                database.resetIsRequired = true; // reset is required when leaving the standby mode
-                workerThread.Suspend();
+                m_database.resetIsRequired = true; // reset is required when leaving the standby mode
+                m_workerThread.Suspend();
             }
-            dataOut.MoveTo(database.output);
-            pthread_mutex_unlock(&mtxDatabase);
+            dataOut.MoveTo(m_database.output);
+            pthread_mutex_unlock(&m_mtxDatabase);
             CallbackNewOutputAvailable();
         }
 };
