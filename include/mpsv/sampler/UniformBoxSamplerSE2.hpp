@@ -20,15 +20,6 @@ namespace sampler {
 class UniformBoxSamplerSE2 {
     public:
         /**
-         * @brief Construct a uniform box sampler for SE2.
-         */
-        UniformBoxSamplerSE2() noexcept {
-            m_R[0] = m_R[3] = m_invR[0] = m_invR[3] = 1.0;
-            m_R[1] = m_R[2] = m_invR[1] = m_invR[2] = 0.0;
-            m_offset[0] = m_offset[1] = 0.0;
-        }
-
-        /**
          * @brief Initialize the uniform box sampler.
          * @param[in] maxNumSamples Maximum number of samples to be used. Must be at least one.
          * @return True if success, false otherwise.
@@ -77,24 +68,24 @@ class UniformBoxSamplerSE2 {
          * @return The output sample given as {x, y, psi}.
          */
         std::array<double, 3> Sample(size_t idxSample) noexcept {
-            std::array<double, 3> result;
-            double s0 = m_haltonSequence.Sample(0, idxSample);
-            double s1 = m_haltonSequence.Sample(1, idxSample);
-            double s2 = m_haltonSequence.Sample(2, idxSample);
-            result[0] = m_R[0]*s0 + m_R[1]*s1 + m_offset[0];
-            result[1] = m_R[2]*s0 + m_R[3]*s1 + m_offset[1];
-            result[2] = mpsv::math::SymmetricalAngle(6.28318530717959 * s2);
-            return result;
+            std::array<double, 3> sample = m_haltonSequence.Sample(idxSample);
+            return {
+                m_R[0]*sample[0] + m_R[1]*sample[1] + m_offset[0],
+                m_R[2]*sample[0] + m_R[3]*sample[1] + m_offset[1],
+                mpsv::math::SymmetricalAngle(6.28318530717959 * sample[2])
+            };
         }
 
         /**
-         * @brief Check whether a given pose is inside the sampling area or not.
-         * @param[in] pose The pose to be checked. Only the position (x,y) is checked.
-         * @return True if given pose is inside the sampling area, false otherwise.
+         * @brief Check whether a given point is inside the sampling area or not.
+         * @tparam T Template parameter must be of type std::array<double,N> with N >= 2.
+         * @param[in] point The point to be checked.
+         * @return True if given point is inside the sampling area, false otherwise.
          */
-        bool IsInside(const std::array<double,3>& pose) noexcept {
-            double x = pose[0] - m_offset[0];
-            double y = pose[1] - m_offset[1];
+        template <class T> bool IsInside(const T& point) const noexcept {
+            static_assert(mpsv::is_vec2<T>::value,"Argument {point} must be of type std::array<double,N> with N >= 2!");
+            double x = point[0] - m_offset[0];
+            double y = point[1] - m_offset[1];
             double sx = m_invR[0]*x + m_invR[1]*y;
             double sy = m_invR[2]*x + m_invR[3]*y;
             return (sx >= 0.0) && (sx <= 1.0) && (sy >= 0.0) && (sy <= 1.0);
@@ -102,9 +93,9 @@ class UniformBoxSamplerSE2 {
 
     protected:
         mpsv::sampler::HaltonSequence<3> m_haltonSequence;   // Internal halton sequence sampler.
-        std::array<double, 4> m_R;                           // Scaled rotation matrix (row major order). A sample within the box is calculated by R*sample + offset.
-        std::array<double, 4> m_invR;                        // Inverse scaled rotation matrix (row major order).
-        std::array<double, 2> m_offset;                      // The origin of the box. This is the lower-left corner in the box frame.
+        std::array<double, 4> m_R{1.0, 0.0, 0.0, 1.0};       // Scaled rotation matrix (row major order). A sample within the box is calculated by R*sample + offset.
+        std::array<double, 4> m_invR{1.0, 0.0, 0.0, 1.0};    // Inverse scaled rotation matrix (row major order).
+        std::array<double, 2> m_offset{0.0, 0.0};            // The origin of the box. This is the lower-left corner in the box frame.
 };
 
 

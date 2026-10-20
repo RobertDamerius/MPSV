@@ -131,14 +131,13 @@ class OrientedBox {
          * @param[in] point The point to check.
          * @return True if the given point is inside this oriented box or on its borders, false otherwise.
          */
-        template <class T> bool IsInside(const T point) const noexcept {
+        template <class T> bool IsInside(const T& point) const noexcept {
             static_assert(mpsv::is_vec2<T>::value,"Argument {point} must be of type std::array<double,N> with N >= 2!");
-            std::array<double,2> p, s;
-            p[0] = point[0] - m_origin[0];
-            p[1] = point[1] - m_origin[1];
-            s[0] = p[0]*m_normal[0] + p[1]*m_normal[1];
-            s[1] = p[1]*m_normal[0] - p[0]*m_normal[1];
-            return (s[0] >= 0.0) && (s[0] <= m_dimension[0]) && (s[1] >= 0.0) && (s[1] <= m_dimension[1]);
+            double x = point[0] - m_origin[0];
+            double y = point[1] - m_origin[1];
+            double sx = x*m_normal[0] + y*m_normal[1];
+            double sy = y*m_normal[0] - x*m_normal[1];
+            return (sx >= 0.0) && (sx <= m_dimension[0]) && (sy >= 0.0) && (sy <= m_dimension[1]);
         }
 
         /**

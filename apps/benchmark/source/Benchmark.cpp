@@ -107,13 +107,10 @@ void Benchmark::GeneratePolygons(const size_t numPolygons){
 
     // Generate triangles
     for(size_t p = 0, k = 0; p < numPolygons; ++p){
-        double x1 = sampler.Sample(0,k);
-        double y1 = sampler.Sample(1,k++);
-        double x2 = sampler.Sample(0,k);
-        double y2 = sampler.Sample(1,k++);
-        double x3 = sampler.Sample(0,k);
-        double y3 = sampler.Sample(1,k++);
-        m_convexPolygons.push_back(ConvexPolygon({{x1,y1},{x2,y2},{x3,y3}}));
+        std::array<double,2> point1 = sampler.Sample(k++);
+        std::array<double,2> point2 = sampler.Sample(k++);
+        std::array<double,2> point3 = sampler.Sample(k++);
+        m_convexPolygons.push_back(ConvexPolygon({point1, point2, point3}));
         if(!m_convexPolygons.back().IsValid()){
             fprintf(stderr,"ERROR: Failed to build convex polygon for test set!\n");
         }

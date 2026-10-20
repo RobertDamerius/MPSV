@@ -36,7 +36,6 @@ template<size_t Tdimension> class HaltonSequence {
             constexpr size_t primes[] = {2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53};
             #pragma omp parallel for if (m_maxNumSamples > 100000)
             for(size_t s = 0; s < m_maxNumSamples; s++){
-                size_t sample_offset = s * Tdimension;
                 for (size_t dim = 0; dim < Tdimension; dim++) {
                     size_t base = primes[dim];
                     double invBase = 1.0 / static_cast<double>(base);
@@ -48,7 +47,7 @@ template<size_t Tdimension> class HaltonSequence {
                         n = size_t(static_cast<double>(n) * invBase);
                         bk *= invBase;
                     }
-                    m_samples[sample_offset + dim] = scale * q;
+                    m_samples[s][dim] = scale * q;
                 }
             }
             m_samples.shrink_to_fit();
@@ -65,23 +64,22 @@ template<size_t Tdimension> class HaltonSequence {
         }
 
         /**
-         * @brief Get the sample of a specific dimension.
-         * @param[in] idxDimension Index of the dimension.
+         * @brief Get a complete sample.
          * @param[in] idxSample Index of the sample.
-         * @return The sample value in range [0,scale], where scale is set by the @ref Initialize member function.
+         * @return The sample values in range [0,scale], where scale is set by the @ref Initialize member function.
          */
-        double Sample(size_t idxDimension, size_t idxSample) const noexcept {
+        std::array<double, Tdimension> Sample(size_t idxSample) const noexcept {
+            std::array<double, Tdimension> sample{};
             if(!m_maxNumSamples){
-                return 0.0;
+                return sample;
             }
-            idxDimension %= Tdimension;
             idxSample %= m_maxNumSamples;
-            return m_samples[idxSample * Tdimension + idxDimension];
+            return m_samples[idxSample];
         }
 
     protected:
-        std::vector<double> m_samples;   // Flattened precalculated samples storage.
-        size_t m_maxNumSamples{0};       // Max samples per dimension.
+        std::vector<std::array<double, Tdimension>> m_samples;   // Precalculated samples storage.
+        size_t m_maxNumSamples{0};                               // Max samples per dimension.
 };
 
 

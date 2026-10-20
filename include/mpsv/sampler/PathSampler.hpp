@@ -18,11 +18,6 @@ namespace sampler {
 class PathSampler {
     public:
         /**
-         * @brief Create a new path sampler object.
-         */
-        PathSampler() noexcept {}
-
-        /**
          * @brief Initialize the path sampler and build the look-up-tables.
          * @param[in] maxNumSamples Maximum number of samples to be used. Must be at least one.
          * @return True if success, false otherwise. If input arguments are invalid, false is returned.
@@ -141,18 +136,14 @@ class PathSampler {
          * path segment by the halton sequence (dimension 2,3,4). The dimension of the bos corresponds to rangePosition and rangeAngle, respectively.
          */
         std::array<double,3> Sample(size_t idxSample) noexcept {
-            std::array<double, 3> sample;
-            double s = m_haltonSequence.Sample(3, idxSample);
-            int32_t N = static_cast<int32_t>(m_segments.size());
-            int32_t i = 0;
-            for(i = 0; (i < N) && (m_segments[i].ratio < s); ++i);
-            double sx = m_haltonSequence.Sample(0, idxSample);
-            double sy = m_haltonSequence.Sample(1, idxSample);
-            double sz = m_haltonSequence.Sample(2, idxSample);
-            sample[0] = m_segments[i].b[0] + m_segments[i].A[0] * sx + m_segments[i].A[1] * sy + m_segments[i].A[2] * sz;
-            sample[1] = m_segments[i].b[1] + m_segments[i].A[3] * sx + m_segments[i].A[4] * sy + m_segments[i].A[5] * sz;
-            sample[2] = mpsv::math::SymmetricalAngle(m_segments[i].b[2] + m_segments[i].A[6] * sx + m_segments[i].A[7] * sy + m_segments[i].A[8] * sz);
-            return sample;
+            std::array<double, 4> haltonSample = m_haltonSequence.Sample(idxSample);
+            size_t i = 0;
+            for(; (i < m_segments.size()) && (m_segments[i].ratio < haltonSample[3]); ++i);
+            return {
+                m_segments[i].b[0] + m_segments[i].A[0] * haltonSample[0] + m_segments[i].A[1] * haltonSample[1] + m_segments[i].A[2] * haltonSample[2],
+                m_segments[i].b[1] + m_segments[i].A[3] * haltonSample[0] + m_segments[i].A[4] * haltonSample[1] + m_segments[i].A[5] * haltonSample[2],
+                mpsv::math::SymmetricalAngle(m_segments[i].b[2] + m_segments[i].A[6] * haltonSample[0] + m_segments[i].A[7] * haltonSample[1] + m_segments[i].A[8] * haltonSample[2])
+            };
         }
 
         /**
