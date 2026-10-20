@@ -19,11 +19,10 @@ class PathSampler {
     public:
         /**
          * @brief Initialize the path sampler and build the look-up-tables.
-         * @param[in] maxNumSamples Maximum number of samples to be used. Must be at least one.
-         * @return True if success, false otherwise. If input arguments are invalid, false is returned.
+         * @param[in] maxNumSamples Maximum number of samples to be used.
          */
-        bool Initialize(size_t maxNumSamples) noexcept {
-            return m_haltonSequence.Initialize(maxNumSamples);
+        void Initialize(size_t maxNumSamples) noexcept {
+            m_haltonSequence.Initialize(maxNumSamples);
         }
 
         /**

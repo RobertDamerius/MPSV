@@ -67,10 +67,8 @@ class MotionPlanner {
             }
             m_idxNeighbors.reserve(maxNumNodes);
             m_tree.Clear(maxNumNodes);
-            if(!m_boxSampler.Initialize(maxNumSamples) || !m_pathSampler.Initialize(maxNumSamples)){
-                Terminate();
-                return false;
-            }
+            m_boxSampler.Initialize(maxNumSamples);
+            m_pathSampler.Initialize(maxNumSamples);
             return true;
         }
 

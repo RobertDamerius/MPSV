@@ -63,10 +63,7 @@ class PathPlanner {
             }
             m_idxNeighbors.reserve(maxNumNodes);
             m_tree.Clear(maxNumNodes);
-            if(!m_boxSampler.Initialize(maxNumSamples)){
-                Terminate();
-                return false;
-            }
+            m_boxSampler.Initialize(maxNumSamples);
             return true;
         }
 

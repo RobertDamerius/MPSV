@@ -21,14 +21,13 @@ class UniformBoxSamplerSE2 {
     public:
         /**
          * @brief Initialize the uniform box sampler.
-         * @param[in] maxNumSamples Maximum number of samples to be used. Must be at least one.
-         * @return True if success, false otherwise.
+         * @param[in] maxNumSamples Maximum number of samples to be used.
          */
-        bool Initialize(size_t maxNumSamples) noexcept {
+        void Initialize(size_t maxNumSamples) noexcept {
             m_R[0] = m_R[3] = m_invR[0] = m_invR[3] = 1.0;
             m_R[1] = m_R[2] = m_invR[1] = m_invR[2] = 0.0;
             m_offset[0] = m_offset[1] = 0.0;
-            return m_haltonSequence.Initialize(maxNumSamples);
+            m_haltonSequence.Initialize(maxNumSamples);
         }
 
         /**

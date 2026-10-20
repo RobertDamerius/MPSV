@@ -21,18 +21,14 @@ template<size_t Tdimension> class HaltonSequence {
     public:
         /**
          * @brief Initialize the Halton sequence and build the look-up tables.
-         * @param[in] maxNumSamples Maximum number of samples to be used.
+         * @param[in] maxNumSamples Requested maximum number of samples to be used. The value is clamped to the safe maximum.
          * @param[in] scale Optional scale value for samples. Samples are to be generated in range [0,scale]. Scale defaults to 1.0.
-         * @return True if success, false otherwise.
          */
-        bool Initialize(size_t maxNumSamples, double scale = 1.0) noexcept {
+        void Initialize(size_t maxNumSamples, double scale = 1.0) noexcept {
             Terminate();
-            m_maxNumSamples = std::max<size_t>(1, maxNumSamples);
-            try {
-                m_samples.resize(Tdimension * m_maxNumSamples);
-            } catch(...) {
-                return false;
-            }
+            const size_t maxSafeNumSamples = m_samples.max_size() / Tdimension;
+            m_maxNumSamples = std::clamp(maxNumSamples, size_t{1}, maxSafeNumSamples);
+            m_samples.resize(Tdimension * m_maxNumSamples);
             constexpr size_t primes[] = {2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53};
             #pragma omp parallel for if (m_maxNumSamples > 100000)
             for(size_t s = 0; s < m_maxNumSamples; s++){
@@ -51,7 +47,6 @@ template<size_t Tdimension> class HaltonSequence {
                 }
             }
             m_samples.shrink_to_fit();
-            return true;
         }
 
         /**
