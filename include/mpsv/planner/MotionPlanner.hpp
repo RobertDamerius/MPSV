@@ -79,6 +79,7 @@ class MotionPlanner {
             m_interruptFlag = false;
             m_isSolving = false;
             m_tree.Clear();
+            m_costMap.Clear();
             m_state.Clear();
             m_parameter.Clear();
             m_regionOfAttraction.Clear();

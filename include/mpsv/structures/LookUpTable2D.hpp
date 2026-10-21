@@ -24,12 +24,7 @@ template <class Targ, class Tdata> class LookUpTable2D {
         /**
          * @brief Construct a new 2-dimensional look-up table object.
          */
-        LookUpTable2D() noexcept {
-            m_position[0] = m_position[1] = m_normal[1] = 0.0;
-            m_normal[0] = m_res = 1.0;
-            m_numX = m_numY = 0;
-            m_lut.push_back({0.0});
-        }
+        LookUpTable2D() noexcept = default;
 
         /**
          * @brief Destroy the 2-dimensional look-up table object.
@@ -220,6 +215,19 @@ template <class Targ, class Tdata> class LookUpTable2D {
         }
 
         /**
+         * @brief Reset the look-up table to its default state reducing memory usage.
+         */
+        void Clear(void) noexcept {
+            m_position = {0.0, 0.0};
+            m_normal = {1.0, 0.0};
+            m_res = 1.0;
+            m_numX = 0;
+            m_numY = 0;
+            m_lut = {Tdata{0.0}};
+            m_lut.shrink_to_fit();
+        }
+
+        /**
          * @brief Get the nearest  value at a specific position.
          * @tparam T Template parameter must be of type std::array<double,N> with N >= 2.
          * @param[in] position Position for which to obtain the  value.
@@ -381,12 +389,12 @@ template <class Targ, class Tdata> class LookUpTable2D {
         virtual void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept = 0;
 
     protected:
-        std::array<double,2> m_position;   // Corner position (lower left corner) of the actual LUT (without zero-border: corner of data cell [0,0] == corner of lut[1,1]).
-        std::array<double,2> m_normal;     // Normal vector in longitudinal direction of the LUT.
-        double m_res;                      // Resolution of the grid map (dimension of one cell).
-        int32_t m_numX;                    // Number of grid cells in X (longitudinal) direction.
-        int32_t m_numY;                    // Number of grid cells in Y (lateral) direction.
-        std::vector<Tdata> m_lut;          // Table data that also contains a zero-border (index = ix*numY + iy). ix and iy indicate the lower-left index position of the cell, however, the actual data of that cell has been evaluated for the center of the cell.
+        std::array<double,2> m_position{0.0, 0.0};   // Corner position (lower left corner) of the actual LUT (without zero-border: corner of data cell [0,0] == corner of lut[1,1]).
+        std::array<double,2> m_normal{1.0, 0.0};     // Normal vector in longitudinal direction of the LUT.
+        double m_res{1.0};                           // Resolution of the grid map (dimension of one cell).
+        int32_t m_numX{0};                           // Number of grid cells in X (longitudinal) direction.
+        int32_t m_numY{0};                           // Number of grid cells in Y (lateral) direction.
+        std::vector<Tdata> m_lut{Tdata{0.0}};        // Table data that also contains a zero-border (index = ix*numY + iy). ix and iy indicate the lower-left index position of the cell, however, the actual data of that cell has been evaluated for the center of the cell.
 
         /**
          * @brief Callback function for evaluating the look-up table data for a specific 2D position.
