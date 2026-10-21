@@ -141,7 +141,6 @@ double Benchmark::PolygonOverlap(void){
     // Count the number of overlaps between all convex polygons
     mpsv::runtime::PerformanceCounter timer;
     size_t numOverlaps = 0;
-    timer.Start();
     for(size_t i = 0; i < m_convexPolygons.size(); ++i){
         for(size_t j = i + 1; j < m_convexPolygons.size(); ++j){
             if(m_convexPolygons[i].Overlap(m_convexPolygons[j])){
@@ -163,7 +162,6 @@ double Benchmark::CostMapSingleThread(void){
     // Calculate cost function for all cells of the LUT
     mpsv::runtime::PerformanceCounter timer;
     double res = 100.0 / static_cast<double>(N);
-    timer.Start();
     for(int32_t ix = 0, i0 = 0; ix < N; ++ix, i0 += N){
         double x = static_cast<double>(ix) * res;
         for(int32_t iy = 0; iy < N; ++iy){
@@ -185,7 +183,6 @@ double Benchmark::CostMapMultiThread(void){
     // Calculate cost function for all cells of the LUT
     mpsv::runtime::PerformanceCounter timer;
     double res = 100.0 / static_cast<double>(N);
-    timer.Start();
     int32_t numTotal = N * N;
     #pragma omp parallel for shared(lut)
     for(int32_t i = 0; i < numTotal; ++i){
@@ -220,7 +217,6 @@ double Benchmark::ForwardSimulation(void){
     constexpr int32_t numTrials = 1000;
 
     mpsv::runtime::PerformanceCounter timer;
-    timer.Start();
     for(int32_t i = 0; i < numTrials; ++i){
         double angle = 2.0 * 3.14159265358979323 * static_cast<double>(i) / static_cast<double>(numTrials);
         initialStateAndInput[0] = 100.0 * std::cos(angle);

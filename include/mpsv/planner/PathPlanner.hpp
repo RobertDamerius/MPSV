@@ -98,7 +98,6 @@ class PathPlanner {
         void Solve(mpsv::planner::PathPlannerOutput& dataOut, mpsv::planner::PathPlannerInput& dataIn, double maxComputationTime, bool forceColdStart = false) noexcept {
             m_runSolve = true;
             mpsv::runtime::PerformanceCounter executionCounter;
-            executionCounter.Start();
 
             // Prepare
             // During the prepare step of the path planning algorithm, the following steps are performed:
@@ -155,11 +154,10 @@ class PathPlanner {
 
             // Solve
             if(m_state.isFeasible){
-                mpsv::runtime::PerformanceCounter iterationCounter;
                 double maxIterationTime = 0.0; // maximum execution time of one iteration
                 while(m_runSolve){
                     ++m_state.numberOfPerformedIterations;
-                    iterationCounter.Start();
+                    mpsv::runtime::PerformanceCounter iterationCounter;
                     Iterate(dataIn.staticObstacles);
                     maxIterationTime = std::max(maxIterationTime, iterationCounter.TimeToStart());
                     if(m_state.outOfNodes || ((maxIterationTime + executionCounter.TimeToStart()) >= maxComputationTime)){

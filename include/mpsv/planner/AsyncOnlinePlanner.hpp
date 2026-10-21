@@ -183,7 +183,7 @@ class AsyncOnlinePlanner {
                 mpsv::planner::AsyncOnlinePlannerInput input;              // The latest valid input data.
                 mpsv::planner::AsyncOnlinePlannerParameterSet parameter;   // The latest valid input parameter set.
                 mpsv::planner::AsyncOnlinePlannerOutput output;            // Output of the online planner.
-                mpsv::runtime::PerformanceCounter timeoutCounter;             // Performance counter to measure timeouts.
+                mpsv::runtime::PerformanceCounter timeoutCounter;          // Performance counter to measure timeouts.
                 mpsv::error_code inputError;                               // Error code of the latest @ref SetInput call.
                 mpsv::error_code parameterError;                           // Error code of the latest @ref SetParameter call.
                 bool resetIsRequired;                                      // True if an automatic reset is required or a reset has been commanded via @ref SetInput, false otherwise.

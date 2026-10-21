@@ -114,7 +114,6 @@ class MotionPlanner {
         void Solve(mpsv::planner::MotionPlannerOutput& dataOut, mpsv::planner::MotionPlannerInput& dataIn, double maxComputationTime, double minTrajectoryDuration = 0.0, bool forceColdStart = false) noexcept {
             m_runSolve = true;
             mpsv::runtime::PerformanceCounter executionCounter;
-            executionCounter.Start();
 
             // Prepare
             // Set initial state/input
@@ -154,11 +153,10 @@ class MotionPlanner {
 
             // Solve
             if(m_state.isFeasible){
-                mpsv::runtime::PerformanceCounter iterationCounter;
                 double maxIterationTime = 0.0; // maximum execution time of one iteration
                 while(m_runSolve){
                     ++m_state.numberOfPerformedIterations;
-                    iterationCounter.Start();
+                    mpsv::runtime::PerformanceCounter iterationCounter;
                     Iterate(dataIn.staticObstacles);
                     maxIterationTime = std::max(maxIterationTime, iterationCounter.TimeToStart());
                     if(m_state.outOfNodes || ((maxIterationTime + executionCounter.TimeToStart()) >= maxComputationTime)){

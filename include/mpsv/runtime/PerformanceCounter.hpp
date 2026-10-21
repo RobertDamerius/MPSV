@@ -16,12 +16,13 @@ namespace runtime {
 class PerformanceCounter {
     public:
         /**
-         * @brief Construct a new performance counter object and reset the internal time point to 1970-01-01.
+         * @brief Construct a new performance counter object and reset the internal time point (e.g., to 1970-01-01).
+         * @param[in] start If true, the performance counter is started by setting the internal timepoint to now. If false, the performance counter is reset. The default value is true.
          */
-        PerformanceCounter() noexcept { Reset(); }
+        explicit PerformanceCounter(bool start = true) noexcept { m_t0 = start ? std::chrono::steady_clock::now() : std::chrono::time_point<std::chrono::steady_clock>(); }
 
         /**
-         * @brief Reset the internal time point to 1970-01-01.
+         * @brief Reset the internal time point (e.g., to 1970-01-01).
          */
         void Reset(void) noexcept { m_t0 = std::chrono::time_point<std::chrono::steady_clock>(); }
 
@@ -32,8 +33,8 @@ class PerformanceCounter {
 
         /**
          * @brief Get the time (in seconds) to the internal timepoint. If the performance counter is reset, this time
-         * corresponds to the seconds to the initial timepoint of 1970-01-01. If @ref Start has been called, this time
-         * corresponds to the seconds to the last @ref Start call.
+         * corresponds to the seconds to the initial timepoint (e.g., to 1970-01-01). If @ref Start has been called
+         * or the performance counter has been started in the constructor, this time corresponds to the seconds to the last @ref Start call.
          * @return The time to the internal timepoint in seconds. The internal timepoint is set by @ref Reset or @ref Start.
          */
         [[nodiscard]] double TimeToStart(void) const noexcept {

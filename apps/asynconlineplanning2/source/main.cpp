@@ -12,7 +12,6 @@ int main(int, char**){
 
     // construct a timer for timestamp generation
     mpsv::runtime::PerformanceCounter timer;
-    timer.Start();
 
     // get parameter and input
     mpsv::planner::AsyncOnlinePlannerParameterSet parameter = example::GetParameterSet(timer.TimeToStart());
