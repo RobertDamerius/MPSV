@@ -60,8 +60,7 @@ class PathPlanner {
          * @brief Terminate the path planner.
          */
         void Terminate(void) noexcept {
-            m_interruptFlag = false;
-            m_isSolving = false;
+            m_runSolve = false;
             m_tree.Clear();
             m_costMap.Clear();
             m_state.Clear();
@@ -97,7 +96,7 @@ class PathPlanner {
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
         void Solve(mpsv::planner::PathPlannerOutput& dataOut, mpsv::planner::PathPlannerInput& dataIn, double maxComputationTime, bool forceColdStart = false) noexcept {
-            m_isSolving = true;
+            m_runSolve = true;
             mpsv::runtime::PerformanceCounter executionCounter;
             executionCounter.Start();
 
@@ -158,7 +157,7 @@ class PathPlanner {
             if(m_state.isFeasible){
                 mpsv::runtime::PerformanceCounter iterationCounter;
                 double maxIterationTime = 0.0; // maximum execution time of one iteration
-                while(!m_interruptFlag){
+                while(m_runSolve){
                     ++m_state.numberOfPerformedIterations;
                     iterationCounter.Start();
                     Iterate(dataIn.staticObstacles);
@@ -169,15 +168,13 @@ class PathPlanner {
                 }
             }
             AssignOutput(dataOut);
-            m_isSolving = false;
-            m_interruptFlag = false;
+            m_runSolve = false;
         }
 
         /**
          * @brief Interrupt a running @ref Solve operation of the path planner.
-         * @note The internal @ref m_interruptFlag is automatically reset at the end of a @ref Solve operation.
          */
-        void Interrupt(void) noexcept { m_interruptFlag.store(m_isSolving); }
+        void Interrupt(void) noexcept { m_runSolve = false; }
 
         /**
          * @brief Write data to the log file.
@@ -193,8 +190,7 @@ class PathPlanner {
         mpsv::structures::CostMap m_costMap;                                  // The cost map to be used as additional cost term in the objective function.
         mpsv::sampler::UniformBoxSamplerSE2 m_boxSampler;                     // The box sampler to be used to draw random samples from SE(2).
         std::vector<int16_t> m_idxNeighbors;                                  // Reserved memory for nearest neighbors.
-        std::atomic<bool> m_interruptFlag{false};                             // If set to true, no more iterations are performed and the @ref Solve member function returns.
-        std::atomic<bool> m_isSolving{false};                                 // True if the path planner performs a @ref Solve step, false otherwise.
+        std::atomic<bool> m_runSolve{false};                                  // True if a solve operation is running, false if not or is requested to terminate.
         double m_epsDistanceMetric{std::numeric_limits<double>::epsilon()};   // Eps (numeric threshold) for distance metric.
 
         /**

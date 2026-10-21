@@ -64,8 +64,7 @@ class MotionPlanner {
          * @brief Terminate the motion planner. All containers and parameters are cleared. Call this function, if the motion planner is no longer needed.
          */
         void Terminate(void) noexcept {
-            m_interruptFlag = false;
-            m_isSolving = false;
+            m_runSolve = false;
             m_tree.Clear();
             m_costMap.Clear();
             m_state.Clear();
@@ -113,7 +112,7 @@ class MotionPlanner {
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
         void Solve(mpsv::planner::MotionPlannerOutput& dataOut, mpsv::planner::MotionPlannerInput& dataIn, double maxComputationTime, double minTrajectoryDuration = 0.0, bool forceColdStart = false) noexcept {
-            m_isSolving = true;
+            m_runSolve = true;
             mpsv::runtime::PerformanceCounter executionCounter;
             executionCounter.Start();
 
@@ -157,7 +156,7 @@ class MotionPlanner {
             if(m_state.isFeasible){
                 mpsv::runtime::PerformanceCounter iterationCounter;
                 double maxIterationTime = 0.0; // maximum execution time of one iteration
-                while(!m_interruptFlag){
+                while(m_runSolve){
                     ++m_state.numberOfPerformedIterations;
                     iterationCounter.Start();
                     Iterate(dataIn.staticObstacles);
@@ -169,15 +168,13 @@ class MotionPlanner {
                 BuildFinalTrajectory(dataIn.staticObstacles, minTrajectoryDuration);
             }
             AssignOutput(dataOut);
-            m_isSolving = false;
-            m_interruptFlag = false;
+            m_runSolve = false;
         }
 
         /**
          * @brief Interrupt a running @ref Solve operation of the motion planner.
-         * @note The internal @ref m_interruptFlag is automatically reset at the end of a @ref Solve operation.
          */
-        void Interrupt(void) noexcept { m_interruptFlag.store(m_isSolving); }
+        void Interrupt(void) noexcept { m_runSolve = false; }
 
         /**
          * @brief Predict the motion of the vehicle for a given prediction horizon assuming the control input to be constant all the time.
@@ -230,8 +227,7 @@ class MotionPlanner {
         std::vector<int16_t> m_idxNeighbors;                                  // Reserved memory for nearest neighbors.
         mpsv::control::VehicleSimulator m_vehicleSimulator;                   // The vehicle simulator to be used for generating dynamically feasible trajectories.
         mpsv::control::RegionOfAttraction m_regionOfAttraction;               // The region of attraction to be used to check if a state enters the region around a pose.
-        std::atomic<bool> m_interruptFlag{false};                             // If set to true, no more iterations are performed and the @ref Solve member function returns.
-        std::atomic<bool> m_isSolving{false};                                 // True if the motion planner performs a @ref Solve step, false otherwise.
+        std::atomic<bool> m_runSolve{false};                                  // True if a solve operation is running, false if not or is requested to terminate.
         double m_epsDistanceMetric{std::numeric_limits<double>::epsilon()};   // Eps (numeric threshold) for distance metric.
 
         /**
