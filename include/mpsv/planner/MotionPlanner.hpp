@@ -58,7 +58,6 @@ class MotionPlanner {
             Terminate();
             m_idxNeighbors.reserve(maxNumNodes);
             m_tree.Clear(maxNumNodes);
-            m_boxSampler.Initialize(maxNumSamples);
             m_pathSampler.Initialize(maxNumSamples);
         }
 
@@ -75,7 +74,6 @@ class MotionPlanner {
             m_regionOfAttraction.Clear();
             m_vehicleSimulator.ClearController();
             m_vehicleSimulator.ClearModel();
-            m_boxSampler.Terminate();
             m_idxNeighbors.clear();
             m_idxNeighbors.shrink_to_fit();
             m_epsDistanceMetric = std::numeric_limits<double>::epsilon();
@@ -244,7 +242,6 @@ class MotionPlanner {
         mpsv::planner::MotionPlannerState m_state;                            // State of the motion planner.
         mpsv::planner::MotionPlannerParameterSet m_parameter;                 // Parameter set for the motion planner.
         mpsv::structures::CostMap m_costMap;                                  // The cost map to be used as additional cost term in the objective function.
-        mpsv::sampler::UniformBoxSamplerSE2 m_boxSampler;                     // The box sampler to be used to draw random samples from SE(2).
         mpsv::sampler::PathSampler m_pathSampler;                             // The path sampler to be used to draw random samples from SE(2).
         std::vector<int16_t> m_idxNeighbors;                                  // Reserved memory for nearest neighbors.
         mpsv::control::VehicleSimulator m_vehicleSimulator;                   // The vehicle simulator to be used for generating dynamically feasible trajectories.
@@ -360,7 +357,7 @@ class MotionPlanner {
         /**
          * @brief Set the sampling area based on a given path. The area corresponds to the minimum area oriented box enclosing all points of the path, extended by the position sampling range.
          * @param[in] path The path that should be contained in the sampling area.
-         * @return The oriented box representing the sampling area.
+         * @return The oriented box representing the rectangular hull of the sampling area.
          */
         mpsv::geometry::OrientedBox SetSamplingArea(const std::vector<std::array<double,3>>& path) noexcept {
             mpsv::geometry::OrientedBox box;
@@ -368,7 +365,6 @@ class MotionPlanner {
             m_pathSampler.Reset(path, m_parameter.motionPlanner.samplingRangePosition, m_parameter.motionPlanner.samplingRangeAngle, m_parameter.metric.weightPsi);
             box.CreateFromPointCloud(path);
             box.Extend(m_parameter.motionPlanner.samplingRangePosition * sqrt2);
-            m_boxSampler.SetSize(box);
             return box;
         }
 
