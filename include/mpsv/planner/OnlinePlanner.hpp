@@ -175,20 +175,6 @@ class OnlinePlanner {
         }
 
         /**
-         * @brief Callback function to check whether to change to a new trajectory or not.
-         * @return At the moment this function always returns true.
-         */
-        bool ChangeToNewTrajectory(double timestampOld, const std::vector<std::array<double,12>>& trajectoryOld, double timestampNew, const std::vector<std::array<double,12>>& trajectoryNew, std::array<double,2> offsetOldToNew, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles){
-            (void)timestampOld;
-            (void)trajectoryOld;
-            (void)timestampNew;
-            (void)trajectoryNew;
-            (void)offsetOldToNew;
-            (void)staticObstacles;
-            return true; // for now: always change to new trajectory
-        }
-
-        /**
          * @brief Solve the first online sequential planning problem using the initial state given in the input and optionally predicting it by the expected computation time.
          * @param[in] dataIn Input data containing the scene data (time, initial state, final pose, obstacles).
          */
@@ -319,35 +305,16 @@ class OnlinePlanner {
             int32_t indexOldBegin = std::max(0, indexOldEnd - numOldTrajectoryPoints);
             numOldTrajectoryPoints = indexOldEnd - indexOldBegin; // index-range is [indexOldBegin, indexOldEnd), excluding indexOldEnd
 
-            // Either use the new trajectory or keep the old one
-            if(ChangeToNewTrajectory(m_state.timestamp, m_state.trajectory, timestamp, m_sequentialPlannerOutput.motionPlanner.trajectory, offsetOldToNew, dataIn.staticObstacles)){
-                if(numOldTrajectoryPoints > 0){
-                    timestamp -= static_cast<double>(numOldTrajectoryPoints)*m_sequentialPlannerOutput.motionPlanner.sampletime;
-                    // The old trajectory refers to the old origin and must be transformed to the new origin
-                    for(int32_t i = indexOldBegin; i < indexOldEnd; ++i){
-                        m_state.trajectory[i][0] -= offsetOldToNew[0];
-                        m_state.trajectory[i][1] -= offsetOldToNew[1];
-                    }
-                    // Insert part of old trajectory at beginning of new solution trajectory
-                    m_sequentialPlannerOutput.motionPlanner.trajectory.insert(m_sequentialPlannerOutput.motionPlanner.trajectory.begin(), m_state.trajectory.begin() + indexOldBegin, m_state.trajectory.begin() + indexOldEnd);
+            // Merge old trajectory to new solution trajectory
+            if(numOldTrajectoryPoints > 0){
+                timestamp -= static_cast<double>(numOldTrajectoryPoints)*m_sequentialPlannerOutput.motionPlanner.sampletime;
+                // The old trajectory refers to the old origin and must be transformed to the new origin
+                for(int32_t i = indexOldBegin; i < indexOldEnd; ++i){
+                    m_state.trajectory[i][0] -= offsetOldToNew[0];
+                    m_state.trajectory[i][1] -= offsetOldToNew[1];
                 }
-            }
-            else{
-                // Keep the old trajectory
-                m_sequentialPlannerOutput.motionPlanner.trajectory.swap(m_state.trajectory);
-                timestamp = m_state.timestamp;
-
-                // Remove too old trajectory points and adjust timestamp
-                if(indexOldBegin > 0){
-                    m_sequentialPlannerOutput.motionPlanner.trajectory.erase(m_sequentialPlannerOutput.motionPlanner.trajectory.begin(), m_sequentialPlannerOutput.motionPlanner.trajectory.begin() + indexOldBegin);
-                    timestamp += static_cast<double>(indexOldBegin)*m_sequentialPlannerOutput.motionPlanner.sampletime;
-                }
-
-                // Transform old trajectory to new origin
-                for(auto&& x : m_sequentialPlannerOutput.motionPlanner.trajectory){
-                    x[0] -= offsetOldToNew[0];
-                    x[1] -= offsetOldToNew[1];
-                }
+                // Insert part of old trajectory at beginning of new solution trajectory
+                m_sequentialPlannerOutput.motionPlanner.trajectory.insert(m_sequentialPlannerOutput.motionPlanner.trajectory.begin(), m_state.trajectory.begin() + indexOldBegin, m_state.trajectory.begin() + indexOldEnd);
             }
 
             // Update the internal state: save current planning results (copy values, swap containers)
