@@ -26,12 +26,11 @@ template<size_t Tdimension> class HaltonSequence {
          */
         void Initialize(size_t maxNumSamples, double scale = 1.0) noexcept {
             Terminate();
-            const size_t maxSafeNumSamples = m_samples.max_size() / Tdimension;
-            m_maxNumSamples = std::clamp(maxNumSamples, size_t{1}, maxSafeNumSamples);
-            m_samples.resize(Tdimension * m_maxNumSamples);
+            maxNumSamples = std::clamp(maxNumSamples, size_t{1}, m_samples.max_size());
+            m_samples.resize(maxNumSamples);
             constexpr size_t primes[] = {2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53};
-            #pragma omp parallel for if (m_maxNumSamples > 100000)
-            for(size_t s = 0; s < m_maxNumSamples; s++){
+            #pragma omp parallel for if (maxNumSamples > 100000)
+            for(size_t s = 0; s < maxNumSamples; s++){
                 for (size_t dim = 0; dim < Tdimension; dim++) {
                     size_t base = primes[dim];
                     double invBase = 1.0 / static_cast<double>(base);
@@ -55,7 +54,6 @@ template<size_t Tdimension> class HaltonSequence {
         void Terminate(void) noexcept {
             m_samples.clear();
             m_samples.shrink_to_fit();
-            m_maxNumSamples = 0;
         }
 
         /**
@@ -65,16 +63,15 @@ template<size_t Tdimension> class HaltonSequence {
          */
         std::array<double, Tdimension> Sample(size_t idxSample) const noexcept {
             std::array<double, Tdimension> sample{};
-            if(!m_maxNumSamples){
-                return sample;
+            if(!m_samples.empty()){
+                idxSample %= m_samples.size();
+                return m_samples[idxSample];
             }
-            idxSample %= m_maxNumSamples;
-            return m_samples[idxSample];
+            return sample;
         }
 
     protected:
         std::vector<std::array<double, Tdimension>> m_samples;   // Precalculated samples storage.
-        size_t m_maxNumSamples{0};                               // Max samples per dimension.
 };
 
 
