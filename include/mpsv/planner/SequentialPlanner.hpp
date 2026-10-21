@@ -28,8 +28,7 @@ namespace planner {
 /**
  * @brief The sequential planner (contains path and motion planner). When creating the planner, call the @ref Initialize member function once to setup the planner before calling
  * any other member function. Apply a valid parameter set by calling the @ref ApplyParameterSet member function. Then you can solve the problem by calling the @ref Solve
- * member function. If you wish to apply a new parameter set, call the @ref ApplyParameterSet before the @ref Solve call. You can further improve the path calling the
- * @ref ImprovePath member function after the @ref Solve member function. To interrupt a running @ref Solve operation, call the @ref Interrupt member function.
+ * member function. If you wish to apply a new parameter set, call the @ref ApplyParameterSet before the @ref Solve call. To interrupt a running @ref Solve operation, call the @ref Interrupt member function.
  */
 class SequentialPlanner {
     public:
@@ -135,13 +134,6 @@ class SequentialPlanner {
             m_motionPlanner.Interrupt();
             m_pathPlanner.Interrupt();
         }
-
-        /**
-         * @brief Call this function directly after the @ref Solve function to further improve the path.
-         * @param[in] maxComputationTime The maximum computation time in seconds before stopping the solve iteration loop.
-         * @details The path improvement can be interrupted by calling the @ref Interrupt member function.
-         */
-        void ImprovePath(double maxComputationTime) noexcept { m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, maxComputationTime); }
 
         /**
          * @brief Predict the motion of the vehicle for a given prediction horizon assuming the control input to be constant all the time.

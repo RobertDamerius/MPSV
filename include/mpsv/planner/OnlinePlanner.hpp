@@ -104,13 +104,6 @@ class OnlinePlanner {
         }
 
         /**
-         * @brief Call this function directly after the @ref Solve function to further improve the path.
-         * @param[in] maxComputationTime The maximum computation time in seconds before stopping the solve iteration loop.
-         * @details The path improvement can be interrupted by calling the @ref Interrupt member function.
-         */
-        void ImprovePath(double maxComputationTime) noexcept { m_sequentialPlanner.ImprovePath(maxComputationTime); }
-
-        /**
          * @brief Predict the motion of the vehicle for a given prediction horizon assuming the control input to be constant all the time.
          * @param[in] initialStateAndInput The initial state and input vector given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
          * @param[in] predictionHorizon The total simulation time for the prediction in seconds. Note that this value is gridded to the internal sampletime parameter. The actual simulation time is returned. This value is clamped to a minimum value of zero.
