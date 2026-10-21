@@ -27,8 +27,7 @@ namespace planner {
 
 /**
  * @brief The path planning algorithm. Before solving path planning problems, initialize the planner by calling the @ref Initialize member function.
- * Then apply a parameter set by calling @ref ApplyParameterSet. To solve a planning problem, call the two member functions @ref Prepare and
- * @ref Solve. The internal iteration loop of the @ref Solve operation is interrupted if @ref Interrupt is called.
+ * Then apply a parameter set by calling @ref ApplyParameterSet. The internal iteration loop of the @ref Solve operation is interrupted if @ref Interrupt is called.
  */
 class PathPlanner {
     private:
@@ -77,8 +76,6 @@ class PathPlanner {
          * @brief Apply a parameter set to the path planner.
          * @param[in] parameterSet The parameter set to be applied.
          * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
-         * @details Do not call this function between @ref Prepare and @ref Solve calls, otherwise the parameters used by
-         * both member functions may be inconsistent! If new parameters are to be applied, always apply them BEFORE a prepare-solve-step.
          */
         error_code ApplyParameterSet(mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
             error_code e = parameter.IsValid();
@@ -91,15 +88,20 @@ class PathPlanner {
         }
 
         /**
-         * @brief Prepare the path planner before solving the path planning problem. A parameter set has to be applied using the @ref ApplyParameterSet member function.
+         * @brief Solve the path planning problem by doing several iterations for an upper computation time limit. Parameters must be set before calling this member function.
          * @param[out] dataOut The output data where to store results to.
-         * @param[inout] dataIn The input data containing initial and final pose as well as static obstacles. All static obstacles that are outside the area of interest are removed! The input argument is changed.
+         * @param[inout] dataIn The input data that represents the path planning problem to be solved. The data may be modified by this member function, e.g. the static obstacles may be filtered to remove obstacles outside the area of interest.
+         * @param[in] maxComputationTime The maximum computation time in seconds allowed before leaving the iteration loop.
          * @param[in] forceColdStart True if no warm start should be performed and the path planner starts with an empty tree, false otherwise. The default value is false.
-         * @details This member function copies the initial and final pose to internal variables. The sampling area and cost look-up table are generated during this call. A warmstart is performed to use as much
-         * information as possible from a previous solution.
+         * @details This member function implements an iteration loop that is termimated if @ref Interrupt is called.
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
-        void Prepare(mpsv::planner::PathPlannerOutput& dataOut, mpsv::planner::PathPlannerInput& dataIn, bool forceColdStart = false) noexcept {
+        void Solve(mpsv::planner::PathPlannerOutput& dataOut, mpsv::planner::PathPlannerInput& dataIn, double maxComputationTime, bool forceColdStart = false) noexcept {
+            m_isSolving = true;
+            mpsv::runtime::PerformanceCounter executionCounter;
+            executionCounter.Start();
+
+            // Prepare
             // During the prepare step of the path planning algorithm, the following steps are performed:
             //
             // 1. SET SAMPLING AREA
@@ -151,29 +153,11 @@ class PathPlanner {
                     m_state.goalReached = (m_state.closestDistanceToGoal < m_epsDistanceMetric);
                 }
             }
-            AssignOutput(dataOut);
-        }
 
-        /**
-         * @brief Solve the path planning problem by doing several iterations for an upper computation time limit (the limit is set as parameter when calling this function). Parameters must be set and the planner must be prepared before calling this member function.
-         * @param[out] dataOut The output data where to store results to.
-         * @param[in] dataIn The input data containing static obstacles. Only the static obstacles are used. All remaining data has already been processed by the @ref Prepare member function.
-         * @param[in] maxComputationTime The maximum computation time in seconds allowed before leaving the iteration loop.
-         * @details This member function implements an iteration loop. This loop is stopped, if the @ref m_interruptFlag is set via @ref Interrupt. The iteration loop is stopped
-         * if the upper computation time limit is exceeded or if an error occurs. There are two types of errors: not feasible and out of nodes.
-         * The problem is not feasible, if the inital pose already collides with obstacles. In this case no tree is built and the solution path would be
-         * an empty set. However, the idxSolution always points to the root, thus the path returned in the output is non-empty (it contains at least the
-         * root by definition). The second error outOfNodes is set, if no more nodes are available in the memory for more iterations. This only happens if
-         * all nodes belong to the solution path. The number of nodes is limited. If the tree is full, a random node which must not belong to the solution path
-         * is removed. If this is not possible, the internal memory of the tree is out of nodes.
-         * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
-         */
-        void Solve(mpsv::planner::PathPlannerOutput& dataOut, mpsv::planner::PathPlannerInput& dataIn, double maxComputationTime) noexcept {
-            m_isSolving = true;
+            // Solve
             if(m_state.isFeasible){
-                mpsv::runtime::PerformanceCounter executionCounter, iterationCounter;
+                mpsv::runtime::PerformanceCounter iterationCounter;
                 double maxIterationTime = 0.0; // maximum execution time of one iteration
-                executionCounter.Start();
                 while(!m_interruptFlag){
                     ++m_state.numberOfPerformedIterations;
                     iterationCounter.Start();
@@ -291,7 +275,7 @@ class PathPlanner {
         }
 
         /**
-         * @brief Prepare the algorithm with a warm start. This member function is called by the @ref Prepare memnber function.
+         * @brief Warm start the path planner by transforming the tree to a new origin and connecting the initial pose with the old solution path.
          * @param[in] originOldToNew Translation between two consecutive problems. If the origin of the previous problem is different
          * to the origin of the new problem, then the tree must be transformed during a warm start. This vector specifies the position
          * of the new origin with respect to the old origin (vector from old origin to new origin).

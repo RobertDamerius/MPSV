@@ -2,12 +2,11 @@
 
 
 void MPSV_WrapperPathPlanner::Initialize(int16_t maxNumNodes, uint32_t maxNumSamples){
-    m_initializationOK = m_pathPlanner.Initialize(maxNumNodes, maxNumSamples);
+    m_pathPlanner.Initialize(maxNumNodes, maxNumSamples);
 }
 
 void MPSV_WrapperPathPlanner::Terminate(void){
     m_pathPlanner.Terminate();
-    m_initializationOK = false;
     m_maxComputationTime = 0.0;
 }
 
@@ -21,7 +20,6 @@ void MPSV_WrapperPathPlanner::Step(serialization_path_planner_output* output, se
     // Solve the planning problem
     if(mpsv::error_code::NONE == errorCode){
         m_pathPlanner.ApplyParameterSet(m_pathPlannerParameter);
-        m_pathPlanner.Prepare(m_pathPlannerOutput, m_pathPlannerInput);
         m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, input->parameter.pathPlanner.maxComputationTime);
 
         // Assign output data
@@ -114,7 +112,7 @@ mpsv::error_code MPSV_WrapperPathPlanner::AssignInput(serialization_path_planner
         return e;
     if(mpsv::error_code::NONE != (e = m_pathPlannerInput.IsValid()))
         return e;
-    if(!(m_initializationOK && validMaxComputationTime))
+    if(!validMaxComputationTime)
         return mpsv::error_code::NOT_AVAILABLE;
     return mpsv::error_code::NONE;
 }

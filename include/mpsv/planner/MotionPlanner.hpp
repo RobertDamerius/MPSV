@@ -31,8 +31,7 @@ namespace planner {
 
 /**
  * @brief The motion planning algorithm. Before solving motion planning problems, initialize the planner by calling the @ref Initialize member function.
- * Then apply a parameter set by calling @ref ApplyParameterSet. To solve a planning problem, call the two member functions @ref Prepare and
- * @ref Solve. The internal iteration loop of the @ref Solve operation is interrupted if @ref Interrupt is called.
+ * Then apply a parameter set by calling @ref ApplyParameterSet. The internal iteration loop of the @ref Solve operation is interrupted if @ref Interrupt is called.
  */
 class MotionPlanner {
     private:
@@ -83,9 +82,6 @@ class MotionPlanner {
          * @brief Apply a parameter set to the motion planner.
          * @param[in] parameter The parameter set to be applied.
          * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
-         * @details CDo not call this function between @ref Prepare and @ref Solve calls, otherwise the parameters used by
-         * both member functions may be inconsistent! If new parameters are to be applied, always apply them BEFORE a prepare-solve-step.
-         * @note The tree is cleared (all nodes except the root node are removed).
          */
         error_code ApplyParameterSet(mpsv::planner::MotionPlannerParameterSet& parameter) noexcept {
             error_code e;
@@ -107,15 +103,21 @@ class MotionPlanner {
         }
 
         /**
-         * @brief Prepare the motion planner before solving the motion planning problem. A parameter set has to be applied using the @ref ApplyParameterSet member function.
+         * @brief Solve the motion planning problem by doing several iterations for an upper computation time limit. Parameters must be set before calling this member function.
          * @param[out] dataOut The output data where to store results to.
-         * @param[inout] dataIn The input data containing initial and final pose as well as static obstacles and the exported path planning tree. All static obstacles that are outside the area of interest are removed! The input argument is changed.
+         * @param[inout] dataIn The input data that represents the motion planning problem to be solved. The data may be modified by this member function, e.g. the static obstacles may be filtered to remove obstacles outside the area of interest.
+         * @param[in] maxComputationTime The maximum computation time in seconds allowed before leaving the iteration loop.
+         * @param[in] minTrajectoryDuration The minimum duration (>= 0) of the trajectory in seconds, defaults to 0. If the simulation time is too large (more than 0x0000FFFF steps), then the problem is infeasible.
          * @param[in] forceColdStart True if the initial sample set of the motion planner should be initialized based on the input path only. False if the previous solution path should also be included into the sample set.
-         * @details This member function copies the initial state/input and final pose to internal variables. The sampling area and cost look-up table are generated during this call.
-         * @note NOTE: The feasibility output only indicates whether the initial pose collides with static obstacles! The actual dynamic feasibility (violation-free trajectory) is checked at the end of the @ref Solve step!
+         * @details This member function implements an iteration loop that is termimated if @ref Interrupt is called.
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
-        void Prepare(mpsv::planner::MotionPlannerOutput& dataOut, mpsv::planner::MotionPlannerInput& dataIn, bool forceColdStart = false) noexcept {
+        void Solve(mpsv::planner::MotionPlannerOutput& dataOut, mpsv::planner::MotionPlannerInput& dataIn, double maxComputationTime, double minTrajectoryDuration = 0.0, bool forceColdStart = false) noexcept {
+            m_isSolving = true;
+            mpsv::runtime::PerformanceCounter executionCounter;
+            executionCounter.Start();
+
+            // Prepare
             // Set initial state/input
             m_state.Clear(!forceColdStart); // keep latest solution if no cold start is forced
             m_state.initialStateAndInput = dataIn.initialStateAndInput;
@@ -150,29 +152,11 @@ class MotionPlanner {
             // Set initial path (initial pose) and trajectory (empty)
             m_tree.GetPathFromRootToNode(m_tree[m_state.idxSolutionNode].pathBuffer, m_state.idxSolutionNode); // set reference path
             m_tree[m_state.idxSolutionNode].trajectoryBuffer.clear();
-            AssignOutput(dataOut);
-        }
 
-        /**
-         * @brief Solve the motion planning problem by doing several iterations for an upper computation time limit (the limit is set as parameter when calling this function). Parameters must be set and the planner must be prepared before calling this member function.
-         * @param[out] dataOut The output data where to store results to.
-         * @param[in] dataIn The input data containing static obstacles. Only the static obstacles are used. All remaining data has already been processed by the @ref Prepare member function.
-         * @param[in] maxComputationTime The maximum computation time in seconds allowed before leaving the iteration loop.
-         * @param[in] minTrajectoryDuration The minimum duration (>= 0) of the trajectory in seconds, defaults to 0. If the simulation time is too large (more than 0x0000FFFF steps), then the problem is infeasible.
-         * @details This member function implements an iteration loop. This loop is stopped, if the @ref m_interruptFlag is set via @ref Interrupt. The iteration loop is stopped
-         * if the upper computation time limit is exceeded or if an error occurs. There are two types of errors: not feasible and out of nodes.
-         * The problem is not feasible, if the inital pose already collides with obstacles. In this case no tree is built and the solution trajectory would be
-         * an empty set. The second error outOfNodes is set, if no more nodes are available in the memory for more iterations.
-         * This only happens if all nodes belong to the reference solution path. The number of nodes is limited. If the tree is full, a random node which must
-         * not belong to the reference solution path is removed. If this is not possible, the internal memory of the tree is out of nodes.
-         * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
-         */
-        void Solve(mpsv::planner::MotionPlannerOutput& dataOut, mpsv::planner::MotionPlannerInput& dataIn, double maxComputationTime, double minTrajectoryDuration = 0.0) noexcept {
-            m_isSolving = true;
+            // Solve
             if(m_state.isFeasible){
-                mpsv::runtime::PerformanceCounter executionCounter, iterationCounter;
+                mpsv::runtime::PerformanceCounter iterationCounter;
                 double maxIterationTime = 0.0; // maximum execution time of one iteration
-                executionCounter.Start();
                 while(!m_interruptFlag){
                     ++m_state.numberOfPerformedIterations;
                     iterationCounter.Start();

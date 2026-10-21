@@ -66,11 +66,6 @@ struct __attribute__((packed)) serialization_path_planner_output {
 class MPSV_WrapperPathPlanner {
     public:
         /**
-         * @brief Construct a new wrapper object.
-         */
-        MPSV_WrapperPathPlanner(){ m_initializationOK = false; m_maxComputationTime = 0.0; }
-
-        /**
          * @brief Destroy the wrapper object.
          * @details Calls the @ref Terminate member function.
          */
@@ -96,12 +91,11 @@ class MPSV_WrapperPathPlanner {
         void Step(serialization_path_planner_output* output, serialization_path_planner_input* input);
 
     protected:
-        bool m_initializationOK;                                         // True if initialization was OK, false otherwise.
         mpsv::planner::PathPlanner m_pathPlanner;                        // The internal path planner.
         mpsv::planner::PathPlannerInput m_pathPlannerInput;              // The input data to the path planner.
         mpsv::planner::PathPlannerOutput m_pathPlannerOutput;            // The output data from the path planner.
         mpsv::planner::PathPlannerParameterSet m_pathPlannerParameter;   // The parameter set for the path planner.
-        double m_maxComputationTime;                                     // The maximum computation time in seconds allowed before leaving the iteration loop.
+        double m_maxComputationTime{0.0};                                // The maximum computation time in seconds allowed before leaving the iteration loop.
 
         /**
          * @brief Assign the input data to the internal path planner data.

@@ -284,8 +284,7 @@ uint32_t Benchmark::PathPlanning(void){
     }
 
     // Run actual path planning
-    planner.Prepare(dataOut, dataIn, true);
-    planner.Solve(dataOut, dataIn, 1.0);
+    planner.Solve(dataOut, dataIn, 1.0, true);
 
     // Terminate the planner
     planner.Terminate();
@@ -365,8 +364,7 @@ uint32_t Benchmark::MotionPlanning(void){
     }
 
     // Run actual motion planning
-    planner.Prepare(dataOut, dataIn);
-    planner.Solve(dataOut, dataIn, 1.0);
+    planner.Solve(dataOut, dataIn, 1.0, 0.0, false);
 
     // Terminate the planner
     planner.Terminate();

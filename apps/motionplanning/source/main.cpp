@@ -27,7 +27,6 @@ int main(int, char**){
     constexpr double maxComputationTime = 1.0;
     mpsv::planner::MotionPlannerOutput dataOut;
     std::cout << "solve motion planning problem (computation time: " << maxComputationTime << " s)\n\n";
-    planner.Prepare(dataOut, dataIn);
     planner.Solve(dataOut, dataIn, maxComputationTime);
 
     // print result (at most 10 trajectory points)

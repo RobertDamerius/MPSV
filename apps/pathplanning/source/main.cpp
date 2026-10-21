@@ -27,7 +27,6 @@ int main(int, char**){
     constexpr double maxComputationTime = 1.0;
     mpsv::planner::PathPlannerOutput dataOut;
     std::cout << "solve path planning problem (computation time: " << maxComputationTime << " s)\n\n";
-    planner.Prepare(dataOut, dataIn);
     planner.Solve(dataOut, dataIn, maxComputationTime);
 
     // print result
