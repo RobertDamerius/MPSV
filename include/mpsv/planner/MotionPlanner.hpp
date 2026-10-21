@@ -42,34 +42,24 @@ class MotionPlanner {
         /**
          * @brief Construct an motion planner and set default values.
          */
-        MotionPlanner() noexcept { Terminate(); }
+        MotionPlanner() noexcept { Initialize(1, 1); }
 
         /**
          * @brief Destroy the motion planner.
          */
         ~MotionPlanner() noexcept { Terminate(); }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Initialization / Termination
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
-         * @brief Initialize the motion planner. This initializes the memory used by the motion planner. Call this member function before calling any other function.
-         * @param[in] maxNumNodes Maximum number of nodes to be used in the tree. A fixed-node RRT* planner is used. If the tree contains the maximum number of nodes, random leaf nodes are removed. If all nodes belong to the solution and can't be removed, then the outOfNodes error is set in the output.
-         * @param[in] maxNumSamples Maximum number of random samples to be generated in advance. A circular buffer of random samples is generated for fast sampling. The buffer can be quite large to ensure, that no duplicated samples are drawn within one solve operation.
-         * @return True if success, false otherwise.
-         * @details Call this function before calling any of the other member functions of the algorithm interface (@ref ApplyParameterSet, @ref Prepare, @ref Solve).
+         * @brief Initialize or re-initialize the motion planner.
+         * @param[in] maxNumNodes Maximum number of nodes to be used in the tree.
+         * @param[in] maxNumSamples Maximum number of random samples to be generated in advance.
          */
-        bool Initialize(int16_t maxNumNodes, uint32_t maxNumSamples) noexcept {
+        void Initialize(int16_t maxNumNodes, uint32_t maxNumSamples) noexcept {
             Terminate();
-            if((maxNumSamples < 1) || (maxNumNodes < 2)){ // there must be at least one sample and two nodes (root and a sample to be added/removed)
-                return false;
-            }
             m_idxNeighbors.reserve(maxNumNodes);
             m_tree.Clear(maxNumNodes);
             m_boxSampler.Initialize(maxNumSamples);
             m_pathSampler.Initialize(maxNumSamples);
-            return true;
         }
 
         /**
@@ -91,15 +81,11 @@ class MotionPlanner {
             m_epsDistanceMetric = std::numeric_limits<double>::epsilon();
         }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Algorithm API: ApplyParameterSet, Prepare and Solve
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Apply a parameter set to the motion planner.
          * @param[in] parameter The parameter set to be applied.
          * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
-         * @details Call this function after a successfull initialization (using the @ref Initialize member function). Do not call this function between @ref Prepare and @ref Solve calls, otherwise the parameters used by
+         * @details CDo not call this function between @ref Prepare and @ref Solve calls, otherwise the parameters used by
          * both member functions may be inconsistent! If new parameters are to be applied, always apply them BEFORE a prepare-solve-step.
          * @note The tree is cleared (all nodes except the root node are removed).
          */
@@ -123,7 +109,7 @@ class MotionPlanner {
         }
 
         /**
-         * @brief Prepare the motion planner before solving the motion planning problem. The planner must be initialized using the @ref Initialize member function and a parameter set has to be applied using the @ref ApplyParameterSet member function.
+         * @brief Prepare the motion planner before solving the motion planning problem. A parameter set has to be applied using the @ref ApplyParameterSet member function.
          * @param[out] dataOut The output data where to store results to.
          * @param[inout] dataIn The input data containing initial and final pose as well as static obstacles and the exported path planning tree. All static obstacles that are outside the area of interest are removed! The input argument is changed.
          * @param[in] forceColdStart True if the initial sample set of the motion planner should be initialized based on the input path only. False if the previous solution path should also be included into the sample set.
@@ -170,7 +156,7 @@ class MotionPlanner {
         }
 
         /**
-         * @brief Solve the motion planning problem by doing several iterations for an upper computation time limit (the limit is set as parameter when calling this function). The planner must be initialized, parameters must be set and the planner must be prepared before calling this member function.
+         * @brief Solve the motion planning problem by doing several iterations for an upper computation time limit (the limit is set as parameter when calling this function). Parameters must be set and the planner must be prepared before calling this member function.
          * @param[out] dataOut The output data where to store results to.
          * @param[in] dataIn The input data containing static obstacles. Only the static obstacles are used. All remaining data has already been processed by the @ref Prepare member function.
          * @param[in] maxComputationTime The maximum computation time in seconds allowed before leaving the iteration loop.
@@ -211,10 +197,6 @@ class MotionPlanner {
          */
         void Interrupt(void) noexcept { m_interruptFlag.store(m_isSolving); }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Additional
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Predict the motion of the vehicle for a given prediction horizon assuming the control input to be constant all the time.
          * @param[in] initialStateAndInput The initial state and input vector given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
@@ -248,10 +230,6 @@ class MotionPlanner {
             return std::make_tuple(success, totalSimulationTime);
         }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Data Recording / Debugging
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Write data to the log file.
          * @param[in] file The log file to which to write the data to.
@@ -260,7 +238,6 @@ class MotionPlanner {
          * @note IMPORTANT: The caller of this function must make sure that static obstacles are valid!
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { RebuildAllTreeTrajectories(staticObstacles); m_tree.WriteToFile(file, preString + "tree."); m_parameter.WriteToFile(file, preString + "parameter."); m_costMap.WriteToFile(file, preString + "costMap."); }
-
 
     protected:
         mpsv::planner::MotionPlannerTree m_tree;                              // Tree for motion planning.
@@ -272,8 +249,8 @@ class MotionPlanner {
         std::vector<int16_t> m_idxNeighbors;                                  // Reserved memory for nearest neighbors.
         mpsv::control::VehicleSimulator m_vehicleSimulator;                   // The vehicle simulator to be used for generating dynamically feasible trajectories.
         mpsv::control::RegionOfAttraction m_regionOfAttraction;               // The region of attraction to be used to check if a state enters the region around a pose.
-        std::atomic<bool> m_interruptFlag;                                    // If set to true, no more iterations are performed and the @ref Solve member function returns.
-        std::atomic<bool> m_isSolving;                                        // True if the motion planner performs a @ref Solve step, false otherwise.
+        std::atomic<bool> m_interruptFlag{false};                             // If set to true, no more iterations are performed and the @ref Solve member function returns.
+        std::atomic<bool> m_isSolving{false};                                 // True if the motion planner performs a @ref Solve step, false otherwise.
         double m_epsDistanceMetric{std::numeric_limits<double>::epsilon()};   // Eps (numeric threshold) for distance metric.
 
         /**
@@ -304,10 +281,6 @@ class MotionPlanner {
             dataOut.timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
         }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Prepare helper functions
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Check whether the initial path starts at the initial state.
          * @param[in] dataIn Input data to the motion planner containing the initial path as well as the initial state.
@@ -437,10 +410,6 @@ class MotionPlanner {
             m_costMap.Build(samplingArea, m_parameter.costMap.resolution, m_parameter.costMap.modBreakpoints, args, maxNumCells);
         }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Iteration helper functions
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Do one iteration of the RRT* motion planning algorithm.
          * @param[in] staticObstacles The set of static obstacles to be used for collision checks.

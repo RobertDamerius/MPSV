@@ -38,37 +38,27 @@ class PathPlanner {
         /**
          * @brief Construct a path planner and set default values.
          */
-        PathPlanner() noexcept { Terminate(); }
+        PathPlanner() noexcept { Initialize(1, 1); }
 
         /**
          * @brief Destroy the path planner.
          */
         ~PathPlanner() noexcept { Terminate(); }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Initialization / Termination
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
-         * @brief Initialize the path planner. This initializes the memory used by the path planner. Call this member function before calling any other function.
-         * @param[in] maxNumNodes Maximum number of nodes to be used in the tree. A fixed-node RRT* planner is used. If the tree contains the maximum number of nodes, random leaf nodes are removed. If all nodes belong to the solution and can't be removed, then the outOfNodes error is set in the output.
-         * @param[in] maxNumSamples Maximum number of random samples to be generated in advance. A circular buffer of random samples is generated for fast sampling. The buffer can be quite large to ensure, that no duplicated samples are drawn within one solve operation.
-         * @return True if success, false otherwise.
-         * @details Call this function before calling any of the other member functions of the algorithm interface (@ref ApplyParameterSet, @ref Prepare, @ref Solve).
+         * @brief Initialize or re-initialize the path planner.
+         * @param[in] maxNumNodes Maximum number of nodes to be used in the tree.
+         * @param[in] maxNumSamples Maximum number of random samples to be generated in advance.
          */
-        bool Initialize(int16_t maxNumNodes, uint32_t maxNumSamples) noexcept {
+        void Initialize(int16_t maxNumNodes, uint32_t maxNumSamples) noexcept {
             Terminate();
-            if((maxNumSamples < 1) || (maxNumNodes < 2)){ // there must be at least one sample and two nodes (root and a sample to be added/removed)
-                return false;
-            }
             m_idxNeighbors.reserve(maxNumNodes);
             m_tree.Clear(maxNumNodes);
             m_boxSampler.Initialize(maxNumSamples);
-            return true;
         }
 
         /**
-         * @brief Terminate the path planner. All containers and parameters are cleared. Call this function, if the path planner is no longer needed.
+         * @brief Terminate the path planner.
          */
         void Terminate(void) noexcept {
             m_interruptFlag = false;
@@ -83,15 +73,11 @@ class PathPlanner {
             m_epsDistanceMetric = std::numeric_limits<double>::epsilon();
         }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Algorithm API: ApplyParameterSet, Prepare and Solve
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Apply a parameter set to the path planner.
          * @param[in] parameterSet The parameter set to be applied.
          * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
-         * @details Call this function after a successfull initialization (using the @ref Initialize member function). Do not call this function between @ref Prepare and @ref Solve calls, otherwise the parameters used by
+         * @details Do not call this function between @ref Prepare and @ref Solve calls, otherwise the parameters used by
          * both member functions may be inconsistent! If new parameters are to be applied, always apply them BEFORE a prepare-solve-step.
          */
         error_code ApplyParameterSet(mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
@@ -105,7 +91,7 @@ class PathPlanner {
         }
 
         /**
-         * @brief Prepare the path planner before solving the path planning problem. The planner must be initialized using the @ref Initialize member function and a parameter set has to be applied using the @ref ApplyParameterSet member function.
+         * @brief Prepare the path planner before solving the path planning problem. A parameter set has to be applied using the @ref ApplyParameterSet member function.
          * @param[out] dataOut The output data where to store results to.
          * @param[inout] dataIn The input data containing initial and final pose as well as static obstacles. All static obstacles that are outside the area of interest are removed! The input argument is changed.
          * @param[in] forceColdStart True if no warm start should be performed and the path planner starts with an empty tree, false otherwise. The default value is false.
@@ -169,7 +155,7 @@ class PathPlanner {
         }
 
         /**
-         * @brief Solve the path planning problem by doing several iterations for an upper computation time limit (the limit is set as parameter when calling this function). The planner must be initialized, parameters must be set and the planner must be prepared before calling this member function.
+         * @brief Solve the path planning problem by doing several iterations for an upper computation time limit (the limit is set as parameter when calling this function). Parameters must be set and the planner must be prepared before calling this member function.
          * @param[out] dataOut The output data where to store results to.
          * @param[in] dataIn The input data containing static obstacles. Only the static obstacles are used. All remaining data has already been processed by the @ref Prepare member function.
          * @param[in] maxComputationTime The maximum computation time in seconds allowed before leaving the iteration loop.
@@ -209,10 +195,6 @@ class PathPlanner {
          */
         void Interrupt(void) noexcept { m_interruptFlag.store(m_isSolving); }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Data Recording / Debugging
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Write data to the log file.
          * @param[in] file The log file to which to write the data to.
@@ -227,8 +209,8 @@ class PathPlanner {
         mpsv::structures::CostMap m_costMap;                                  // The cost map to be used as additional cost term in the objective function.
         mpsv::sampler::UniformBoxSamplerSE2 m_boxSampler;                     // The box sampler to be used to draw random samples from SE(2).
         std::vector<int16_t> m_idxNeighbors;                                  // Reserved memory for nearest neighbors.
-        std::atomic<bool> m_interruptFlag;                                    // If set to true, no more iterations are performed and the @ref Solve member function returns.
-        std::atomic<bool> m_isSolving;                                        // True if the path planner performs a @ref Solve step, false otherwise.
+        std::atomic<bool> m_interruptFlag{false};                             // If set to true, no more iterations are performed and the @ref Solve member function returns.
+        std::atomic<bool> m_isSolving{false};                                 // True if the path planner performs a @ref Solve step, false otherwise.
         double m_epsDistanceMetric{std::numeric_limits<double>::epsilon()};   // Eps (numeric threshold) for distance metric.
 
         /**

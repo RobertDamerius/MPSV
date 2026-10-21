@@ -34,30 +34,15 @@ namespace planner {
 class SequentialPlanner {
     public:
         /**
-         * @brief Construct a new sequential planner object and set default values.
-         */
-        SequentialPlanner() noexcept { Terminate(); }
-
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Initiallization / Termination
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        /**
-         * @brief Initialize the sequential planner.
+         * @brief Initialize or re-initialize the sequential planner.
          * @param[in] pathMaxNumNodes Maximum number of nodes to be used in the tree (path planner).
          * @param[in] pathMaxNumSamples Maximum number of random samples to be generated in advance (path planner).
          * @param[in] motionMaxNumNodes Maximum number of nodes to be used in the tree (motion planner).
          * @param[in] motionMaxNumSamples Maximum number of random samples to be generated in advance (motion planner).
-         * @return True if success, false otherwise.
-         * @details Call this function before calling any of the other member functions.
          */
-        bool Initialize(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples) noexcept {
-            Terminate();
-            if(!m_pathPlanner.Initialize(pathMaxNumNodes, pathMaxNumSamples) || !m_motionPlanner.Initialize(motionMaxNumNodes, motionMaxNumSamples)){
-                Terminate();
-                return false;
-            }
-            return true;
+        void Initialize(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples) noexcept {
+            m_pathPlanner.Initialize(pathMaxNumNodes, pathMaxNumSamples);
+            m_motionPlanner.Initialize(motionMaxNumNodes, motionMaxNumSamples);
         }
 
         /**
@@ -68,10 +53,6 @@ class SequentialPlanner {
             m_motionPlanner.Terminate();
         }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Algorithm API: ApplyParameterSet and Solve
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Apply a new parameter set to the internal solvers.
          * @param[in] parameter The parameter set to be applied.
@@ -157,10 +138,6 @@ class SequentialPlanner {
             m_pathPlanner.Interrupt();
         }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Additional
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Call this function directly after the @ref Solve function to further improve the path.
          * @param[in] maxComputationTime The maximum computation time in seconds before stopping the solve iteration loop.
@@ -190,10 +167,6 @@ class SequentialPlanner {
          */
         std::tuple<bool,double> PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double predictionHorizon) noexcept { return m_motionPlanner.PredictMotionTrajectory(trajectory, initialStateAndInput, predictionHorizon); }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Data Recording / Debugging
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Write data to the log file.
          * @param[in] file The log file to which to write the data to.
@@ -202,7 +175,6 @@ class SequentialPlanner {
          * @note IMPORTANT: The caller of this function must make sure that static obstacles are valid!
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { m_pathPlanner.WriteToFile(file, preString + "pathPlanner."); m_motionPlanner.WriteToFile(file, preString + "motionPlanner.", staticObstacles); }
-
 
     protected:
         mpsv::planner::PathPlannerInput m_pathPlannerInput;         // The input to the path planner, set during @ref Solve.

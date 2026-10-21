@@ -107,10 +107,7 @@ void IterationPerformanceTest::Solve(Scene& scene, bool recreateFile){
     constexpr uint32_t motionMaxNumSamples = 1000000;
     constexpr double maxComputationTimePathPlanning = 1.0;
     constexpr double maxComputationTimeMotionPlanning = 1.0;
-    if(!planner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples)){
-        std::cerr << "ERROR: Could not initialize planner!\n";
-        return;
-    }
+    planner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples);
 
     // apply a parameter set to the sequential planner
     mpsv::planner::SequentialPlannerParameterSet parameter = IterationPerformanceTest::GetParameterSet();

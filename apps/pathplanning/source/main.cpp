@@ -7,10 +7,7 @@ int main(int, char**){
     mpsv::planner::PathPlanner planner;
     constexpr int16_t maxNumNodes = 200;
     constexpr uint32_t maxNumSamples = 1000000;
-    if(!planner.Initialize(maxNumNodes, maxNumSamples)){
-        std::cerr << "ERROR: Could not initialize planner!\n";
-        return 0;
-    }
+    planner.Initialize(maxNumNodes, maxNumSamples);
 
     // apply a parameter set to the path planner
     mpsv::planner::PathPlannerParameterSet parameter = example::GetParameterSet();

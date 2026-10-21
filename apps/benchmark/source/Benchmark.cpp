@@ -271,11 +271,7 @@ uint32_t Benchmark::PathPlanning(void){
     GenerateObstaclesForPlanning(dataIn.staticObstacles);
 
     // Initialize planner and apply parameters
-    if(!planner.Initialize(maxNumNodes, maxNumSamples)){
-        fprintf(stderr,"ERROR: Failed to initialize the path planner!\n");
-        planner.Terminate();
-        return 0;
-    }
+    planner.Initialize(maxNumNodes, maxNumSamples);
     if(mpsv::error_code::NONE != planner.ApplyParameterSet(parameterSet)){
         fprintf(stderr,"ERROR: Failed to set parameters for the path planner!\n");
         planner.Terminate();
@@ -356,11 +352,7 @@ uint32_t Benchmark::MotionPlanning(void){
     GenerateObstaclesForPlanning(dataIn.staticObstacles);
 
     // Initialize planner and apply parameters
-    if(!planner.Initialize(maxNumNodes, maxNumSamples)){
-        fprintf(stderr,"ERROR: Failed to initialize the motion planner!\n");
-        planner.Terminate();
-        return 0;
-    }
+    planner.Initialize(maxNumNodes, maxNumSamples);
     if(mpsv::error_code::NONE != planner.ApplyParameterSet(parameterSet)){
         fprintf(stderr,"ERROR: Failed to set parameters for the motion planner!\n");
         planner.Terminate();

@@ -9,10 +9,7 @@ int main(int, char**){
     constexpr uint32_t pathMaxNumSamples = 1000000;
     constexpr int16_t motionMaxNumNodes = 200;
     constexpr uint32_t motionMaxNumSamples = 1000000;
-    if(!planner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples)){
-        std::cerr << "ERROR: Could not initialize planner!\n";
-        return 0;
-    }
+    planner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples);
 
     // apply a parameter set to the sequential planner
     mpsv::planner::SequentialPlannerParameterSet parameter = example::GetParameterSet();

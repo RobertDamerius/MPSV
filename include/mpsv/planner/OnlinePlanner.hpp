@@ -30,24 +30,16 @@ namespace planner {
 class OnlinePlanner {
     public:
         /**
-         * @brief Construct a new online planner object and set default values.
-         */
-        OnlinePlanner() noexcept { Terminate(); }
-
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Initiallization / Termination
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        /**
-         * @brief Initialize the online planner.
+         * @brief Initialize or re-initialize the online planner.
          * @param[in] pathMaxNumNodes Maximum number of nodes to be used in the tree (path planner).
          * @param[in] pathMaxNumSamples Maximum number of random samples to be generated in advance (path planner).
          * @param[in] motionMaxNumNodes Maximum number of nodes to be used in the tree (motion planner).
          * @param[in] motionMaxNumSamples Maximum number of random samples to be generated in advance (motion planner).
-         * @return True if success, false otherwise.
-         * @details Call this function before calling any of the other member functions.
          */
-        bool Initialize(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples) noexcept { return m_sequentialPlanner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples); }
+        void Initialize(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples) noexcept {
+            Terminate();
+            m_sequentialPlanner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples);
+        }
 
         /**
          * @brief Terminate the online planner. This calls the @ref Reset member function.
@@ -59,10 +51,6 @@ class OnlinePlanner {
             Reset();
         }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Algorithm API: ApplyParameterSet, Reset and Solve
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Apply a new parameter set to the internal solvers.
          * @param[in] parameter The parameter set to be applied.
@@ -115,10 +103,6 @@ class OnlinePlanner {
             m_sequentialPlanner.Interrupt();
         }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Additional
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Call this function directly after the @ref Solve function to further improve the path.
          * @param[in] maxComputationTime The maximum computation time in seconds before stopping the solve iteration loop.
@@ -136,10 +120,6 @@ class OnlinePlanner {
          */
         std::tuple<double,std::array<double,9>> PredictMotion(const std::array<double,12>& initialStateAndInput, double predictionHorizon) noexcept { return m_sequentialPlanner.PredictMotion(initialStateAndInput, predictionHorizon); }
 
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // Data Recording / Debugging
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Write data to the log file.
          * @param[in] file The log file to which to write the data to.
@@ -149,10 +129,9 @@ class OnlinePlanner {
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { m_sequentialPlanner.WriteToFile(file, preString + "sequentialPlanner.", staticObstacles); }
 
-
     protected:
         mpsv::planner::OnlinePlannerOutput m_state;                         // Internal state of the online planner representing the latest output.
-        bool m_reset;                                                       // True if the online planner has been reset.
+        bool m_reset{false};                                                // True if the online planner has been reset.
         mpsv::planner::SequentialPlanner m_sequentialPlanner;               // Internal sequential planning solver.
         mpsv::planner::SequentialPlannerInput m_sequentialPlannerInput;     // Input to the @ref m_sequentialPlanner.
         mpsv::planner::SequentialPlannerOutput m_sequentialPlannerOutput;   // Output of the @ref m_sequentialPlanner.
