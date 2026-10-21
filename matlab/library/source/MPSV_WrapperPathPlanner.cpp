@@ -19,7 +19,7 @@ void MPSV_WrapperPathPlanner::Step(serialization_path_planner_output* output, se
 
     // Solve the planning problem
     if(mpsv::error_code::NONE == errorCode){
-        m_pathPlanner.ApplyParameterSet(m_pathPlannerParameter);
+        errorCode = m_pathPlanner.ApplyParameterSet(m_pathPlannerParameter);
         m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, input->parameter.pathPlanner.maxComputationTime);
 
         // Assign output data

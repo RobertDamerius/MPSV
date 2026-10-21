@@ -115,7 +115,7 @@ class ConvexPolygon {
          * @brief Check if this polygon is valid, e.g. contains valid data.
          * @return True if this polygon represents a valid convex polygon, false otherwise.
          */
-        bool IsValid(void) const noexcept { return (m_vertices.size() > 2); }
+        [[nodiscard]] bool IsValid(void) const noexcept { return (m_vertices.size() > 2); }
 
         /**
          * @brief Check whether a point is inside the convex polygon or not.
@@ -123,7 +123,7 @@ class ConvexPolygon {
          * @param[in] point The query point. The array must contain at least 2 elements {x,y}.
          * @return True if point is inside the convex polygon (closed set, including borders), false otherwise. If this polygon is invalid, false is returned.
          */
-        template <class T> bool IsInside(const T point) const noexcept {
+        template <class T> [[nodiscard]] bool IsInside(const T point) const noexcept {
             static_assert(mpsv::is_vec2<T>::value,"Argument {point} must be of type std::array<double,N> with N >= 2!");
             if(m_edges.empty()){
                 return false;
@@ -174,7 +174,7 @@ class ConvexPolygon {
          * @param[in] pose The pose to be used for transformation.
          * @return A convex polygon that indicates the transformed convex polygon. If this convex polygon contains less than 3 vertices, a copy of this convex polygon without transformation is returned.
          */
-        template <class T> ConvexPolygon CreateTransformedPolygon(T pose) const noexcept {
+        template <class T> [[nodiscard]] ConvexPolygon CreateTransformedPolygon(T pose) const noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {pose} must be of type std::array<double,N> with N >= 3!");
             ConvexPolygon result = *this;
             result.Transform(pose);
@@ -194,7 +194,7 @@ class ConvexPolygon {
          * @return A convex polygon that indicates the convex hull of two transformed polygons.
          * @details You need to set vertices using the @ref Create member function or by construction before calling this function! If this convex polygon contains less than 3 vertices, an empty hull may be returned.
          */
-        ConvexPolygon CreateTransformedConvexHull(double x0, double y0, double cosPsi0, double sinPsi0, double x1, double y1, double cosPsi1, double sinPsi1) const noexcept {
+        [[nodiscard]] ConvexPolygon CreateTransformedConvexHull(double x0, double y0, double cosPsi0, double sinPsi0, double x1, double y1, double cosPsi1, double sinPsi1) const noexcept {
             // Transform vertices by two configurations and create point cloud
             size_t numVertices = m_vertices.size();
             std::vector<std::array<double,2>> points;
@@ -215,7 +215,7 @@ class ConvexPolygon {
          * @param[in] polygon The convex polygon for which to check collision or overlapping.
          * @return True if the convex polygon overlaps with this convex polygon, false otherwise. If one polygon is invalid, false is returned.
          */
-        bool Overlap(const ConvexPolygon& polygon) const noexcept {
+        [[nodiscard]] bool Overlap(const ConvexPolygon& polygon) const noexcept {
             // Check for validity
             if(!IsValid() || !polygon.IsValid()){
                 return false;
@@ -301,7 +301,7 @@ class ConvexPolygon {
          * @param[in] aabb Axis-aligned bounding box to be checked for overlapping.
          * @return True if AABBs overlap, false otherwise. If this polygon is invalid, false is returned.
          */
-        bool OverlapAABB(mpsv::geometry::AABB& aabb) const noexcept { return IsValid() && m_aabb.Overlap(aabb); }
+        [[nodiscard]] bool OverlapAABB(mpsv::geometry::AABB& aabb) const noexcept { return IsValid() && m_aabb.Overlap(aabb); }
 
         /**
          * @brief Calculate the minimum squared distance to all edges of this convex polygon.
@@ -309,7 +309,7 @@ class ConvexPolygon {
          * @param[in] y Y coordinate of the point for which to calculate the minimum squared distance.
          * @return The minimum squared distance to all edges of this convex polygon or infinity, if this convex polygon is invalid.
          */
-        double MinimumSquaredDistanceToEdges(double x, double y) const noexcept {
+        [[nodiscard]] double MinimumSquaredDistanceToEdges(double x, double y) const noexcept {
             size_t numVertices = m_vertices.size();
             if(numVertices < 3){
                 return std::numeric_limits<double>::infinity();
@@ -342,19 +342,19 @@ class ConvexPolygon {
          * @return Farthest distance to all vertices from the origin {0,0} or 0, if this polygon is invalid.
          * @details The distance is calculated, if the vertex data is changed, e.g. during @ref Create, @ref Translate, @ref Transform, ...
          */
-        double GetFarthestVertexDistance(void) const noexcept { return m_farthestVertexDistance; }
+        [[nodiscard]] double GetFarthestVertexDistance(void) const noexcept { return m_farthestVertexDistance; }
 
         /**
          * @brief Get a copy of the internal vertices.
          * @return Copy of the internal vertices.
          */
-        std::vector<std::array<double, 2>> GetVertices(void) const noexcept { return m_vertices; }
+        [[nodiscard]] std::vector<std::array<double, 2>> GetVertices(void) const noexcept { return m_vertices; }
 
         /**
          * @brief Get the 2D axis-aligned bounding box of this convex polygon.
          * @return 2D axis-aligned bounding box of this convex polygon.
          */
-        mpsv::geometry::AABB GetAABB(void) noexcept { return m_aabb; }
+        [[nodiscard]] mpsv::geometry::AABB GetAABB(void) const noexcept { return m_aabb; }
 
         /**
          * @brief Swap this convex polygon with a given convex polygon.

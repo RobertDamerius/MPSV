@@ -26,7 +26,7 @@ namespace wgs84 {
  * @param[in] originLLA Latitude (rad), longitude (rad) and altitude (m) that indicate the geographic origin for conversion. The altitude is defined to be positive upwards.
  * @return North, east and down value of the NED position in meters.
  */
-template <class T, class U> inline std::array<double,3> LLA2NED(const T LLA, const U originLLA) noexcept {
+template <class T, class U> [[nodiscard]] inline std::array<double,3> LLA2NED(const T LLA, const U originLLA) noexcept {
     static_assert(mpsv::is_vec3<T>::value,"Argument {LLA} must be of type std::array<double,N> with N >= 3!");
     static_assert(mpsv::is_vec3<U>::value,"Argument {originLLA} must be of type std::array<double,N> with N >= 3!");
     std::array<double,3> NED;
@@ -72,7 +72,7 @@ template <class T, class U> inline std::array<double,3> LLA2NED(const T LLA, con
  * @param[in] originLLA Latitude (rad), longitude (rad) and altitude (m) that indicate the geographic origin for conversion. The altitude is defined to be positive upwards.
  * @return North and east value of the NE position in meters.
  */
-template <class T, class U> inline std::array<double,2> LLA2NE(const T LLA, const U originLLA) noexcept {
+template <class T, class U> [[nodiscard]] inline std::array<double,2> LLA2NE(const T LLA, const U originLLA) noexcept {
     static_assert(mpsv::is_vec3<T>::value,"Argument {LLA} must be of type std::array<double,N> with N >= 3!");
     static_assert(mpsv::is_vec3<U>::value,"Argument {originLLA} must be of type std::array<double,N> with N >= 3!");
     std::array<double,2> NE;
@@ -110,7 +110,7 @@ template <class T, class U> inline std::array<double,2> LLA2NE(const T LLA, cons
  * @param[in] originLLA Latitude (rad), longitude (rad) and altitude (m) that indicate the geographic origin for conversion. The altitude is defined to be positive upwards.
  * @return Latitude and longitude in radians of the converted position.
  */
-template <class T, class U> inline std::array<double,2> NE2LL(const T NE, const U originLLA) noexcept {
+template <class T, class U> [[nodiscard]] inline std::array<double,2> NE2LL(const T NE, const U originLLA) noexcept {
     static_assert(mpsv::is_vec2<T>::value,"Argument {NE} must be of type std::array<double,N> with N >= 2!");
     static_assert(mpsv::is_vec3<U>::value,"Argument {originLLA} must be of type std::array<double,N> with N >= 3!");
     std::array<double,2> LL;
@@ -164,7 +164,7 @@ template <class T, class U> inline std::array<double,2> NE2LL(const T NE, const 
  * @param[in] originLLA Latitude (rad), longitude (rad) and altitude (m) that indicate the geographic origin for conversion. The altitude is defined to be positive upwards.
  * @return Latitude and longitude in radians and altitude in meters of the converted position.
  */
-template <class T, class U> inline std::array<double,3> NED2LLA(const T NED, const U originLLA) noexcept {
+template <class T, class U> [[nodiscard]] inline std::array<double,3> NED2LLA(const T NED, const U originLLA) noexcept {
     static_assert(mpsv::is_vec3<T>::value,"Argument {NE} must be of type std::array<double,N> with N >= 3!");
     static_assert(mpsv::is_vec3<U>::value,"Argument {originLLA} must be of type std::array<double,N> with N >= 3!");
     std::array<double,3> LLA;

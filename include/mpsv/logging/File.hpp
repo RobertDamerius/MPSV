@@ -40,7 +40,7 @@ class File {
          * @param[in] append True if file should be opened in appending mode, defaults to false.
          * @return True if success, false otherwise.
          */
-        bool Open(const std::string& fileName, bool append = false) noexcept {
+        [[nodiscard]] bool Open(const std::string& fileName, bool append = false) noexcept {
             m_ofs.open(fileName, (append ? (std::ofstream::binary | std::ofstream::ate | std::ofstream::app) : (std::ofstream::binary | std::ofstream::ate)));
             if(!m_ofs.is_open()){
                 return false;

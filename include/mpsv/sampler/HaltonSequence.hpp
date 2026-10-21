@@ -61,7 +61,7 @@ template<size_t Tdimension> class HaltonSequence {
          * @param[in] idxSample Index of the sample.
          * @return The sample values in range [0,scale], where scale is set by the @ref Initialize member function.
          */
-        std::array<double, Tdimension> Sample(size_t idxSample) const noexcept {
+        [[nodiscard]] std::array<double, Tdimension> Sample(size_t idxSample) const noexcept {
             std::array<double, Tdimension> sample{};
             if(!m_samples.empty()){
                 idxSample %= m_samples.size();

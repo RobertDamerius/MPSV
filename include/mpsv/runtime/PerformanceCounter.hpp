@@ -36,7 +36,7 @@ class PerformanceCounter {
          * corresponds to the seconds to the last @ref Start call.
          * @return The time to the internal timepoint in seconds. The internal timepoint is set by @ref Reset or @ref Start.
          */
-        double TimeToStart(void) noexcept {
+        [[nodiscard]] double TimeToStart(void) const noexcept {
             auto t1 = std::chrono::steady_clock::now();
             return 1e-9 * static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - m_t0).count());
         }

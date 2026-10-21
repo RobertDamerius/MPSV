@@ -38,7 +38,7 @@ class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
          * @param[in] pose The pose of the vehicle to be used for collision checking.
          * @return True if a collision occurs, false otherwise.
          */
-        template <class T> bool CheckCollisionPose(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, T pose) const noexcept {
+        template <class T> [[nodiscard]] bool CheckCollisionPose(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, T pose) const noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {pose} must be of type std::array<double,N> with N >= 3!");
             ConvexPolygon transformedVehicleShape = CreateTransformedPolygon(pose);
             for(auto&& polygon : staticObstacles){
@@ -62,7 +62,7 @@ class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
          * for the first and last pose of the section. The number of sections between two poses depends on @ref maxAngleDeviation. The path is subdivided
          * in such a way, that the angle difference of two poses of a section is never greater than @ref maxAngleDeviation.
          */
-        template <class T, class U> bool CheckCollisionLine(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, T pose0, U pose1, double maxAngleDeviation) const noexcept {
+        template <class T, class U> [[nodiscard]] bool CheckCollisionLine(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, T pose0, U pose1, double maxAngleDeviation) const noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {pose0} must be of type std::array<double,N> with N >= 3!");
             static_assert(mpsv::is_vec3<U>::value,"Argument {pose1} must be of type std::array<double,N> with N >= 3!");
 
@@ -121,7 +121,7 @@ class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
          * As long as the 2D position error is larger than @ref thresholdPosition, the algorithm behaves equal to the default Douglas-Peucker algorithm for 2D line simplification. If the position error of a simplified line
          * segment is smaller than the specified @ref thresholdPosition, then it is checked whether the angle error stays under the specified threshold. If not, the line segment is further divided.
          */
-        template <class T> bool CheckCollisionCurve(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const std::vector<T>& curve, double thresholdPosition, double thresholdAngle) const noexcept {
+        template <class T> [[nodiscard]] bool CheckCollisionCurve(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const std::vector<T>& curve, double thresholdPosition, double thresholdAngle) const noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {curve} must be of type std::vector<std::array<double,N>> with N >= 3!");
             if(curve.empty()){
                 return false;
@@ -173,7 +173,7 @@ class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
          * @return True if any of the obstacles AABBs overlaps with the AABB of the line segment.
          * @details The AABB of the line segment is calculated from an AABB containing the given two poses, extended by the farthest vertex distance of the vehicle shape.
          */
-        template <class T, class U> bool FastOverlapCheckAABB(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, T pose0, U pose1) const noexcept {
+        template <class T, class U> [[nodiscard]] bool FastOverlapCheckAABB(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, T pose0, U pose1) const noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {pose0} must be of type std::array<double,N> with N >= 3!");
             static_assert(mpsv::is_vec3<U>::value,"Argument {pose1} must be of type std::array<double,N> with N >= 3!");
             mpsv::geometry::AABB aabb(pose0[0], pose0[1], pose1[0], pose1[1]);

@@ -47,7 +47,7 @@ class SequentialPlannerParameterSet {
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          * @details The vertex order of polygon data may be adjusted if possible.
          */
-        error_code IsValid(void) noexcept {
+        [[nodiscard]] error_code IsValid(void) const noexcept {
             error_code e;
             if(error_code::NONE != (e = geometry.IsValid()))
                 return e;

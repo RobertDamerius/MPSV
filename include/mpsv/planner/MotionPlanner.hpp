@@ -83,7 +83,7 @@ class MotionPlanner {
          * @param[in] parameter The parameter set to be applied.
          * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
          */
-        error_code ApplyParameterSet(mpsv::planner::MotionPlannerParameterSet& parameter) noexcept {
+        [[nodiscard]] error_code ApplyParameterSet(mpsv::planner::MotionPlannerParameterSet& parameter) noexcept {
             error_code e;
             if(error_code::NONE != (e = parameter.IsValid())){
                 return e;
@@ -187,7 +187,7 @@ class MotionPlanner {
          * @return [1] The predicted state given as {x,y,psi,u,v,r,X,Y,N}.
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
-        std::tuple<double,std::array<double,9>> PredictMotion(const std::array<double,12>& initialStateAndInput, double predictionHorizon) noexcept {
+        [[nodiscard]] std::tuple<double,std::array<double,9>> PredictMotion(const std::array<double,12>& initialStateAndInput, double predictionHorizon) const noexcept {
             uint32_t numSimulationSteps = static_cast<uint32_t>(std::max(0.0, std::floor(predictionHorizon / m_parameter.motionPlanner.sampletime)));
             double simulationTime = static_cast<double>(numSimulationSteps) * m_parameter.motionPlanner.sampletime;
             std::array<double,9> finalState = m_vehicleSimulator.PredictMotion(initialStateAndInput, m_parameter.motionPlanner.sampletime, numSimulationSteps);
@@ -204,7 +204,7 @@ class MotionPlanner {
          * [1] The total time that has been simulated.
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
-        std::tuple<bool,double> PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double predictionHorizon) noexcept {
+        [[nodiscard]] std::tuple<bool,double> PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double predictionHorizon) const noexcept {
             constexpr uint32_t maxNumSimulationSteps = 0x0000FFFF;
             uint32_t numSimulationSteps = static_cast<uint32_t>(std::max(1.0, std::floor(predictionHorizon / m_parameter.motionPlanner.sampletime)));
             bool success = m_vehicleSimulator.PredictMotionTrajectory(trajectory, initialStateAndInput, m_parameter.motionPlanner.sampletime, numSimulationSteps, maxNumSimulationSteps);
@@ -267,7 +267,7 @@ class MotionPlanner {
          * @param[in] dataIn Input data to the motion planner containing the initial path as well as the initial state.
          * @return True if the initial state corresponds to the start of the initial path, false otherwise.
          */
-        bool InitialPathStartsAtInitialPose(mpsv::planner::MotionPlannerInput& dataIn) noexcept {
+        [[nodiscard]] bool InitialPathStartsAtInitialPose(mpsv::planner::MotionPlannerInput& dataIn) noexcept {
             if(dataIn.initialPath.empty()){
                 return false;
             }
@@ -444,7 +444,7 @@ class MotionPlanner {
          * @brief Ensure that the tree is not full. A random leaf is removed if the tree is full.
          * @return True if tree is not full and iterations may continue, false otherwise.
          */
-        bool EnsureNonFullTree(void) noexcept {
+        [[nodiscard]] bool EnsureNonFullTree(void) noexcept {
             if(m_tree.IsFull()){
                 if(!m_tree.RemoveRandomLeaf(m_state.idxSolutionNode)){ // current solution node must not be removed
                     return false;
@@ -643,7 +643,7 @@ class MotionPlanner {
          * @param[in] minNumSimulationSteps The minimum number of simulation steps to be computed during path exploration (must be at least 1 and at most 0x0000FFFF), defaults to 1.
          * @return True if path is dynamically feasible, e.g. the resulting trajectory is feasible along that path, false otherwise.
          */
-        bool PathFromRootIsFeasible(const std::vector<std::array<double,3>>& path, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, std::vector<std::array<double,12>>& trajectoryBuffer, uint32_t minNumSimulationSteps = 1) noexcept {
+        [[nodiscard]] bool PathFromRootIsFeasible(const std::vector<std::array<double,3>>& path, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, std::vector<std::array<double,12>>& trajectoryBuffer, uint32_t minNumSimulationSteps = 1) noexcept {
             uint32_t numSteps = m_vehicleSimulator.ExplorePathToEnd(trajectoryBuffer, m_state.initialStateAndInput, path, m_regionOfAttraction, staticObstacles, m_parameter.motionPlanner.sampletime, minNumSimulationSteps);
             if(numSteps >= 0x0000FFFF){
                 return false;

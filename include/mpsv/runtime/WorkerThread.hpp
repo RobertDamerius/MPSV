@@ -106,7 +106,7 @@ class WorkerThread {
          * @brief Get the current state of the worker thread.
          * @return The current state of the worker thread.
          */
-        mpsv::runtime::WorkerThreadState GetState(void) noexcept {
+        [[nodiscard]] mpsv::runtime::WorkerThreadState GetState(void) const noexcept {
             return m_state;
         }
 

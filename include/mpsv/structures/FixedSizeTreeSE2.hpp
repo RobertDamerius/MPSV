@@ -100,7 +100,7 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @param[in] initialPose The initial pose for the tree.
          * @return The index of the added root node, or -1 if the operation failed.
          */
-        template <class T> int16_t Reset(const T& initialPose) noexcept {
+        template <class T> [[nodiscard]] int16_t Reset(const T& initialPose) noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {initialPose} must be of type std::array<double,N> with N >= 3!");
             int16_t numNodes = static_cast<int16_t>(m_nodes.size());
             m_freeIndices.resize(numNodes);
@@ -118,7 +118,7 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @brief Check whether the tree is full (no more nodes can be added) or not.
          * @return True if tree is full, false otherwise.
          */
-        bool IsFull(void) noexcept { return m_freeIndices.empty(); }
+        [[nodiscard]] bool IsFull(void) noexcept { return m_freeIndices.empty(); }
 
         /**
          * @brief Add a new node to the tree.
@@ -126,7 +126,7 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @param[in] node The node to be added. The index to the parent is set by this member function and the child container of the node is cleared.
          * @return The index to the added node, or -1 if the operation failed.
          */
-        int16_t Add(int16_t idxParent, const Tnode& node) noexcept {
+        [[nodiscard]] int16_t Add(int16_t idxParent, const Tnode& node) noexcept {
             if(m_freeIndices.empty()) return -1;
             int16_t idx = m_freeIndices.back();
             m_freeIndices.pop_back();
@@ -158,7 +158,7 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @param[in] metricWeightPsi Weighting for psi in the metric distance function.
          * @return The index of the nearest node to the input node or -1 if no suitable node is found.
          */
-        int16_t FindNearestNode(const Tnode& node, const double metricWeightPsi) noexcept {
+        [[nodiscard]] int16_t FindNearestNode(const Tnode& node, const double metricWeightPsi) noexcept {
             int16_t result = -1;
             double distance = std::numeric_limits<double>::infinity();
             for(auto&& i : m_activeIndices){
@@ -179,7 +179,7 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @param[in] metricWeightPsi Weighting for psi in the metric distance function.
          * @return True if the given node value already exists in the tree (distance metric is less than or equal to the numeric limit set via @ref SetNumericLimit), false otherwise.
          */
-        bool FindNearestNeighbors(std::vector<int16_t>& idxNeighbors, const Tnode& node, const double radius, const double metricWeightPsi) noexcept {
+        [[nodiscard]] bool FindNearestNeighbors(std::vector<int16_t>& idxNeighbors, const Tnode& node, const double radius, const double metricWeightPsi) noexcept {
             idxNeighbors.clear();
             bool result = false;
             for(auto&& i : m_activeIndices){
@@ -234,7 +234,7 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @param[in] idxSolutionNode Index of the current solution node. This node must not be removed.
          * @return True if a leaf has been removed, false otherwise. If a leaf node cannot be removed, then this is the (only) solution node.
          */
-        bool RemoveRandomLeaf(int16_t idxSolutionNode) noexcept {
+        [[nodiscard]] bool RemoveRandomLeaf(int16_t idxSolutionNode) noexcept {
             // Select a random leaf index to be removed
             size_t numLeaves = m_leafIndices.size();
             size_t removeLeafIndex = static_cast<size_t>(m_lutRandom[m_idxRandom] * numLeaves);
@@ -296,7 +296,7 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @return Index to the new root node.
          * @note A random leaf node is removed if there's no size in the node container, except for the node specified by childIndex. If no random leaf could be removed, @ref Reset is called.
          */
-        template <class T> int16_t ChangeRoot(const T& newRootPose, int16_t childIndex, const double metricWeightPsi) noexcept {
+        template <class T> [[nodiscard]] int16_t ChangeRoot(const T& newRootPose, int16_t childIndex, const double metricWeightPsi) noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {newRootPose} must be of type std::array<double,N> with N >= 3!");
             if((childIndex < 0) || (childIndex >= static_cast<int16_t>(m_nodes.size())) || (m_nodes[childIndex].iActiveList < 0)){
                 return Reset(newRootPose);
@@ -368,7 +368,7 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @return Optimal radius according to the weighted euclidean distance metric sqrt(x^2 + y^2 + (weightPsi * psi)^2).
          * @note The volume of the configuration space has to be set in advance via @ref SetCSpaceVolume.
          */
-        double GetOptimalRadius(void) noexcept { return m_lutOptimalRadius[std::min(m_activeIndices.size(), m_lutOptimalRadius.size() - 1)]; }
+        [[nodiscard]] double GetOptimalRadius(void) const noexcept { return m_lutOptimalRadius[std::min(m_activeIndices.size(), m_lutOptimalRadius.size() - 1)]; }
 
         /**
          * @brief Transform the tree to a new origin (translation only). The poses of all active nodes are transformed.
@@ -391,13 +391,13 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @brief Get indices to all active nodes in the tree.
          * @return A constant reference to the internal container of active nodes.
          */
-        const std::vector<int16_t>& GetActiveIndices(void) const noexcept { return m_activeIndices; }
+        [[nodiscard]] const std::vector<int16_t>& GetActiveIndices(void) const noexcept { return m_activeIndices; }
 
         /**
          * @brief Get indices to all leaf nodes in the tree.
          * @return A constant reference to the internal container of leaf nodes.
          */
-        const std::vector<int16_t>& GetLeafIndices(void) const noexcept { return m_leafIndices; }
+        [[nodiscard]] const std::vector<int16_t>& GetLeafIndices(void) const noexcept { return m_leafIndices; }
 
         /**
          * @brief Get all leaf indices of a specific node in the tree.

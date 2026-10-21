@@ -51,7 +51,7 @@ class CostMap: public mpsv::structures::LookUpTable2DScalar<mpsv::structures::Co
          * @param[in] skeletalPoints Skeletal points (b-frame) at which the cost map is to be evaluated.
          * @return Resulting cost value. This is a numerical integration through the internal LUT along a line between two points.
          */
-        template <class T, class U> double CostAlongLine(const T& pose0, const U& pose1, std::vector<std::array<double,2>> skeletalPoints) noexcept {
+        template <class T, class U> [[nodiscard]] double CostAlongLine(const T& pose0, const U& pose1, std::vector<std::array<double,2>> skeletalPoints) const noexcept {
             static_assert(mpsv::is_vec2<T>::value,"Argument {pose0} must be of type std::array<double,N> with N >= 2!");
             static_assert(mpsv::is_vec2<U>::value,"Argument {pose1} must be of type std::array<double,N> with N >= 2!");
             std::array<double,2> p0, p1;

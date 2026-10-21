@@ -57,8 +57,9 @@ class ExamplePlanner: protected mpsv::planner::AsyncOnlinePlanner {
             mpsv::logging::File f;
             std::string filename = example::GetDataFilename();
             constexpr bool appendData = true;
-            f.Open(filename, appendData);
-            dataOut.WriteToFile(f, "examplePlanner.");
-            f.Close();
+            if(f.Open(filename, appendData)){
+                dataOut.WriteToFile(f, "examplePlanner.");
+                f.Close();
+            }
         }
 };

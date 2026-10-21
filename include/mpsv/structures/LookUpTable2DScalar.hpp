@@ -28,7 +28,7 @@ template <class Targ> class LookUpTable2DScalar: public mpsv::structures::LookUp
          * @param p1 End point of the line where to end the line integral, given in earth-fixed coordinates (meters).
          * @return Final value of the line integral along a linear line over the look-up table data.
          */
-        template <class T, class U> double LineIntegralLinearInterpolated(const T& p0, const U& p1) const noexcept {
+        template <class T, class U> [[nodiscard]] double LineIntegralLinearInterpolated(const T& p0, const U& p1) const noexcept {
             static_assert(mpsv::is_vec2<T>::value,"Argument {p0} must be of type std::array<double,N> with N >= 2!");
             static_assert(mpsv::is_vec2<U>::value,"Argument {p1} must be of type std::array<double,N> with N >= 2!");
 

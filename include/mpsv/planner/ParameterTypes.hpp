@@ -47,7 +47,7 @@ class ParameterModel {
          * @brief Check whether this parameter is valid.
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        error_code IsValid(void) const noexcept {
+        [[nodiscard]] error_code IsValid(void) const noexcept {
             if(!(std::isfinite(matF[0]) &&
                  std::isfinite(matF[1]) &&
                  std::isfinite(matF[2]) &&
@@ -185,7 +185,7 @@ class ParameterCostMap {
          * @brief Check whether this parameter is valid.
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        error_code IsValid(void) const noexcept {
+        [[nodiscard]] error_code IsValid(void) const noexcept {
             if(!(modBreakpoints > 0))
                 return error_code::PARAM_COSTMAP_MOD_BREAKPOINTS;
             if(!(std::isfinite(resolution) && (resolution > 1e-3)))
@@ -240,7 +240,7 @@ class ParameterMetric {
          * @brief Check whether this parameter is valid.
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        error_code IsValid(void) const noexcept {
+        [[nodiscard]] error_code IsValid(void) const noexcept {
             if(!(std::isfinite(weightPsi) && (weightPsi > 0.0)))
                 return error_code::PARAM_METRIC_WEIGHT_PSI;
             if(!(std::isfinite(weightSway) && (weightSway >= 0.0)))
@@ -296,7 +296,7 @@ class ParameterGeometry {
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          * @details The vertex order of polygon data may be adjusted if possible.
          */
-        error_code IsValid(void) noexcept {
+        [[nodiscard]] error_code IsValid(void) const noexcept {
             constexpr double minPositionDeviation = 0.01; // Minimum position deviation for path subdivision during collision checking.
             constexpr double minAngleDeviation = 0.0174532925199433; // Minimum angle deviation for path subdivision during collision checking (= 1 deg).
             if(!(std::isfinite(collisionCheckMaxPositionDeviation) && (collisionCheckMaxPositionDeviation >= minPositionDeviation)))
@@ -352,7 +352,7 @@ class ParameterPathPlanner {
          * @brief Check whether this parameter is valid.
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        error_code IsValid(void) const noexcept {
+        [[nodiscard]] error_code IsValid(void) const noexcept {
             if(!(periodGoalSampling > 0))
                 return error_code::PARAM_PATHPLANNER_PERIOD_GOAL_SAMPLING;
             return error_code::NONE;
@@ -400,7 +400,7 @@ class ParameterController {
          * @brief Check whether this parameter is valid.
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        error_code IsValid(void) const noexcept {
+        [[nodiscard]] error_code IsValid(void) const noexcept {
             if(!(std::isfinite(matK[0]) &&
                  std::isfinite(matK[1]) &&
                  std::isfinite(matK[2]) &&
@@ -504,7 +504,7 @@ class ParameterRegionOfAttraction {
          * @brief Check whether this parameter is valid.
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        error_code IsValid(void) const noexcept {
+        [[nodiscard]] error_code IsValid(void) const noexcept {
             if(!(std::isfinite(rangePose[0]) &&
                  std::isfinite(rangePose[1]) &&
                  std::isfinite(rangePose[2]) &&
@@ -577,7 +577,7 @@ class ParameterMotionPlanner {
          * @brief Check whether this parameter is valid.
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        error_code IsValid(void) const noexcept {
+        [[nodiscard]] error_code IsValid(void) const noexcept {
             if(!(std::isfinite(samplingRangePosition) && (samplingRangePosition > 0.0)))
                 return error_code::PARAM_MOTIONPLANNER_SAMPLING_RANGE_POSITION;
             if(!(std::isfinite(samplingRangeAngle) && (samplingRangeAngle > 0.0)))
@@ -648,7 +648,7 @@ class ParameterOnlinePlanner {
          * @brief Check whether this parameter is valid.
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        error_code IsValid(void) const noexcept {
+        [[nodiscard]] error_code IsValid(void) const noexcept {
             if(!(std::isfinite(maxComputationTimePathOnReset) && (maxComputationTimePathOnReset > 0.0)))
                 return error_code::PARAM_ONLINEPLANNER_MAX_COMPUTATION_TIME_PATH_RESET;
             if(!(std::isfinite(maxComputationTimeMotionOnReset) && (maxComputationTimeMotionOnReset > 0.0)))

@@ -21,7 +21,7 @@ namespace geometry {
  * @details As long as the 2D position error is larger than the threshold, the algorithm behaves equal to the @ref DouglasPeucker2D algorithm. If the position error of a simplified line
  * segment is smaller than the specified @ref thresholdPosition, then it is checked whether the angle error stays under the specified threshold. If not, the line segment is further divided.
  */
-template <class T> inline std::vector<size_t> DouglasPeuckerSE2(const std::vector<T>& poses, double thresholdPosition, double thresholdAngle) noexcept {
+template <class T> [[nodiscard]] inline std::vector<size_t> DouglasPeuckerSE2(const std::vector<T>& poses, double thresholdPosition, double thresholdAngle) noexcept {
     static_assert(mpsv::is_vec3<T>::value,"Argument {poses} must be of type std::vector<std::array<double,N>> with N >= 3!");
     std::vector<size_t> indices;
     size_t numPoses = poses.size();

@@ -15,7 +15,7 @@ namespace math {
  * @param[in] d The input angle in radians.
  * @return The symmetrical angle in radians in range [-pi, +pi).
  */
-inline double SymmetricalAngle(double d) noexcept {
+[[nodiscard]] inline double SymmetricalAngle(double d) noexcept {
     d -= 6.28318530717959 * std::trunc(d * 0.159154943091895);
     return (d + 6.28318530717959 * (static_cast<double>(d < -3.14159265358979) - static_cast<double>(d >= 3.14159265358979)));
 }
@@ -26,7 +26,7 @@ inline double SymmetricalAngle(double d) noexcept {
  * @param[in] angle Input angle in degrees.
  * @return Output angle in radians.
  */
-inline double deg2rad(double angle) noexcept {
+[[nodiscard]] inline double deg2rad(double angle) noexcept {
     return 0.0174532925199433 * angle;
 }
 
@@ -37,7 +37,7 @@ inline double deg2rad(double angle) noexcept {
  * @return <0> True if success, false otherwise. The inversion fails, if the inverse is not finite.
  * @return <1> Resulting 3-by-3 matrix in row-major order.
  */
-inline std::tuple<bool,std::array<double,9>> MatrixInverse3x3(const std::array<double,9>& matA) noexcept {
+[[nodiscard]] inline std::tuple<bool,std::array<double,9>> MatrixInverse3x3(const std::array<double,9>& matA) noexcept {
     std::tuple<bool,std::array<double,9>> result;
     bool& success = std::get<0>(result);
     std::array<double,9>& matInvA = std::get<1>(result);
@@ -122,7 +122,7 @@ inline std::tuple<bool,std::array<double,9>> MatrixInverse3x3(const std::array<d
  * @param[in] b Second pose.
  * @return Difference pose (a - b) where the difference angle is ensured to be in a symmetrical range.
  */
-template <class T, class U> inline std::array<double,3> PoseDifference(const T& a, const U& b) noexcept {
+template <class T, class U> [[nodiscard]] inline std::array<double,3> PoseDifference(const T& a, const U& b) noexcept {
     static_assert(mpsv::is_vec3<T>::value,"Argument {a} must be of type std::array<double,N> with N >= 3!");
     static_assert(mpsv::is_vec3<U>::value,"Argument {b} must be of type std::array<double,N> with N >= 3!");
     std::array<double,3> result;

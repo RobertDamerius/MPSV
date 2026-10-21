@@ -21,10 +21,11 @@ int main(int, char**){
     // save parameter and input to a data file
     mpsv::logging::File f;
     std::string filename = example::GetDataFilename();
-    f.Open(filename);
-    parameter.WriteToFile(f, "parameter.");
-    dataIn.WriteToFile(f, "input.");
-    f.Close();
+    if(f.Open(filename)){
+        parameter.WriteToFile(f, "parameter.");
+        dataIn.WriteToFile(f, "input.");
+        f.Close();
+    }
 
     // set parameter
     planner.SetParameter(parameter);

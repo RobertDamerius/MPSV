@@ -59,7 +59,7 @@ class AsyncOnlinePlanner {
          * @return True if success, false otherwise.
          * @details Call this function before calling any of the other member functions.
          */
-        bool Initialize(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, int32_t threadPriority, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs) noexcept {
+        [[nodiscard]] bool Initialize(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, int32_t threadPriority, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs) noexcept {
             m_terminate = false;
             pthread_mutex_lock(&m_mtxDatabase);
             m_database.Clear();
@@ -147,7 +147,7 @@ class AsyncOnlinePlanner {
          * @brief Get the current output of the asynchronous online planner.
          * @return The output of the asynchronous online planner.
          */
-        mpsv::planner::AsyncOnlinePlannerOutput GetOutput(void){
+        [[nodiscard]] mpsv::planner::AsyncOnlinePlannerOutput GetOutput(void){
             mpsv::planner::AsyncOnlinePlannerOutput result;
             pthread_mutex_lock(&m_mtxDatabase);
             result = m_database.output;

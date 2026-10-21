@@ -18,7 +18,7 @@ namespace geometry {
  * @return Indices to input reference points that form the convex hull. The indices output container will be empty if the number of 2D points is less than three!
  * @note The ring is not closed, that is the last index in the list is not equal to the first one.
  */
-template <class T> std::vector<int32_t> QuickHull2DIndices(const std::vector<T>& refPoints) noexcept {
+template <class T> [[nodiscard]] inline std::vector<int32_t> QuickHull2DIndices(const std::vector<T>& refPoints) noexcept {
     static_assert(mpsv::is_vec2<T>::value,"Argument {refPoints} must be of type std::vector<std::array<double,N>> with N >= 2!");
     std::vector<int32_t> indices;
     int32_t numPoints = static_cast<int32_t>(refPoints.size());
@@ -182,7 +182,7 @@ template <class T> std::vector<int32_t> QuickHull2DIndices(const std::vector<T>&
  * @param[in] refPoints The reference points (2D) to be used by the algorithm. A point must be at least of dimension 2.
  * @return The convex polygon representing the convex hull.
  */
-template <class T> mpsv::geometry::ConvexPolygon QuickHull2DPolygon(const std::vector<T>& refPoints) noexcept {
+template <class T> [[nodiscard]] inline mpsv::geometry::ConvexPolygon QuickHull2DPolygon(const std::vector<T>& refPoints) noexcept {
     static_assert(mpsv::is_vec2<T>::value,"Argument {refPoints} must be of type std::vector<std::array<double,N>> with N >= 2!");
     mpsv::geometry::ConvexPolygon hull;
     std::vector<int32_t> indices = mpsv::geometry::QuickHull2DIndices(refPoints);

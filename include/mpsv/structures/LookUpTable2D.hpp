@@ -233,7 +233,7 @@ template <class Targ, class Tdata> class LookUpTable2D {
          * @param[in] position Position for which to obtain the  value.
          * @return Value at the given position. If the specified position is outside the look-up table area, the internal zero-border value is returned.
          */
-        template <class T> Tdata GetValueAtPosition(const T& position) const noexcept {
+        template <class T> [[nodiscard]] Tdata GetValueAtPosition(const T& position) const noexcept {
             static_assert(mpsv::is_vec2<T>::value,"Argument {position} must be of type std::array<double,N> with N >= 2!");
 
             // Convert to index position ({0,0} indicates origin of lower-left corner of LUT data cell (lut[0]), {0.5,0.5} would be the center of the lower-left cell, all data corresponds to the center of a cell)
@@ -251,7 +251,7 @@ template <class Targ, class Tdata> class LookUpTable2D {
          * @param position Position for which to obtain the value.
          * @return Linear interpolated value at the given position. If the specified position is outside the look-up table area, the internal zero-border value is returned.
          */
-        template <class T> Tdata GetLinearInterpolatedValueAtPosition(const T& position) const noexcept {
+        template <class T> [[nodiscard]] Tdata GetLinearInterpolatedValueAtPosition(const T& position) const noexcept {
             static_assert(mpsv::is_vec2<T>::value,"Argument {position} must be of type std::array<double,N> with N >= 2!");
 
             // Convert to index position ({0,0} indicates origin of lower-left corner of LUT data cell (lut[0]), {0.5,0.5} would be the center of the lower-left cell, all data corresponds to the center of a cell)
@@ -296,7 +296,7 @@ template <class Targ, class Tdata> class LookUpTable2D {
          * @param p1 End point of the line where to end the line integral, given in earth-fixed coordinates (meters).
          * @return Final value of the line integral along a linear line over the look-up table data.
          */
-        template <class T, class U> inline Tdata LineIntegral(const T& p0, const U& p1) const noexcept {
+        template <class T, class U> [[nodiscard]] Tdata LineIntegral(const T& p0, const U& p1) const noexcept {
             static_assert(mpsv::is_vec2<T>::value,"Argument {p0} must be of type std::array<double,N> with N >= 2!");
             static_assert(mpsv::is_vec2<U>::value,"Argument {p1} must be of type std::array<double,N> with N >= 2!");
 

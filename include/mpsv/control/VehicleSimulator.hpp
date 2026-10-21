@@ -55,7 +55,7 @@ class VehicleSimulator {
          * @param[in] modelParameter The model parameter to be set.
          * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
          */
-        error_code SetModel(const mpsv::planner::ParameterModel& modelParameter) noexcept {
+        [[nodiscard]] error_code SetModel(const mpsv::planner::ParameterModel& modelParameter) noexcept {
             // Check input parameter
             error_code e = modelParameter.IsValid();
             if(error_code::NONE != e){
@@ -149,7 +149,7 @@ class VehicleSimulator {
          * @param[in] controllerParameter The controller parameter to be set.
          * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
          */
-        error_code SetController(const mpsv::planner::ParameterController& controllerParameter) noexcept {
+        [[nodiscard]] error_code SetController(const mpsv::planner::ParameterController& controllerParameter) noexcept {
             // Check input parameter
             error_code e = controllerParameter.IsValid();
             if(error_code::NONE != e){
@@ -235,7 +235,7 @@ class VehicleSimulator {
          * @return The number of simulation steps that have been performed to reach the goal. The maximum value is 0x0000FFFF. To prevent an infinite loop, the maximum number of iterations is fixed to a high value.
          * @details The explicit euler method is used for forward simulation.
          */
-        uint32_t ExplorePathToEnd(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, const std::vector<std::array<double,3>>& path, mpsv::control::RegionOfAttraction& regionOfAttraction, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, double sampletime, uint32_t minNumSimulationSteps = 1) noexcept {
+        [[nodiscard]] uint32_t ExplorePathToEnd(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, const std::vector<std::array<double,3>>& path, mpsv::control::RegionOfAttraction& regionOfAttraction, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, double sampletime, uint32_t minNumSimulationSteps = 1) const noexcept {
             // xu stores the current state x={x,y,psi,u,v,r,X,Y,N} and input u={Xc,Yc,Nc}
             std::array<double,12> xu = initialStateAndInput;
             trajectory.clear();
@@ -534,7 +534,7 @@ class VehicleSimulator {
          * @param[in] numSimulationSteps The number of simulation steps to be computed.
          * @return The predicted state given as {x,y,psi,u,v,r,X,Y,N}.
          */
-        std::array<double,9> PredictMotion(const std::array<double,12>& initialStateAndInput, double sampletime, uint32_t numSimulationSteps) noexcept {
+        [[nodiscard]] std::array<double,9> PredictMotion(const std::array<double,12>& initialStateAndInput, double sampletime, uint32_t numSimulationSteps) const noexcept {
             // Start from the initial state
             std::array<double,9> predictedState;
             std::copy(initialStateAndInput.begin(), initialStateAndInput.begin() + 9, predictedState.begin());
@@ -686,7 +686,7 @@ class VehicleSimulator {
          * @param[in] maxNumSimulationSteps The maximum number of simulation steps to be computed.
          * @return True if success, false otherwise. If the maximum number of simulation steps is exceeded, false is returned.
          */
-        bool PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double sampletime, uint32_t numSimulationSteps, const uint32_t maxNumSimulationSteps) noexcept {
+        [[nodiscard]] bool PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double sampletime, uint32_t numSimulationSteps, const uint32_t maxNumSimulationSteps) const noexcept {
             // Start from the initial state
             std::array<double,9> predictedState;
             std::copy(initialStateAndInput.begin(), initialStateAndInput.begin() + 9, predictedState.begin());
@@ -919,7 +919,7 @@ class VehicleSimulator {
          * - If the path consists of only one pose, then the line from the vehicles pose to that single pose is used as path to find the intersection
          *   with the ellipsoid.
          */
-        void PathGuidance(std::array<double,3>& targetPose, std::array<double,3> pose, double cosPsi, double sinPsi, const std::vector<std::array<double,3>>& path, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
+        void PathGuidance(std::array<double,3>& targetPose, std::array<double,3> pose, double cosPsi, double sinPsi, const std::vector<std::array<double,3>>& path, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) const noexcept {
             // To find the intersection point of an rotated ellipsoid with a path in SE(2), the path is transformed into a corresponding
             // euclidean space R^3, whose origin is located at the vehicles pose. The space transformation is done in such a way, that
             // the intersection simplifies to finding the intersection of a line in 3D space with a 3D unit sphere centered at the

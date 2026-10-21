@@ -131,7 +131,7 @@ class OrientedBox {
          * @param[in] point The point to check.
          * @return True if the given point is inside this oriented box or on its borders, false otherwise.
          */
-        template <class T> bool IsInside(const T& point) const noexcept {
+        template <class T> [[nodiscard]] bool IsInside(const T& point) const noexcept {
             static_assert(mpsv::is_vec2<T>::value,"Argument {point} must be of type std::array<double,N> with N >= 2!");
             double x = point[0] - m_origin[0];
             double y = point[1] - m_origin[1];
@@ -144,19 +144,19 @@ class OrientedBox {
          * @brief Get the position of the box.
          * @return The absolute 2D position of the oriented box that corresponds to the lower-left corner in box coordinates
          */
-        std::array<double,2> GetPosition(void) const noexcept { return m_origin; }
+        [[nodiscard]] std::array<double,2> GetPosition(void) const noexcept { return m_origin; }
 
         /**
          * @brief Get the normal vector of the box.
          * @return The normal vector that represents the orientation of the box. This vector points to the longitudinal direction of the box.
          */
-        std::array<double,2> GetNormal(void) const noexcept { return m_normal; }
+        [[nodiscard]] std::array<double,2> GetNormal(void) const noexcept { return m_normal; }
 
         /**
          * @brief Get the dimension of the box.
          * @return The dimension of the oriented box given in box coordinates. The first element corresponds to the longitudinal dimension.
          */
-        std::array<double,2> GetDimension(void) const noexcept { return m_dimension; }
+        [[nodiscard]] std::array<double,2> GetDimension(void) const noexcept { return m_dimension; }
 
         /**
          * @brief Get the volume of the oriented box in SE(2).
@@ -164,13 +164,13 @@ class OrientedBox {
          * @return Volume of the oriented box.
          * @details The volume corresponds to (x) * (y) * (wpsi * psi), where wpsi denotes the weighting for psi in the metric distance function.
          */
-        double GetVolume(double metricWeightPsi) noexcept { return m_dimension[0] * m_dimension[1] * std::fabs(metricWeightPsi * 6.28318530717959); }
+        [[nodiscard]] double GetVolume(double metricWeightPsi) const noexcept { return m_dimension[0] * m_dimension[1] * std::fabs(metricWeightPsi * 6.28318530717959); }
 
         /**
          * @brief Export the oriented box as a convex polygon.
          * @return The convex polygon that represents the oriented box.
          */
-        mpsv::geometry::ConvexPolygon ExportAsConvexPolygon(void) noexcept {
+        [[nodiscard]] mpsv::geometry::ConvexPolygon ExportAsConvexPolygon(void) const noexcept {
             std::vector<std::array<double,2>> vertices;
             double xLon = m_normal[0]*m_dimension[0];
             double yLon = m_normal[1]*m_dimension[0];

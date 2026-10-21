@@ -30,7 +30,7 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
          * @param indexDimension The index to the dimension of the multi-dimensional value to be considered. Make sure that this index lies in range [0, Tdim) to prevent access violation.
          * @return Final value of the line integral along a linear line over the look-up table data.
          */
-        template <class T, class U> double LineIntegralForDimension(const T& p0, const U& p1, size_t indexDimension) const noexcept {
+        template <class T, class U> [[nodiscard]] double LineIntegralForDimension(const T& p0, const U& p1, size_t indexDimension) const noexcept {
             // Convert to index position ({0,0} indicates origin of lower-left corner of LUT data cell (lut[0]), {0.5,0.5} would be the center of the lower-left cell, all data corresponds to the center of a cell)
             std::array<double,2> iPos0 = this->ConvertToLUTPosition(p0) / this->m_res;
             std::array<double,2> iPos1 = this->ConvertToLUTPosition(p1) / this->m_res;
@@ -119,7 +119,7 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
          * @param indexDimension The index to the dimension of the multi-dimensional value to be considered. Make sure that this index lies in range [0, Tdim) to prevent access violation.
          * @return Final value of the line integral along a linear line over the look-up table data.
          */
-        template <class T, class U> double LineIntegralLinearInterpolatedForDimension(const T& p0, const U& p1,size_t indexDimension) const noexcept {
+        template <class T, class U> [[nodiscard]] double LineIntegralLinearInterpolatedForDimension(const T& p0, const U& p1,size_t indexDimension) const noexcept {
             static_assert(mpsv::is_vec2<T>::value,"Argument {p0} must be of type std::array<double,N> with N >= 2!");
             static_assert(mpsv::is_vec2<U>::value,"Argument {p1} must be of type std::array<double,N> with N >= 2!");
 
@@ -257,7 +257,7 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
          * @param indexDimension The index to the dimension of the multi-dimensional value to be considered. Make sure that this index lies in range [0, Tdim) to prevent access violation.
          * @return Linear interpolated value at the given position for the specified dimension. If the specified position is outside the look-up table area, the internal zero-border value is returned.
          */
-        template <class T> double GetLinearInterpolatedValueAtPositionForDimension(const T& position, size_t indexDimension) const noexcept {
+        template <class T> [[nodiscard]] double GetLinearInterpolatedValueAtPositionForDimension(const T& position, size_t indexDimension) const noexcept {
             static_assert(mpsv::is_vec2<T>::value,"Argument {position} must be of type std::array<double,N> with N >= 2!");
 
             // Convert to index position ({0,0} indicates origin of lower-left corner of LUT data cell (lut[0]), {0.5,0.5} would be the center of the lower-left cell, all data corresponds to the center of a cell)

@@ -134,7 +134,7 @@ class PathSampler {
          * @details A random path segment is selected based on the halton sequence (dimension 1). The random sample is generated in a 3-dimensional box around this
          * path segment by the halton sequence (dimension 2,3,4). The dimension of the bos corresponds to rangePosition and rangeAngle, respectively.
          */
-        std::array<double,3> Sample(size_t idxSample) noexcept {
+        [[nodiscard]] std::array<double,3> Sample(size_t idxSample) const noexcept {
             std::array<double, 4> haltonSample = m_haltonSequence.Sample(idxSample);
             size_t i = 0;
             for(; (i < m_segments.size()) && (m_segments[i].ratio < haltonSample[3]); ++i);
@@ -151,7 +151,7 @@ class PathSampler {
          * @param[in] pose The pose to be checked.
          * @return true True if the given pose is inside the sampling area, false otherwise.
          */
-        template <class T> bool IsInside(const T pose) noexcept {
+        template <class T> [[nodiscard]] bool IsInside(const T pose) const noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {pose} must be of type std::array<double,N> with N >= 3!");
             bool isInside = false;
             std::array<double,3> tmp, s;
@@ -173,7 +173,7 @@ class PathSampler {
          * @details The volume corresponds to (x) * (y) * (wpsi * psi), where wpsi denotes the weighting for psi in the metric distance function.
          * Note that this value is the sum of volumes of all overlapping sampling boxes around the path. Due to overlapping, the true volume would be smaller.
          */
-        double GetVolume(void){ return m_volume; }
+        [[nodiscard]] double GetVolume(void) const noexcept { return m_volume; }
 
     protected:
         struct Segment {

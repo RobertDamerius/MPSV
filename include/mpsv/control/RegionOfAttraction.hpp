@@ -38,7 +38,7 @@ class RegionOfAttraction {
          * @param[in] parameter The parameter to be set.
          * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
          */
-        error_code SetParameter(const mpsv::planner::ParameterRegionOfAttraction& parameter) noexcept {
+        [[nodiscard]] error_code SetParameter(const mpsv::planner::ParameterRegionOfAttraction& parameter) noexcept {
             error_code e = parameter.IsValid();
             if(error_code::NONE == e){
                 m_rangePose = parameter.rangePose;
@@ -57,7 +57,7 @@ class RegionOfAttraction {
          * @param[in] pose The pose defining the center for the region of attraction, given as {x,y,psi,...}. Only the pose is be considered from that array.
          * @return True if the state is inside the region of attraction, false otherwise.
          */
-        template <class T, class U> bool IsInside(const T& state, const U& pose) noexcept {
+        template <class T, class U> [[nodiscard]] bool IsInside(const T& state, const U& pose) noexcept {
             static_assert(mpsv::is_vec9<T>::value,"Argument {state} must be of type std::array<double,N> with N >= 9!");
             static_assert(mpsv::is_vec3<U>::value,"Argument {pose} must be of type std::array<double,N> with N >= 3!");
             double dx = std::fabs(pose[0] - state[0]);

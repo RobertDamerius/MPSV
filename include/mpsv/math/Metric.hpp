@@ -20,7 +20,7 @@ namespace math {
  * @param[in] weightPsi Scalar weighting factor for psi, defaults to 1.0.
  * @return The distance metric between the two given poses, calculated by sqrt(dx^2 + dy^2 + (weightPsi*dpsi)^2).
  */
-template <class T, class U> inline double DistanceMetricSE2(const T& a, const U& b, const double weightPsi = 1.0) noexcept {
+template <class T, class U> [[nodiscard]] inline double DistanceMetricSE2(const T& a, const U& b, const double weightPsi = 1.0) noexcept {
     static_assert(mpsv::is_vec3<T>::value,"Argument {a} must be of type std::array<double,N> with N >= 3!");
     static_assert(mpsv::is_vec3<U>::value,"Argument {b} must be of type std::array<double,N> with N >= 3!");
     double dx = b[0] - a[0];
@@ -43,7 +43,7 @@ template <class T, class U> inline double DistanceMetricSE2(const T& a, const U&
  * being the angle of the line and psi0 and psiL being the yaw angle of pose a and b, respectively. Second, the integral of weightReverseScale * (weightReverseDecay*e)^2 / (1 + (weightReverseDecay*e)^2)
  * from s = 0 to L with e(s) = psi0 + (s/L)*(psiL - psi0) - alpha.
  */
-template <class T, class U> inline double SwayMetric(const T& a, const U& b, double weightSway, double weightReverseScale, double weightReverseDecay) noexcept {
+template <class T, class U> [[nodiscard]] inline double SwayMetric(const T& a, const U& b, double weightSway, double weightReverseScale, double weightReverseDecay) noexcept {
     static_assert(mpsv::is_vec3<T>::value,"Argument {a} must be of type std::array<double,N> with N >= 3!");
     static_assert(mpsv::is_vec3<U>::value,"Argument {b} must be of type std::array<double,N> with N >= 3!");
     constexpr double eps = 100.0 * std::numeric_limits<double>::epsilon();

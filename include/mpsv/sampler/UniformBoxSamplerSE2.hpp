@@ -66,7 +66,7 @@ class UniformBoxSamplerSE2 {
          * @param[in] idxSample Index of the sample.
          * @return The output sample given as {x, y, psi}.
          */
-        std::array<double, 3> Sample(size_t idxSample) noexcept {
+        [[nodiscard]] std::array<double, 3> Sample(size_t idxSample) const noexcept {
             std::array<double, 3> sample = m_haltonSequence.Sample(idxSample);
             return {
                 m_R[0]*sample[0] + m_R[1]*sample[1] + m_offset[0],
@@ -81,7 +81,7 @@ class UniformBoxSamplerSE2 {
          * @param[in] point The point to be checked.
          * @return True if given point is inside the sampling area, false otherwise.
          */
-        template <class T> bool IsInside(const T& point) const noexcept {
+        template <class T> [[nodiscard]] bool IsInside(const T& point) const noexcept {
             static_assert(mpsv::is_vec2<T>::value,"Argument {point} must be of type std::array<double,N> with N >= 2!");
             double x = point[0] - m_offset[0];
             double y = point[1] - m_offset[1];

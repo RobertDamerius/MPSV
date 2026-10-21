@@ -61,7 +61,7 @@ class AABB {
          * @param[in] aabb Another axis-aligned bounding box for which to check intersection.
          * @return True if the AABB does overlap with this one, false otherwise.
          */
-        bool Overlap(const AABB& aabb) const noexcept { return !((aabb.m_lowerBound[0] > m_upperBound[0]) || (m_lowerBound[0] > aabb.m_upperBound[0]) || (aabb.m_lowerBound[1] > m_upperBound[1]) || (m_lowerBound[1] > aabb.m_upperBound[1])); };
+        [[nodiscard]] bool Overlap(const AABB& aabb) const noexcept { return !((aabb.m_lowerBound[0] > m_upperBound[0]) || (m_lowerBound[0] > aabb.m_upperBound[0]) || (aabb.m_lowerBound[1] > m_upperBound[1]) || (m_lowerBound[1] > aabb.m_upperBound[1])); };
 
         /**
          * @brief Swap this AABB with a given AABB.
@@ -76,7 +76,7 @@ class AABB {
          * @brief Check if the AABB is finite.
          * @return True if the AABB is finite, false otherwise.
          */
-        bool IsFinite(void) const noexcept { return std::isfinite(m_lowerBound[0]) && std::isfinite(m_lowerBound[1]) && std::isfinite(m_upperBound[0]) && std::isfinite(m_upperBound[1]); }
+        [[nodiscard]] bool IsFinite(void) const noexcept { return std::isfinite(m_lowerBound[0]) && std::isfinite(m_lowerBound[1]) && std::isfinite(m_upperBound[0]) && std::isfinite(m_upperBound[1]); }
 
         /**
          * @brief Operator+= adds the right-hand sided AABB to this AABB (union).

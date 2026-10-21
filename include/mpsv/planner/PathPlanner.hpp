@@ -77,7 +77,7 @@ class PathPlanner {
          * @param[in] parameterSet The parameter set to be applied.
          * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
          */
-        error_code ApplyParameterSet(mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
+        [[nodiscard]] error_code ApplyParameterSet(mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
             error_code e = parameter.IsValid();
             if(error_code::NONE != e){
                 return e;
@@ -282,7 +282,7 @@ class PathPlanner {
          * @param[in] staticObstacles List of static obstacles to be taken into account for path planning.
          * @return True if warm start was successful, false otherwise. If this method fails, a cold start must be performed.
          */
-        bool WarmStart(std::array<double,2> originOldToNew, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
+        [[nodiscard]] bool WarmStart(std::array<double,2> originOldToNew, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
             // Step 1: Transform tree to new origin
             m_tree.TransformToNewOrigin(originOldToNew);
 

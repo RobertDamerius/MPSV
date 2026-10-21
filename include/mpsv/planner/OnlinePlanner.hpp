@@ -57,7 +57,7 @@ class OnlinePlanner {
          * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
          * @details If a new parameter set has been applied successfully, @ref Reset is called internally.
          */
-        error_code ApplyParameterSet(mpsv::planner::OnlinePlannerParameterSet& parameter) noexcept {
+        [[nodiscard]] error_code ApplyParameterSet(mpsv::planner::OnlinePlannerParameterSet& parameter) noexcept {
             error_code e;
             if(error_code::NONE != (e = parameter.IsValid())){
                 return e;
@@ -118,7 +118,7 @@ class OnlinePlanner {
          * @return [1] The predicted state given as {x,y,psi,u,v,r,X,Y,N}.
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
-        std::tuple<double,std::array<double,9>> PredictMotion(const std::array<double,12>& initialStateAndInput, double predictionHorizon) noexcept { return m_sequentialPlanner.PredictMotion(initialStateAndInput, predictionHorizon); }
+        [[nodiscard]] std::tuple<double,std::array<double,9>> PredictMotion(const std::array<double,12>& initialStateAndInput, double predictionHorizon) const noexcept { return m_sequentialPlanner.PredictMotion(initialStateAndInput, predictionHorizon); }
 
         /**
          * @brief Write data to the log file.

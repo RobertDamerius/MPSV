@@ -58,7 +58,7 @@ class SequentialPlanner {
          * @param[in] parameter The parameter set to be applied.
          * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
          */
-        error_code ApplyParameterSet(const mpsv::planner::SequentialPlannerParameterSet& parameter) noexcept {
+        [[nodiscard]] error_code ApplyParameterSet(const mpsv::planner::SequentialPlannerParameterSet& parameter) noexcept {
             // split into two parameter sets for path and motion planning
             mpsv::planner::PathPlannerParameterSet parameterPath;
             mpsv::planner::MotionPlannerParameterSet parameterMotion;
@@ -151,7 +151,7 @@ class SequentialPlanner {
          * @return [1] The predicted state given as {x,y,psi,u,v,r,X,Y,N}.
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
-        std::tuple<double,std::array<double,9>> PredictMotion(const std::array<double,12>& initialStateAndInput, double predictionHorizon) noexcept { return m_motionPlanner.PredictMotion(initialStateAndInput, predictionHorizon); }
+        [[nodiscard]] std::tuple<double,std::array<double,9>> PredictMotion(const std::array<double,12>& initialStateAndInput, double predictionHorizon) const noexcept { return m_motionPlanner.PredictMotion(initialStateAndInput, predictionHorizon); }
 
         /**
          * @brief Predict the motion trajectory of the vehicle for a given prediction horizon assuming the control input to be constant all the time. At least one simulation step is computed.
@@ -163,7 +163,7 @@ class SequentialPlanner {
          * [1] The total time that has been simulated.
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
-        std::tuple<bool,double> PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double predictionHorizon) noexcept { return m_motionPlanner.PredictMotionTrajectory(trajectory, initialStateAndInput, predictionHorizon); }
+        [[nodiscard]] std::tuple<bool,double> PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double predictionHorizon) const noexcept { return m_motionPlanner.PredictMotionTrajectory(trajectory, initialStateAndInput, predictionHorizon); }
 
         /**
          * @brief Write data to the log file.
