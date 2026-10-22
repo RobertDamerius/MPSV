@@ -266,13 +266,8 @@ uint32_t Benchmark::PathPlanning(void){
     dataIn.samplingBoxDimension  = {173.3141, 160.0};
     GenerateObstaclesForPlanning(dataIn.staticObstacles);
 
-    // Initialize planner and apply parameters
+    // Initialize planner
     planner.Initialize(maxNumNodes, maxNumSamples);
-    if(mpsv::error_code::NONE != planner.ApplyParameterSet(parameterSet)){
-        fprintf(stderr,"ERROR: Failed to set parameters for the path planner!\n");
-        planner.Terminate();
-        return 0;
-    }
     if(mpsv::error_code::NONE != dataIn.IsValid()){
         fprintf(stderr,"ERROR: Input data for the path planner is invalid!\n");
         planner.Terminate();
@@ -280,7 +275,7 @@ uint32_t Benchmark::PathPlanning(void){
     }
 
     // Run actual path planning
-    planner.Solve(dataOut, dataIn, 1.0, true);
+    planner.Solve(dataOut, dataIn, parameterSet, 1.0, true);
 
     // Terminate the planner
     planner.Terminate();

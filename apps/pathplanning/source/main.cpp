@@ -9,12 +9,8 @@ int main(int, char**){
     constexpr uint32_t maxNumSamples = 1000000;
     planner.Initialize(maxNumNodes, maxNumSamples);
 
-    // apply a parameter set to the path planner
+    // get parameters for path planning
     mpsv::planner::PathPlannerParameterSet parameter = example::GetParameterSet();
-    if(mpsv::error_code::NONE != planner.ApplyParameterSet(parameter)){
-        std::cerr << "ERROR: Could not apply parameter set!\n";
-        return 0;
-    }
 
     // get valid input data for planning problem
     mpsv::planner::PathPlannerInput dataIn = example::GetInput();
@@ -27,7 +23,7 @@ int main(int, char**){
     constexpr double maxComputationTime = 1.0;
     mpsv::planner::PathPlannerOutput dataOut;
     std::cout << "solve path planning problem (computation time: " << maxComputationTime << " s)\n\n";
-    planner.Solve(dataOut, dataIn, maxComputationTime);
+    planner.Solve(dataOut, dataIn, parameter, maxComputationTime);
 
     // print result
     std::cout << "goalReached:                   " << dataOut.goalReached << "\n";

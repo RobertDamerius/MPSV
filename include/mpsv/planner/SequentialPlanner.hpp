@@ -71,11 +71,12 @@ class SequentialPlanner {
             parameterMotion.model = parameter.model;
             parameterMotion.motionPlanner = parameter.motionPlanner;
 
-            // apply parameter set to path planner
-            error_code e = m_pathPlanner.ApplyParameterSet(parameterPath);
+            // Validate and retain parameters for the path planner.
+            error_code e = parameterPath.IsValid();
             if(error_code::NONE != e){
                 return e;
             }
+            m_pathPlannerParameter = parameterPath;
 
             // apply parameter set to motion planner
             e = m_motionPlanner.ApplyParameterSet(parameterMotion);
@@ -113,7 +114,7 @@ class SequentialPlanner {
 
             // Solve path planning problem
             double remainingTimeForProblemSolving = maxComputationTimePathPlanning - m_executionCounter.TimeToStart();
-            m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, remainingTimeForProblemSolving);
+            m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, m_pathPlannerParameter, remainingTimeForProblemSolving);
 
             // Use solution path of path planner as initial path for motion planner
             m_motionPlannerInput.initialPath = m_pathPlannerOutput.path;
@@ -167,13 +168,14 @@ class SequentialPlanner {
         void WriteToFile(mpsv::logging::File& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { m_pathPlanner.WriteToFile(file, preString + "pathPlanner."); m_motionPlanner.WriteToFile(file, preString + "motionPlanner.", staticObstacles); }
 
     protected:
-        mpsv::planner::PathPlannerInput m_pathPlannerInput;         // The input to the path planner, set during @ref Solve.
-        mpsv::planner::PathPlannerOutput m_pathPlannerOutput;       // The output of the path planner, set during @ref Solve and @ref Improve.
-        mpsv::planner::MotionPlannerInput m_motionPlannerInput;     // The input to the motion planner, set during @ref Solve.
-        mpsv::planner::MotionPlannerOutput m_motionPlannerOutput;   // The output of the motion planner, set during @ref Solve.
-        mpsv::planner::PathPlanner m_pathPlanner;                   // Internal path planning solver.
-        mpsv::planner::MotionPlanner m_motionPlanner;               // Internal motion planning solver.
-        mpsv::runtime::PerformanceCounter m_executionCounter;       // Performance counter to measure the execution time during @ref Solve.
+        mpsv::planner::PathPlannerInput m_pathPlannerInput;              // The input to the path planner, set during @ref Solve.
+        mpsv::planner::PathPlannerOutput m_pathPlannerOutput;            // The output of the path planner, set during @ref Solve and @ref Improve.
+        mpsv::planner::MotionPlannerInput m_motionPlannerInput;          // The input to the motion planner, set during @ref Solve.
+        mpsv::planner::MotionPlannerOutput m_motionPlannerOutput;        // The output of the motion planner, set during @ref Solve.
+        mpsv::planner::PathPlanner m_pathPlanner;                        // Internal path planning solver.
+        mpsv::planner::PathPlannerParameterSet m_pathPlannerParameter;   // Parameters for the internal path planner.
+        mpsv::planner::MotionPlanner m_motionPlanner;                    // Internal motion planning solver.
+        mpsv::runtime::PerformanceCounter m_executionCounter;            // Performance counter to measure the execution time during @ref Solve.
 };
 
 

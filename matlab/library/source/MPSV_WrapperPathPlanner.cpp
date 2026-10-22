@@ -19,8 +19,8 @@ void MPSV_WrapperPathPlanner::Step(serialization_path_planner_output* output, se
 
     // Solve the planning problem
     if(mpsv::error_code::NONE == errorCode){
-        errorCode = m_pathPlanner.ApplyParameterSet(m_pathPlannerParameter);
-        m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, input->parameter.pathPlanner.maxComputationTime);
+        m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, m_pathPlannerParameter, input->parameter.pathPlanner.maxComputationTime);
+        errorCode = m_pathPlannerOutput.errorCode;
 
         // Assign output data
         AssignOutput(output, errorCode);
@@ -127,8 +127,8 @@ void MPSV_WrapperPathPlanner::AssignOutput(serialization_path_planner_output* ou
     output->errorCode                   = static_cast<uint8_t>(errorCode);
     output->cost                        = m_pathPlannerOutput.cost;
     output->goalReached                 = m_pathPlannerOutput.goalReached;
-    output->isFeasible                  = m_pathPlannerOutput.isFeasible;
-    output->outOfNodes                  = m_pathPlannerOutput.outOfNodes;
+    output->isFeasible                  = (m_pathPlannerOutput.errorCode == mpsv::error_code::PATHPLANNER_INITIAL_POSE_COLLISION ? 0 : 1);
+    output->outOfNodes                  = (m_pathPlannerOutput.errorCode == mpsv::error_code::PATHPLANNER_OUT_OF_NODES ? 1 : 0);
     output->numberOfPerformedIterations = m_pathPlannerOutput.numberOfPerformedIterations;
     output->timestampOfComputationUTC   = m_pathPlannerOutput.timestampOfComputationUTC;
     output->numPoses                    = static_cast<uint16_t>(m_pathPlannerOutput.path.size());
