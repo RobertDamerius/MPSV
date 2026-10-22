@@ -61,7 +61,6 @@
 #include <mpsv/planner/PathPlannerInput.hpp>
 #include <mpsv/planner/PathPlannerOutput.hpp>
 #include <mpsv/planner/PathPlannerParameterSet.hpp>
-#include <mpsv/planner/PathPlannerState.hpp>
 #include <mpsv/planner/OnlinePlanner.hpp>
 #include <mpsv/planner/OnlinePlannerInput.hpp>
 #include <mpsv/planner/OnlinePlannerOutput.hpp>

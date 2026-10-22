@@ -3,7 +3,6 @@
 
 #include <mpsv/common/Common.hpp>
 #include <mpsv/planner/PathPlannerParameterSet.hpp>
-#include <mpsv/planner/PathPlannerState.hpp>
 #include <mpsv/planner/PathPlannerInput.hpp>
 #include <mpsv/planner/PathPlannerOutput.hpp>
 #include <mpsv/structures/CostMap.hpp>
@@ -63,7 +62,12 @@ class PathPlanner {
             m_runSolve = false;
             m_tree.Clear();
             m_costMap.Clear();
-            m_state.Clear();
+            m_idxSolutionNode = 0;
+            m_goalReached = false;
+            m_outOfNodes = false;
+            m_closestDistanceToGoal = std::numeric_limits<double>::infinity();
+            m_sampleIteration = 0;
+            m_goalSampleIteration = 0;
             m_boxSampler.Terminate();
             m_idxNeighbors.clear();
             m_idxNeighbors.shrink_to_fit();
@@ -92,7 +96,14 @@ class PathPlanner {
 
             // Prepare
             if(mpsv::error_code::NONE == dataOut.errorCode){
-                m_state.Clear(!forceColdStart); // keep latest solution if no cold start is forced
+                if(forceColdStart){
+                    m_idxSolutionNode = 0;
+                    m_closestDistanceToGoal = std::numeric_limits<double>::infinity();
+                    m_sampleIteration = 0;
+                }
+                m_goalReached = false;
+                m_outOfNodes = false;
+                m_goalSampleIteration = 0;
                 mpsv::geometry::OrientedBox samplingArea = SetSamplingArea(dataIn);
                 SetNumericLimits(samplingArea, parameter);
                 m_tree.SetCSpaceVolume(samplingArea.GetVolume(parameter.metric.weightPsi));
@@ -100,15 +111,15 @@ class PathPlanner {
                 RemoveObstaclesOutsideAreaOfInterest(dataIn.staticObstacles, samplingArea, parameter);
                 if(parameter.geometry.vehicleShape.CheckCollisionPose(dataIn.staticObstacles, dataIn.initialPose)){
                     dataOut.errorCode = mpsv::error_code::PATHPLANNER_INITIAL_POSE_COLLISION;
-                    m_state.idxSolutionNode = m_tree.Reset(dataIn.initialPose);
-                    m_state.closestDistanceToGoal = mpsv::math::DistanceMetricSE2(dataIn.initialPose, dataIn.finalPose, parameter.metric.weightPsi);
-                    m_state.goalReached = (m_state.closestDistanceToGoal < m_epsDistanceMetric);
+                    m_idxSolutionNode = m_tree.Reset(dataIn.initialPose);
+                    m_closestDistanceToGoal = mpsv::math::DistanceMetricSE2(dataIn.initialPose, dataIn.finalPose, parameter.metric.weightPsi);
+                    m_goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
                 }
                 else{
                     if(forceColdStart || !WarmStart(dataIn, parameter)){
-                        m_state.idxSolutionNode = m_tree.Reset(dataIn.initialPose);
-                        m_state.closestDistanceToGoal = mpsv::math::DistanceMetricSE2(dataIn.initialPose, dataIn.finalPose, parameter.metric.weightPsi);
-                        m_state.goalReached = (m_state.closestDistanceToGoal < m_epsDistanceMetric);
+                        m_idxSolutionNode = m_tree.Reset(dataIn.initialPose);
+                        m_closestDistanceToGoal = mpsv::math::DistanceMetricSE2(dataIn.initialPose, dataIn.finalPose, parameter.metric.weightPsi);
+                        m_goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
                     }
                 }
             }
@@ -121,7 +132,7 @@ class PathPlanner {
                     mpsv::runtime::PerformanceCounter iterationCounter;
                     Iterate(dataIn, parameter);
                     maxIterationTime = std::max(maxIterationTime, iterationCounter.TimeToStart());
-                    if(m_state.outOfNodes){
+                    if(m_outOfNodes){
                         dataOut.errorCode = mpsv::error_code::PATHPLANNER_OUT_OF_NODES;
                         break;
                     }
@@ -132,9 +143,9 @@ class PathPlanner {
             }
 
             // assign output
-            dataOut.goalReached = m_state.goalReached;
-            dataOut.cost = m_tree[m_state.idxSolutionNode].cost;
-            m_tree.GetPathFromRootToNode(dataOut.path, m_state.idxSolutionNode);
+            dataOut.goalReached = m_goalReached;
+            dataOut.cost = m_tree[m_idxSolutionNode].cost;
+            m_tree.GetPathFromRootToNode(dataOut.path, m_idxSolutionNode);
             dataOut.timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
 
             m_runSolve = false;
@@ -154,7 +165,12 @@ class PathPlanner {
 
     protected:
         mpsv::structures::FixedSizeTreeSE2<Node> m_tree;                      // Tree for path planning.
-        mpsv::planner::PathPlannerState m_state;                              // State of the path planner.
+        int16_t m_idxSolutionNode{0};                                         // Index to the solution node, which is at least the root node.
+        bool m_goalReached{false};                                            // True if the goal pose is reached from the initial pose.
+        bool m_outOfNodes{false};                                             // True if no node can be removed to make room for a new node.
+        double m_closestDistanceToGoal{std::numeric_limits<double>::infinity()};
+        uint32_t m_sampleIteration{0};
+        uint32_t m_goalSampleIteration{0};
         mpsv::structures::CostMap m_costMap;                                  // The cost map to be used as additional cost term in the objective function.
         mpsv::sampler::UniformBoxSamplerSE2 m_boxSampler;                     // The box sampler to be used to draw random samples from SE(2).
         std::vector<int16_t> m_idxNeighbors;                                  // Reserved memory for nearest neighbors.
@@ -241,7 +257,7 @@ class PathPlanner {
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             // Get the current solution branch
             std::vector<int16_t> idxSolutionPathReverse;
-            int16_t node = m_state.idxSolutionNode;
+            int16_t node = m_idxSolutionNode;
             while(node >= 0){
                 idxSolutionPathReverse.push_back(node);
                 node = m_tree[node].iParent;
@@ -328,23 +344,23 @@ class PathPlanner {
             // Step 5: Find closest node to new goal
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             // Set default state values
-            m_state.outOfNodes = false;
-            m_state.closestDistanceToGoal = std::numeric_limits<double>::infinity();
-            m_state.idxSolutionNode = 0;
+            m_outOfNodes = false;
+            m_closestDistanceToGoal = std::numeric_limits<double>::infinity();
+            m_idxSolutionNode = 0;
 
             // Find closest distance to goal
             const std::vector<int16_t>& indices = m_tree.GetActiveIndices();
             double distance;
             for(auto&& i : indices){
                 distance = mpsv::math::DistanceMetricSE2(m_tree[i].pose, dataIn.finalPose, parameter.metric.weightPsi);
-                if(distance < m_state.closestDistanceToGoal){
-                    m_state.closestDistanceToGoal = distance;
-                    m_state.idxSolutionNode = i;
+                if(distance < m_closestDistanceToGoal){
+                    m_closestDistanceToGoal = distance;
+                    m_idxSolutionNode = i;
                 }
             }
 
             // Check if solution was found
-            m_state.goalReached = (m_state.closestDistanceToGoal < m_epsDistanceMetric);
+            m_goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
             return true;
         }
 
@@ -354,7 +370,7 @@ class PathPlanner {
          * @param[in] parameter The parameter set for path planning.
          */
         void Iterate(const mpsv::planner::PathPlannerInput& dataIn, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
-            if((m_state.outOfNodes = (m_tree.IsFull() && !m_tree.RemoveRandomLeaf(m_state.idxSolutionNode)))){
+            if((m_outOfNodes = (m_tree.IsFull() && !m_tree.RemoveRandomLeaf(m_idxSolutionNode)))){
                 return; // no more nodes available in the tree and no random leaf node could be removed
             }
             Node randomSample = Sampling(dataIn.finalPose, parameter);
@@ -374,13 +390,13 @@ class PathPlanner {
             // Check if the new sample indicates a solution
             double distanceToGoal = mpsv::math::DistanceMetricSE2(m_tree[idxAddedSample].pose, dataIn.finalPose, parameter.metric.weightPsi);
             if(distanceToGoal < m_epsDistanceMetric){
-                m_state.goalReached = true;
-                m_state.closestDistanceToGoal = distanceToGoal;
-                m_state.idxSolutionNode = idxAddedSample;
+                m_goalReached = true;
+                m_closestDistanceToGoal = distanceToGoal;
+                m_idxSolutionNode = idxAddedSample;
             }
-            if(distanceToGoal < m_state.closestDistanceToGoal){
-                m_state.closestDistanceToGoal = distanceToGoal;
-                m_state.idxSolutionNode = idxAddedSample;
+            if(distanceToGoal < m_closestDistanceToGoal){
+                m_closestDistanceToGoal = distanceToGoal;
+                m_idxSolutionNode = idxAddedSample;
             }
         }
 
@@ -391,13 +407,13 @@ class PathPlanner {
          */
         Node Sampling(const std::array<double,3>& finalPose, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
             Node randomSample;
-            if(m_state.goalReached || m_state.goalSampleIteration){
-                randomSample.pose = m_boxSampler.Sample(m_state.sampleIteration++);
+            if(m_goalReached || m_goalSampleIteration){
+                randomSample.pose = m_boxSampler.Sample(m_sampleIteration++);
             }
             else{
                 randomSample.pose = finalPose;
             }
-            m_state.goalSampleIteration = (m_state.goalSampleIteration + 1) % parameter.pathPlanner.periodGoalSampling;
+            m_goalSampleIteration = (m_goalSampleIteration + 1) % parameter.pathPlanner.periodGoalSampling;
             return randomSample;
         }
 
@@ -447,7 +463,7 @@ class PathPlanner {
             newSample.cost = source.cost + costDistance + costHeading + costClearance;
 
             // If the step was limited during goal sampling, then continue goal sampling in the next iteration
-            m_state.goalSampleIteration -= static_cast<uint32_t>(stepLimited && (1 == m_state.goalSampleIteration));
+            m_goalSampleIteration -= static_cast<uint32_t>(stepLimited && (1 == m_goalSampleIteration));
             success = true;
             return result;
         }
