@@ -45,8 +45,7 @@ int main(int, char**){
 
     // print result (at most 10 trajectory points)
     std::cout << "pathPlanner.goalReached:                     " << dataOut.pathPlanner.goalReached << "\n";
-    std::cout << "pathPlanner.isFeasible:                      " << dataOut.pathPlanner.isFeasible << "\n";
-    std::cout << "pathPlanner.outOfNodes:                      " << dataOut.pathPlanner.outOfNodes << "\n";
+    std::cout << "pathPlanner.errorCode:                       " << static_cast<int32_t>(dataOut.pathPlanner.errorCode) << "\n";
     std::cout << "pathPlanner.numberOfPerformedIterations:     " << dataOut.pathPlanner.numberOfPerformedIterations << "\n";
     std::cout << "pathPlanner.cost:                            " << dataOut.pathPlanner.cost << "\n";
     std::cout << "pathPlanner.path:                            " << dataOut.pathPlanner.path.size() << " poses\n";

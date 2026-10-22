@@ -31,8 +31,7 @@ int main(int, char**){
 
     // print result
     std::cout << "goalReached:                   " << dataOut.goalReached << "\n";
-    std::cout << "isFeasible:                    " << dataOut.isFeasible << "\n";
-    std::cout << "outOfNodes:                    " << dataOut.outOfNodes << "\n";
+    std::cout << "errorCode:                     " << static_cast<int32_t>(dataOut.errorCode) << "\n";
     std::cout << "numberOfPerformedIterations:   " << dataOut.numberOfPerformedIterations << "\n";
     std::cout << "cost:                          " << dataOut.cost << "\n";
     std::cout << "path:                          " << dataOut.path.size() << " poses\n";

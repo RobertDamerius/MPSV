@@ -73,7 +73,11 @@ enum class error_code : uint8_t {
     PARAM_ONLINEPLANNER_TIME_KEEP_PAST_TRAJECTORY         = 55,   // timeKeepPastTrajectory is not finite or negative.
     PARAM_ONLINEPLANNER_NUM_SIMULATION_STEPS              = 56,   // The number of simulation steps is too high: either planning time is too high and/or sampletime is too low.
     PARAM_ASYNCPLANNER_TIMESTAMP                          = 57,   // timestamp is not finite.
-    PARAM_ASYNCPLANNER_TIMEOUT_INPUT                      = 58    // timeoutInput is not finite.
+    PARAM_ASYNCPLANNER_TIMEOUT_INPUT                      = 58,   // timeoutInput is not finite.
+
+    // path planner
+    PATHPLANNER_INITIAL_POSE_COLLISION                    = 59,   // The initial pose of the path planner collides with static obstacles.
+    PATHPLANNER_OUT_OF_NODES                              = 60    // The path planner has run out of nodes and cannot sample new nodes anymore.
 };
 
 

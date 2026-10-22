@@ -3,6 +3,7 @@
 
 #include <mpsv/common/Common.hpp>
 #include <mpsv/logging/File.hpp>
+#include <mpsv/common/ErrorCode.hpp>
 
 
 namespace mpsv {
@@ -25,8 +26,7 @@ class OnlinePlannerOutput {
         struct {
             std::vector<std::array<double,3>> path;            // [PathPlanner] Resulting path of the internal path planning problem, where each pose is given as {x,y,psi}.
             bool goalReached;                                  // [PathPlanner] True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-            bool isFeasible;                                   // [PathPlanner] True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles or if the initial or final pose is not inside the sampling area.
-            bool outOfNodes;                                   // [PathPlanner] True if all nodes are within the solution path and no new nodes can be sampled and added to the tree.
+            mpsv::error_code errorCode;                        // [PathPlanner] Error code indicating the type of error that occurred during planning.
             uint32_t numberOfPerformedIterations;              // [PathPlanner] The total number of iterations that have been performed since the latest prepare step.
             double timestampOfComputationUTC;                  // [PathPlanner] Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
             double cost;                                       // [PathPlanner] The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
@@ -60,7 +60,8 @@ class OnlinePlannerOutput {
             performedReset = false;
             error = true;
             pathPlanner.path.clear();
-            pathPlanner.goalReached = pathPlanner.isFeasible = pathPlanner.outOfNodes = false;
+            pathPlanner.goalReached = false;
+            pathPlanner.errorCode = mpsv::error_code::NONE;
             pathPlanner.numberOfPerformedIterations = 0;
             pathPlanner.timestampOfComputationUTC = pathPlanner.cost = 0.0;
             motionPlanner.referencePath.clear();
@@ -83,8 +84,7 @@ class OnlinePlannerOutput {
             dst.error = error;
             dst.pathPlanner.path.swap(pathPlanner.path);
             dst.pathPlanner.goalReached = pathPlanner.goalReached;
-            dst.pathPlanner.isFeasible = pathPlanner.isFeasible;
-            dst.pathPlanner.outOfNodes = pathPlanner.outOfNodes;
+            dst.pathPlanner.errorCode = pathPlanner.errorCode;
             dst.pathPlanner.numberOfPerformedIterations = pathPlanner.numberOfPerformedIterations;
             dst.pathPlanner.timestampOfComputationUTC = pathPlanner.timestampOfComputationUTC;
             dst.pathPlanner.cost = pathPlanner.cost;
@@ -114,8 +114,7 @@ class OnlinePlannerOutput {
             file.WriteField("bool", preString + "error", {1}, &error, sizeof(error));
             file.WriteVectorField(preString + "pathPlanner.path", pathPlanner.path);
             file.WriteField("bool", preString + "pathPlanner.goalReached", {1}, &pathPlanner.goalReached, sizeof(pathPlanner.goalReached));
-            file.WriteField("bool", preString + "pathPlanner.isFeasible", {1}, &pathPlanner.isFeasible, sizeof(pathPlanner.isFeasible));
-            file.WriteField("bool", preString + "pathPlanner.outOfNodes", {1}, &pathPlanner.outOfNodes, sizeof(pathPlanner.outOfNodes));
+            file.WriteField("uint8_t", preString + "pathPlanner.errorCode", {1}, &pathPlanner.errorCode, sizeof(pathPlanner.errorCode));
             file.WriteField("uint32_t", preString + "pathPlanner.numberOfPerformedIterations", {1}, &pathPlanner.numberOfPerformedIterations, sizeof(pathPlanner.numberOfPerformedIterations));
             file.WriteField("double", preString + "pathPlanner.timestampOfComputationUTC", {1}, &pathPlanner.timestampOfComputationUTC, sizeof(pathPlanner.timestampOfComputationUTC));
             file.WriteField("double", preString + "pathPlanner.cost", {1}, &pathPlanner.cost, sizeof(pathPlanner.cost));

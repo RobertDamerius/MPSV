@@ -99,6 +99,11 @@ class PathPlanner {
             m_runSolve = true;
             mpsv::runtime::PerformanceCounter executionCounter;
 
+            dataOut.errorCode = m_parameter.IsValid();
+            if(error_code::NONE == dataOut.errorCode){
+                dataOut.errorCode = dataIn.IsValid();
+            }
+
             // Prepare
             // During the prepare step of the path planning algorithm, the following steps are performed:
             //
@@ -138,8 +143,8 @@ class PathPlanner {
             m_tree.SetCSpaceVolume(samplingArea.GetVolume(m_parameter.metric.weightPsi));
             BuildCostMap(samplingArea, dataIn.staticObstacles);
             RemoveObstaclesOutsideAreaOfInterest(dataIn.staticObstacles, samplingArea);
-            m_state.isFeasible = !m_parameter.geometry.vehicleShape.CheckCollisionPose(dataIn.staticObstacles, m_state.initialPose) && samplingArea.IsInside(m_state.initialPose) && samplingArea.IsInside(m_state.finalPose);
-            if(!m_state.isFeasible){
+            if(m_parameter.geometry.vehicleShape.CheckCollisionPose(dataIn.staticObstacles, m_state.initialPose)){
+                dataOut.errorCode = mpsv::error_code::PATHPLANNER_INITIAL_POSE_COLLISION;
                 m_state.idxSolutionNode = m_tree.Reset(m_state.initialPose);
                 m_state.closestDistanceToGoal = mpsv::math::DistanceMetricSE2(m_state.initialPose, m_state.finalPose, m_parameter.metric.weightPsi);
                 m_state.goalReached = (m_state.closestDistanceToGoal < m_epsDistanceMetric);
@@ -153,19 +158,30 @@ class PathPlanner {
             }
 
             // Solve
-            if(m_state.isFeasible){
+            if(mpsv::error_code::NONE == dataOut.errorCode){
                 double maxIterationTime = 0.0; // maximum execution time of one iteration
                 while(m_runSolve){
                     ++m_state.numberOfPerformedIterations;
                     mpsv::runtime::PerformanceCounter iterationCounter;
                     Iterate(dataIn.staticObstacles);
                     maxIterationTime = std::max(maxIterationTime, iterationCounter.TimeToStart());
-                    if(m_state.outOfNodes || ((maxIterationTime + executionCounter.TimeToStart()) >= maxComputationTime)){
+                    if(m_state.outOfNodes){
+                        dataOut.errorCode = mpsv::error_code::PATHPLANNER_OUT_OF_NODES;
+                        break;
+                    }
+                    if((maxIterationTime + executionCounter.TimeToStart()) >= maxComputationTime){
                         break;
                     }
                 }
             }
-            AssignOutput(dataOut);
+
+            // assign output
+            dataOut.goalReached = m_state.goalReached;
+            dataOut.numberOfPerformedIterations = m_state.numberOfPerformedIterations;
+            dataOut.cost = m_tree[m_state.idxSolutionNode].cost;
+            m_tree.GetPathFromRootToNode(dataOut.path, m_state.idxSolutionNode);
+            dataOut.timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
+
             m_runSolve = false;
         }
 
@@ -190,20 +206,6 @@ class PathPlanner {
         std::vector<int16_t> m_idxNeighbors;                                  // Reserved memory for nearest neighbors.
         std::atomic<bool> m_runSolve{false};                                  // True if a solve operation is running, false if not or is requested to terminate.
         double m_epsDistanceMetric{std::numeric_limits<double>::epsilon()};   // Eps (numeric threshold) for distance metric.
-
-        /**
-         * @brief Assign output data based on the internal @ref m_state and the @ref m_tree.
-         * @param[out] dataOut Output data to be assigned.
-         */
-        void AssignOutput(mpsv::planner::PathPlannerOutput& dataOut) noexcept {
-            dataOut.goalReached = m_state.goalReached;
-            dataOut.isFeasible = m_state.isFeasible;
-            dataOut.outOfNodes = m_state.outOfNodes;
-            dataOut.numberOfPerformedIterations = m_state.numberOfPerformedIterations;
-            dataOut.cost = m_tree[m_state.idxSolutionNode].cost;
-            m_tree.GetPathFromRootToNode(dataOut.path, m_state.idxSolutionNode);
-            dataOut.timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
-        }
 
         /**
          * @brief Set the sampling area.
