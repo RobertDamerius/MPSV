@@ -117,7 +117,7 @@ class PathPlanner {
             if(mpsv::error_code::NONE == dataOut.errorCode){
                 double maxIterationTime = 0.0; // maximum execution time of one iteration
                 while(m_runSolve){
-                    ++m_state.numberOfPerformedIterations;
+                    ++dataOut.numberOfPerformedIterations;
                     mpsv::runtime::PerformanceCounter iterationCounter;
                     Iterate(dataIn, parameter);
                     maxIterationTime = std::max(maxIterationTime, iterationCounter.TimeToStart());
@@ -133,7 +133,6 @@ class PathPlanner {
 
             // assign output
             dataOut.goalReached = m_state.goalReached;
-            dataOut.numberOfPerformedIterations = m_state.numberOfPerformedIterations;
             dataOut.cost = m_tree[m_state.idxSolutionNode].cost;
             m_tree.GetPathFromRootToNode(dataOut.path, m_state.idxSolutionNode);
             dataOut.timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();

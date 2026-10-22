@@ -18,7 +18,6 @@ class PathPlannerState {
         double closestDistanceToGoal;            // The closest distance value to the goal.
         uint32_t sampleIteration;                // Iteration variable that is incremented in each non-goal-sampling step and is at most maxSampleIteration. This value is used to get a new random sample with a specific index.
         uint32_t goalSampleIteration;            // Iteration variable that is incremented in each goal-sampling step and is at most periodGoalSampling. This value is used to get a new random sample with a specific index.
-        uint32_t numberOfPerformedIterations;    // Total number of iterations that have been performed since the latest prepare step.
 
         /**
          * @brief Construct a new state object for the path planner and set default values.
@@ -38,7 +37,6 @@ class PathPlannerState {
             goalReached = false;
             outOfNodes = false;
             goalSampleIteration = 0;
-            numberOfPerformedIterations = 0;
         }
 };
 
