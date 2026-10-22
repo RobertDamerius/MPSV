@@ -28,11 +28,20 @@ class OrientedBox {
         }
 
         /**
+         * @brief Create an oriented box for a given center pose and dimension.
+         * @param[in] centerPose The center pose of the box, given as {x,y,psi}.
+         * @param[in] dimension Dimension of the box along its major and minor axes.
+         */
+        OrientedBox(const std::array<double,3>& centerPose, const std::array<double,2>& dimension) noexcept {
+            Create(centerPose, dimension);
+        }
+
+        /**
          * @brief Create the oriented box for a given center, angle and dimension.
          * @param[in] centerPose The center pose of the box, given as {x,y,psi}. The angle represents the major axis (x) of the box.
          * @param[in] dimension Dimension of the box along the major and minor axes (x,y) of the box.
          */
-        void Create(std::array<double,3> centerPose, std::array<double,2> dimension) noexcept {
+        void Create(const std::array<double,3>& centerPose, const std::array<double,2>& dimension) noexcept {
             m_normal[0] = std::cos(centerPose[2]);
             m_normal[1] = std::sin(centerPose[2]);
             m_dimension = dimension;
@@ -47,7 +56,7 @@ class OrientedBox {
          * @param[in] dimension The dimension of the box given in box frame coordinates {xdim, ydim}. BOTH VALUES MUST BE POSITIVE TO ENSURE A VALID BOX WITH NON-ZERO AREA!
          * @details The normal vector is normalized. If the vector has a length close to zero, a default unit vector {1,0} is set!
          */
-        void Create(std::array<double,2> origin, std::array<double,2> normal, std::array<double,2> dimension) noexcept {
+        void Create(const std::array<double,2>& origin, const std::array<double,2>& normal, const std::array<double,2>& dimension) noexcept {
             constexpr double eps = 100.0 * std::numeric_limits<double>::epsilon();
             m_origin = origin;
             m_normal = {1.0, 0.0};
@@ -68,7 +77,7 @@ class OrientedBox {
          * @param point1 The second focal point, which must contain at least {x,y}.
          * @param boxExtension Absolute values for box extension in longitudinal and lateral box direction. BOTH VALUES MUST BE POSITIVE TO ENSURE A VALID BOX WITH NON-ZERO AREA!
          */
-        template <class T, class U> void CreateFromFocalPoints(const T& point0, const U& point1, std::array<double,2> boxExtension) noexcept {
+        template <class T, class U> void CreateFromFocalPoints(const T& point0, const U& point1, const std::array<double,2>& boxExtension) noexcept {
             static_assert(mpsv::is_vec2<T>::value,"Argument {point0} must be of type std::array<double,N> with N >= 2!");
             static_assert(mpsv::is_vec2<U>::value,"Argument {point1} must be of type std::array<double,N> with N >= 2!");
             constexpr double eps = 100.0 * std::numeric_limits<double>::epsilon();

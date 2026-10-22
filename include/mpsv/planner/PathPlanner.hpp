@@ -155,17 +155,17 @@ class PathPlanner {
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept { m_tree.WriteToFile(file, preString + "tree."); m_costMap.WriteToFile(file, preString + "costMap."); }
 
     protected:
-        mpsv::structures::FixedSizeTreeSE2<Node> m_tree;                      // Tree for path planning.
-        int16_t m_idxSolutionNode{0};                                         // Index to the solution node, which is at least the root node.
-        bool m_goalReached{false};                                            // True if the goal pose is reached from the initial pose.
-        double m_closestDistanceToGoal{std::numeric_limits<double>::infinity()};
-        uint32_t m_sampleIteration{0};
-        uint32_t m_goalSampleIteration{0};
-        mpsv::structures::CostMap m_costMap;                                  // The cost map to be used as additional cost term in the objective function.
-        mpsv::sampler::UniformBoxSamplerSE2 m_boxSampler;                     // The box sampler to be used to draw random samples from SE(2).
-        std::vector<int16_t> m_idxNeighbors;                                  // Reserved memory for nearest neighbors.
-        std::atomic<bool> m_runSolve{false};                                  // True if a solve operation is running, false if not or is requested to terminate.
-        double m_epsDistanceMetric{std::numeric_limits<double>::epsilon()};   // Eps (numeric threshold) for distance metric.
+        mpsv::structures::FixedSizeTreeSE2<Node> m_tree;                           // Tree for path planning.
+        int16_t m_idxSolutionNode{0};                                              // Index to the solution node, which is at least the root node.
+        bool m_goalReached{false};                                                 // True if the goal pose is reached from the initial pose.
+        double m_closestDistanceToGoal{std::numeric_limits<double>::infinity()};   // Closest distance to the goal pose from the current solution node.
+        uint32_t m_sampleIteration{0};                                             // Number of iterations since the last random sample was drawn.
+        uint32_t m_goalSampleIteration{0};                                         // Number of iterations since the last goal sample was drawn.
+        mpsv::structures::CostMap m_costMap;                                       // The cost map to be used as additional cost term in the objective function.
+        mpsv::sampler::UniformBoxSamplerSE2 m_boxSampler;                          // The box sampler to be used to draw random samples from SE(2).
+        std::vector<int16_t> m_idxNeighbors;                                       // Reserved memory for nearest neighbors.
+        std::atomic<bool> m_runSolve{false};                                       // True if a solve operation is running, false if not or is requested to terminate.
+        double m_epsDistanceMetric{std::numeric_limits<double>::epsilon()};        // Eps (numeric threshold) for distance metric.
 
         /**
          * @brief Set the sampling area.
@@ -173,29 +173,22 @@ class PathPlanner {
          * @return The oriented box representing the sampling area.
          */
         mpsv::geometry::OrientedBox SetSamplingArea(const mpsv::planner::PathPlannerInput& dataIn) noexcept {
-            mpsv::geometry::OrientedBox box;
-            box.Create(dataIn.samplingBoxCenterPose, dataIn.samplingBoxDimension);
+            mpsv::geometry::OrientedBox box(dataIn.samplingBoxCenterPose, dataIn.samplingBoxDimension);
             m_boxSampler.SetSize(box);
             return box;
         }
 
         /**
-         * @brief Set absolute numeric limits. This limit is used to check for equal poses.
+         * @brief Set absolute numeric limits based on the size of the sampling area. This limit is used to check for equal poses.
          * @param[in] samplingArea The current sampling area.
          * @param[in] parameter The parameter set for path planning.
          */
         void SetNumericLimits(const mpsv::geometry::OrientedBox& samplingArea, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
             std::array<double,2> dimension = samplingArea.GetDimension();
-            double maxDimension = std::max(dimension[0], dimension[1]);
-
-            // Eps for position and angle
-            double epsPosition = std::numeric_limits<double>::epsilon() * std::max(1.0, maxDimension);
+            double epsPosition = std::numeric_limits<double>::epsilon() * std::max(1.0, std::max(dimension[0], dimension[1]));
             double epsAngle = std::numeric_limits<double>::epsilon() * 6.28318530717959;
-
-            // Eps for distance metric sqrt(dx^2 + dy^2 + (w*dpsi)^2)
             double epsWeightedAngle = std::max(1.0, parameter.metric.weightPsi) * epsAngle;
             m_epsDistanceMetric = std::sqrt(2.0*epsPosition*epsPosition + epsWeightedAngle*epsWeightedAngle);
-
             m_tree.SetNumericLimit(m_epsDistanceMetric);
         }
 
