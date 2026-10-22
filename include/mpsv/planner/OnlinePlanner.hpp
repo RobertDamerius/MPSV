@@ -38,14 +38,13 @@ class OnlinePlanner {
          */
         void Initialize(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples) noexcept {
             Terminate();
-            m_sequentialPlanner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples);
+            m_sequentialPlanner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples);
         }
 
         /**
          * @brief Terminate the online planner. This calls the @ref Reset member function.
          */
         void Terminate(void) noexcept {
-            m_sequentialPlanner.Terminate();
             m_parameter.Clear();
             m_state.Clear();
             Reset();

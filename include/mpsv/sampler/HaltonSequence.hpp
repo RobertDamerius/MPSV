@@ -20,12 +20,11 @@ template<size_t Tdimension> class HaltonSequence {
 
     public:
         /**
-         * @brief Initialize the Halton sequence and build the look-up tables.
-         * @param[in] maxNumSamples Requested maximum number of samples to be used. The value is clamped to the safe maximum.
+         * @brief Generate the Halton sequence and build a look-up table of samples.
+         * @param[in] maxNumSamples Requested maximum number of samples to be generated. The value is clamped to the safe maximum.
          * @param[in] scale Optional scale value for samples. Samples are to be generated in range [0,scale]. Scale defaults to 1.0.
          */
-        void Initialize(size_t maxNumSamples, double scale = 1.0) noexcept {
-            Terminate();
+        void Generate(size_t maxNumSamples, double scale = 1.0) noexcept {
             maxNumSamples = std::clamp(maxNumSamples, size_t{1}, m_samples.max_size());
             m_samples.resize(maxNumSamples);
             constexpr size_t primes[] = {2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53};
@@ -49,17 +48,9 @@ template<size_t Tdimension> class HaltonSequence {
         }
 
         /**
-         * @brief Terminate the halton sequence. This removes all precalculated samples.
-         */
-        void Terminate(void) noexcept {
-            m_samples.clear();
-            m_samples.shrink_to_fit();
-        }
-
-        /**
          * @brief Get a complete sample.
          * @param[in] idxSample Index of the sample.
-         * @return The sample values in range [0,scale], where scale is set by the @ref Initialize member function.
+         * @return The sample values in range [0,scale], where scale is set by the @ref Generate member function.
          */
         [[nodiscard]] std::array<double, Tdimension> Sample(size_t idxSample) const noexcept {
             std::array<double, Tdimension> sample{};

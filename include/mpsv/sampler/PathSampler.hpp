@@ -18,11 +18,11 @@ namespace sampler {
 class PathSampler {
     public:
         /**
-         * @brief Initialize the path sampler and build the look-up-tables.
-         * @param[in] maxNumSamples Maximum number of samples to be used.
+         * @brief Generate samples for the path sampler and build the look-up-tables.
+         * @param[in] maxNumSamples Maximum number of samples to be generated.
          */
-        void Initialize(size_t maxNumSamples) noexcept {
-            m_haltonSequence.Initialize(maxNumSamples);
+        void Generate(size_t maxNumSamples) noexcept {
+            m_haltonSequence.Generate(maxNumSamples);
         }
 
         /**

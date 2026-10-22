@@ -30,8 +30,8 @@ namespace planner {
 
 
 /**
- * @brief The motion planning algorithm. Before solving motion planning problems, initialize the planner by calling the @ref Initialize member function.
- * Then apply a parameter set by calling @ref ApplyParameterSet. The internal iteration loop of the @ref Solve operation is interrupted if @ref Interrupt is called.
+ * @brief The motion planning algorithm. The planner is ready to solve problems after construction and can be reconfigured with @ref Reconfigure.
+ * The internal iteration loop of the @ref Solve operation is interrupted if @ref Interrupt is called.
  */
 class MotionPlanner {
     private:
@@ -39,42 +39,33 @@ class MotionPlanner {
 
     public:
         /**
-         * @brief Construct an motion planner and set default values.
+         * @brief Construct a motion planner with the specified capacities.
+         * @param[in] maxNumNodes Maximum number of nodes to be used in the tree. The default value is 200.
+         * @param[in] maxNumSamples Maximum number of random samples to be generated in advance. The default value is 100000.
          */
-        MotionPlanner() noexcept { Initialize(1, 1); }
-
-        /**
-         * @brief Destroy the motion planner.
-         */
-        ~MotionPlanner() noexcept { Terminate(); }
-
-        /**
-         * @brief Initialize or re-initialize the motion planner.
-         * @param[in] maxNumNodes Maximum number of nodes to be used in the tree.
-         * @param[in] maxNumSamples Maximum number of random samples to be generated in advance.
-         */
-        void Initialize(int16_t maxNumNodes, uint32_t maxNumSamples) noexcept {
-            Terminate();
-            m_idxNeighbors.reserve(maxNumNodes);
-            m_tree.Clear(maxNumNodes);
-            m_pathSampler.Initialize(maxNumSamples);
+        explicit MotionPlanner(int16_t maxNumNodes = 200, uint32_t maxNumSamples = 100000) noexcept {
+            Reconfigure(maxNumNodes, maxNumSamples);
         }
 
         /**
-         * @brief Terminate the motion planner. All containers and parameters are cleared. Call this function, if the motion planner is no longer needed.
+         * @brief Reconfigure the motion planner and reset its internal state.
+         * @param[in] maxNumNodes Maximum number of nodes to be used in the tree.
+         * @param[in] maxNumSamples Maximum number of random samples to be generated in advance.
          */
-        void Terminate(void) noexcept {
+        void Reconfigure(int16_t maxNumNodes, uint32_t maxNumSamples) noexcept {
             m_runSolve = false;
-            m_tree.Clear();
+            m_tree.Resize(maxNumNodes);
+            m_pathSampler.Generate(maxNumSamples);
             m_costMap.Clear();
+            m_idxNeighbors.resize(maxNumNodes);
+            m_idxNeighbors.shrink_to_fit();
+            m_idxNeighbors.clear();
+            m_epsDistanceMetric = std::numeric_limits<double>::epsilon();
             m_state.Clear();
             m_parameter.Clear();
             m_regionOfAttraction.Clear();
             m_vehicleSimulator.ClearController();
             m_vehicleSimulator.ClearModel();
-            m_idxNeighbors.clear();
-            m_idxNeighbors.shrink_to_fit();
-            m_epsDistanceMetric = std::numeric_limits<double>::epsilon();
         }
 
         /**

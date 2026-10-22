@@ -20,24 +20,14 @@ namespace sampler {
 class UniformBoxSamplerSE2 {
     public:
         /**
-         * @brief Initialize the uniform box sampler.
-         * @param[in] maxNumSamples Maximum number of samples to be used.
+         * @brief Generate samples for the uniform box sampler.
+         * @param[in] maxNumSamples Maximum number of samples to be generated.
          */
-        void Initialize(size_t maxNumSamples) noexcept {
+        void Generate(size_t maxNumSamples) noexcept {
             m_R[0] = m_R[3] = m_invR[0] = m_invR[3] = 1.0;
             m_R[1] = m_R[2] = m_invR[1] = m_invR[2] = 0.0;
             m_offset[0] = m_offset[1] = 0.0;
-            m_haltonSequence.Initialize(maxNumSamples);
-        }
-
-        /**
-         * @brief Terminate the uniform box sampler. All precalculated samples are removed and internal values are set to default values.
-         */
-        void Terminate(void) noexcept {
-            m_haltonSequence.Terminate();
-            m_R[0] = m_R[3] = m_invR[0] = m_invR[3] = 1.0;
-            m_R[1] = m_R[2] = m_invR[1] = m_invR[2] = 0.0;
-            m_offset[0] = m_offset[1] = 0.0;
+            m_haltonSequence.Generate(maxNumSamples);
         }
 
         /**

@@ -2,11 +2,10 @@
 
 
 void MPSV_WrapperPathPlanner::Initialize(int16_t maxNumNodes, uint32_t maxNumSamples){
-    m_pathPlanner.Initialize(maxNumNodes, maxNumSamples);
+    m_pathPlanner.Reconfigure(maxNumNodes, maxNumSamples);
 }
 
 void MPSV_WrapperPathPlanner::Terminate(void){
-    m_pathPlanner.Terminate();
     m_maxComputationTime = 0.0;
 }
 

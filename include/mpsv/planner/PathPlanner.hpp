@@ -25,7 +25,7 @@ namespace planner {
 
 
 /**
- * @brief The path planning algorithm. Before solving path planning problems, initialize the planner by calling the @ref Initialize member function.
+ * @brief The path planning algorithm. The planner is ready to solve problems after construction and can be reconfigured with @ref Reconfigure.
  * The internal iteration loop of the @ref Solve operation is interrupted if @ref Interrupt is called.
  */
 class PathPlanner {
@@ -34,37 +34,27 @@ class PathPlanner {
 
     public:
         /**
-         * @brief Construct a path planner and set default values.
+         * @brief Construct a path planner with the specified capacities.
+         * @param[in] maxNumNodes Maximum number of nodes to be used in the tree. The default value is 200.
+         * @param[in] maxNumSamples Maximum number of random samples to be generated in advance. The default value is 100000.
          */
-        PathPlanner() noexcept { Initialize(1, 1); }
-
-        /**
-         * @brief Destroy the path planner.
-         */
-        ~PathPlanner() noexcept { Terminate(); }
-
-        /**
-         * @brief Initialize or re-initialize the path planner.
-         * @param[in] maxNumNodes Maximum number of nodes to be used in the tree.
-         * @param[in] maxNumSamples Maximum number of random samples to be generated in advance.
-         */
-        void Initialize(int16_t maxNumNodes, uint32_t maxNumSamples) noexcept {
-            Terminate();
-            m_tree.Clear(maxNumNodes);
-            m_boxSampler.Initialize(maxNumSamples);
-            m_idxNeighbors.reserve(maxNumNodes);
+        explicit PathPlanner(int16_t maxNumNodes = 200, uint32_t maxNumSamples = 100000) noexcept {
+            Reconfigure(maxNumNodes, maxNumSamples);
         }
 
         /**
-         * @brief Terminate the path planner.
+         * @brief Reconfigure the path planner and reset its internal state.
+         * @param[in] maxNumNodes Maximum number of nodes to be used in the tree.
+         * @param[in] maxNumSamples Maximum number of random samples to be generated in advance.
          */
-        void Terminate(void) noexcept {
+        void Reconfigure(int16_t maxNumNodes, uint32_t maxNumSamples) noexcept {
             m_runSolve = false;
-            m_tree.Clear();
-            m_boxSampler.Terminate();
+            m_tree.Resize(maxNumNodes);
+            m_boxSampler.Generate(maxNumSamples);
             m_costMap.Clear();
-            m_idxNeighbors.clear();
+            m_idxNeighbors.resize(maxNumNodes);
             m_idxNeighbors.shrink_to_fit();
+            m_idxNeighbors.clear();
             m_sampleIteration = 0;
             m_goalSampleIteration = 0;
             m_idxSolutionNode = 0;

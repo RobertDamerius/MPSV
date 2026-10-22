@@ -59,30 +59,38 @@ template <class Tnode> class FixedSizeTreeSE2 {
         /**
          * @brief Construct a new tree with a fixed number of SE(2) nodes.
          */
-        FixedSizeTreeSE2(){ Clear(); SetNumericLimit(0.0); }
+        FixedSizeTreeSE2(){ Resize(1); SetNumericLimit(0.0); }
 
         /**
-         * @brief Clear the tree to an empty graph and resize the internal storage (at least one node).
-         * @param[in] maxNumNodes Maximum number of nodes to be stored in the tree.
+         * @brief Resize the internal storage and clear the tree to an empty graph.
+         * @param[in] maxNumNodes Maximum number of nodes to be stored in the tree. The value is clamped to a minimum of 1.
          */
-        void Clear(int16_t maxNumNodes = 1) noexcept {
+        void Resize(int16_t maxNumNodes) noexcept {
             maxNumNodes = std::max<int16_t>(1, maxNumNodes);
+            m_freeIndices.resize(maxNumNodes);
+            m_freeIndices.shrink_to_fit();
             m_freeIndices.clear();
-            m_freeIndices.reserve(maxNumNodes);
             for(int16_t i = maxNumNodes - 1; i >= 0; --i){
                 m_freeIndices.push_back(i);
             }
+            m_activeIndices.resize(maxNumNodes);
+            m_activeIndices.shrink_to_fit();
             m_activeIndices.clear();
-            m_activeIndices.reserve(maxNumNodes);
+            m_leafIndices.resize(maxNumNodes);
+            m_leafIndices.shrink_to_fit();
             m_leafIndices.clear();
-            m_leafIndices.reserve(maxNumNodes);
+            m_traversalStack.resize(maxNumNodes);
+            m_traversalStack.shrink_to_fit();
             m_traversalStack.clear();
-            m_traversalStack.reserve(maxNumNodes);
             m_nodes.resize(maxNumNodes);
+            m_nodes.shrink_to_fit();
             m_rootNodeIndex = -1;
             m_lutR3.resize(maxNumNodes);
+            m_lutR3.shrink_to_fit();
             m_lutOptimalRadius.resize(maxNumNodes);
+            m_lutOptimalRadius.shrink_to_fit();
             m_lutRandom.resize(maxNumNodes);
+            m_lutRandom.shrink_to_fit();
             std::mt19937_64 gen(0);
             std::uniform_real_distribution<double> dist(0.0, 1.0);
             for(int16_t n = 0; n < maxNumNodes; ++n){

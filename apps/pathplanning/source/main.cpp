@@ -3,11 +3,11 @@
 
 
 int main(int, char**){
-    // construct and initialize the path planner
+    // construct and reconfigure the path planner
     mpsv::planner::PathPlanner planner;
     constexpr int16_t maxNumNodes = 200;
     constexpr uint32_t maxNumSamples = 1000000;
-    planner.Initialize(maxNumNodes, maxNumSamples);
+    planner.Reconfigure(maxNumNodes, maxNumSamples);
 
     // get parameters for path planning
     mpsv::planner::PathPlannerParameterSet parameter = example::GetParameterSet();
@@ -35,7 +35,5 @@ int main(int, char**){
         std::cout << "    x,y,psi={" << pose[0] << ", " << pose[1] << ", " << pose[2] << "}\n";
     }
 
-    // terminate the planner
-    planner.Terminate();
     return 0;
 }

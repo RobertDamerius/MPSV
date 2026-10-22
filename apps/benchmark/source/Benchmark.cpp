@@ -100,7 +100,7 @@ void Benchmark::GeneratePolygons(const size_t numPolygons){
 
     // Initialize a sampler for random numbers in range [{0,0}, {100,100}].
     HaltonSequence<2> sampler;
-    sampler.Initialize(3 * numPolygons, 100.0);
+    sampler.Generate(3 * numPolygons, 100.0);
 
     // Generate triangles
     for(size_t p = 0, k = 0; p < numPolygons; ++p){
@@ -112,7 +112,6 @@ void Benchmark::GeneratePolygons(const size_t numPolygons){
             fprintf(stderr,"ERROR: Failed to build convex polygon for test set!\n");
         }
     }
-    sampler.Terminate();
 }
 
 void Benchmark::InitializeVehicleSimulator(void){
@@ -266,19 +265,16 @@ uint32_t Benchmark::PathPlanning(void){
     dataIn.samplingBoxDimension  = {173.3141, 160.0};
     GenerateObstaclesForPlanning(dataIn.staticObstacles);
 
-    // Initialize planner
-    planner.Initialize(maxNumNodes, maxNumSamples);
+    // Reconfigure planner
+    planner.Reconfigure(maxNumNodes, maxNumSamples);
     if(mpsv::error_code::NONE != dataIn.IsValid()){
         fprintf(stderr,"ERROR: Input data for the path planner is invalid!\n");
-        planner.Terminate();
         return 0;
     }
 
     // Run actual path planning
     planner.Solve(dataOut, dataIn, parameterSet, 1.0, true);
 
-    // Terminate the planner
-    planner.Terminate();
     return dataOut.numberOfPerformedIterations;
 }
 
@@ -341,24 +337,19 @@ uint32_t Benchmark::MotionPlanning(void){
     dataIn.initialPath.push_back({54.4740,-8.8271,-0.1608});
     GenerateObstaclesForPlanning(dataIn.staticObstacles);
 
-    // Initialize planner and apply parameters
-    planner.Initialize(maxNumNodes, maxNumSamples);
+    // Reconfigure planner and apply parameters
+    planner.Reconfigure(maxNumNodes, maxNumSamples);
     if(mpsv::error_code::NONE != planner.ApplyParameterSet(parameterSet)){
         fprintf(stderr,"ERROR: Failed to set parameters for the motion planner!\n");
-        planner.Terminate();
         return 0;
     }
     if(mpsv::error_code::NONE != dataIn.IsValid()){
         fprintf(stderr,"ERROR: Input data for the motion planner is invalid!\n");
-        planner.Terminate();
         return 0;
     }
 
     // Run actual motion planning
     planner.Solve(dataOut, dataIn, 1.0, 0.0, false);
-
-    // Terminate the planner
-    planner.Terminate();
     return dataOut.numberOfPerformedIterations;
 }
 

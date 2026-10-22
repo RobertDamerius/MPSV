@@ -33,23 +33,15 @@ namespace planner {
 class SequentialPlanner {
     public:
         /**
-         * @brief Initialize or re-initialize the sequential planner.
+         * @brief Reconfigure the sequential planner with the specified capacities.
          * @param[in] pathMaxNumNodes Maximum number of nodes to be used in the tree (path planner).
          * @param[in] pathMaxNumSamples Maximum number of random samples to be generated in advance (path planner).
          * @param[in] motionMaxNumNodes Maximum number of nodes to be used in the tree (motion planner).
          * @param[in] motionMaxNumSamples Maximum number of random samples to be generated in advance (motion planner).
          */
-        void Initialize(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples) noexcept {
-            m_pathPlanner.Initialize(pathMaxNumNodes, pathMaxNumSamples);
-            m_motionPlanner.Initialize(motionMaxNumNodes, motionMaxNumSamples);
-        }
-
-        /**
-         * @brief Terminate the sequential planner. This also resets the interrupt flags to false.
-         */
-        void Terminate(void) noexcept {
-            m_pathPlanner.Terminate();
-            m_motionPlanner.Terminate();
+        void Reconfigure(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples) noexcept {
+            m_pathPlanner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples);
+            m_motionPlanner.Reconfigure(motionMaxNumNodes, motionMaxNumSamples);
         }
 
         /**

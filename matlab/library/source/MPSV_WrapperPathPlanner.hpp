@@ -79,7 +79,7 @@ class MPSV_WrapperPathPlanner {
         void Initialize(int16_t maxNumNodes, uint32_t maxNumSamples);
 
         /**
-         * @brief Terminate the wrapper. The memory for the internal path planner is freed.
+         * @brief Terminate the wrapper. Internal planner memory is released when the wrapper is destroyed.
          */
         void Terminate(void);
 
