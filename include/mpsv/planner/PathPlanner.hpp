@@ -368,12 +368,9 @@ class PathPlanner {
 
                     // Check if the new sample indicates a solution
                     double distanceToGoal = mpsv::math::DistanceMetricSE2(m_tree[idxAddedSample].pose, dataIn.finalPose, parameter.metric.weightPsi);
-                    if(distanceToGoal < m_epsDistanceMetric){
-                        m_goalReached = true;
-                        m_closestDistanceToGoal = distanceToGoal;
-                        m_idxSolutionNode = idxAddedSample;
-                    }
-                    if(distanceToGoal < m_closestDistanceToGoal){
+                    bool reachedGoal = distanceToGoal < m_epsDistanceMetric;
+                    if(reachedGoal || (distanceToGoal < m_closestDistanceToGoal)){
+                        m_goalReached |= reachedGoal;
                         m_closestDistanceToGoal = distanceToGoal;
                         m_idxSolutionNode = idxAddedSample;
                     }
