@@ -177,19 +177,19 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @param[in] node The node for which to find the nearest neighbors.
          * @param[in] radius The radius of the sphere according to the distance metric sqrt(x^2 + y^2 + (weightPsi*psi)^2). Use @ref GetOptimalRadius to get the optimal radius.
          * @param[in] metricWeightPsi Weighting for psi in the metric distance function.
-         * @return True if the given node value already exists in the tree (distance metric is less than or equal to the numeric limit set via @ref SetNumericLimit), false otherwise.
+         * @return False if the given node value already exists in the tree (distance metric is less than or equal to the numeric limit set via @ref SetNumericLimit), true otherwise.
          */
         [[nodiscard]] bool FindNearestNeighbors(std::vector<int16_t>& idxNeighbors, const Tnode& node, const double radius, const double metricWeightPsi) noexcept {
             idxNeighbors.clear();
-            bool result = false;
+            bool tooClose = false;
             for(auto&& i : m_activeIndices){
                 double R = mpsv::math::DistanceMetricSE2(m_nodes[i].pose, node.pose, metricWeightPsi);
                 if(R <= radius){
                     idxNeighbors.push_back(i);
                 }
-                result |= (R <= m_epsDistanceMetric);
+                tooClose |= (R <= m_epsDistanceMetric);
             }
-            return result;
+            return !tooClose;
         }
 
         /**

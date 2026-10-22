@@ -64,7 +64,6 @@ class PathPlanner {
             m_costMap.Clear();
             m_idxSolutionNode = 0;
             m_goalReached = false;
-            m_outOfNodes = false;
             m_closestDistanceToGoal = std::numeric_limits<double>::infinity();
             m_sampleIteration = 0;
             m_goalSampleIteration = 0;
@@ -102,7 +101,6 @@ class PathPlanner {
                     m_sampleIteration = 0;
                 }
                 m_goalReached = false;
-                m_outOfNodes = false;
                 m_goalSampleIteration = 0;
                 mpsv::geometry::OrientedBox samplingArea = SetSamplingArea(dataIn);
                 SetNumericLimits(samplingArea, parameter);
@@ -126,19 +124,12 @@ class PathPlanner {
 
             // Solve
             if(mpsv::error_code::NONE == dataOut.errorCode){
-                double maxIterationTime = 0.0; // maximum execution time of one iteration
-                while(m_runSolve){
-                    ++dataOut.numberOfPerformedIterations;
+                double maxIterationTime = 0.0;
+                while(m_runSolve && (mpsv::error_code::NONE == dataOut.errorCode) && ((maxIterationTime + executionCounter.TimeToStart()) < maxComputationTime)){
                     mpsv::runtime::PerformanceCounter iterationCounter;
-                    Iterate(dataIn, parameter);
+                    dataOut.errorCode = Iterate(dataIn, parameter);
+                    dataOut.numberOfPerformedIterations++;
                     maxIterationTime = std::max(maxIterationTime, iterationCounter.TimeToStart());
-                    if(m_outOfNodes){
-                        dataOut.errorCode = mpsv::error_code::PATHPLANNER_OUT_OF_NODES;
-                        break;
-                    }
-                    if((maxIterationTime + executionCounter.TimeToStart()) >= maxComputationTime){
-                        break;
-                    }
                 }
             }
 
@@ -167,7 +158,6 @@ class PathPlanner {
         mpsv::structures::FixedSizeTreeSE2<Node> m_tree;                      // Tree for path planning.
         int16_t m_idxSolutionNode{0};                                         // Index to the solution node, which is at least the root node.
         bool m_goalReached{false};                                            // True if the goal pose is reached from the initial pose.
-        bool m_outOfNodes{false};                                             // True if no node can be removed to make room for a new node.
         double m_closestDistanceToGoal{std::numeric_limits<double>::infinity()};
         uint32_t m_sampleIteration{0};
         uint32_t m_goalSampleIteration{0};
@@ -344,7 +334,6 @@ class PathPlanner {
             // Step 5: Find closest node to new goal
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             // Set default state values
-            m_outOfNodes = false;
             m_closestDistanceToGoal = std::numeric_limits<double>::infinity();
             m_idxSolutionNode = 0;
 
@@ -368,36 +357,36 @@ class PathPlanner {
          * @brief Do one iteration of the RRT* path planning algorithm.
          * @param[in] dataIn The input data containing the path planning problem.
          * @param[in] parameter The parameter set for path planning.
+         * @return mpsv::error_code::NONE if the iteration was successful, a non-zero error code otherwise.
          */
-        void Iterate(const mpsv::planner::PathPlannerInput& dataIn, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
-            if((m_outOfNodes = (m_tree.IsFull() && !m_tree.RemoveRandomLeaf(m_idxSolutionNode)))){
-                return; // no more nodes available in the tree and no random leaf node could be removed
+        mpsv::error_code Iterate(const mpsv::planner::PathPlannerInput& dataIn, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
+            if(m_tree.IsFull() && !m_tree.RemoveRandomLeaf(m_idxSolutionNode)){
+                return mpsv::error_code::PATHPLANNER_OUT_OF_NODES; // no more nodes available in the tree and no random leaf node could be removed
             }
             Node randomSample = Sampling(dataIn.finalPose, parameter);
             int16_t idxNearest = m_tree.FindNearestNode(randomSample, parameter.metric.weightPsi);
             Node& nearestSample = m_tree[idxNearest];
             auto [success, newSample] = LocalPlanning(nearestSample, randomSample, dataIn.staticObstacles, parameter);
-            if(!success){
-                return; // local planning failed (e.g. collision)
-            }
-            if(m_tree.FindNearestNeighbors(m_idxNeighbors, newSample, m_tree.GetOptimalRadius(), parameter.metric.weightPsi)){
-                return; // value of the new sample already exists
-            }
-            int16_t idxBestParent = FindBestParent(newSample, idxNearest, dataIn.staticObstacles, parameter); // updates newSample.cost
-            int16_t idxAddedSample = m_tree.Add(idxBestParent, newSample);
-            Rewire(idxAddedSample, dataIn.staticObstacles, parameter);
+            if(success){
+                if(m_tree.FindNearestNeighbors(m_idxNeighbors, newSample, m_tree.GetOptimalRadius(), parameter.metric.weightPsi)){
+                    int16_t idxBestParent = FindBestParent(newSample, idxNearest, dataIn.staticObstacles, parameter); // updates newSample.cost
+                    int16_t idxAddedSample = m_tree.Add(idxBestParent, newSample);
+                    Rewire(idxAddedSample, dataIn.staticObstacles, parameter);
 
-            // Check if the new sample indicates a solution
-            double distanceToGoal = mpsv::math::DistanceMetricSE2(m_tree[idxAddedSample].pose, dataIn.finalPose, parameter.metric.weightPsi);
-            if(distanceToGoal < m_epsDistanceMetric){
-                m_goalReached = true;
-                m_closestDistanceToGoal = distanceToGoal;
-                m_idxSolutionNode = idxAddedSample;
+                    // Check if the new sample indicates a solution
+                    double distanceToGoal = mpsv::math::DistanceMetricSE2(m_tree[idxAddedSample].pose, dataIn.finalPose, parameter.metric.weightPsi);
+                    if(distanceToGoal < m_epsDistanceMetric){
+                        m_goalReached = true;
+                        m_closestDistanceToGoal = distanceToGoal;
+                        m_idxSolutionNode = idxAddedSample;
+                    }
+                    if(distanceToGoal < m_closestDistanceToGoal){
+                        m_closestDistanceToGoal = distanceToGoal;
+                        m_idxSolutionNode = idxAddedSample;
+                    }
+                }
             }
-            if(distanceToGoal < m_closestDistanceToGoal){
-                m_closestDistanceToGoal = distanceToGoal;
-                m_idxSolutionNode = idxAddedSample;
-            }
+            return mpsv::error_code::NONE;
         }
 
         /**
@@ -418,7 +407,7 @@ class PathPlanner {
         }
 
         /**
-         * @brief Perform local planning from a source node to a destination node and create a resulting node.
+         * @brief Perform local planning from a source node to a destination node and create a resulting node based on a limited step size.
          * @param[in] source The source node from which to start the local planning.
          * @param[in] destination The destination node to which to steer to from the source node.
          * @param[in] staticObstacles The set of static obstacles to be used for collision checks.
@@ -428,11 +417,10 @@ class PathPlanner {
          * <1> The resulting sample of local planning.
          */
         std::tuple<bool, Node> LocalPlanning(const Node& source, const Node& destination, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
-            // Output tuple containing success and newSample
             std::tuple<bool, Node> result{};
             auto& [success, newSample] = result;
 
-            // Limit direction to maximum step size
+            // Limit step size to optimal radius of the tree and calculate resulting node
             std::array<double, 3> direction = mpsv::math::PoseDifference(destination.pose, source.pose);
             double z = parameter.metric.weightPsi * direction[2];
             double r = std::sqrt(direction[0]*direction[0] + direction[1]*direction[1] + z*z);
@@ -444,8 +432,6 @@ class PathPlanner {
                 direction[1] *= radius;
                 direction[2] *= radius;
             }
-
-            // Resulting node is source + limited direction
             newSample.pose[0] = source.pose[0] + direction[0];
             newSample.pose[1] = source.pose[1] + direction[1];
             newSample.pose[2] = mpsv::math::SymmetricalAngle(source.pose[2] + direction[2]);

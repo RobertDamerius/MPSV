@@ -408,7 +408,7 @@ class MotionPlanner {
 
             // Get near vertices (neighbors of newSample)
             double radius = m_tree.GetOptimalRadius();
-            if(m_tree.FindNearestNeighbors(m_idxNeighbors, newSample, radius, m_parameter.metric.weightPsi)){
+            if(!m_tree.FindNearestNeighbors(m_idxNeighbors, newSample, radius, m_parameter.metric.weightPsi)){
                 return; // if the value of the new sample already exists, return
             }
 
