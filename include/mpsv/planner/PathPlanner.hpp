@@ -196,32 +196,25 @@ class PathPlanner {
          * @param[in] parameter The parameter set for path planning.
          */
         void BuildCostMap(mpsv::geometry::OrientedBox samplingArea, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
-            // The range must be at least the range of the sampling box. This box is further extended by the maximum distance of skeletal points for
-            // cost map evaluation and by some safety threshold of two more cells.
-            constexpr size_t maxNumCells = 125000000; // limit to about 1 GB
+            constexpr size_t maxNumCells = 8192 * 8192;
             double maxSekeletalPointDistance = 0.0;
             for(auto&& p : parameter.geometry.skeletalPoints){
                 maxSekeletalPointDistance = std::max(maxSekeletalPointDistance, std::sqrt(p[0]*p[0] + p[1]*p[1]));
             }
-            double additionalBoxExtension = maxSekeletalPointDistance + 2.0 * parameter.costMap.resolution;
-            samplingArea.Extend(additionalBoxExtension);
+            samplingArea.Extend(maxSekeletalPointDistance + 2.0 * parameter.costMap.resolution); // extend by the maximum distance of skeletal points and two more cells as safety threshold
             mpsv::structures::CostMapArgument args(parameter.costMap.distanceScale, parameter.costMap.distanceDecay, staticObstacles);
             m_costMap.Build(samplingArea, parameter.costMap.resolution, parameter.costMap.modBreakpoints, args, maxNumCells);
         }
 
         /**
          * @brief Warm start the path planner by transforming the tree to a new origin and connecting the initial pose with the old solution path.
-         * @param[in] dataIn The input data containing the path planning problem.
-         * @param[in] parameter The parameter set for path planning.
+         * @param[in] dataIn The input data containing the new path planning problem.
+         * @param[in] parameter The parameter set for the new path planning.
          * @return True if warm start was successful, false otherwise. If this method fails, a cold start must be performed.
          */
         [[nodiscard]] bool WarmStart(const mpsv::planner::PathPlannerInput& dataIn, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
-            // Step 1: Transform tree to new origin
             m_tree.TransformToNewOrigin(dataIn.originOldToNew);
 
-            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            // Step 2: Connect initial pose with old solution path
-            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             // Get the current solution branch
             std::vector<int16_t> idxSolutionPathReverse;
             int16_t node = m_idxSolutionNode;
@@ -229,9 +222,7 @@ class PathPlanner {
                 idxSolutionPathReverse.push_back(node);
                 node = m_tree[node].iParent;
             }
-
-            // If there's no path (only one node or less), then we can make a cold start
-            if(idxSolutionPathReverse.size() <= 1) return false;
+            if(idxSolutionPathReverse.size() <= 1) return false; // too few nodes: cold start
 
             // Calculate the cummulative cost for all nodes along the given solution path based on the updated costmap
             // idxSolutionPathReverse starts with the solution node and ends with the root node.
@@ -263,22 +254,13 @@ class PathPlanner {
                     }
                 }
             }
+            if(idxBestConnection < 0) return false; // no connection found: cold start
 
-            // If no connection could be found, then we can make a cold start
-            if(idxBestConnection < 0) return false;
-
-
-            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            // Step 3: Change the root of the tree
-            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             // The tree starts from initialPose and connects to idxBestConnection
             int16_t idxRoot = m_tree.ChangeRoot(dataIn.initialPose, idxBestConnection, parameter.metric.weightPsi);
             if(idxRoot < 0) return false;
 
-
-            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            // Step 4: Check feasibility and recalculate cost of all edges and prune the tree (feasible if no collision and inside new sampling area)
-            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            // Check feasibility and recalculate cost of all edges and prune the tree (feasible if no collision and inside new sampling area)
             std::vector<int16_t> traversalStack;
             traversalStack.push_back(idxRoot);
             m_tree[idxRoot].cost = 0.0;
@@ -306,15 +288,9 @@ class PathPlanner {
                 }
             }
 
-
-            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            // Step 5: Find closest node to new goal
-            // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            // Set default state values
+            // Find node with closest distance to new goal
             m_closestDistanceToGoal = std::numeric_limits<double>::infinity();
             m_idxSolutionNode = 0;
-
-            // Find closest distance to goal
             const std::vector<int16_t>& indices = m_tree.GetActiveIndices();
             double distance;
             for(auto&& i : indices){
@@ -324,7 +300,6 @@ class PathPlanner {
                     m_idxSolutionNode = i;
                 }
             }
-
             return true;
         }
 
