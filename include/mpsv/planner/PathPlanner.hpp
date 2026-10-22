@@ -50,9 +50,9 @@ class PathPlanner {
          */
         void Initialize(int16_t maxNumNodes, uint32_t maxNumSamples) noexcept {
             Terminate();
-            m_idxNeighbors.reserve(maxNumNodes);
             m_tree.Clear(maxNumNodes);
             m_boxSampler.Initialize(maxNumSamples);
+            m_idxNeighbors.reserve(maxNumNodes);
         }
 
         /**
@@ -61,15 +61,14 @@ class PathPlanner {
         void Terminate(void) noexcept {
             m_runSolve = false;
             m_tree.Clear();
-            m_costMap.Clear();
-            m_idxSolutionNode = 0;
-            m_goalReached = false;
-            m_closestDistanceToGoal = std::numeric_limits<double>::infinity();
-            m_sampleIteration = 0;
-            m_goalSampleIteration = 0;
             m_boxSampler.Terminate();
+            m_costMap.Clear();
             m_idxNeighbors.clear();
             m_idxNeighbors.shrink_to_fit();
+            m_sampleIteration = 0;
+            m_goalSampleIteration = 0;
+            m_idxSolutionNode = 0;
+            m_closestDistanceToGoal = std::numeric_limits<double>::infinity();
             m_epsDistanceMetric = std::numeric_limits<double>::epsilon();
         }
 
@@ -100,7 +99,6 @@ class PathPlanner {
                     m_closestDistanceToGoal = std::numeric_limits<double>::infinity();
                     m_sampleIteration = 0;
                 }
-                m_goalReached = false;
                 m_goalSampleIteration = 0;
                 mpsv::geometry::OrientedBox samplingArea = SetSamplingArea(dataIn);
                 SetNumericLimits(samplingArea, parameter);
@@ -111,13 +109,11 @@ class PathPlanner {
                     dataOut.errorCode = mpsv::error_code::PATHPLANNER_INITIAL_POSE_COLLISION;
                     m_idxSolutionNode = m_tree.Reset(dataIn.initialPose);
                     m_closestDistanceToGoal = mpsv::math::DistanceMetricSE2(dataIn.initialPose, dataIn.finalPose, parameter.metric.weightPsi);
-                    m_goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
                 }
                 else{
                     if(forceColdStart || !WarmStart(dataIn, parameter)){
                         m_idxSolutionNode = m_tree.Reset(dataIn.initialPose);
                         m_closestDistanceToGoal = mpsv::math::DistanceMetricSE2(dataIn.initialPose, dataIn.finalPose, parameter.metric.weightPsi);
-                        m_goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
                     }
                 }
             }
@@ -134,7 +130,7 @@ class PathPlanner {
             }
 
             // assign output
-            dataOut.goalReached = m_goalReached;
+            dataOut.goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
             dataOut.cost = m_tree[m_idxSolutionNode].cost;
             m_tree.GetPathFromRootToNode(dataOut.path, m_idxSolutionNode);
             dataOut.timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
@@ -156,15 +152,14 @@ class PathPlanner {
 
     protected:
         mpsv::structures::FixedSizeTreeSE2<Node> m_tree;                           // Tree for path planning.
-        int16_t m_idxSolutionNode{0};                                              // Index to the solution node, which is at least the root node.
-        bool m_goalReached{false};                                                 // True if the goal pose is reached from the initial pose.
-        double m_closestDistanceToGoal{std::numeric_limits<double>::infinity()};   // Closest distance to the goal pose from the current solution node.
-        uint32_t m_sampleIteration{0};                                             // Number of iterations since the last random sample was drawn.
-        uint32_t m_goalSampleIteration{0};                                         // Number of iterations since the last goal sample was drawn.
-        mpsv::structures::CostMap m_costMap;                                       // The cost map to be used as additional cost term in the objective function.
         mpsv::sampler::UniformBoxSamplerSE2 m_boxSampler;                          // The box sampler to be used to draw random samples from SE(2).
+        mpsv::structures::CostMap m_costMap;                                       // The cost map to be used as additional cost term in the objective function.
         std::vector<int16_t> m_idxNeighbors;                                       // Reserved memory for nearest neighbors.
         std::atomic<bool> m_runSolve{false};                                       // True if a solve operation is running, false if not or is requested to terminate.
+        uint32_t m_sampleIteration{0};                                             // Number of iterations since the last random sample was drawn.
+        uint32_t m_goalSampleIteration{0};                                         // Number of iterations since the last goal sample was drawn.
+        int16_t m_idxSolutionNode{0};                                              // Index to the solution node.
+        double m_closestDistanceToGoal{std::numeric_limits<double>::infinity()};   // Closest distance to the goal pose from the current solution node.
         double m_epsDistanceMetric{std::numeric_limits<double>::epsilon()};        // Eps (numeric threshold) for distance metric.
 
         /**
@@ -199,8 +194,7 @@ class PathPlanner {
          * @param[in] parameter The parameter set for path planning.
          */
         void RemoveObstaclesOutsideAreaOfInterest(std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, mpsv::geometry::OrientedBox samplingArea, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
-            double boxExtension = parameter.geometry.vehicleShape.GetFarthestVertexDistance();
-            samplingArea.Extend(boxExtension);
+            samplingArea.Extend(parameter.geometry.vehicleShape.GetFarthestVertexDistance());
             mpsv::geometry::ConvexPolygon boxPolygon = samplingArea.ExportAsConvexPolygon();
             staticObstacles.erase(std::remove_if(staticObstacles.begin(), staticObstacles.end(), [&boxPolygon](mpsv::geometry::ConvexPolygon& p){ return !boxPolygon.Overlap(p); } ), staticObstacles.end());
         }
@@ -341,8 +335,6 @@ class PathPlanner {
                 }
             }
 
-            // Check if solution was found
-            m_goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
             return true;
         }
 
@@ -365,12 +357,8 @@ class PathPlanner {
                     int16_t idxBestParent = FindBestParent(newSample, idxNearest, dataIn.staticObstacles, parameter); // updates newSample.cost
                     int16_t idxAddedSample = m_tree.Add(idxBestParent, newSample);
                     Rewire(idxAddedSample, dataIn.staticObstacles, parameter);
-
-                    // Check if the new sample indicates a solution
                     double distanceToGoal = mpsv::math::DistanceMetricSE2(m_tree[idxAddedSample].pose, dataIn.finalPose, parameter.metric.weightPsi);
-                    bool reachedGoal = distanceToGoal < m_epsDistanceMetric;
-                    if(reachedGoal || (distanceToGoal < m_closestDistanceToGoal)){
-                        m_goalReached |= reachedGoal;
+                    if(distanceToGoal < m_closestDistanceToGoal){
                         m_closestDistanceToGoal = distanceToGoal;
                         m_idxSolutionNode = idxAddedSample;
                     }
@@ -386,7 +374,7 @@ class PathPlanner {
          */
         Node Sampling(const std::array<double,3>& finalPose, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
             Node randomSample;
-            if(m_goalReached || m_goalSampleIteration){
+            if((m_closestDistanceToGoal < m_epsDistanceMetric) || m_goalSampleIteration){
                 randomSample.pose = m_boxSampler.Sample(m_sampleIteration++);
             }
             else{
