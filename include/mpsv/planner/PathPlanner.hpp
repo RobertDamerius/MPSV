@@ -91,55 +91,23 @@ class PathPlanner {
             }
 
             // Prepare
-            // During the prepare step of the path planning algorithm, the following steps are performed:
-            //
-            // 1. SET SAMPLING AREA
-            //    The 2-dimensional range for x- and y-positions to be sampled has to be defined. This sampling area should include the
-            //    initial and final pose. The line between two poses defines the major axis of the sampling box. The actual dimension of
-            //    the box is then calculated by the specified sampling box extension parameters from the current parameter set.
-            //    The tree uses that box to calculate the volume of the C space which is required to calculate the optimal radius for near
-            //    neighbor searches based on the cardinality of the tree.
-            //
-            // 2. BUILD COST MAP
-            //    Samples are only drawn from the sampling area set during step 1. Thus, the area of the cost map can be reduced to an area
-            //    of interest that is at least the size of the sampling area. Because the cost map is not only evaluated at one pose
-            //    but also at two additional poses with distances L1, L2, the sampling area is extended to get the area for the cost map.
-            //
-            // 3. REMOVE STATIC OBSTACLES
-            //    In order to increase performance, all static obstacles that are completely outside the area of interest, are removed.
-            //    The area of interest is limited by the sampling area and the size of the static vehicle shape.
-            //
-            // 4. FEASIBILITY CHECK
-            //    If the static vehicle shape at the initial pose already collides with static obstacles, no solution can be computed
-            //    and the problem is infeasible. In addition, the initial and final pose must lie inside the sampling area.
-            //
-            // 5. WARM START / COLD START
-            //    A warm start is performed to initialize the tree and keep as much nodes as possible from the previous tree. If a warm
-            //    start is not possible, a cold start is performed. In this case the tree is reset and the initial pose is set as the
-            //    root node.
-            //
-            // 6. ASSIGN OUTPUT
-            //    The output of the path planner is updated. If a warm start was successfull, the solution path may contain a good initial
-            //    path that should be visible in the output. However, the path is not smoothed.
             if(mpsv::error_code::NONE == dataOut.errorCode){
                 m_state.Clear(!forceColdStart); // keep latest solution if no cold start is forced
-                m_state.initialPose = dataIn.initialPose;
-                m_state.finalPose = dataIn.finalPose;
-                mpsv::geometry::OrientedBox samplingArea = SetSamplingArea(dataIn.samplingBoxCenterPose, dataIn.samplingBoxDimension);
+                mpsv::geometry::OrientedBox samplingArea = SetSamplingArea(dataIn);
                 SetNumericLimits(samplingArea, parameter);
                 m_tree.SetCSpaceVolume(samplingArea.GetVolume(parameter.metric.weightPsi));
                 BuildCostMap(samplingArea, dataIn.staticObstacles, parameter);
                 RemoveObstaclesOutsideAreaOfInterest(dataIn.staticObstacles, samplingArea, parameter);
-                if(parameter.geometry.vehicleShape.CheckCollisionPose(dataIn.staticObstacles, m_state.initialPose)){
+                if(parameter.geometry.vehicleShape.CheckCollisionPose(dataIn.staticObstacles, dataIn.initialPose)){
                     dataOut.errorCode = mpsv::error_code::PATHPLANNER_INITIAL_POSE_COLLISION;
-                    m_state.idxSolutionNode = m_tree.Reset(m_state.initialPose);
-                    m_state.closestDistanceToGoal = mpsv::math::DistanceMetricSE2(m_state.initialPose, m_state.finalPose, parameter.metric.weightPsi);
+                    m_state.idxSolutionNode = m_tree.Reset(dataIn.initialPose);
+                    m_state.closestDistanceToGoal = mpsv::math::DistanceMetricSE2(dataIn.initialPose, dataIn.finalPose, parameter.metric.weightPsi);
                     m_state.goalReached = (m_state.closestDistanceToGoal < m_epsDistanceMetric);
                 }
                 else{
-                    if(forceColdStart || !WarmStart(dataIn.originOldToNew, dataIn.staticObstacles, parameter)){
-                        m_state.idxSolutionNode = m_tree.Reset(m_state.initialPose);
-                        m_state.closestDistanceToGoal = mpsv::math::DistanceMetricSE2(m_state.initialPose, m_state.finalPose, parameter.metric.weightPsi);
+                    if(forceColdStart || !WarmStart(dataIn, parameter)){
+                        m_state.idxSolutionNode = m_tree.Reset(dataIn.initialPose);
+                        m_state.closestDistanceToGoal = mpsv::math::DistanceMetricSE2(dataIn.initialPose, dataIn.finalPose, parameter.metric.weightPsi);
                         m_state.goalReached = (m_state.closestDistanceToGoal < m_epsDistanceMetric);
                     }
                 }
@@ -151,7 +119,7 @@ class PathPlanner {
                 while(m_runSolve){
                     ++m_state.numberOfPerformedIterations;
                     mpsv::runtime::PerformanceCounter iterationCounter;
-                    Iterate(dataIn.staticObstacles, parameter);
+                    Iterate(dataIn, parameter);
                     maxIterationTime = std::max(maxIterationTime, iterationCounter.TimeToStart());
                     if(m_state.outOfNodes){
                         dataOut.errorCode = mpsv::error_code::PATHPLANNER_OUT_OF_NODES;
@@ -196,13 +164,12 @@ class PathPlanner {
 
         /**
          * @brief Set the sampling area.
-         * @param[in] samplingBoxCenterPose Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
-         * @param[in] samplingBoxDimension Dimension of the sampling box along major and minor axes of the box.
+         * @param[in] dataIn The input data containing the sampling box center pose and dimensions.
          * @return The oriented box representing the sampling area.
          */
-        mpsv::geometry::OrientedBox SetSamplingArea(std::array<double,3> samplingBoxCenterPose, std::array<double,2> samplingBoxDimension) noexcept {
+        mpsv::geometry::OrientedBox SetSamplingArea(const mpsv::planner::PathPlannerInput& dataIn) noexcept {
             mpsv::geometry::OrientedBox box;
-            box.Create(samplingBoxCenterPose, samplingBoxDimension);
+            box.Create(dataIn.samplingBoxCenterPose, dataIn.samplingBoxDimension);
             m_boxSampler.SetSize(box);
             return box;
         }
@@ -262,16 +229,13 @@ class PathPlanner {
 
         /**
          * @brief Warm start the path planner by transforming the tree to a new origin and connecting the initial pose with the old solution path.
-         * @param[in] originOldToNew Translation between two consecutive problems. If the origin of the previous problem is different
-         * to the origin of the new problem, then the tree must be transformed during a warm start. This vector specifies the position
-         * of the new origin with respect to the old origin (vector from old origin to new origin).
-         * @param[in] staticObstacles List of static obstacles to be taken into account for path planning.
+         * @param[in] dataIn The input data containing the path planning problem.
          * @param[in] parameter The parameter set for path planning.
          * @return True if warm start was successful, false otherwise. If this method fails, a cold start must be performed.
          */
-        [[nodiscard]] bool WarmStart(std::array<double,2> originOldToNew, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
+        [[nodiscard]] bool WarmStart(const mpsv::planner::PathPlannerInput& dataIn, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
             // Step 1: Transform tree to new origin
-            m_tree.TransformToNewOrigin(originOldToNew);
+            m_tree.TransformToNewOrigin(dataIn.originOldToNew);
 
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             // Step 2: Connect initial pose with old solution path
@@ -304,11 +268,11 @@ class PathPlanner {
             double bestTotalCost = std::numeric_limits<double>::infinity();
             for(auto&& i : idxSolutionPathReverse){
                 auto& node = m_tree[i];
-                if(!parameter.geometry.vehicleShape.CheckCollisionLine(staticObstacles, node.pose, m_state.initialPose, parameter.geometry.collisionCheckMaxAngleDeviation)){
+                if(!parameter.geometry.vehicleShape.CheckCollisionLine(dataIn.staticObstacles, node.pose, dataIn.initialPose, parameter.geometry.collisionCheckMaxAngleDeviation)){
                     // The total cost for this connection is the cost from the initial pose to the connection point added to the cummulative cost from the connection point to the solution (old solution)
-                    double costDistance = mpsv::math::DistanceMetricSE2(m_state.initialPose, node.pose, parameter.metric.weightPsi);
-                    double costHeading = mpsv::math::SwayMetric(m_state.initialPose, node.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
-                    double costClearance = m_costMap.CostAlongLine(m_state.initialPose, node.pose, parameter.geometry.skeletalPoints);
+                    double costDistance = mpsv::math::DistanceMetricSE2(dataIn.initialPose, node.pose, parameter.metric.weightPsi);
+                    double costHeading = mpsv::math::SwayMetric(dataIn.initialPose, node.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
+                    double costClearance = m_costMap.CostAlongLine(dataIn.initialPose, node.pose, parameter.geometry.skeletalPoints);
                     double costToGoal = m_tree[idxSolutionPathReverse[0]].cost - node.cost;
                     double totalCost = (costDistance + costHeading + costClearance) + costToGoal;
                     if(totalCost < bestTotalCost){
@@ -326,7 +290,7 @@ class PathPlanner {
             // Step 3: Change the root of the tree
             // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             // The tree starts from initialPose and connects to idxBestConnection
-            int16_t idxRoot = m_tree.ChangeRoot(m_state.initialPose, idxBestConnection, parameter.metric.weightPsi);
+            int16_t idxRoot = m_tree.ChangeRoot(dataIn.initialPose, idxBestConnection, parameter.metric.weightPsi);
             if(idxRoot < 0) return false;
 
 
@@ -344,7 +308,7 @@ class PathPlanner {
                     int16_t nextChild = m_tree[child].iNextSibling;
                     auto& a = m_tree[current];
                     auto& b = m_tree[child];
-                    if(m_boxSampler.IsInside(b.pose) && !parameter.geometry.vehicleShape.CheckCollisionLine(staticObstacles, b.pose, a.pose, parameter.geometry.collisionCheckMaxAngleDeviation)){
+                    if(m_boxSampler.IsInside(b.pose) && !parameter.geometry.vehicleShape.CheckCollisionLine(dataIn.staticObstacles, b.pose, a.pose, parameter.geometry.collisionCheckMaxAngleDeviation)){
                         if(m_tree[child].iFirstChild >= 0){
                             traversalStack.push_back(child);
                         }
@@ -373,7 +337,7 @@ class PathPlanner {
             const std::vector<int16_t>& indices = m_tree.GetActiveIndices();
             double distance;
             for(auto&& i : indices){
-                distance = mpsv::math::DistanceMetricSE2(m_tree[i].pose, m_state.finalPose, parameter.metric.weightPsi);
+                distance = mpsv::math::DistanceMetricSE2(m_tree[i].pose, dataIn.finalPose, parameter.metric.weightPsi);
                 if(distance < m_state.closestDistanceToGoal){
                     m_state.closestDistanceToGoal = distance;
                     m_state.idxSolutionNode = i;
@@ -387,29 +351,29 @@ class PathPlanner {
 
         /**
          * @brief Do one iteration of the RRT* path planning algorithm.
-         * @param[in] staticObstacles The set of static obstacles to be used for collision checks.
+         * @param[in] dataIn The input data containing the path planning problem.
          * @param[in] parameter The parameter set for path planning.
          */
-        void Iterate(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
+        void Iterate(const mpsv::planner::PathPlannerInput& dataIn, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
             if((m_state.outOfNodes = (m_tree.IsFull() && !m_tree.RemoveRandomLeaf(m_state.idxSolutionNode)))){
                 return; // no more nodes available in the tree and no random leaf node could be removed
             }
-            Node randomSample = Sampling(parameter);
+            Node randomSample = Sampling(dataIn.finalPose, parameter);
             int16_t idxNearest = m_tree.FindNearestNode(randomSample, parameter.metric.weightPsi);
             Node& nearestSample = m_tree[idxNearest];
-            auto [success, newSample] = LocalPlanning(nearestSample, randomSample, staticObstacles, parameter);
+            auto [success, newSample] = LocalPlanning(nearestSample, randomSample, dataIn.staticObstacles, parameter);
             if(!success){
                 return; // local planning failed (e.g. collision)
             }
             if(m_tree.FindNearestNeighbors(m_idxNeighbors, newSample, m_tree.GetOptimalRadius(), parameter.metric.weightPsi)){
                 return; // value of the new sample already exists
             }
-            int16_t idxBestParent = FindBestParent(newSample, idxNearest, staticObstacles, parameter); // updates newSample.cost
+            int16_t idxBestParent = FindBestParent(newSample, idxNearest, dataIn.staticObstacles, parameter); // updates newSample.cost
             int16_t idxAddedSample = m_tree.Add(idxBestParent, newSample);
-            Rewire(idxAddedSample, staticObstacles, parameter);
+            Rewire(idxAddedSample, dataIn.staticObstacles, parameter);
 
             // Check if the new sample indicates a solution
-            double distanceToGoal = mpsv::math::DistanceMetricSE2(m_tree[idxAddedSample].pose, m_state.finalPose, parameter.metric.weightPsi);
+            double distanceToGoal = mpsv::math::DistanceMetricSE2(m_tree[idxAddedSample].pose, dataIn.finalPose, parameter.metric.weightPsi);
             if(distanceToGoal < m_epsDistanceMetric){
                 m_state.goalReached = true;
                 m_state.closestDistanceToGoal = distanceToGoal;
@@ -426,13 +390,13 @@ class PathPlanner {
          * @param[in] parameter The parameter set for path planning.
          * @return The random sample.
          */
-        Node Sampling(const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
+        Node Sampling(const std::array<double,3>& finalPose, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
             Node randomSample;
             if(m_state.goalReached || m_state.goalSampleIteration){
                 randomSample.pose = m_boxSampler.Sample(m_state.sampleIteration++);
             }
             else{
-                randomSample.pose = m_state.finalPose;
+                randomSample.pose = finalPose;
             }
             m_state.goalSampleIteration = (m_state.goalSampleIteration + 1) % parameter.pathPlanner.periodGoalSampling;
             return randomSample;
