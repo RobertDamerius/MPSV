@@ -83,11 +83,9 @@ class PathPlanner {
                 dataOut.errorCode = dataIn.IsValid();
             }
 
-            // Prepare
+            // Prepare the planner by checking for feasibility of the initial pose and performing a warm start if possible
             if(mpsv::error_code::NONE == dataOut.errorCode){
                 if(forceColdStart){
-                    m_idxSolutionNode = 0;
-                    m_closestDistanceToGoal = std::numeric_limits<double>::infinity();
                     m_sampleIteration = 0;
                 }
                 m_goalSampleIteration = 0;
@@ -109,7 +107,7 @@ class PathPlanner {
                 }
             }
 
-            // Solve
+            // Solve the path planning problem by doing several iterations
             if(mpsv::error_code::NONE == dataOut.errorCode){
                 double maxIterationTime = 0.0;
                 while(m_runSolve && (mpsv::error_code::NONE == dataOut.errorCode) && ((maxIterationTime + executionCounter.TimeToStart()) < maxComputationTime)){
