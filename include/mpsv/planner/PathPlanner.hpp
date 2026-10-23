@@ -77,6 +77,7 @@ class PathPlanner {
             mpsv::runtime::PerformanceCounter executionCounter;
 
             // Check validity of parameters and input
+            m_idxSolutionNode = 0;
             dataOut.Clear();
             dataOut.errorCode = parameter.IsValid();
             if(error_code::NONE == dataOut.errorCode){
@@ -313,8 +314,7 @@ class PathPlanner {
             }
             Node randomSample = Sampling(dataIn.finalPose, parameter);
             int16_t idxNearest = m_tree.FindNearestNode(randomSample, parameter.metric.weightPsi);
-            Node& nearestSample = m_tree[idxNearest];
-            auto [success, newSample] = LocalPlanning(nearestSample, randomSample, dataIn.staticObstacles, parameter);
+            auto [success, newSample] = LocalPlanning(idxNearest, randomSample, dataIn.staticObstacles, parameter);
             if(success){
                 if(m_tree.FindNearestNeighbors(m_idxNeighbors, newSample, m_tree.GetOptimalRadius(), parameter.metric.weightPsi)){
                     int16_t idxBestParent = FindBestParent(newSample, idxNearest, dataIn.staticObstacles, parameter); // updates newSample.cost
@@ -332,6 +332,7 @@ class PathPlanner {
 
         /**
          * @brief Generate a random sample.
+         * @param[in] finalPose The final pose to be used for goal sampling.
          * @param[in] parameter The parameter set for path planning.
          * @return The random sample.
          */
@@ -349,7 +350,7 @@ class PathPlanner {
 
         /**
          * @brief Perform local planning from a source node to a destination node and create a resulting node based on a limited step size.
-         * @param[in] source The source node from which to start the local planning.
+         * @param[in] idxSource The index to the source node from which to start the local planning.
          * @param[in] destination The destination node to which to steer to from the source node.
          * @param[in] staticObstacles The set of static obstacles to be used for collision checks.
          * @param[in] parameter The parameter set for path planning.
@@ -357,9 +358,10 @@ class PathPlanner {
          * <0> True if local planning succeeded (e.g. no collision), false otherwise.
          * <1> The resulting sample of local planning.
          */
-        std::tuple<bool, Node> LocalPlanning(const Node& source, const Node& destination, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
+        std::tuple<bool, Node> LocalPlanning(const int16_t idxSource, const Node& destination, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
             std::tuple<bool, Node> result{};
             auto& [success, newSample] = result;
+            const Node& source = m_tree[idxSource];
 
             // Limit step size to optimal radius of the tree and calculate resulting node
             std::array<double, 3> direction = mpsv::math::PoseDifference(destination.pose, source.pose);
@@ -439,7 +441,7 @@ class PathPlanner {
         void Rewire(int16_t idxAddedSample, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
             Node& addedSample = m_tree[idxAddedSample];
             for(auto&& index : m_idxNeighbors){
-                if(m_tree[idxAddedSample].iParent == index){
+                if((m_tree[idxAddedSample].iParent == index) || (m_tree[idxAddedSample].iParent < 0)){
                     continue; // cannot be a better parent for its own parent
                 }
 

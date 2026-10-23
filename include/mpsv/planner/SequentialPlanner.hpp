@@ -63,18 +63,17 @@ class SequentialPlanner {
             parameterMotion.model = parameter.model;
             parameterMotion.motionPlanner = parameter.motionPlanner;
 
-            // Validate and retain parameters for the path planner.
+            // Validate and retain parameters for the internal planners.
             error_code e = parameterPath.IsValid();
             if(error_code::NONE != e){
                 return e;
             }
-            m_pathPlannerParameter = parameterPath;
-
-            // apply parameter set to motion planner
-            e = m_motionPlanner.ApplyParameterSet(parameterMotion);
+            e = parameterMotion.IsValid();
             if(error_code::NONE != e){
                 return e;
             }
+            m_pathPlannerParameter = parameterPath;
+            m_motionPlannerParameter = parameterMotion;
             return error_code::NONE;
         }
 
@@ -113,7 +112,7 @@ class SequentialPlanner {
 
             // Solve motion planning problem
             remainingTimeForProblemSolving = maxComputationTimePathPlanning + maxComputationTimeMotionPlanning - m_executionCounter.TimeToStart();
-            m_motionPlanner.Solve(m_motionPlannerOutput, m_motionPlannerInput, remainingTimeForProblemSolving, minTrajectoryDuration);
+            m_motionPlanner.Solve(m_motionPlannerOutput, m_motionPlannerInput, m_motionPlannerParameter, remainingTimeForProblemSolving, minTrajectoryDuration);
 
             // Move values from planning results to the output data
             m_pathPlannerOutput.MoveTo(dataOut.pathPlanner);
@@ -136,7 +135,7 @@ class SequentialPlanner {
          * @return [1] The predicted state given as {x,y,psi,u,v,r,X,Y,N}.
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
-        [[nodiscard]] std::tuple<double,std::array<double,9>> PredictMotion(const std::array<double,12>& initialStateAndInput, double predictionHorizon) const noexcept { return m_motionPlanner.PredictMotion(initialStateAndInput, predictionHorizon); }
+        [[nodiscard]] std::tuple<double,std::array<double,9>> PredictMotion(const std::array<double,12>& initialStateAndInput, double predictionHorizon) const noexcept { return m_motionPlanner.PredictMotion(initialStateAndInput, predictionHorizon, m_motionPlannerParameter); }
 
         /**
          * @brief Predict the motion trajectory of the vehicle for a given prediction horizon assuming the control input to be constant all the time. At least one simulation step is computed.
@@ -148,7 +147,7 @@ class SequentialPlanner {
          * [1] The total time that has been simulated.
          * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
-        [[nodiscard]] std::tuple<bool,double> PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double predictionHorizon) const noexcept { return m_motionPlanner.PredictMotionTrajectory(trajectory, initialStateAndInput, predictionHorizon); }
+        [[nodiscard]] std::tuple<bool,double> PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double predictionHorizon) const noexcept { return m_motionPlanner.PredictMotionTrajectory(trajectory, initialStateAndInput, predictionHorizon, m_motionPlannerParameter); }
 
         /**
          * @brief Write data to the log file.
@@ -157,17 +156,18 @@ class SequentialPlanner {
          * @param[in] staticObstacles List of static obstacles to be used for the guidance law of path exploration. All trajectories of the tree are rebuilt. Otherwise the trajectories from tree nodes are undefined.
          * @note IMPORTANT: The caller of this function must make sure that static obstacles are valid!
          */
-        void WriteToFile(mpsv::logging::File& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { m_pathPlanner.WriteToFile(file, preString + "pathPlanner."); m_motionPlanner.WriteToFile(file, preString + "motionPlanner.", staticObstacles); }
+        void WriteToFile(mpsv::logging::File& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { m_pathPlanner.WriteToFile(file, preString + "pathPlanner."); m_motionPlanner.WriteToFile(file, preString + "motionPlanner.", staticObstacles, m_motionPlannerInput, m_motionPlannerParameter); }
 
     protected:
-        mpsv::planner::PathPlannerInput m_pathPlannerInput;              // The input to the path planner, set during @ref Solve.
-        mpsv::planner::PathPlannerOutput m_pathPlannerOutput;            // The output of the path planner, set during @ref Solve and @ref Improve.
-        mpsv::planner::MotionPlannerInput m_motionPlannerInput;          // The input to the motion planner, set during @ref Solve.
-        mpsv::planner::MotionPlannerOutput m_motionPlannerOutput;        // The output of the motion planner, set during @ref Solve.
-        mpsv::planner::PathPlanner m_pathPlanner;                        // Internal path planning solver.
-        mpsv::planner::PathPlannerParameterSet m_pathPlannerParameter;   // Parameters for the internal path planner.
-        mpsv::planner::MotionPlanner m_motionPlanner;                    // Internal motion planning solver.
-        mpsv::runtime::PerformanceCounter m_executionCounter;            // Performance counter to measure the execution time during @ref Solve.
+        mpsv::planner::PathPlanner m_pathPlanner;                            // Internal path planning solver.
+        mpsv::planner::PathPlannerInput m_pathPlannerInput;                  // The input to the path planner, set during @ref Solve.
+        mpsv::planner::PathPlannerOutput m_pathPlannerOutput;                // The output of the path planner, set during @ref Solve and @ref Improve.
+        mpsv::planner::PathPlannerParameterSet m_pathPlannerParameter;       // Parameters for the internal path planner.
+        mpsv::planner::MotionPlanner m_motionPlanner;                        // Internal motion planning solver.
+        mpsv::planner::MotionPlannerInput m_motionPlannerInput;              // The input to the motion planner, set during @ref Solve.
+        mpsv::planner::MotionPlannerOutput m_motionPlannerOutput;            // The output of the motion planner, set during @ref Solve.
+        mpsv::planner::MotionPlannerParameterSet m_motionPlannerParameter;   // Parameters for the internal motion planner.
+        mpsv::runtime::PerformanceCounter m_executionCounter;                // Performance counter to measure the execution time during @ref Solve.
 };
 
 

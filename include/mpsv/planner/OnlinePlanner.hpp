@@ -230,7 +230,7 @@ class OnlinePlanner {
             m_state.trajectory.swap(m_sequentialPlannerOutput.motionPlanner.trajectory);
             m_state.sampletime = m_sequentialPlannerOutput.motionPlanner.sampletime;
             m_state.performedReset = true;
-            m_state.error = (m_sequentialPlannerOutput.pathPlanner.errorCode != mpsv::error_code::NONE || !m_sequentialPlannerOutput.motionPlanner.isFeasible || m_sequentialPlannerOutput.motionPlanner.outOfNodes);
+            m_state.error = (m_sequentialPlannerOutput.pathPlanner.errorCode != mpsv::error_code::NONE || m_sequentialPlannerOutput.motionPlanner.errorCode != mpsv::error_code::NONE);
             m_state.pathPlanner.path.swap(m_sequentialPlannerOutput.pathPlanner.path);
             m_state.pathPlanner.goalReached = m_sequentialPlannerOutput.pathPlanner.goalReached;
             m_state.pathPlanner.errorCode = m_sequentialPlannerOutput.pathPlanner.errorCode;
@@ -239,8 +239,8 @@ class OnlinePlanner {
             m_state.pathPlanner.cost = m_sequentialPlannerOutput.pathPlanner.cost;
             m_state.motionPlanner.referencePath.swap(m_sequentialPlannerOutput.motionPlanner.referencePath);
             m_state.motionPlanner.goalReached = m_sequentialPlannerOutput.motionPlanner.goalReached;
-            m_state.motionPlanner.isFeasible = m_sequentialPlannerOutput.motionPlanner.isFeasible;
-            m_state.motionPlanner.outOfNodes = m_sequentialPlannerOutput.motionPlanner.outOfNodes;
+            m_state.motionPlanner.isFeasible = (mpsv::error_code::NONE == m_sequentialPlannerOutput.motionPlanner.errorCode) || (mpsv::error_code::MOTIONPLANNER_OUT_OF_NODES == m_sequentialPlannerOutput.motionPlanner.errorCode);
+            m_state.motionPlanner.outOfNodes = (mpsv::error_code::MOTIONPLANNER_OUT_OF_NODES == m_sequentialPlannerOutput.motionPlanner.errorCode);
             m_state.motionPlanner.numberOfPerformedIterations = m_sequentialPlannerOutput.motionPlanner.numberOfPerformedIterations;
             m_state.motionPlanner.timestampOfComputationUTC = m_sequentialPlannerOutput.motionPlanner.timestampOfComputationUTC;
             m_state.motionPlanner.cost = m_sequentialPlannerOutput.motionPlanner.cost;
@@ -314,7 +314,7 @@ class OnlinePlanner {
             m_state.trajectory.swap(m_sequentialPlannerOutput.motionPlanner.trajectory);
             m_state.sampletime = m_sequentialPlannerOutput.motionPlanner.sampletime;
             m_state.performedReset = false;
-            m_state.error = (m_sequentialPlannerOutput.pathPlanner.errorCode != mpsv::error_code::NONE || !m_sequentialPlannerOutput.motionPlanner.isFeasible || m_sequentialPlannerOutput.motionPlanner.outOfNodes);
+            m_state.error = (m_sequentialPlannerOutput.pathPlanner.errorCode != mpsv::error_code::NONE || m_sequentialPlannerOutput.motionPlanner.errorCode != mpsv::error_code::NONE);
             m_state.pathPlanner.path.swap(m_sequentialPlannerOutput.pathPlanner.path);
             m_state.pathPlanner.goalReached = m_sequentialPlannerOutput.pathPlanner.goalReached;
             m_state.pathPlanner.errorCode = m_sequentialPlannerOutput.pathPlanner.errorCode;
@@ -323,8 +323,8 @@ class OnlinePlanner {
             m_state.pathPlanner.cost = m_sequentialPlannerOutput.pathPlanner.cost;
             m_state.motionPlanner.referencePath.swap(m_sequentialPlannerOutput.motionPlanner.referencePath);
             m_state.motionPlanner.goalReached = m_sequentialPlannerOutput.motionPlanner.goalReached;
-            m_state.motionPlanner.isFeasible = m_sequentialPlannerOutput.motionPlanner.isFeasible;
-            m_state.motionPlanner.outOfNodes = m_sequentialPlannerOutput.motionPlanner.outOfNodes;
+            m_state.motionPlanner.isFeasible = (mpsv::error_code::NONE == m_sequentialPlannerOutput.motionPlanner.errorCode) || (mpsv::error_code::MOTIONPLANNER_OUT_OF_NODES == m_sequentialPlannerOutput.motionPlanner.errorCode);
+            m_state.motionPlanner.outOfNodes = (mpsv::error_code::MOTIONPLANNER_OUT_OF_NODES == m_sequentialPlannerOutput.motionPlanner.errorCode);
             m_state.motionPlanner.numberOfPerformedIterations = m_sequentialPlannerOutput.motionPlanner.numberOfPerformedIterations;
             m_state.motionPlanner.timestampOfComputationUTC = m_sequentialPlannerOutput.motionPlanner.timestampOfComputationUTC;
             m_state.motionPlanner.cost = m_sequentialPlannerOutput.motionPlanner.cost;

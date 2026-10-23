@@ -53,8 +53,7 @@ int main(int, char**){
         std::cout << "    x,y,psi={" << pose[0] << ", " << pose[1] << ", " << pose[2] << "}\n";
     }
     std::cout << "motionPlanner.goalReached:                   " << dataOut.motionPlanner.goalReached << "\n";
-    std::cout << "motionPlanner.isFeasible:                    " << dataOut.motionPlanner.isFeasible << "\n";
-    std::cout << "motionPlanner.outOfNodes:                    " << dataOut.motionPlanner.outOfNodes << "\n";
+    std::cout << "motionPlanner.errorCode:                     " << static_cast<int32_t>(dataOut.motionPlanner.errorCode) << "\n";
     std::cout << "motionPlanner.numberOfPerformedIterations:   " << dataOut.motionPlanner.numberOfPerformedIterations << "\n";
     std::cout << "motionPlanner.cost:                          " << dataOut.motionPlanner.cost << "\n";
     std::cout << "motionPlanner.sampletime:                    " << dataOut.motionPlanner.sampletime << "\n";

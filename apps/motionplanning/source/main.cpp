@@ -9,10 +9,10 @@ int main(int, char**){
     constexpr uint32_t maxNumSamples = 1000000;
     planner.Reconfigure(maxNumNodes, maxNumSamples);
 
-    // apply a parameter set to the motion planner
+    // get parameters for the motion planner
     mpsv::planner::MotionPlannerParameterSet parameter = example::GetParameterSet();
-    if(mpsv::error_code::NONE != planner.ApplyParameterSet(parameter)){
-        std::cerr << "ERROR: Could not apply parameter set!\n";
+    if(mpsv::error_code::NONE != parameter.IsValid()){
+        std::cerr << "ERROR: Parameter set is invalid!\n";
         return 0;
     }
 
@@ -27,12 +27,11 @@ int main(int, char**){
     constexpr double maxComputationTime = 1.0;
     mpsv::planner::MotionPlannerOutput dataOut;
     std::cout << "solve motion planning problem (computation time: " << maxComputationTime << " s)\n\n";
-    planner.Solve(dataOut, dataIn, maxComputationTime);
+    planner.Solve(dataOut, dataIn, parameter, maxComputationTime);
 
     // print result (at most 10 trajectory points)
     std::cout << "goalReached:                   " << dataOut.goalReached << "\n";
-    std::cout << "isFeasible:                    " << dataOut.isFeasible << "\n";
-    std::cout << "outOfNodes:                    " << dataOut.outOfNodes << "\n";
+    std::cout << "errorCode:                     " << static_cast<int32_t>(dataOut.errorCode) << "\n";
     std::cout << "numberOfPerformedIterations:   " << dataOut.numberOfPerformedIterations << "\n";
     std::cout << "cost:                          " << dataOut.cost << "\n";
     std::cout << "sampletime:                    " << dataOut.sampletime << "\n";

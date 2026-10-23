@@ -3,6 +3,7 @@
 
 #include <mpsv/common/Common.hpp>
 #include <mpsv/logging/File.hpp>
+#include <mpsv/common/ErrorCode.hpp>
 
 
 namespace mpsv {
@@ -17,8 +18,7 @@ namespace planner {
 class MotionPlannerOutput {
     public:
         bool goalReached;                                  // True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-        bool isFeasible;                                   // True if problem is feasible, false otherwise. The problem is not feasible, if the initial pose already collides with static obstacles.
-        bool outOfNodes;                                   // True if all nodes are within the solution path and no new nodes can be sampled and added to the tree.
+        mpsv::error_code errorCode;                        // Error code indicating the status of the motion planning operation.
         uint32_t numberOfPerformedIterations;              // The total number of iterations that have been performed since the latest prepare step.
         double timestampOfComputationUTC;                  // Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
         double cost;                                       // The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
@@ -35,7 +35,9 @@ class MotionPlannerOutput {
          * @brief Clear the output and set default values.
          */
         void Clear(void) noexcept {
-            goalReached = isFeasible = outOfNodes = false;
+            errorCode = mpsv::error_code::NONE;
+            goalReached = false;
+            numberOfPerformedIterations = 0;
             timestampOfComputationUTC = cost = 0.0;
             referencePath.clear();
             trajectory.clear();
@@ -48,8 +50,7 @@ class MotionPlannerOutput {
          */
         void MoveTo(mpsv::planner::MotionPlannerOutput& dst) noexcept {
             dst.goalReached = goalReached;
-            dst.isFeasible = isFeasible;
-            dst.outOfNodes = outOfNodes;
+            dst.errorCode = errorCode;
             dst.numberOfPerformedIterations = numberOfPerformedIterations;
             dst.timestampOfComputationUTC = timestampOfComputationUTC;
             dst.cost = cost;
@@ -65,8 +66,7 @@ class MotionPlannerOutput {
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             file.WriteField("bool", preString + "goalReached", {1}, &goalReached, sizeof(goalReached));
-            file.WriteField("bool", preString + "isFeasible", {1}, &isFeasible, sizeof(isFeasible));
-            file.WriteField("bool", preString + "outOfNodes", {1}, &outOfNodes, sizeof(outOfNodes));
+            file.WriteField("uint8_t", preString + "errorCode", {1}, &errorCode, sizeof(errorCode));
             file.WriteField("uint32_t", preString + "numberOfPerformedIterations", {1}, &numberOfPerformedIterations, sizeof(numberOfPerformedIterations));
             file.WriteField("double", preString + "timestampOfComputationUTC", {1}, &timestampOfComputationUTC, sizeof(timestampOfComputationUTC));
             file.WriteField("double", preString + "cost", {1}, &cost, sizeof(cost));

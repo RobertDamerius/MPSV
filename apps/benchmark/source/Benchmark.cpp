@@ -337,10 +337,10 @@ uint32_t Benchmark::MotionPlanning(void){
     dataIn.initialPath.push_back({54.4740,-8.8271,-0.1608});
     GenerateObstaclesForPlanning(dataIn.staticObstacles);
 
-    // Reconfigure planner and apply parameters
+    // Reconfigure planner
     planner.Reconfigure(maxNumNodes, maxNumSamples);
-    if(mpsv::error_code::NONE != planner.ApplyParameterSet(parameterSet)){
-        fprintf(stderr,"ERROR: Failed to set parameters for the motion planner!\n");
+    if(mpsv::error_code::NONE != parameterSet.IsValid()){
+        fprintf(stderr,"ERROR: Invalid parameters for the motion planner!\n");
         return 0;
     }
     if(mpsv::error_code::NONE != dataIn.IsValid()){
@@ -349,7 +349,7 @@ uint32_t Benchmark::MotionPlanning(void){
     }
 
     // Run actual motion planning
-    planner.Solve(dataOut, dataIn, 1.0, 0.0, false);
+    planner.Solve(dataOut, dataIn, parameterSet, 1.0, 0.0, false);
     return dataOut.numberOfPerformedIterations;
 }
 

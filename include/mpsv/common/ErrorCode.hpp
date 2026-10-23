@@ -77,7 +77,12 @@ enum class error_code : uint8_t {
 
     // path planner
     PATHPLANNER_INITIAL_POSE_COLLISION                    = 59,   // The initial pose of the path planner collides with static obstacles.
-    PATHPLANNER_OUT_OF_NODES                              = 60    // The path planner has run out of nodes and cannot sample new nodes anymore.
+    PATHPLANNER_OUT_OF_NODES                              = 60,   // The path planner has run out of nodes and cannot sample new nodes anymore.
+
+    // motion planner
+    MOTIONPLANNER_INITIAL_POSE_COLLISION                  = 61,   // The initial pose of the motion planner collides with static obstacles.
+    MOTIONPLANNER_OUT_OF_NODES                            = 62,   // The motion planner has run out of nodes and cannot sample new nodes anymore.
+    MOTIONPLANNER_INFEASIBLE_TRAJECTORY                   = 63    // The final motion planner trajectory is dynamically infeasible.
 };
 
 
