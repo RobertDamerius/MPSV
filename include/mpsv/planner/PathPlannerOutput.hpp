@@ -29,6 +29,7 @@ class PathPlannerOutput {
          */
         void Clear(void) noexcept {
             goalReached = false;
+            errorCode = mpsv::error_code::NONE;
             numberOfPerformedIterations = 0;
             timestampOfComputationUTC = cost = 0.0;
             path.clear();
