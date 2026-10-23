@@ -298,13 +298,14 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
+            size_t numCells = static_cast<size_t>(this->m_numX) * static_cast<size_t>(this->m_numY);
             for(size_t n = 0; n < Tdim; ++n){
                 std::vector<double> vecData;
-                vecData.reserve(this->m_lut.size());
-                for(size_t i = 0; i < this->m_lut.size(); ++i){
+                vecData.reserve(numCells);
+                for(size_t i = 0; i < numCells; ++i){
                     vecData.push_back(this->m_lut[i][n]);
                 }
-                file.WriteField("double", preString + "data{" + std::to_string(n+1) + "}", {static_cast<uint32_t>(this->m_numY), static_cast<uint32_t>(this->m_numX)}, &vecData[0], sizeof(double) * vecData.size());
+                file.WriteField("double", preString + "data{" + std::to_string(n+1) + "}", {static_cast<uint32_t>(this->m_numY), static_cast<uint32_t>(this->m_numX)}, vecData.data(), sizeof(double) * vecData.size());
             }
             file.WriteField("double", preString + "resolution", {1}, &this->m_res, sizeof(double));
             file.WriteField("double", preString + "position", {2,1}, &this->m_position[0], sizeof(double) * this->m_position.size());

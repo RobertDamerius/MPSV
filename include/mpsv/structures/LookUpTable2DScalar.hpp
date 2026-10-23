@@ -165,7 +165,13 @@ template <class Targ> class LookUpTable2DScalar: public mpsv::structures::LookUp
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
-            file.WriteField("double", preString + "data", {static_cast<uint32_t>(this->m_numY), static_cast<uint32_t>(this->m_numX)}, &this->m_lut[0], sizeof(double) * this->m_lut.size());
+            size_t numCells = static_cast<size_t>(this->m_numX) * static_cast<size_t>(this->m_numY);
+            std::vector<double> vecData;
+            vecData.reserve(numCells);
+            for(size_t i = 0; i < numCells; ++i){
+                vecData.push_back(this->m_lut[i]);
+            }
+            file.WriteField("double", preString + "data", {static_cast<uint32_t>(this->m_numY), static_cast<uint32_t>(this->m_numX)}, vecData.data(), sizeof(double) * vecData.size());
             file.WriteField("double", preString + "resolution", {1}, &this->m_res, sizeof(double));
             file.WriteField("double", preString + "position", {2,1}, &this->m_position[0], sizeof(double) * this->m_position.size());
             file.WriteField("double", preString + "normal", {2,1}, &this->m_normal[0], sizeof(double) * this->m_normal.size());
