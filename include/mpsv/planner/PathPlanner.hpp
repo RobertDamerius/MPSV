@@ -441,7 +441,7 @@ class PathPlanner {
         void Rewire(int16_t idxAddedSample, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
             Node& addedSample = m_tree[idxAddedSample];
             for(auto&& index : m_idxNeighbors){
-                if((m_tree[idxAddedSample].iParent == index) || (m_tree[idxAddedSample].iParent < 0)){
+                if(m_tree[idxAddedSample].iParent == index){
                     continue; // cannot be a better parent for its own parent
                 }
 

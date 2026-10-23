@@ -503,7 +503,7 @@ class MotionPlanner {
         void Rewire(int16_t idxAddedSample, const mpsv::planner::MotionPlannerInput& dataIn, const mpsv::planner::MotionPlannerParameterSet& parameter) noexcept {
             Node& addedSample = m_tree[idxAddedSample];
             for(auto&& index : m_idxNeighbors){
-                if((m_tree[idxAddedSample].iParent == index) || (m_tree[idxAddedSample].iParent < 0)){
+                if(m_tree[idxAddedSample].iParent == index){
                     continue; // cannot be a better parent for its own parent
                 }
 
