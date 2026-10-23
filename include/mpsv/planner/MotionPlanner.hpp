@@ -583,26 +583,10 @@ class MotionPlanner {
             for(auto&& i : indices){
                 m_tree[i].trajectoryBuffer.clear();
                 if((m_tree[i].iFirstChild < 0) || (i == m_idxSolutionNode)){
-                    GenerateTrajectoryFromRoot(m_tree[i].trajectoryBuffer, i, staticObstacles, dataIn, parameter);
+                    m_tree.GetPathFromRootToNode(m_tree[i].pathBuffer, i);
+                    (void) m_vehicleSimulator.ExplorePathToEnd(m_tree[i].trajectoryBuffer, dataIn.initialStateAndInput, m_tree[i].pathBuffer, m_regionOfAttraction, staticObstacles, parameter.motionPlanner.sampletime);
                 }
             }
-        }
-
-        /**
-         * @brief Generate trajectory from the root node to a specific node.
-         * @param[out] trajectory Final trajectory from the root node to the specified node. Each element is given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state/input is not inserted in the trajectory.
-         * @param[in] idxNode Index to the node for which to generate the trajectory.
-         * @param[in] staticObstacles List of static obstacles to be used for the guidance law of path exploration.
-         * @param[in] dataIn Input data used for the latest solve.
-         * @param[in] parameter Parameter set used for the latest solve.
-         */
-        void GenerateTrajectoryFromRoot(std::vector<std::array<double,12>>& trajectory, int16_t idxNode, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::MotionPlannerInput& dataIn, const mpsv::planner::MotionPlannerParameterSet& parameter) noexcept {
-            // Get the path from the root
-            std::vector<std::array<double,3>>& pathBuffer = m_tree[idxNode].pathBuffer;
-            m_tree.GetPathFromRootToNode(pathBuffer, idxNode);
-
-            // Simulate trajectory
-            (void) m_vehicleSimulator.ExplorePathToEnd(trajectory, dataIn.initialStateAndInput, pathBuffer, m_regionOfAttraction, staticObstacles, parameter.motionPlanner.sampletime);
         }
 };
 
