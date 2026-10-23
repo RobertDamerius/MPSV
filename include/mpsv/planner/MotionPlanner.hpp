@@ -110,22 +110,16 @@ class MotionPlanner {
                     m_sampleIteration = 0;
                 }
                 m_goalSampleIteration = 0;
-                m_initialSamplesReversed.clear();
-                if(!InitialPathStartsAtInitialPose(dataIn, parameter)){
-                    dataIn.initialPath.clear();
-                }
-                if(dataIn.initialPath.empty()){
-                    dataIn.initialPath.push_back({dataIn.initialStateAndInput[0], dataIn.initialStateAndInput[1], dataIn.initialStateAndInput[2]});
-                }
+                MakeValidInitialPath(dataIn, parameter);
                 TrimPath(dataIn.initialPath, parameter.motionPlanner.maxInputPathLength);
                 mpsv::geometry::OrientedBox samplingArea = SetSamplingArea(dataIn.initialPath, parameter);
-                SetInitialSampleSet(dataIn.initialPath, dataIn.originOldToNew, forceColdStart);
                 SetNumericLimits(samplingArea, parameter);
+                SetInitialSampleSet(dataIn.initialPath, dataIn.originOldToNew, forceColdStart); //#TODO: calling Reconfigure with a lower size after a Solve may invalidate the m_idxSolutionNode
                 m_tree.SetCSpaceVolume(m_pathSampler.GetVolume());
                 BuildCostMap(samplingArea, dataIn.staticObstacles, parameter);
                 m_idxSolutionNode = m_tree.Reset(dataIn.initialStateAndInput);
-                m_tree.GetPathFromRootToNode(m_tree[m_idxSolutionNode].pathBuffer, m_idxSolutionNode); // set path buffer
-                m_tree[m_idxSolutionNode].trajectoryBuffer.clear(); // set trajectory buffer
+                m_tree.GetPathFromRootToNode(m_tree[m_idxSolutionNode].pathBuffer, m_idxSolutionNode); // initialize path buffer
+                m_tree[m_idxSolutionNode].trajectoryBuffer.clear(); // initialize trajectory buffer
                 m_closestDistanceToGoal = mpsv::math::DistanceMetricSE2(dataIn.initialStateAndInput, dataIn.initialPath.back(), parameter.metric.weightPsi);
                 if(parameter.geometry.vehicleShape.CheckCollisionPose(dataIn.staticObstacles, dataIn.initialStateAndInput)){
                     dataOut.errorCode = mpsv::error_code::MOTIONPLANNER_INITIAL_POSE_COLLISION;
@@ -238,19 +232,20 @@ class MotionPlanner {
         }
 
         /**
-         * @brief Check whether the initial path starts at the initial state.
-         * @param[in] dataIn Input data to the motion planner containing the initial path as well as the initial state.
-         * @return True if the initial state corresponds to the start of the initial path, false otherwise.
+         * @brief Make a valid initial path: Ensure the initial path starts at the initial state, creating or extending it if necessary.
+         * @param[inout] dataIn Input data to the motion planner containing the initial path as well as the initial state.
+         * @param[in] parameter The parameter set used to solve the motion planning problem.
          */
-        [[nodiscard]] bool InitialPathStartsAtInitialPose(mpsv::planner::MotionPlannerInput& dataIn, const mpsv::planner::MotionPlannerParameterSet& parameter) noexcept {
+        void MakeValidInitialPath(mpsv::planner::MotionPlannerInput& dataIn, const mpsv::planner::MotionPlannerParameterSet& parameter) noexcept {
+            const std::array<double,3> initialPose{dataIn.initialStateAndInput[0], dataIn.initialStateAndInput[1], dataIn.initialStateAndInput[2]};
             if(dataIn.initialPath.empty()){
-                return false;
+                dataIn.initialPath.push_back(initialPose);
+                return;
             }
             double distance = mpsv::math::DistanceMetricSE2(dataIn.initialPath[0], dataIn.initialStateAndInput, parameter.metric.weightPsi);
-            if(std::fabs(distance) >= m_epsDistanceMetric){
-                return false;
+            if(std::fabs(distance) >= std::numeric_limits<double>::epsilon()){ // m_epsDistanceMetric not available before initial path is validated
+                dataIn.initialPath.insert(dataIn.initialPath.begin(), initialPose);
             }
-            return true;
         }
 
         /**
@@ -316,33 +311,28 @@ class MotionPlanner {
         /**
          * @brief Set the sampling area based on a given path. The area corresponds to the minimum area oriented box enclosing all points of the path, extended by the position sampling range.
          * @param[in] path The path that should be contained in the sampling area.
+         * @param[in] parameter The parameter set used to solve the motion planning problem.
          * @return The oriented box representing the rectangular hull of the sampling area.
          */
         mpsv::geometry::OrientedBox SetSamplingArea(const std::vector<std::array<double,3>>& path, const mpsv::planner::MotionPlannerParameterSet& parameter) noexcept {
             mpsv::geometry::OrientedBox box;
-            const double sqrt2 = std::sqrt(2.0);
-            m_pathSampler.Reset(path, parameter.motionPlanner.samplingRangePosition, parameter.motionPlanner.samplingRangeAngle, parameter.metric.weightPsi);
             box.CreateFromPointCloud(path);
-            box.Extend(parameter.motionPlanner.samplingRangePosition * sqrt2);
+            box.Extend(parameter.motionPlanner.samplingRangePosition * std::sqrt(2.0));
+            m_pathSampler.Reset(path, parameter.motionPlanner.samplingRangePosition, parameter.motionPlanner.samplingRangeAngle, parameter.metric.weightPsi);
             return box;
         }
 
         /**
-         * @brief Set absolute numeric limits. This limit is used to check for equal poses.
+         * @brief Set absolute numeric limits based on the size of the sampling area. This limit is used to check for equal poses.
          * @param[in] samplingArea The current sampling area.
+         * @param[in] parameter The parameter set for path planning.
          */
         void SetNumericLimits(const mpsv::geometry::OrientedBox& samplingArea, const mpsv::planner::MotionPlannerParameterSet& parameter) noexcept {
             std::array<double,2> dimension = samplingArea.GetDimension();
-            double maxDimension = std::max(dimension[0], dimension[1]);
-
-            // Eps for position and angle
-            double epsPosition = std::numeric_limits<double>::epsilon() * std::max(1.0, maxDimension);
+            double epsPosition = std::numeric_limits<double>::epsilon() * std::max(1.0, std::max(dimension[0], dimension[1]));
             double epsAngle = std::numeric_limits<double>::epsilon() * 6.28318530717959;
-
-            // Eps for distance metric sqrt(dx^2 + dy^2 + (w*dpsi)^2)
             double epsWeightedAngle = std::max(1.0, parameter.metric.weightPsi) * epsAngle;
             m_epsDistanceMetric = std::sqrt(2.0*epsPosition*epsPosition + epsWeightedAngle*epsWeightedAngle);
-
             m_tree.SetNumericLimit(m_epsDistanceMetric);
         }
 
