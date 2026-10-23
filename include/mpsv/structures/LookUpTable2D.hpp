@@ -24,7 +24,9 @@ template <class Targ, class Tdata> class LookUpTable2D {
         /**
          * @brief Construct a new 2-dimensional look-up table object.
          */
-        LookUpTable2D() noexcept = default;
+        LookUpTable2D() noexcept {
+            Resize(9);
+        }
 
         /**
          * @brief Destroy the 2-dimensional look-up table object.
@@ -34,53 +36,44 @@ template <class Targ, class Tdata> class LookUpTable2D {
         /**
          * @brief Build the 2D look-up table by applying a new size and calculating new multi-dimensional table values.
          * @param[in] orientedBox The oriented box that represents the area of the LUT.
-         * @param[in] resolution Resolution of the grid map (dimension of one cell). This value must be at least 1.0e-3 and is automatically increased if the dimension is too large (see maxNumCells).
+         * @param[in] resolution Resolution of the grid map (dimension of one cell). This value must be at least 1.0e-3 and is automatically increased if the dimension is too large.
          * @param[in] modInterpolate A modulo factor that indicates when to calculate the data using the LUT function and when to do linear interpolation.
          * @param[in] args User-defined arguments passed to the LUT data callback function.
-         * @param[in] maxNumCells The maximum number of cells the LUT should contain. The resolution of the LUT is automatically adjusted to ensure that the number of cells does not exceed this value.
          */
-        void Build(mpsv::geometry::OrientedBox orientedBox, double resolution, int32_t modInterpolate, const Targ& args, size_t maxNumCells) noexcept {
+        void Build(const mpsv::geometry::OrientedBox& orientedBox, double resolution, int32_t modInterpolate, const Targ& args) noexcept {
             // Ensure correct values
             modInterpolate = std::max(static_cast<int32_t>(1),modInterpolate);
             std::array<double,2> dimension = orientedBox.GetDimension();
 
             // Adjust lower/upper limit of resolution based on maximum number of cells
-            double a = 9.0 - static_cast<double>(maxNumCells);
-            double b = 3.0 * (dimension[0] + dimension[1]);
+            double a = 4.0 - static_cast<double>(m_lut.size()); // maximum value is -5
+            double b = 2.0 * (dimension[0] + dimension[1]);
             double c = dimension[0] * dimension[1];
-            constexpr double eps = std::numeric_limits<double>::epsilon();
-            double r1 = 0.0;
-            double r2 = 0.0;
-            if(std::fabs(a) <= eps){
-                if(std::fabs(b) > eps){
-                    r1 = r2 = -c / b;
-                }
-            }
-            else{
-                double sr = b * b - 4.0 * a * c;
-                if(sr >= 0.0){
-                    sr = std::sqrt(sr);
-                    r1 = (-b + sr) / (a + a);
-                    r2 = (-b - sr) / (a + a);
-                }
-            }
-            m_res = std::max(1.0e-3, std::max(resolution, std::max(r1, r2)));
+            double r = (b + std::sqrt(b * b - 4.0 * a * c)) / (-2.0 * a);
+            m_res = std::max(1.0e-3, std::max(resolution, r));
 
             // Get box parameters and calculate the LUT dimension based on size, resolution and modulo factor
             m_position = orientedBox.GetPosition();
             m_normal = orientedBox.GetNormal();
-            int32_t ux = static_cast<int32_t>(std::ceil(dimension[0] / m_res));
-            int32_t uy = static_cast<int32_t>(std::ceil(dimension[1] / m_res));
-            int32_t mx = (ux - 1) % modInterpolate;
-            int32_t my = (uy - 1) % modInterpolate;
-            ux += mx ? (modInterpolate - mx) : 0;
-            uy += my ? (modInterpolate - my) : 0;
-            m_numX = 2 + std::max(static_cast<int32_t>(1), ux);
-            m_numY = 2 + std::max(static_cast<int32_t>(1), uy);
+            int32_t ux, uy, mx, my;
+            while(true){
+                ux = static_cast<int32_t>(std::ceil(dimension[0] / m_res));
+                uy = static_cast<int32_t>(std::ceil(dimension[1] / m_res));
+                mx = (ux - 1) % modInterpolate;
+                my = (uy - 1) % modInterpolate;
+                ux += mx ? (modInterpolate - mx) : 0;
+                uy += my ? (modInterpolate - my) : 0;
+                m_numX = 2 + std::max(static_cast<int32_t>(1), ux);
+                m_numY = 2 + std::max(static_cast<int32_t>(1), uy);
+                size_t numCells = static_cast<size_t>(m_numX) * static_cast<size_t>(m_numY);
+                if(numCells <= m_lut.size()){
+                    break;
+                }
+                m_res *= std::sqrt(static_cast<double>(numCells) / static_cast<double>(m_lut.size()));
+            }
 
-            // Initialize LUT and set edges to zero
-            m_lut.resize(m_numX * m_numY);
-            int32_t i0 = static_cast<int32_t>(m_lut.size()) - m_numY;
+            // Initialize the active LUT region and set edges to zero
+            int32_t i0 = (m_numX - 1) * m_numY;
             for(int32_t i = 0; i < m_numY; ++i){
                 m_lut[i] = m_lut[i0 + i] = {0.0};
             }
@@ -215,15 +208,16 @@ template <class Targ, class Tdata> class LookUpTable2D {
         }
 
         /**
-         * @brief Reset the look-up table to its default state reducing memory usage.
+         * @brief Resize the look-up table storage and reset it to its default state.
+         * @param[in] maxNumCells The maximum number of cells the look-up table should contain.
          */
-        void Clear(void) noexcept {
+        void Resize(size_t maxNumCells) noexcept {
             m_position = {0.0, 0.0};
             m_normal = {1.0, 0.0};
             m_res = 1.0;
             m_numX = 0;
             m_numY = 0;
-            m_lut = {Tdata{0.0}};
+            m_lut.resize(std::max(size_t{9}, maxNumCells));
             m_lut.shrink_to_fit();
         }
 
@@ -414,15 +408,10 @@ template <class Targ, class Tdata> class LookUpTable2D {
          * The lut position devided by the resolution (@ref m_res) gives the true index position {ix,iy} for the LUT data (@ref m_lut).
          */
         template <class T> std::array<double,2> ConvertToLUTPosition(const T& p) const noexcept {
-            // Convert {p} to LUT position {result} including zero-border
-            // {m_position} is without zero-border, {result} is with zero-border: therefore one cell of [res,res] has to be added
             static_assert(mpsv::is_vec2<T>::value,"Argument {p} must be of type std::array<double,N> with N >= 2!");
-            std::array<double,2> result;
             double ex = p[0] - m_position[0];
             double ey = p[1] - m_position[1];
-            result[0] = m_res + m_normal[0]*ex + m_normal[1]*ey;
-            result[1] = m_res - m_normal[1]*ex + m_normal[0]*ey;
-            return result;
+            return {m_res + m_normal[0]*ex + m_normal[1]*ey, m_res - m_normal[1]*ex + m_normal[0]*ey}; // add one cell of [res,res] to account for the zero-border of the LUT
         }
 };
 

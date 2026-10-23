@@ -56,7 +56,8 @@ class MotionPlanner {
             m_runSolve = false;
             m_tree.Resize(maxNumNodes);
             m_pathSampler.Generate(maxNumSamples);
-            m_costMap.Clear();
+            constexpr size_t maxNumCells = 8192 * 8192;
+            m_costMap.Resize(maxNumCells);
             m_idxNeighbors.resize(maxNumNodes);
             m_idxNeighbors.shrink_to_fit();
             m_idxNeighbors.clear();
@@ -364,7 +365,6 @@ class MotionPlanner {
         void BuildCostMap(mpsv::geometry::OrientedBox samplingArea, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept {
             // The range must be at least the range of the sampling box. This box is further extended by the maximum distance of skeletal points for
             // cost map evaluation and by some safety threshold of two more cells.
-            constexpr size_t maxNumCells = 125000000; // limit to 1 GB
             double maxSekeletalPointDistance = 0.0;
             for(auto&& p : m_parameter.geometry.skeletalPoints){
                 maxSekeletalPointDistance = std::max(maxSekeletalPointDistance, std::sqrt(p[0]*p[0] + p[1]*p[1]));
@@ -372,7 +372,7 @@ class MotionPlanner {
             double additionalBoxExtension = maxSekeletalPointDistance + 2.0 * m_parameter.costMap.resolution;
             samplingArea.Extend(additionalBoxExtension);
             mpsv::structures::CostMapArgument args(m_parameter.costMap.distanceScale, m_parameter.costMap.distanceDecay, staticObstacles);
-            m_costMap.Build(samplingArea, m_parameter.costMap.resolution, m_parameter.costMap.modBreakpoints, args, maxNumCells);
+            m_costMap.Build(samplingArea, m_parameter.costMap.resolution, m_parameter.costMap.modBreakpoints, args);
         }
 
         /**

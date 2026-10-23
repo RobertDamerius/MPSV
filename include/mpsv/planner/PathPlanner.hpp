@@ -51,7 +51,8 @@ class PathPlanner {
             m_runSolve = false;
             m_tree.Resize(maxNumNodes);
             m_boxSampler.Generate(maxNumSamples);
-            m_costMap.Clear();
+            constexpr size_t maxNumCells = 8192 * 8192;
+            m_costMap.Resize(maxNumCells);
             m_idxNeighbors.resize(maxNumNodes);
             m_idxNeighbors.shrink_to_fit();
             m_idxNeighbors.clear();
@@ -196,14 +197,13 @@ class PathPlanner {
          * @param[in] parameter The parameter set for path planning.
          */
         void BuildCostMap(mpsv::geometry::OrientedBox samplingArea, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
-            constexpr size_t maxNumCells = 8192 * 8192;
             double maxSekeletalPointDistance = 0.0;
             for(auto&& p : parameter.geometry.skeletalPoints){
                 maxSekeletalPointDistance = std::max(maxSekeletalPointDistance, std::sqrt(p[0]*p[0] + p[1]*p[1]));
             }
             samplingArea.Extend(maxSekeletalPointDistance + 2.0 * parameter.costMap.resolution); // extend by the maximum distance of skeletal points and two more cells as safety threshold
             mpsv::structures::CostMapArgument args(parameter.costMap.distanceScale, parameter.costMap.distanceDecay, staticObstacles);
-            m_costMap.Build(samplingArea, parameter.costMap.resolution, parameter.costMap.modBreakpoints, args, maxNumCells);
+            m_costMap.Build(samplingArea, parameter.costMap.resolution, parameter.costMap.modBreakpoints, args);
         }
 
         /**
