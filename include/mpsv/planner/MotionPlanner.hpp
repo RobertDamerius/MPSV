@@ -368,7 +368,7 @@ class MotionPlanner {
             int16_t idxNearest = m_tree.FindNearestNode(randomSample, parameter.metric.weightPsi);
             auto [success, newSample] = LocalPlanning(idxNearest, randomSample, dataIn, parameter);
             if(success){
-                if(!m_tree.FindNearestNeighbors(m_idxNeighbors, newSample, m_tree.GetOptimalRadius(), parameter.metric.weightPsi)){
+                if(m_tree.FindNearestNeighbors(m_idxNeighbors, newSample, m_tree.GetOptimalRadius(), parameter.metric.weightPsi)){
                     int16_t idxBestParent = FindBestParent(newSample, idxNearest, dataIn, parameter);  // updates newSample.cost
                     int16_t idxAddedSample = m_tree.Add(idxBestParent, newSample);
                     Rewire(idxAddedSample, dataIn, parameter);
