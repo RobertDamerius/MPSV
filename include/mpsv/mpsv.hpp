@@ -54,7 +54,6 @@
 #include <mpsv/planner/MotionPlannerInput.hpp>
 #include <mpsv/planner/MotionPlannerOutput.hpp>
 #include <mpsv/planner/MotionPlannerParameterSet.hpp>
-#include <mpsv/planner/MotionPlannerState.hpp>
 #include <mpsv/planner/MotionPlannerTree.hpp>
 #include <mpsv/planner/ParameterTypes.hpp>
 #include <mpsv/planner/PathPlanner.hpp>
