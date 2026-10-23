@@ -227,7 +227,7 @@ class MotionPlanner {
         mpsv::error_code BuildFinalTrajectory(const mpsv::planner::MotionPlannerInput& dataIn, const mpsv::planner::MotionPlannerParameterSet& parameter, double minTrajectoryDuration){
             uint32_t minNumSteps = static_cast<uint32_t>(std::ceil(std::max(0.0, minTrajectoryDuration) / parameter.motionPlanner.sampletime));
             m_tree.GetPathFromRootToNode(m_tree[m_idxSolutionNode].pathBuffer, m_idxSolutionNode);
-            if(!PathFromRootIsFeasible(dataIn.initialStateAndInput, parameter, m_tree[m_idxSolutionNode].pathBuffer, dataIn.staticObstacles, m_tree[m_idxSolutionNode].trajectoryBuffer, minNumSteps)){
+            if(!PathFromRootIsFeasible(m_tree[m_idxSolutionNode], dataIn, parameter, minNumSteps)){
                 return mpsv::error_code::MOTIONPLANNER_INFEASIBLE_TRAJECTORY;
             }
             return mpsv::error_code::NONE;
@@ -444,7 +444,7 @@ class MotionPlanner {
             }
             m_tree.GetPathFromRootToNode(source.pathBuffer, idxSource);
             source.pathBuffer.push_back(newSample.pose);
-            if(!PathFromRootIsFeasible(dataIn.initialStateAndInput, parameter, source.pathBuffer, dataIn.staticObstacles, source.trajectoryBuffer)){
+            if(!PathFromRootIsFeasible(source, dataIn, parameter)){
                 return result;
             }
             double costHeading = mpsv::math::SwayMetric(source.pose, newSample.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
@@ -482,7 +482,7 @@ class MotionPlanner {
                     if((resultCost + m_epsDistanceMetric) < newSample.cost){
                         m_tree.GetPathFromRootToNode(m_tree[index].pathBuffer, index);
                         m_tree[index].pathBuffer.push_back(newSample.pose);
-                        if(!PathFromRootIsFeasible(dataIn.initialStateAndInput, parameter, m_tree[index].pathBuffer, dataIn.staticObstacles, m_tree[index].trajectoryBuffer)){
+                        if(!PathFromRootIsFeasible(m_tree[index], dataIn, parameter)){
                             continue; // infeasible, cannot be a better parent
                         }
                         idxBestParent = index;
@@ -532,7 +532,7 @@ class MotionPlanner {
                         #pragma omp parallel for shared(anythingInfeasible, m_tree, dataIn, parameter)
                         for(auto&& idxLeaf : idxLeafNodes){
                             m_tree.GetPathFromRootToNode(m_tree[idxLeaf].pathBuffer, idxLeaf);
-                            if(!PathFromRootIsFeasible(dataIn.initialStateAndInput, parameter, m_tree[idxLeaf].pathBuffer, dataIn.staticObstacles, m_tree[idxLeaf].trajectoryBuffer)){
+                            if(!PathFromRootIsFeasible(m_tree[idxLeaf], dataIn, parameter)){
                                 anythingInfeasible = true;
                             }
                         }
@@ -553,23 +553,18 @@ class MotionPlanner {
 
         /**
          * @brief Check whether a given path starting from the root node is feasible.
-         * @param[in] initialStateAndInput Initial state/input value from which to start the simulation.
+         * @param[inout] node The node containing the path to be converted to a trajectory.
+         * @param[in] dataIn Input data that represents the motion planning problem to be solved.
          * @param[in] parameter Parameters for motion planning.
-         * @param[in] path The path starting from the root node. This path is used for trajectory generation using a path controller and a nonlinear model of the vehicle.
-         * @param[in] staticObstacles Static obstacles to be considered for collision checks.
-         * @param[inout] trajectoryBuffer A buffer to be used for trajectory generation.
          * @param[in] minNumSimulationSteps The minimum number of simulation steps to be computed during path exploration (must be at least 1 and at most 0x0000FFFF), defaults to 1.
          * @return True if path is dynamically feasible, e.g. the resulting trajectory is feasible along that path, false otherwise.
          */
-        [[nodiscard]] bool PathFromRootIsFeasible(const std::array<double,12>& initialStateAndInput, const mpsv::planner::MotionPlannerParameterSet& parameter, const std::vector<std::array<double,3>>& path, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, std::vector<std::array<double,12>>& trajectoryBuffer, uint32_t minNumSimulationSteps = 1) noexcept {
-            uint32_t numSteps = m_vehicleSimulator.ExplorePathToEnd(trajectoryBuffer, initialStateAndInput, path, m_regionOfAttraction, staticObstacles, parameter.motionPlanner.sampletime, minNumSimulationSteps);
+        [[nodiscard]] bool PathFromRootIsFeasible(Node& node, const mpsv::planner::MotionPlannerInput& dataIn, const mpsv::planner::MotionPlannerParameterSet& parameter, uint32_t minNumSimulationSteps = 1) noexcept {
+            uint32_t numSteps = m_vehicleSimulator.ExplorePathToEnd(node.trajectoryBuffer, dataIn.initialStateAndInput, node.pathBuffer, m_regionOfAttraction, dataIn.staticObstacles, parameter.motionPlanner.sampletime, minNumSimulationSteps);
             if(numSteps >= 0x0000FFFF){
                 return false;
             }
-            if(parameter.geometry.vehicleShape.CheckCollisionCurve(staticObstacles, trajectoryBuffer, parameter.geometry.collisionCheckMaxPositionDeviation, parameter.geometry.collisionCheckMaxAngleDeviation)){
-                return false;
-            }
-            return true;
+            return !parameter.geometry.vehicleShape.CheckCollisionCurve(dataIn.staticObstacles, node.trajectoryBuffer, parameter.geometry.collisionCheckMaxPositionDeviation, parameter.geometry.collisionCheckMaxAngleDeviation);
         }
 
         /**
