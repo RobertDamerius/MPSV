@@ -219,6 +219,8 @@ class MotionPlanner {
 
         /**
          * @brief Build the final trajectory. This member function calculates the reference path and the trajectory for the current solution node.
+         * @param[in] dataIn The input data that represents the motion planning problem to be solved.
+         * @param[in] parameter The parameter set for motion planning.
          * @param[in] minTrajectoryDuration The minimum duration (>= 0) of the trajectory in seconds.
          * @return mpsv::error_code::NONE if the resulting trajectory is feasible, otherwise mpsv::error_code::MOTIONPLANNER_INFEASIBLE_TRAJECTORY.
          */
