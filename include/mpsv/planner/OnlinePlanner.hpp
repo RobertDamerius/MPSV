@@ -234,6 +234,7 @@ class OnlinePlanner {
             m_state.pathPlanner.path.swap(m_sequentialPlannerOutput.pathPlanner.path);
             m_state.pathPlanner.goalReached = m_sequentialPlannerOutput.pathPlanner.goalReached;
             m_state.pathPlanner.errorCode = m_sequentialPlannerOutput.pathPlanner.errorCode;
+            m_state.pathPlanner.numberOfPerformedIterations = m_sequentialPlannerOutput.pathPlanner.numberOfPerformedIterations;
             m_state.pathPlanner.timestampOfComputationUTC = m_sequentialPlannerOutput.pathPlanner.timestampOfComputationUTC;
             m_state.pathPlanner.cost = m_sequentialPlannerOutput.pathPlanner.cost;
             m_state.motionPlanner.referencePath.swap(m_sequentialPlannerOutput.motionPlanner.referencePath);
@@ -317,6 +318,7 @@ class OnlinePlanner {
             m_state.pathPlanner.path.swap(m_sequentialPlannerOutput.pathPlanner.path);
             m_state.pathPlanner.goalReached = m_sequentialPlannerOutput.pathPlanner.goalReached;
             m_state.pathPlanner.errorCode = m_sequentialPlannerOutput.pathPlanner.errorCode;
+            m_state.pathPlanner.numberOfPerformedIterations = m_sequentialPlannerOutput.pathPlanner.numberOfPerformedIterations;
             m_state.pathPlanner.timestampOfComputationUTC = m_sequentialPlannerOutput.pathPlanner.timestampOfComputationUTC;
             m_state.pathPlanner.cost = m_sequentialPlannerOutput.pathPlanner.cost;
             m_state.motionPlanner.referencePath.swap(m_sequentialPlannerOutput.motionPlanner.referencePath);
