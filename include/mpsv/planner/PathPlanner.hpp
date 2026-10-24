@@ -109,14 +109,12 @@ class PathPlanner {
             }
 
             // Solve the path planning problem by doing several iterations
-            if(mpsv::error_code::NONE == dataOut.errorCode){
-                double maxIterationTime = 0.0;
-                while(m_runSolve && (mpsv::error_code::NONE == dataOut.errorCode) && ((maxIterationTime + executionCounter.TimeToStart()) < maxComputationTime)){
-                    mpsv::runtime::PerformanceCounter iterationCounter;
-                    dataOut.errorCode = Iterate(dataIn, parameter);
-                    dataOut.numberOfPerformedIterations++;
-                    maxIterationTime = std::max(maxIterationTime, iterationCounter.TimeToStart());
-                }
+            double maxIterationTime = 0.0;
+            while(m_runSolve && (mpsv::error_code::NONE == dataOut.errorCode) && ((maxIterationTime + executionCounter.TimeToStart()) < maxComputationTime)){
+                mpsv::runtime::PerformanceCounter iterationCounter;
+                dataOut.errorCode = Iterate(dataIn, parameter);
+                dataOut.numberOfPerformedIterations++;
+                maxIterationTime = std::max(maxIterationTime, iterationCounter.TimeToStart());
             }
 
             // Assign output
