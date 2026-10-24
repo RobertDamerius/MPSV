@@ -117,12 +117,17 @@ class MotionPlanner {
                 SetInitialSampleSet(dataIn.initialPath, dataIn.originOldToNew, forceColdStart);
                 m_tree.SetCSpaceVolume(m_pathSampler.GetVolume());
                 BuildCostMap(samplingArea, dataIn.staticObstacles, parameter);
-                m_idxSolutionNode = m_tree.Reset(dataIn.initialStateAndInput); //#TODO: handle negative return value
-                m_tree.GetPathFromRootToNode(m_tree[m_idxSolutionNode].pathBuffer, m_idxSolutionNode); // initialize path buffer
-                m_tree[m_idxSolutionNode].trajectoryBuffer.clear(); // initialize trajectory buffer
-                m_closestDistanceToGoal = mpsv::math::DistanceMetricSE2(dataIn.initialStateAndInput, dataIn.initialPath.back(), parameter.metric.weightPsi);
-                if(parameter.geometry.vehicleShape.CheckCollisionPose(dataIn.staticObstacles, dataIn.initialStateAndInput)){
-                    dataOut.errorCode = mpsv::error_code::MOTIONPLANNER_INITIAL_POSE_COLLISION;
+                m_idxSolutionNode = m_tree.Reset(dataIn.initialStateAndInput);
+                if(m_idxSolutionNode < 0){
+                    dataOut.errorCode = mpsv::error_code::MOTIONPLANNER_OUT_OF_NODES;
+                }
+                else{
+                    m_tree.GetPathFromRootToNode(m_tree[m_idxSolutionNode].pathBuffer, m_idxSolutionNode); // initialize path buffer
+                    m_tree[m_idxSolutionNode].trajectoryBuffer.clear(); // initialize trajectory buffer
+                    m_closestDistanceToGoal = mpsv::math::DistanceMetricSE2(dataIn.initialStateAndInput, dataIn.initialPath.back(), parameter.metric.weightPsi);
+                    if(parameter.geometry.vehicleShape.CheckCollisionPose(dataIn.staticObstacles, dataIn.initialStateAndInput)){
+                        dataOut.errorCode = mpsv::error_code::MOTIONPLANNER_INITIAL_POSE_COLLISION;
+                    }
                 }
             }
 
@@ -358,7 +363,10 @@ class MotionPlanner {
             if(success){
                 if(m_tree.FindNearestNeighbors(m_idxNeighbors, newSample, m_tree.GetOptimalRadius(), parameter.metric.weightPsi)){
                     int16_t idxBestParent = FindBestParent(newSample, idxNearest, dataIn, parameter);  // updates newSample.cost
-                    int16_t idxAddedSample = m_tree.Add(idxBestParent, newSample); //#TODO: handle negative return value
+                    int16_t idxAddedSample = m_tree.Add(idxBestParent, newSample);
+                    if(idxAddedSample < 0){
+                        return mpsv::error_code::PATHPLANNER_OUT_OF_NODES;
+                    }
                     Rewire(idxAddedSample, dataIn, parameter);
                     double distanceToGoal = mpsv::math::DistanceMetricSE2(m_tree[idxAddedSample].pose, dataIn.initialPath.back(), parameter.metric.weightPsi);
                     if(distanceToGoal < m_closestDistanceToGoal){
