@@ -135,9 +135,6 @@ class MotionPlanner {
                     dataOut.numberOfPerformedIterations++;
                     maxIterationTime = std::max(maxIterationTime, iterationCounter.TimeToStart());
                 }
-                if(error_code::NONE == dataOut.errorCode){
-                    dataOut.errorCode = BuildFinalTrajectory(dataIn, parameter, minTrajectoryDuration);
-                }
             }
 
             // Assign output
@@ -147,6 +144,11 @@ class MotionPlanner {
                 dataOut.referencePath.swap(m_tree[m_idxSolutionNode].pathBuffer);
                 dataOut.trajectory.swap(m_tree[m_idxSolutionNode].trajectoryBuffer);
                 dataOut.sampletime = parameter.motionPlanner.sampletime;
+                uint32_t minNumSteps = static_cast<uint32_t>(std::ceil(std::max(0.0, minTrajectoryDuration) / parameter.motionPlanner.sampletime));
+                m_tree.GetPathFromRootToNode(m_tree[m_idxSolutionNode].pathBuffer, m_idxSolutionNode);
+                if(!PathFromRootIsFeasible(m_tree[m_idxSolutionNode], dataIn, parameter, minNumSteps)){
+                    dataOut.errorCode= mpsv::error_code::MOTIONPLANNER_INFEASIBLE_TRAJECTORY;
+                }
             }
             dataOut.timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
             m_runSolve = false;
@@ -217,22 +219,6 @@ class MotionPlanner {
         std::vector<std::array<double,3>> m_initialSamplesReversed;                // Initial samples, in reverse sampling order.
         mpsv::control::VehicleSimulator m_vehicleSimulator;                        // The vehicle simulator to be used for generating dynamically feasible trajectories.
         mpsv::control::RegionOfAttraction m_regionOfAttraction;                    // The region of attraction to be used to check if a state enters the region around a pose.
-
-        /**
-         * @brief Build the final trajectory. This member function calculates the reference path and the trajectory for the current solution node.
-         * @param[in] dataIn The input data that represents the motion planning problem to be solved.
-         * @param[in] parameter The parameter set for motion planning.
-         * @param[in] minTrajectoryDuration The minimum duration (>= 0) of the trajectory in seconds.
-         * @return mpsv::error_code::NONE if the resulting trajectory is feasible, otherwise mpsv::error_code::MOTIONPLANNER_INFEASIBLE_TRAJECTORY.
-         */
-        mpsv::error_code BuildFinalTrajectory(const mpsv::planner::MotionPlannerInput& dataIn, const mpsv::planner::MotionPlannerParameterSet& parameter, double minTrajectoryDuration){
-            uint32_t minNumSteps = static_cast<uint32_t>(std::ceil(std::max(0.0, minTrajectoryDuration) / parameter.motionPlanner.sampletime));
-            m_tree.GetPathFromRootToNode(m_tree[m_idxSolutionNode].pathBuffer, m_idxSolutionNode);
-            if(!PathFromRootIsFeasible(m_tree[m_idxSolutionNode], dataIn, parameter, minNumSteps)){
-                return mpsv::error_code::MOTIONPLANNER_INFEASIBLE_TRAJECTORY;
-            }
-            return mpsv::error_code::NONE;
-        }
 
         /**
          * @brief Make a valid initial path: Ensure the initial path starts at the initial state, creating or extending it if necessary.
