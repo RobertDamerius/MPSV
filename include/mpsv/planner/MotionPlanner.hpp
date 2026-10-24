@@ -62,7 +62,7 @@ class MotionPlanner {
             m_idxNeighbors.clear();
             m_sampleIteration = 0;
             m_goalSampleIteration = 0;
-            m_idxSolutionNode = 0;
+            m_idxSolutionNode = -1;
             m_closestDistanceToGoal = std::numeric_limits<double>::infinity();
             m_epsDistanceMetric = std::numeric_limits<double>::epsilon();
             m_initialSamplesReversed.clear();
@@ -86,7 +86,7 @@ class MotionPlanner {
             mpsv::runtime::PerformanceCounter executionCounter;
 
             // Check validity of parameters and input
-            m_idxSolutionNode = 0;
+            m_idxSolutionNode = -1;
             dataOut.Clear();
             dataOut.errorCode = parameter.IsValid();
             if(error_code::NONE == dataOut.errorCode){
@@ -114,10 +114,10 @@ class MotionPlanner {
                 TrimPath(dataIn.initialPath, parameter.motionPlanner.maxInputPathLength);
                 mpsv::geometry::OrientedBox samplingArea = SetSamplingArea(dataIn.initialPath, parameter);
                 SetNumericLimits(samplingArea, parameter);
-                SetInitialSampleSet(dataIn.initialPath, dataIn.originOldToNew, forceColdStart); //#TODO: calling Reconfigure with a lower size after a Solve may invalidate the m_idxSolutionNode
+                SetInitialSampleSet(dataIn.initialPath, dataIn.originOldToNew, forceColdStart);
                 m_tree.SetCSpaceVolume(m_pathSampler.GetVolume());
                 BuildCostMap(samplingArea, dataIn.staticObstacles, parameter);
-                m_idxSolutionNode = m_tree.Reset(dataIn.initialStateAndInput);
+                m_idxSolutionNode = m_tree.Reset(dataIn.initialStateAndInput); //#TODO: handle negative return value
                 m_tree.GetPathFromRootToNode(m_tree[m_idxSolutionNode].pathBuffer, m_idxSolutionNode); // initialize path buffer
                 m_tree[m_idxSolutionNode].trajectoryBuffer.clear(); // initialize trajectory buffer
                 m_closestDistanceToGoal = mpsv::math::DistanceMetricSE2(dataIn.initialStateAndInput, dataIn.initialPath.back(), parameter.metric.weightPsi);
@@ -140,14 +140,15 @@ class MotionPlanner {
                 }
             }
 
-            // assign output
-            dataOut.goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
-            dataOut.cost = m_tree[m_idxSolutionNode].cost;
-            dataOut.referencePath.swap(m_tree[m_idxSolutionNode].pathBuffer);
-            dataOut.trajectory.swap(m_tree[m_idxSolutionNode].trajectoryBuffer);
-            dataOut.sampletime = parameter.motionPlanner.sampletime;
+            // Assign output
+            if(m_idxSolutionNode >= 0){
+                dataOut.goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
+                dataOut.cost = m_tree[m_idxSolutionNode].cost;
+                dataOut.referencePath.swap(m_tree[m_idxSolutionNode].pathBuffer);
+                dataOut.trajectory.swap(m_tree[m_idxSolutionNode].trajectoryBuffer);
+                dataOut.sampletime = parameter.motionPlanner.sampletime;
+            }
             dataOut.timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
-
             m_runSolve = false;
         }
 
@@ -210,7 +211,7 @@ class MotionPlanner {
         std::atomic<bool> m_runSolve{false};                                       // True if a solve operation is running, false if not or is requested to terminate.
         uint32_t m_sampleIteration{0};                                             // Index of the next random sample.
         uint32_t m_goalSampleIteration{0};                                         // Goal-sampling iteration counter.
-        int16_t m_idxSolutionNode{0};                                              // Index to the current solution node.
+        int16_t m_idxSolutionNode{-1};                                             // Index to the solution node or negative if no solution node exists.
         double m_closestDistanceToGoal{std::numeric_limits<double>::infinity()};   // Distance from the solution to the goal.
         double m_epsDistanceMetric{std::numeric_limits<double>::epsilon()};        // Eps (numeric threshold) for distance metric.
         std::vector<std::array<double,3>> m_initialSamplesReversed;                // Initial samples, in reverse sampling order.
@@ -290,18 +291,21 @@ class MotionPlanner {
          */
         void SetInitialSampleSet(const std::vector<std::array<double,3>>& initialPath, std::array<double,2> originOldToNew, bool forceColdStart) noexcept {
             m_initialSamplesReversed.clear();
-            if(!forceColdStart){
-                // Transform tree to new origin and use old solution path as initial sample set
-                m_tree.TransformToNewOrigin(originOldToNew);
-                m_tree.GetPathFromRootToNode(m_tree[m_idxSolutionNode].pathBuffer, m_idxSolutionNode);
+            //#TODO: implement new warm start that uses old solution path
+            (void)originOldToNew;
+            (void)forceColdStart;
+            // if(!forceColdStart){
+            //     // Transform tree to new origin and use old solution path as initial sample set
+            //     m_tree.TransformToNewOrigin(originOldToNew);
+            //     m_tree.GetPathFromRootToNode(m_tree[m_idxSolutionNode].pathBuffer, m_idxSolutionNode);
 
-                // Use old solution path as initial sample set if those poses are inside the new path sampling area
-                for(auto&& pose : m_tree[m_idxSolutionNode].pathBuffer){
-                    if(m_pathSampler.IsInside(pose)){
-                        m_initialSamplesReversed.push_back(pose);
-                    }
-                }
-            }
+            //     // Use old solution path as initial sample set if those poses are inside the new path sampling area
+            //     for(auto&& pose : m_tree[m_idxSolutionNode].pathBuffer){
+            //         if(m_pathSampler.IsInside(pose)){
+            //             m_initialSamplesReversed.push_back(pose);
+            //         }
+            //     }
+            // }
 
             // Insert initial path to sample set (exclude first pose, that would be the initial pose)
             m_initialSamplesReversed.insert(m_initialSamplesReversed.end(), initialPath.begin() + 1, initialPath.end());
@@ -370,7 +374,7 @@ class MotionPlanner {
             if(success){
                 if(m_tree.FindNearestNeighbors(m_idxNeighbors, newSample, m_tree.GetOptimalRadius(), parameter.metric.weightPsi)){
                     int16_t idxBestParent = FindBestParent(newSample, idxNearest, dataIn, parameter);  // updates newSample.cost
-                    int16_t idxAddedSample = m_tree.Add(idxBestParent, newSample);
+                    int16_t idxAddedSample = m_tree.Add(idxBestParent, newSample); //#TODO: handle negative return value
                     Rewire(idxAddedSample, dataIn, parameter);
                     double distanceToGoal = mpsv::math::DistanceMetricSE2(m_tree[idxAddedSample].pose, dataIn.initialPath.back(), parameter.metric.weightPsi);
                     if(distanceToGoal < m_closestDistanceToGoal){

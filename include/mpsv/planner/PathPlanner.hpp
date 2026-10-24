@@ -97,12 +97,12 @@ class PathPlanner {
                 RemoveObstaclesOutsideAreaOfInterest(dataIn.staticObstacles, samplingArea, parameter);
                 if(parameter.geometry.vehicleShape.CheckCollisionPose(dataIn.staticObstacles, dataIn.initialPose)){
                     dataOut.errorCode = mpsv::error_code::PATHPLANNER_INITIAL_POSE_COLLISION;
-                    m_idxSolutionNode = m_tree.Reset(dataIn.initialPose);
+                    m_idxSolutionNode = m_tree.Reset(dataIn.initialPose); //#TODO: handle negative return value
                     m_closestDistanceToGoal = mpsv::math::DistanceMetricSE2(dataIn.initialPose, dataIn.finalPose, parameter.metric.weightPsi);
                 }
                 else{
                     if(forceColdStart || !WarmStart(dataIn, parameter)){
-                        m_idxSolutionNode = m_tree.Reset(dataIn.initialPose);
+                        m_idxSolutionNode = m_tree.Reset(dataIn.initialPose); //#TODO: handle negative return value
                         m_closestDistanceToGoal = mpsv::math::DistanceMetricSE2(dataIn.initialPose, dataIn.finalPose, parameter.metric.weightPsi);
                     }
                 }
@@ -119,7 +119,7 @@ class PathPlanner {
                 }
             }
 
-            // assign output
+            // Assign output
             if(m_idxSolutionNode >= 0){
                 dataOut.goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
                 dataOut.cost = m_tree[m_idxSolutionNode].cost;
@@ -319,7 +319,7 @@ class PathPlanner {
             if(success){
                 if(m_tree.FindNearestNeighbors(m_idxNeighbors, newSample, m_tree.GetOptimalRadius(), parameter.metric.weightPsi)){
                     int16_t idxBestParent = FindBestParent(newSample, idxNearest, dataIn.staticObstacles, parameter); // updates newSample.cost
-                    int16_t idxAddedSample = m_tree.Add(idxBestParent, newSample);
+                    int16_t idxAddedSample = m_tree.Add(idxBestParent, newSample); //#TODO: handle negative return value
                     Rewire(idxAddedSample, dataIn.staticObstacles, parameter);
                     double distanceToGoal = mpsv::math::DistanceMetricSE2(m_tree[idxAddedSample].pose, dataIn.finalPose, parameter.metric.weightPsi);
                     if(distanceToGoal < m_closestDistanceToGoal){
