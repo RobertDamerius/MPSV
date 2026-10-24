@@ -69,6 +69,7 @@ class MotionPlanner {
             m_regionOfAttraction.Clear();
             m_vehicleSimulator.ClearController();
             m_vehicleSimulator.ClearModel();
+            m_previousSolutionPath.clear();
         }
 
         /**
@@ -141,6 +142,7 @@ class MotionPlanner {
             }
 
             // Assign output
+            m_previousSolutionPath.clear();
             if(m_idxSolutionNode >= 0){
                 dataOut.goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
                 dataOut.cost = m_tree[m_idxSolutionNode].cost;
@@ -152,6 +154,7 @@ class MotionPlanner {
                 if(!PathFromRootIsFeasible(m_tree[m_idxSolutionNode], dataIn, parameter, minNumSteps)){
                     dataOut.errorCode= mpsv::error_code::MOTIONPLANNER_INFEASIBLE_TRAJECTORY;
                 }
+                m_previousSolutionPath.swap(m_tree[m_idxSolutionNode].pathBuffer);
             }
             dataOut.timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
             m_runSolve = false;
@@ -222,6 +225,7 @@ class MotionPlanner {
         std::vector<std::array<double,3>> m_initialSamplesReversed;                // Initial samples, in reverse sampling order.
         mpsv::control::VehicleSimulator m_vehicleSimulator;                        // The vehicle simulator to be used for generating dynamically feasible trajectories.
         mpsv::control::RegionOfAttraction m_regionOfAttraction;                    // The region of attraction to be used to check if a state enters the region around a pose.
+        std::vector<std::array<double,3>> m_previousSolutionPath;                  // The solution path of the previous solve operation.
 
         /**
          * @brief Make a valid initial path: Ensure the initial path starts at the initial state, creating or extending it if necessary.
@@ -275,26 +279,19 @@ class MotionPlanner {
          * @param[in] originOldToNew Translation between two consecutive problems. If the origin of the previous problem is different to the origin of the new problem, then the old solution must be
          * transformed to be used as initial sample set in the new problem. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).
          * @param[in] forceColdStart True if the initial sample set of the motion planner should be initialized based on the input path only. False if the previous solution path should also be included into the sample set.
-         * @details The sample set contains the old solution path followed by the initial path (excluding its initial pose). The use of the old solution path is advantageous because the it may have a higher
-         * probability of being collision free compared to the initial path of the path planner.
          */
         void SetInitialSampleSet(const std::vector<std::array<double,3>>& initialPath, std::array<double,2> originOldToNew, bool forceColdStart) noexcept {
             m_initialSamplesReversed.clear();
-            //#TODO: implement new warm start that uses old solution path
-            (void)originOldToNew;
-            (void)forceColdStart;
-            // if(!forceColdStart){
-            //     // Transform tree to new origin and use old solution path as initial sample set
-            //     m_tree.TransformToNewOrigin(originOldToNew);
-            //     m_tree.GetPathFromRootToNode(m_tree[m_idxSolutionNode].pathBuffer, m_idxSolutionNode);
-
-            //     // Use old solution path as initial sample set if those poses are inside the new path sampling area
-            //     for(auto&& pose : m_tree[m_idxSolutionNode].pathBuffer){
-            //         if(m_pathSampler.IsInside(pose)){
-            //             m_initialSamplesReversed.push_back(pose);
-            //         }
-            //     }
-            // }
+            if(!forceColdStart){
+                // Transform previous solution to new origin and use it as initial sample set
+                for(auto&& pose : m_previousSolutionPath){
+                    pose[0] -= originOldToNew[0];
+                    pose[1] -= originOldToNew[1];
+                    if(m_pathSampler.IsInside(pose)){
+                        m_initialSamplesReversed.push_back(pose);
+                    }
+                }
+            }
 
             // Insert initial path to sample set (exclude first pose, that would be the initial pose)
             m_initialSamplesReversed.insert(m_initialSamplesReversed.end(), initialPath.begin() + 1, initialPath.end());
