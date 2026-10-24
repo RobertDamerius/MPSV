@@ -58,7 +58,7 @@ class PathPlanner {
             m_idxNeighbors.clear();
             m_sampleIteration = 0;
             m_goalSampleIteration = 0;
-            m_idxSolutionNode = 0;
+            m_idxSolutionNode = -1;
             m_closestDistanceToGoal = std::numeric_limits<double>::infinity();
             m_epsDistanceMetric = std::numeric_limits<double>::epsilon();
         }
@@ -77,7 +77,7 @@ class PathPlanner {
             mpsv::runtime::PerformanceCounter executionCounter;
 
             // Check validity of parameters and input
-            m_idxSolutionNode = 0;
+            m_idxSolutionNode = -1;
             dataOut.Clear();
             dataOut.errorCode = parameter.IsValid();
             if(error_code::NONE == dataOut.errorCode){
@@ -120,11 +120,12 @@ class PathPlanner {
             }
 
             // assign output
-            dataOut.goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
-            dataOut.cost = m_tree[m_idxSolutionNode].cost;
-            m_tree.GetPathFromRootToNode(dataOut.path, m_idxSolutionNode);
+            if(m_idxSolutionNode >= 0){
+                dataOut.goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
+                dataOut.cost = m_tree[m_idxSolutionNode].cost;
+                m_tree.GetPathFromRootToNode(dataOut.path, m_idxSolutionNode);
+            }
             dataOut.timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
-
             m_runSolve = false;
         }
 
@@ -148,7 +149,7 @@ class PathPlanner {
         std::atomic<bool> m_runSolve{false};                                       // True if a solve operation is running, false if not or is requested to terminate.
         uint32_t m_sampleIteration{0};                                             // Number of iterations since the last random sample was drawn.
         uint32_t m_goalSampleIteration{0};                                         // Number of iterations since the last goal sample was drawn.
-        int16_t m_idxSolutionNode{0};                                              // Index to the solution node.
+        int16_t m_idxSolutionNode{-1};                                             // Index to the solution node or negative if no solution node exists.
         double m_closestDistanceToGoal{std::numeric_limits<double>::infinity()};   // Closest distance to the goal pose from the current solution node.
         double m_epsDistanceMetric{std::numeric_limits<double>::epsilon()};        // Eps (numeric threshold) for distance metric.
 
@@ -289,7 +290,7 @@ class PathPlanner {
 
             // Find node with closest distance to new goal
             m_closestDistanceToGoal = std::numeric_limits<double>::infinity();
-            m_idxSolutionNode = 0;
+            m_idxSolutionNode = idxRoot;
             const std::vector<int16_t>& indices = m_tree.GetActiveIndices();
             double distance;
             for(auto&& i : indices){
