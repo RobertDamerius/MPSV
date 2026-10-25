@@ -141,16 +141,20 @@ class MotionPlanner {
 
             // Assign output
             if((m_idxSolutionNode >= 0) && (error_code::NONE == dataOut.errorCode)){
-                dataOut.goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
-                dataOut.cost = m_tree[m_idxSolutionNode].cost;
-                dataOut.sampletime = parameter.motionPlanner.sampletime;
-                uint32_t minNumSteps = static_cast<uint32_t>(std::ceil(std::max(0.0, minTrajectoryDuration) / parameter.motionPlanner.sampletime));
+                constexpr uint32_t maxNumSimulationSteps = 0x0000FFFF;
+                double requestedNumSteps = std::ceil(std::max(0.0, minTrajectoryDuration) / parameter.motionPlanner.sampletime);
+                uint32_t minNumSteps = (requestedNumSteps >= static_cast<double>(maxNumSimulationSteps)) ? maxNumSimulationSteps : static_cast<uint32_t>(requestedNumSteps);
                 m_tree.GetPathFromRootToNode(m_tree[m_idxSolutionNode].pathBuffer, m_idxSolutionNode);
                 if(!PathFromRootIsFeasible(m_tree[m_idxSolutionNode], dataIn, parameter, minNumSteps)){
-                    dataOut.errorCode= mpsv::error_code::MOTIONPLANNER_INFEASIBLE_TRAJECTORY;
+                    dataOut.errorCode = mpsv::error_code::MOTIONPLANNER_INFEASIBLE_TRAJECTORY;
                 }
-                dataOut.referencePath.swap(m_tree[m_idxSolutionNode].pathBuffer);
-                dataOut.trajectory.swap(m_tree[m_idxSolutionNode].trajectoryBuffer);
+                else{
+                    dataOut.goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
+                    dataOut.cost = m_tree[m_idxSolutionNode].cost;
+                    dataOut.sampletime = parameter.motionPlanner.sampletime;
+                    dataOut.referencePath.swap(m_tree[m_idxSolutionNode].pathBuffer);
+                    dataOut.trajectory.swap(m_tree[m_idxSolutionNode].trajectoryBuffer);
+                }
             }
             dataOut.timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
             m_runSolve = false;
