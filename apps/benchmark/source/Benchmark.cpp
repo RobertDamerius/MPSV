@@ -349,7 +349,7 @@ uint32_t Benchmark::MotionPlanning(void){
     }
 
     // Run actual motion planning
-    planner.Solve(dataOut, dataIn, parameterSet, 1.0, 0.0, false);
+    planner.Solve(dataOut, dataIn, parameterSet, 1.0, false);
     return dataOut.numberOfPerformedIterations;
 }
 

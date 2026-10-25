@@ -102,6 +102,7 @@ class SequentialPlanner {
             m_motionPlannerInput.initialStateAndInput = dataIn.initialStateAndInput;
             m_motionPlannerInput.originOldToNew = dataIn.originOldToNew;
             m_motionPlannerInput.staticObstacles = dataIn.staticObstacles;
+            m_motionPlannerInput.minTrajectoryDuration = minTrajectoryDuration;
 
             // Solve path planning problem
             double remainingTimeForProblemSolving = maxComputationTimePathPlanning - m_executionCounter.TimeToStart();
@@ -112,7 +113,7 @@ class SequentialPlanner {
 
             // Solve motion planning problem
             remainingTimeForProblemSolving = maxComputationTimePathPlanning + maxComputationTimeMotionPlanning - m_executionCounter.TimeToStart();
-            m_motionPlanner.Solve(m_motionPlannerOutput, m_motionPlannerInput, m_motionPlannerParameter, remainingTimeForProblemSolving, minTrajectoryDuration);
+            m_motionPlanner.Solve(m_motionPlannerOutput, m_motionPlannerInput, m_motionPlannerParameter, remainingTimeForProblemSolving);
 
             // Move values from planning results to the output data
             m_pathPlannerOutput.MoveTo(dataOut.pathPlanner);

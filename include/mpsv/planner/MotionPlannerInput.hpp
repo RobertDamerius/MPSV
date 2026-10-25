@@ -22,6 +22,7 @@ class MotionPlannerInput {
         std::vector<std::array<double,3>> initialPath;                 // The initial path starting from the initial state. The final pose is indicated by the last element. Each element is given as {x,y,psi}.
         std::array<double,2> originOldToNew;                           // Translation between two consecutive problems. If the origin of the previous problem is different to the origin of the new problem, then the old solution must be transformed to be used as initial sample set in the new problem. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).
         std::vector<mpsv::geometry::StaticObstacle> staticObstacles;   // List of static obstacles, where each vertex is given as {x,y}.
+        double minTrajectoryDuration{0.0};                             // Minimum duration (>= 0) of the resulting trajectory in seconds.
 
         /**
          * @brief Construct a new motion planner input object and set default values.
@@ -63,6 +64,8 @@ class MotionPlannerInput {
                 if(!obstacle.IsValid())
                     return error_code::INPUT_STATIC_OBSTACLES;
             }
+            if(!(std::isfinite(minTrajectoryDuration) && (minTrajectoryDuration >= 0.0)))
+                return error_code::INPUT_MIN_TRAJECTORY_DURATION;
             return error_code::NONE;
         }
 
@@ -76,6 +79,7 @@ class MotionPlannerInput {
             file.WriteVectorField(preString + "initialPath", initialPath);
             file.WriteField("double", preString + "originOldToNew", {2}, &originOldToNew[0], sizeof(originOldToNew));
             file.WriteConvexPolygonsField(preString + "staticObstacles", staticObstacles);
+            file.WriteField("double", preString + "minTrajectoryDuration", {1}, &minTrajectoryDuration, sizeof(minTrajectoryDuration));
         }
 };
 

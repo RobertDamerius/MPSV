@@ -77,11 +77,10 @@ class MotionPlanner {
          * @param[inout] dataIn The input data that represents the motion planning problem to be solved. The data may be modified by this member function, e.g. the static obstacles may be filtered to remove obstacles outside the area of interest.
          * @param[in] parameter The parameter set for motion planning.
          * @param[in] maxComputationTime The maximum computation time in seconds allowed before leaving the iteration loop.
-         * @param[in] minTrajectoryDuration The minimum duration (>= 0) of the trajectory in seconds, defaults to 0. If the simulation time is too large (more than 0x0000FFFF steps), then the problem is infeasible.
          * @param[in] forceColdStart True if the initial sample set of the motion planner should be initialized based on the input path only. False if the previous solution path should also be included into the sample set.
          * @details This member function implements an iteration loop that is termimated if @ref Interrupt is called.
          */
-        void Solve(mpsv::planner::MotionPlannerOutput& dataOut, mpsv::planner::MotionPlannerInput& dataIn, const mpsv::planner::MotionPlannerParameterSet& parameter, double maxComputationTime, double minTrajectoryDuration = 0.0, bool forceColdStart = false) noexcept {
+        void Solve(mpsv::planner::MotionPlannerOutput& dataOut, mpsv::planner::MotionPlannerInput& dataIn, const mpsv::planner::MotionPlannerParameterSet& parameter, double maxComputationTime, bool forceColdStart = false) noexcept {
             m_runSolve = true;
             mpsv::runtime::PerformanceCounter executionCounter;
 
@@ -142,7 +141,7 @@ class MotionPlanner {
             // Assign output
             if((m_idxSolutionNode >= 0) && (error_code::NONE == dataOut.errorCode)){
                 constexpr uint32_t maxNumSimulationSteps = 0x0000FFFF;
-                double requestedNumSteps = std::ceil(std::max(0.0, minTrajectoryDuration) / parameter.motionPlanner.sampletime);
+                double requestedNumSteps = std::ceil(dataIn.minTrajectoryDuration / parameter.motionPlanner.sampletime);
                 uint32_t minNumSteps = (requestedNumSteps >= static_cast<double>(maxNumSimulationSteps)) ? maxNumSimulationSteps : static_cast<uint32_t>(requestedNumSteps);
                 m_tree.GetPathFromRootToNode(m_tree[m_idxSolutionNode].pathBuffer, m_idxSolutionNode);
                 if(!PathFromRootIsFeasible(m_tree[m_idxSolutionNode], dataIn, parameter, minNumSteps)){
