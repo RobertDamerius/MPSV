@@ -520,7 +520,7 @@ class MotionPlanner {
 
                         // check all paths from all leafs to the root
                         bool anythingInfeasible = false;
-                        #pragma omp parallel for shared(anythingInfeasible, m_tree, dataIn, parameter)
+                        #pragma omp parallel for shared(m_tree, dataIn, parameter) reduction(||:anythingInfeasible)
                         for(auto&& idxLeaf : idxLeafNodes){
                             m_tree.GetPathFromRootToNode(m_tree[idxLeaf].pathBuffer, idxLeaf);
                             if(!PathFromRootIsFeasible(m_tree[idxLeaf], dataIn, parameter)){
