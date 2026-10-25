@@ -69,7 +69,6 @@ class MotionPlanner {
             m_regionOfAttraction.Clear();
             m_vehicleSimulator.ClearController();
             m_vehicleSimulator.ClearModel();
-            m_previousSolutionPath.clear();
         }
 
         /**
@@ -87,7 +86,6 @@ class MotionPlanner {
             mpsv::runtime::PerformanceCounter executionCounter;
 
             // Check validity of parameters and input
-            m_idxSolutionNode = -1;
             dataOut.Clear();
             dataOut.errorCode = parameter.IsValid();
             if(error_code::NONE == dataOut.errorCode){
@@ -142,8 +140,7 @@ class MotionPlanner {
             }
 
             // Assign output
-            m_previousSolutionPath.clear();
-            if(m_idxSolutionNode >= 0){
+            if((m_idxSolutionNode >= 0) && (error_code::NONE == dataOut.errorCode)){
                 dataOut.goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
                 dataOut.cost = m_tree[m_idxSolutionNode].cost;
                 dataOut.referencePath.swap(m_tree[m_idxSolutionNode].pathBuffer);
@@ -154,7 +151,6 @@ class MotionPlanner {
                 if(!PathFromRootIsFeasible(m_tree[m_idxSolutionNode], dataIn, parameter, minNumSteps)){
                     dataOut.errorCode= mpsv::error_code::MOTIONPLANNER_INFEASIBLE_TRAJECTORY;
                 }
-                m_previousSolutionPath.swap(m_tree[m_idxSolutionNode].pathBuffer);
             }
             dataOut.timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
             m_runSolve = false;
@@ -225,7 +221,6 @@ class MotionPlanner {
         std::vector<std::array<double,3>> m_initialSamplesReversed;                // Initial samples, in reverse sampling order.
         mpsv::control::VehicleSimulator m_vehicleSimulator;                        // The vehicle simulator to be used for generating dynamically feasible trajectories.
         mpsv::control::RegionOfAttraction m_regionOfAttraction;                    // The region of attraction to be used to check if a state enters the region around a pose.
-        std::vector<std::array<double,3>> m_previousSolutionPath;                  // The solution path of the previous solve operation.
 
         /**
          * @brief Make a valid initial path: Ensure the initial path starts at the initial state, creating or extending it if necessary.
@@ -282,15 +277,18 @@ class MotionPlanner {
          */
         void SetInitialSampleSet(const std::vector<std::array<double,3>>& initialPath, std::array<double,2> originOldToNew, bool forceColdStart) noexcept {
             m_initialSamplesReversed.clear();
-            if(!forceColdStart){
-                // Transform previous solution to new origin and use it as initial sample set
-                for(auto&& pose : m_previousSolutionPath){
-                    pose[0] -= originOldToNew[0];
-                    pose[1] -= originOldToNew[1];
-                    if(m_pathSampler.IsInside(pose)){
-                        m_initialSamplesReversed.push_back(pose);
+            if(m_idxSolutionNode >= 0){
+                if(!forceColdStart){
+                    // Transform previous solution to new origin and use it as initial sample set
+                    for(auto&& pose : m_tree[m_idxSolutionNode].pathBuffer){
+                        pose[0] -= originOldToNew[0];
+                        pose[1] -= originOldToNew[1];
+                        if(m_pathSampler.IsInside(pose)){
+                            m_initialSamplesReversed.push_back(pose);
+                        }
                     }
                 }
+                m_tree[m_idxSolutionNode].pathBuffer.clear();
             }
 
             // Insert initial path to sample set (exclude first pose, that would be the initial pose)
