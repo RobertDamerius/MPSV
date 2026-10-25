@@ -77,6 +77,7 @@ class CostMap: public mpsv::structures::LookUpTable2DScalar<mpsv::structures::Co
          * @param[in] y Y position for which to evaluate the table data.
          * @param[in] args User-defined arguments to be used for evaluating the table data.
          * @return Final table data value to be stored in the LUT.
+         * @note This callback may be invoked concurrently from multiple OpenMP threads. Overrides must be thread-safe.
          */
         double CallbackTableData(double x, double y, const CostMapArgument& args) noexcept {
             double result = 0.0;

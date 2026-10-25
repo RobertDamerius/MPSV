@@ -396,6 +396,7 @@ template <class Targ, class Tdata> class LookUpTable2D {
          * @param[in] y Y position for which to evaluate the table data.
          * @param[in] args User-defined arguments to be used for evaluating the table data.
          * @return Final multi-dimensional table data value to be stored in the LUT.
+         * @note This callback may be invoked concurrently from multiple OpenMP threads. Overrides must be thread-safe.
          */
         virtual Tdata CallbackTableData(double x, double y, const Targ& args) noexcept = 0;
 
