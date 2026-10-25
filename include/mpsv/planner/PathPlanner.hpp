@@ -77,7 +77,6 @@ class PathPlanner {
             mpsv::runtime::PerformanceCounter executionCounter;
 
             // Check validity of parameters and input
-            m_idxSolutionNode = -1;
             dataOut.Clear();
             dataOut.errorCode = parameter.IsValid();
             if(error_code::NONE == dataOut.errorCode){
