@@ -360,7 +360,7 @@ class MotionPlanner {
                     int16_t idxBestParent = FindBestParent(newSample, idxNearest, dataIn, parameter);  // updates newSample.cost
                     int16_t idxAddedSample = m_tree.Add(idxBestParent, newSample);
                     if(idxAddedSample < 0){
-                        return mpsv::error_code::PATHPLANNER_OUT_OF_NODES;
+                        return mpsv::error_code::MOTIONPLANNER_OUT_OF_NODES;
                     }
                     Rewire(idxAddedSample, dataIn, parameter);
                     double distanceToGoal = mpsv::math::DistanceMetricSE2(m_tree[idxAddedSample].pose, dataIn.initialPath.back(), parameter.metric.weightPsi);
