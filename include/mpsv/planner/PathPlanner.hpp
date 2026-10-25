@@ -120,7 +120,7 @@ class PathPlanner {
             }
 
             // Assign output
-            if(m_idxSolutionNode >= 0){
+            if((m_idxSolutionNode >= 0) && (mpsv::error_code::NONE == dataOut.errorCode)){
                 dataOut.goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
                 dataOut.cost = m_tree[m_idxSolutionNode].cost;
                 m_tree.GetPathFromRootToNode(dataOut.path, m_idxSolutionNode);
