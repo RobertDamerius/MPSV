@@ -444,14 +444,14 @@ template <class Tnode> class FixedSizeTreeSE2 {
             if(nodeIndex < 0 || nodeIndex >= static_cast<int16_t>(m_nodes.size()) || (m_nodes[nodeIndex].iActiveList < 0)){
                 return;
             }
-            m_traversalStack.clear();
-            while(nodeIndex >= 0){
-                m_traversalStack.push_back(nodeIndex);
-                nodeIndex = m_nodes[nodeIndex].iParent;
+            size_t pathSize = 0;
+            for(int16_t index = nodeIndex; index >= 0; index = m_nodes[index].iParent){
+                ++pathSize;
             }
-            path.reserve(m_traversalStack.size());
-            for(auto it = m_traversalStack.rbegin(); it != m_traversalStack.rend(); ++it){
-                path.push_back(m_nodes[*it].pose);
+            path.resize(pathSize);
+            for(size_t i = pathSize; i > 0; --i){
+                path[i - 1] = m_nodes[nodeIndex].pose;
+                nodeIndex = m_nodes[nodeIndex].iParent;
             }
         }
 
