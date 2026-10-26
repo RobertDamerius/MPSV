@@ -38,10 +38,11 @@ class SequentialPlanner {
          * @param[in] pathMaxNumSamples Maximum number of random samples to be generated in advance (path planner).
          * @param[in] motionMaxNumNodes Maximum number of nodes to be used in the tree (motion planner).
          * @param[in] motionMaxNumSamples Maximum number of random samples to be generated in advance (motion planner).
+         * @param[in] maxNumCells Maximum number of cells to be used in the cost map.
          */
-        void Reconfigure(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples) noexcept {
-            m_pathPlanner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples);
-            m_motionPlanner.Reconfigure(motionMaxNumNodes, motionMaxNumSamples);
+        void Reconfigure(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, uint32_t maxNumCells) noexcept {
+            m_pathPlanner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, maxNumCells);
+            m_motionPlanner.Reconfigure(motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
         }
 
         /**

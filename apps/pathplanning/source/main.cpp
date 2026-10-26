@@ -7,7 +7,8 @@ int main(int, char**){
     mpsv::planner::PathPlanner planner;
     constexpr int16_t maxNumNodes = 200;
     constexpr uint32_t maxNumSamples = 1000000;
-    planner.Reconfigure(maxNumNodes, maxNumSamples);
+    constexpr uint32_t maxNumCells = 4096 * 4096;
+    planner.Reconfigure(maxNumNodes, maxNumSamples, maxNumCells);
 
     // get parameters for path planning
     mpsv::planner::PathPlannerParameterSet parameter = example::GetParameterSet();

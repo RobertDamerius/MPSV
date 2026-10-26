@@ -9,7 +9,8 @@ int main(int, char**){
     constexpr uint32_t pathMaxNumSamples = 1000000;
     constexpr int16_t motionMaxNumNodes = 200;
     constexpr uint32_t motionMaxNumSamples = 1000000;
-    planner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples);
+    constexpr uint32_t maxNumCells = 4096 * 4096;
+    planner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
 
     // apply a parameter set to the online planner
     mpsv::planner::OnlinePlannerParameterSet parameter = example::GetParameterSet();

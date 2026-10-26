@@ -75,8 +75,9 @@ class MPSV_WrapperPathPlanner {
          * @brief Initialize the wrapper. The memory for the internal path planner is allocated.
          * @param[in] maxNumNodes Maximum number of nodes to be used in the tree. A fixed-node RRT* planner is used. If the tree contains the maximum number of nodes, random leaf nodes are removed. If all nodes belong to the solution and can't be removed, then the outOfNodes error is set in the output.
          * @param[in] maxNumSamples Maximum number of random samples to be generated in advance. A circular buffer of random samples is generated for fast sampling. The buffer can be quite large to ensure, that no duplicated samples are drawn within one solve operation.
+         * @param[in] maxNumCells Maximum number of cells in the cost map.
          */
-        void Initialize(int16_t maxNumNodes, uint32_t maxNumSamples);
+        void Initialize(int16_t maxNumNodes, uint32_t maxNumSamples, uint32_t maxNumCells);
 
         /**
          * @brief Terminate the wrapper. Internal planner memory is released when the wrapper is destroyed.

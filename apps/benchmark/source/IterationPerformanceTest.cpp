@@ -105,9 +105,10 @@ void IterationPerformanceTest::Solve(Scene& scene, bool recreateFile){
     constexpr uint32_t pathMaxNumSamples = 1000000;
     constexpr int16_t motionMaxNumNodes = 200;
     constexpr uint32_t motionMaxNumSamples = 1000000;
+    constexpr uint32_t maxNumCells = 4096 * 4096;
     constexpr double maxComputationTimePathPlanning = 1.0;
     constexpr double maxComputationTimeMotionPlanning = 1.0;
-    planner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples);
+    planner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
 
     // apply a parameter set to the sequential planner
     mpsv::planner::SequentialPlannerParameterSet parameter = IterationPerformanceTest::GetParameterSet();

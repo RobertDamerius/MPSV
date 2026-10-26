@@ -7,7 +7,8 @@ int main(int, char**){
     mpsv::planner::MotionPlanner planner;
     constexpr int16_t maxNumNodes = 200;
     constexpr uint32_t maxNumSamples = 1000000;
-    planner.Reconfigure(maxNumNodes, maxNumSamples);
+    constexpr uint32_t maxNumCells = 4096 * 4096;
+    planner.Reconfigure(maxNumNodes, maxNumSamples, maxNumCells);
 
     // get parameters for the motion planner
     mpsv::planner::MotionPlannerParameterSet parameter = example::GetParameterSet();

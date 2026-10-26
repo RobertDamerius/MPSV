@@ -1,8 +1,8 @@
 #include <MPSV_WrapperPathPlanner.hpp>
 
 
-void MPSV_WrapperPathPlanner::Initialize(int16_t maxNumNodes, uint32_t maxNumSamples){
-    m_pathPlanner.Reconfigure(maxNumNodes, maxNumSamples);
+void MPSV_WrapperPathPlanner::Initialize(int16_t maxNumNodes, uint32_t maxNumSamples, uint32_t maxNumCells){
+    m_pathPlanner.Reconfigure(maxNumNodes, maxNumSamples, maxNumCells);
 }
 
 void MPSV_WrapperPathPlanner::Terminate(void){

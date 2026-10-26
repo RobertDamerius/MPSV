@@ -240,6 +240,7 @@ uint32_t Benchmark::PathPlanning(void){
     // Set parameters for this benchmark
     int16_t maxNumNodes = 1000;
     uint32_t maxNumSamples = 1000000;
+    uint32_t maxNumCells = 4096 * 4096;
     parameterSet.costMap.modBreakpoints                                = 10;
     parameterSet.costMap.resolution                                    = 0.05;
     parameterSet.costMap.distanceScale                                 = 5.0;
@@ -266,7 +267,7 @@ uint32_t Benchmark::PathPlanning(void){
     GenerateObstaclesForPlanning(dataIn.staticObstacles);
 
     // Reconfigure planner
-    planner.Reconfigure(maxNumNodes, maxNumSamples);
+    planner.Reconfigure(maxNumNodes, maxNumSamples, maxNumCells);
     if(mpsv::error_code::NONE != dataIn.IsValid()){
         fprintf(stderr,"ERROR: Input data for the path planner is invalid!\n");
         return 0;
@@ -287,6 +288,7 @@ uint32_t Benchmark::MotionPlanning(void){
     // Set parameters for this benchmark
     int16_t maxNumNodes = 200;
     uint32_t maxNumSamples = 1000000;
+    uint32_t maxNumCells = 4096 * 4096;
 
     parameterSet.model.matF                                            = {-0.031604977390302, 0.0, 0.0, 0.233741474945168, 0.0, 0.0, 0.0, 0.0, 0.133462292221887, -0.020792892088185, 0.0, 0.0, 0.0, -0.041708610292712, 0.017242263124379, 0.0, -0.251243228165994, -0.000476044356140, 0.0, 0.0, 0.005297185500344, 0.0, -0.167981638498434, 0.497442136687157, 0.0, 0.000017966020615, -0.023528504195578, 0.0, 0.000108223241795, 0.000649602175186, 0.0, 0.0, -0.000002281767319, 0.0, 0.000072358238719, -0.678801229030825};
     parameterSet.model.matB                                            = {0.000237948834266, -0.000004551592718, 0.000010003488944, -0.000009313932115, 0.000215194147058, -0.000024957572224, -0.000002202124158, -0.000002930260852, 0.000043018345190};
@@ -338,7 +340,7 @@ uint32_t Benchmark::MotionPlanning(void){
     GenerateObstaclesForPlanning(dataIn.staticObstacles);
 
     // Reconfigure planner
-    planner.Reconfigure(maxNumNodes, maxNumSamples);
+    planner.Reconfigure(maxNumNodes, maxNumSamples, maxNumCells);
     if(mpsv::error_code::NONE != parameterSet.IsValid()){
         fprintf(stderr,"ERROR: Invalid parameters for the motion planner!\n");
         return 0;

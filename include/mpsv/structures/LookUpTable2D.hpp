@@ -211,13 +211,13 @@ template <class Targ, class Tdata> class LookUpTable2D {
          * @brief Resize the look-up table storage and reset it to its default state.
          * @param[in] maxNumCells The maximum number of cells the look-up table should contain.
          */
-        void Resize(size_t maxNumCells) noexcept {
+        void Resize(uint32_t maxNumCells) noexcept {
             m_position = {0.0, 0.0};
             m_normal = {1.0, 0.0};
             m_res = 1.0;
             m_numX = 0;
             m_numY = 0;
-            m_lut.resize(std::max(size_t{9}, maxNumCells));
+            m_lut.resize(std::max(uint32_t{9}, maxNumCells));
             m_lut.shrink_to_fit();
         }
 

@@ -2,10 +2,10 @@
 #include <MPSV_WrapperPathPlanner.hpp>
 
 
-void MPSV_PathPlannerInitialize(void** workVector, int16_t maxNumNodes, uint32_t maxNumSamples){
+void MPSV_PathPlannerInitialize(void** workVector, int16_t maxNumNodes, uint32_t maxNumSamples, uint32_t maxNumCells){
     // Create the wrapper class and initialize it
     MPSV_WrapperPathPlanner* wrapper = new MPSV_WrapperPathPlanner();
-    wrapper->Initialize(maxNumNodes, maxNumSamples);
+    wrapper->Initialize(maxNumNodes, maxNumSamples, maxNumCells);
     *workVector = reinterpret_cast<void*>(wrapper);
 }
 

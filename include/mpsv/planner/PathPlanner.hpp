@@ -37,21 +37,22 @@ class PathPlanner {
          * @brief Construct a path planner with the specified capacities.
          * @param[in] maxNumNodes Maximum number of nodes to be used in the tree. The default value is 200.
          * @param[in] maxNumSamples Maximum number of random samples to be generated in advance. The default value is 100000.
+         * @param[in] maxNumCells Maximum number of cells to be used in the cost map. The default value is 4096*4096.
          */
-        explicit PathPlanner(int16_t maxNumNodes = 200, uint32_t maxNumSamples = 100000) noexcept {
-            Reconfigure(maxNumNodes, maxNumSamples);
+        explicit PathPlanner(int16_t maxNumNodes = 200, uint32_t maxNumSamples = 100000, uint32_t maxNumCells = 4096 * 4096) noexcept {
+            Reconfigure(maxNumNodes, maxNumSamples, maxNumCells);
         }
 
         /**
          * @brief Reconfigure the path planner by changing the size of pre-allocated memory and reset its internal state.
          * @param[in] maxNumNodes Maximum number of nodes to be used in the tree.
          * @param[in] maxNumSamples Maximum number of random samples to be generated in advance.
+         * @param[in] maxNumCells Maximum number of cells to be used in the cost map.
          */
-        void Reconfigure(int16_t maxNumNodes, uint32_t maxNumSamples) noexcept {
+        void Reconfigure(int16_t maxNumNodes, uint32_t maxNumSamples, uint32_t maxNumCells) noexcept {
             m_runSolve = false;
             m_tree.Resize(maxNumNodes);
             m_boxSampler.Generate(maxNumSamples);
-            constexpr size_t maxNumCells = 8192 * 8192;
             m_costMap.Resize(maxNumCells);
             m_idxNeighbors.resize(maxNumNodes);
             m_idxNeighbors.shrink_to_fit();
