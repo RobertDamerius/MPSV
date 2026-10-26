@@ -60,6 +60,9 @@ class MotionPlanner {
             m_idxNeighbors.resize(maxNumNodes);
             m_idxNeighbors.shrink_to_fit();
             m_idxNeighbors.clear();
+            m_idxLeafNodes.resize(maxNumNodes);
+            m_idxLeafNodes.shrink_to_fit();
+            m_idxLeafNodes.clear();
             m_sampleIteration = 0;
             m_goalSampleIteration = 0;
             m_idxSolutionNode = -1;
@@ -222,6 +225,7 @@ class MotionPlanner {
         double m_closestDistanceToGoal{std::numeric_limits<double>::infinity()};   // Distance from the solution to the goal.
         double m_epsDistanceMetric{std::numeric_limits<double>::epsilon()};        // Eps (numeric threshold) for distance metric.
         std::vector<std::array<double,3>> m_initialSamplesReversed;                // Initial samples, in reverse sampling order.
+        std::vector<int16_t> m_idxLeafNodes;                                       // Pre-allocated memory for leaf nodes during rewiring.
         mpsv::control::VehicleSimulator m_vehicleSimulator;                        // The vehicle simulator to be used for generating dynamically feasible trajectories.
         mpsv::control::RegionOfAttraction m_regionOfAttraction;                    // The region of attraction to be used to check if a state enters the region around a pose.
 
@@ -509,8 +513,7 @@ class MotionPlanner {
                 if((resultCost + m_epsDistanceMetric) < destination.cost){
                     resultCost += m_costMap.CostAlongLine(addedSample.pose, destination.pose, parameter.geometry.skeletalPoints);
                     if((resultCost + m_epsDistanceMetric) < destination.cost){
-                        std::vector<int16_t> idxLeafNodes;
-                        m_tree.GetLeafIndices(idxLeafNodes, index);
+                        m_tree.GetLeafIndices(m_idxLeafNodes, index);
 
                         // change parent temporarily to idxAddedSample
                         int16_t idxOriginalParent = m_tree[index].iParent;
@@ -518,13 +521,13 @@ class MotionPlanner {
 
                         // if original parent only has one child (index) it would become a leaf node and must be checked for feasibility as well
                         if((m_tree[idxOriginalParent].iFirstChild >= 0) && (m_tree[m_tree[idxOriginalParent].iFirstChild].iNextSibling < 0)){
-                            idxLeafNodes.push_back(idxOriginalParent);
+                            m_idxLeafNodes.push_back(idxOriginalParent);
                         }
 
                         // check all paths from all leafs to the root
                         bool anythingInfeasible = false;
                         #pragma omp parallel for shared(m_tree, dataIn, parameter) reduction(||:anythingInfeasible)
-                        for(auto&& idxLeaf : idxLeafNodes){
+                        for(auto&& idxLeaf : m_idxLeafNodes){
                             m_tree.GetPathFromRootToNode(m_tree[idxLeaf].pathBuffer, idxLeaf);
                             if(!PathFromRootIsFeasible(m_tree[idxLeaf], dataIn, parameter)){
                                 anythingInfeasible = true;
