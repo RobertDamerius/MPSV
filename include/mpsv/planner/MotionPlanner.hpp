@@ -531,7 +531,7 @@ class MotionPlanner {
                         bool anythingInfeasible = false;
                         #pragma omp parallel for shared(m_tree, dataIn, parameter) reduction(||:anythingInfeasible)
                         for(auto&& idxLeaf : m_idxLeafNodes){
-                            m_tree.GetPathFromRootToNode(m_tree[idxLeaf].pathBuffer, idxLeaf);
+                            m_tree.GetPathFromRootToNode(m_tree[idxLeaf].pathBuffer, idxLeaf); // only traverses through parents
                             if(!PathFromRootIsFeasible(m_tree[idxLeaf], dataIn, parameter)){
                                 anythingInfeasible = true;
                             }
