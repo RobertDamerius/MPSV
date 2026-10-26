@@ -176,7 +176,8 @@ class MotionPlanner {
          * @return [1] The predicted state given as {x,y,psi,u,v,r,X,Y,N}.
          */
         [[nodiscard]] std::tuple<double,std::array<double,9>> PredictMotion(const std::array<double,12>& initialStateAndInput, double predictionHorizon, const mpsv::planner::MotionPlannerParameterSet& parameter) const noexcept {
-            uint32_t numSimulationSteps = static_cast<uint32_t>(std::max(0.0, std::floor(predictionHorizon / parameter.motionPlanner.sampletime)));
+            double requestedNumSteps = std::floor(predictionHorizon / parameter.motionPlanner.sampletime);
+            uint32_t numSimulationSteps = static_cast<uint32_t>(std::clamp(std::isnan(requestedNumSteps) ? 0.0 : requestedNumSteps, 0.0, static_cast<double>(std::numeric_limits<uint32_t>::max())));
             double simulationTime = static_cast<double>(numSimulationSteps) * parameter.motionPlanner.sampletime;
             std::array<double,9> finalState = m_vehicleSimulator.PredictMotion(initialStateAndInput, parameter.motionPlanner.sampletime, numSimulationSteps);
             return std::make_tuple(simulationTime, finalState);
@@ -194,7 +195,8 @@ class MotionPlanner {
          */
         [[nodiscard]] std::tuple<bool,double> PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double predictionHorizon, const mpsv::planner::MotionPlannerParameterSet& parameter) const noexcept {
             constexpr uint32_t maxNumSimulationSteps = 0x0000FFFF;
-            uint32_t numSimulationSteps = static_cast<uint32_t>(std::max(1.0, std::floor(predictionHorizon / parameter.motionPlanner.sampletime)));
+            double requestedNumSteps = std::floor(predictionHorizon / parameter.motionPlanner.sampletime);
+            uint32_t numSimulationSteps = static_cast<uint32_t>(std::clamp(std::isnan(requestedNumSteps) ? 1.0 : requestedNumSteps, 1.0, static_cast<double>(maxNumSimulationSteps)));
             bool success = m_vehicleSimulator.PredictMotionTrajectory(trajectory, initialStateAndInput, parameter.motionPlanner.sampletime, numSimulationSteps, maxNumSimulationSteps);
             double totalSimulationTime = parameter.motionPlanner.sampletime * static_cast<double>(trajectory.size());
             return std::make_tuple(success, totalSimulationTime);
