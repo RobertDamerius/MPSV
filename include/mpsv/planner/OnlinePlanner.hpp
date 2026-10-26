@@ -62,9 +62,7 @@ class OnlinePlanner {
             if(error_code::NONE != (e = parameter.IsValid())){
                 return e;
             }
-            if(error_code::NONE != (e = m_sequentialPlanner.ApplyParameterSet(parameter.sequentialPlanner))){
-                return e;
-            }
+            m_sequentialPlannerParameter = parameter.sequentialPlanner;
             m_parameter = parameter.onlinePlanner;
             Reset();
             return error_code::NONE;
@@ -127,6 +125,7 @@ class OnlinePlanner {
         mpsv::planner::SequentialPlanner m_sequentialPlanner;               // Internal sequential planning solver.
         mpsv::planner::SequentialPlannerInput m_sequentialPlannerInput;     // Input to the @ref m_sequentialPlanner.
         mpsv::planner::SequentialPlannerOutput m_sequentialPlannerOutput;   // Output of the @ref m_sequentialPlanner.
+        mpsv::planner::SequentialPlannerParameterSet m_sequentialPlannerParameter; // Parameters for the sequential planner.
         mpsv::planner::ParameterOnlinePlanner m_parameter;                  // Parameter for the online planner.
         mpsv::runtime::PerformanceCounter m_performanceCounter;             // Performance counter used to measure execution time.
 
@@ -203,7 +202,7 @@ class OnlinePlanner {
             m_sequentialPlannerInput.samplingBoxDimension = dataIn.samplingBoxDimension;
             m_sequentialPlannerInput.staticObstacles = dataIn.staticObstacles;
             double minTrajectoryDuration = m_parameter.maxComputationTimePath + m_parameter.maxComputationTimeMotion + m_parameter.additionalAheadPlanningTime + m_parameter.additionalTrajectoryDuration;
-            m_sequentialPlanner.Solve(m_sequentialPlannerOutput, m_sequentialPlannerInput, m_parameter.maxComputationTimePathOnReset, m_parameter.maxComputationTimeMotionOnReset, minTrajectoryDuration);
+            m_sequentialPlanner.Solve(m_sequentialPlannerOutput, m_sequentialPlannerInput, m_sequentialPlannerParameter, m_parameter.maxComputationTimePathOnReset, m_parameter.maxComputationTimeMotionOnReset, minTrajectoryDuration);
             timestamp += m_sequentialPlannerOutput.motionPlanner.sampletime; // make the timestamp point to the first entry of the trajectory instead of pointing to the initial state (the trajectory itself does not include the initial state)
 
             // Save internal trajectory to state
@@ -278,7 +277,7 @@ class OnlinePlanner {
             m_sequentialPlannerInput.samplingBoxDimension = dataIn.samplingBoxDimension;
             m_sequentialPlannerInput.staticObstacles = dataIn.staticObstacles;
             double minTrajectoryDuration = m_parameter.maxComputationTimePath + m_parameter.maxComputationTimeMotion + m_parameter.additionalAheadPlanningTime + m_parameter.additionalTrajectoryDuration;
-            m_sequentialPlanner.Solve(m_sequentialPlannerOutput, m_sequentialPlannerInput, m_parameter.maxComputationTimePath, m_parameter.maxComputationTimeMotion, minTrajectoryDuration);
+            m_sequentialPlanner.Solve(m_sequentialPlannerOutput, m_sequentialPlannerInput, m_sequentialPlannerParameter, m_parameter.maxComputationTimePath, m_parameter.maxComputationTimeMotion, minTrajectoryDuration);
             timestamp += m_sequentialPlannerOutput.motionPlanner.sampletime; // make the timestamp point to the first entry of the trajectory instead of pointing to the initial state (the trajectory itself does not include the initial state)
 
             // Save internal trajectory to state

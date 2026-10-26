@@ -110,25 +110,23 @@ void IterationPerformanceTest::Solve(Scene& scene, bool recreateFile){
     constexpr double maxComputationTimeMotionPlanning = 1.0;
     planner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
 
-    // apply a parameter set to the sequential planner
-    mpsv::planner::SequentialPlannerParameterSet parameter = IterationPerformanceTest::GetParameterSet();
-    mpsv::error_code ec = planner.ApplyParameterSet(parameter);
-    if(mpsv::error_code::NONE != ec){
-        std::cerr << "ERROR: Could not apply parameter set (code: " << (int)(ec) << ")!\n";
-        return;
-    }
-
     // get valid input data for planning problem
     mpsv::planner::SequentialPlannerInput dataIn = IterationPerformanceTest::GetInput(scene);
-    ec = dataIn.IsValid();
+    mpsv::planner::SequentialPlannerParameterSet parameter = IterationPerformanceTest::GetParameterSet();
+    mpsv::error_code ec = dataIn.IsValid();
     if(mpsv::error_code::NONE != ec){
         std::cerr << "ERROR: Input data is invalid (code: " << (int)(ec) << ")!\n";
+        return;
+    }
+    ec = parameter.IsValid();
+    if(mpsv::error_code::NONE != ec){
+        std::cerr << "ERROR: Parameter data is invalid (code: " << (int)(ec) << ")!\n";
         return;
     }
 
     // solve the sequential planning problem
     mpsv::planner::SequentialPlannerOutput dataOut;
-    planner.Solve(dataOut, dataIn, maxComputationTimePathPlanning, maxComputationTimeMotionPlanning);
+    planner.Solve(dataOut, dataIn, parameter, maxComputationTimePathPlanning, maxComputationTimeMotionPlanning);
 
     // write results to file
     mpsv::logging::File f;

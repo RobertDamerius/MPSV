@@ -12,17 +12,15 @@ int main(int, char**){
     constexpr uint32_t maxNumCells = 4096 * 4096;
     planner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
 
-    // apply a parameter set to the sequential planner
-    mpsv::planner::SequentialPlannerParameterSet parameter = example::GetParameterSet();
-    if(mpsv::error_code::NONE != planner.ApplyParameterSet(parameter)){
-        std::cerr << "ERROR: Could not apply parameter set!\n";
-        return 0;
-    }
-
     // get valid input data for planning problem
     mpsv::planner::SequentialPlannerInput dataIn = example::GetInput();
+    mpsv::planner::SequentialPlannerParameterSet parameter = example::GetParameterSet();
     if(mpsv::error_code::NONE != dataIn.IsValid()){
         std::cerr << "ERROR: Input data is invalid!\n";
+        return 0;
+    }
+    if(mpsv::error_code::NONE != parameter.IsValid()){
+        std::cerr << "ERROR: Parameter data is invalid!\n";
         return 0;
     }
 
@@ -31,7 +29,7 @@ int main(int, char**){
     constexpr double maxComputationTimeMotionPlanning = 1.0;
     mpsv::planner::SequentialPlannerOutput dataOut;
     std::cout << "solve sequential planning problem (computation time (path): " << maxComputationTimePathPlanning << " s, computation time (motion): " << maxComputationTimeMotionPlanning << " s)\n\n";
-    planner.Solve(dataOut, dataIn, maxComputationTimePathPlanning, maxComputationTimeMotionPlanning);
+    planner.Solve(dataOut, dataIn, parameter, maxComputationTimePathPlanning, maxComputationTimeMotionPlanning);
 
     // write results to file
     mpsv::logging::File f;
