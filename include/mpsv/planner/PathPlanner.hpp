@@ -25,8 +25,8 @@ namespace planner {
 
 
 /**
- * @brief The path planning algorithm. The planner is ready to solve problems after construction and can be reconfigured with @ref Reconfigure.
- * The internal iteration loop of the @ref Solve operation is interrupted if @ref Interrupt is called.
+ * @brief The path planning algorithm. Use the @ref Solve member function to solve path planning problems. The
+ * iteration loop can be interrupted by @ref Interrupt. To change the size of pre-allocated memory, run @ref Reconfigure.
  */
 class PathPlanner {
     private:
@@ -43,7 +43,7 @@ class PathPlanner {
         }
 
         /**
-         * @brief Reconfigure the path planner and reset its internal state.
+         * @brief Reconfigure the path planner by changing the size of pre-allocated memory and reset its internal state.
          * @param[in] maxNumNodes Maximum number of nodes to be used in the tree.
          * @param[in] maxNumSamples Maximum number of random samples to be generated in advance.
          */
@@ -64,7 +64,7 @@ class PathPlanner {
         }
 
         /**
-         * @brief Solve the path planning problem by doing several iterations for an upper computation time limit.
+         * @brief Solve the path planning problem by doing several iterations for a soft upper computation time limit.
          * @param[out] dataOut The output data where to store results to.
          * @param[inout] dataIn The input data that represents the path planning problem to be solved. The data may be modified by this member function, e.g. the static obstacles may be filtered to remove obstacles outside the area of interest.
          * @param[in] parameter The parameter set for path planning.
@@ -139,7 +139,10 @@ class PathPlanner {
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
-        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept { m_tree.WriteToFile(file, preString + "tree."); m_costMap.WriteToFile(file, preString + "costMap."); }
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
+            m_tree.WriteToFile(file, preString + "tree.");
+            m_costMap.WriteToFile(file, preString + "costMap.");
+        }
 
     protected:
         mpsv::structures::FixedSizeTreeSE2<Node> m_tree;                           // Tree for path planning.

@@ -154,10 +154,9 @@ class SequentialPlanner {
          * @brief Write data to the log file.
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
-         * @param[in] staticObstacles List of static obstacles to be used for the guidance law of path exploration. All trajectories of the tree are rebuilt. Otherwise the trajectories from tree nodes are undefined.
          * @note IMPORTANT: The caller of this function must make sure that static obstacles are valid!
          */
-        void WriteToFile(mpsv::logging::File& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { m_pathPlanner.WriteToFile(file, preString + "pathPlanner."); m_motionPlanner.WriteToFile(file, preString + "motionPlanner.", staticObstacles, m_motionPlannerInput, m_motionPlannerParameter); }
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept { m_pathPlanner.WriteToFile(file, preString + "pathPlanner."); m_motionPlanner.WriteToFile(file, preString + "motionPlanner.", m_motionPlannerInput, m_motionPlannerParameter); }
 
     protected:
         mpsv::planner::PathPlanner m_pathPlanner;                            // Internal path planning solver.

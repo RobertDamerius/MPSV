@@ -116,10 +116,9 @@ class OnlinePlanner {
          * @brief Write data to the log file.
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
-         * @param[in] staticObstacles List of static obstacles to be used for the guidance law of path exploration. All trajectories of the tree are rebuilt. Otherwise the trajectories from tree nodes are undefined.
          * @note IMPORTANT: The caller of this function must make sure that static obstacles are valid!
          */
-        void WriteToFile(mpsv::logging::File& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles) noexcept { m_sequentialPlanner.WriteToFile(file, preString + "sequentialPlanner.", staticObstacles); }
+        void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept { m_sequentialPlanner.WriteToFile(file, preString + "sequentialPlanner."); }
 
     protected:
         mpsv::planner::OnlinePlannerOutput m_state;                         // Internal state of the online planner representing the latest output.

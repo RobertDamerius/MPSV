@@ -29,8 +29,8 @@ namespace planner {
 
 
 /**
- * @brief The motion planning algorithm. The planner is ready to solve problems after construction and can be reconfigured with @ref Reconfigure.
- * The internal iteration loop of the @ref Solve operation is interrupted if @ref Interrupt is called.
+ * @brief The motion planning algorithm. Use the @ref Solve member function to solve motion planning problems. The
+ * iteration loop can be interrupted by @ref Interrupt. To change the size of pre-allocated memory, run @ref Reconfigure.
  */
 class MotionPlanner {
     private:
@@ -47,7 +47,7 @@ class MotionPlanner {
         }
 
         /**
-         * @brief Reconfigure the motion planner and reset its internal state.
+         * @brief Reconfigure the motion planner by changing the size of pre-allocated memory and reset its internal state.
          * @param[in] maxNumNodes Maximum number of nodes to be used in the tree.
          * @param[in] maxNumSamples Maximum number of random samples to be generated in advance.
          */
@@ -75,7 +75,7 @@ class MotionPlanner {
         }
 
         /**
-         * @brief Solve the motion planning problem by doing several iterations for an upper computation time limit.
+         * @brief Solve the motion planning problem by doing several iterations for a soft upper computation time limit.
          * @param[out] dataOut The output data where to store results to.
          * @param[inout] dataIn The input data that represents the motion planning problem to be solved. The data may be modified by this member function, e.g. the static obstacles may be filtered to remove obstacles outside the area of interest.
          * @param[in] parameter The parameter set for motion planning.
@@ -171,10 +171,9 @@ class MotionPlanner {
          * @brief Predict the motion of the vehicle for a given prediction horizon assuming the control input to be constant all the time.
          * @param[in] initialStateAndInput The initial state and input vector given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
          * @param[in] predictionHorizon The total simulation time for the prediction in seconds. Note that this value is gridded to the internal sampletime parameter. The actual simulation time is returned. This value is clamped to a minimum value of zero.
-         * @param[in] parameter The parameter set used to solve the motion planning problem.
+         * @param[in] parameter A valid parameter set to be used. It is not checked whether this parameter set is valid or not!
          * @return [0] The total time that has been simulated.
          * @return [1] The predicted state given as {x,y,psi,u,v,r,X,Y,N}.
-         * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
         [[nodiscard]] std::tuple<double,std::array<double,9>> PredictMotion(const std::array<double,12>& initialStateAndInput, double predictionHorizon, const mpsv::planner::MotionPlannerParameterSet& parameter) const noexcept {
             uint32_t numSimulationSteps = static_cast<uint32_t>(std::max(0.0, std::floor(predictionHorizon / parameter.motionPlanner.sampletime)));
@@ -188,11 +187,10 @@ class MotionPlanner {
          * @param[out] trajectory The prediction trajectory where each entry contains the state and the input given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state/input is not inserted.
          * @param[in] initialStateAndInput The initial state and input vector given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
          * @param[in] predictionHorizon The total simulation time for the prediction in seconds. Note that this value is gridded to the internal sampletime parameter. The actual simulation time is returned. This value is clamped to a minimum value of a sampletime.
-         * @param[in] parameter The parameter set used to solve the motion planning problem.
+         * @param[in] parameter A valid parameter set to be used. It is not checked whether this parameter set is valid or not!
          * @return A tuple containing the following values.
          * [0] True if success, false otherwise. If the maximum number of simulation steps (0x0000FFFF) is exceeded, false is returned.
          * [1] The total time that has been simulated.
-         * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
          */
         [[nodiscard]] std::tuple<bool,double> PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double predictionHorizon, const mpsv::planner::MotionPlannerParameterSet& parameter) const noexcept {
             constexpr uint32_t maxNumSimulationSteps = 0x0000FFFF;
@@ -206,12 +204,14 @@ class MotionPlanner {
          * @brief Write data to the log file.
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
-         * @param[in] staticObstacles List of static obstacles to be used for the guidance law of path exploration. All trajectories of the tree are rebuilt. Otherwise the trajectories from tree nodes are undefined.
-         * @param[in] dataIn Input data used for the latest solve.
-         * @param[in] parameter Parameter set used for the latest solve.
-         * @note IMPORTANT: The caller of this function must make sure that static obstacles are valid!
+         * @param[in] dataIn Valid input data to be used to recalculate trajectories. It is not checked whether this parameter set is valid or not!
+         * @param[in] parameter A valid parameter set to be used to recalculate trajectories. It is not checked whether this parameter set is valid or not!
          */
-        void WriteToFile(mpsv::logging::File& file, std::string preString, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::MotionPlannerInput& dataIn, mpsv::planner::MotionPlannerParameterSet& parameter) noexcept { RebuildAllTreeTrajectories(staticObstacles, dataIn, parameter); m_tree.WriteToFile(file, preString + "tree."); m_costMap.WriteToFile(file, preString + "costMap."); }
+        void WriteToFile(mpsv::logging::File& file, std::string preString, const mpsv::planner::MotionPlannerInput& dataIn, mpsv::planner::MotionPlannerParameterSet& parameter) noexcept {
+            RebuildAllTreeTrajectories(dataIn, parameter);
+            m_tree.WriteToFile(file, preString + "tree.");
+            m_costMap.WriteToFile(file, preString + "costMap.");
+        }
 
     protected:
         mpsv::planner::MotionPlannerTree m_tree;                                   // Tree for motion planning.
@@ -534,10 +534,8 @@ class MotionPlanner {
                             }
                         }
 
-                        // reset parent to original parent
+                        // reset parent to original parent and check for feasibility
                         m_tree[index].iParent = idxOriginalParent;
-
-                        // at least one infeasible connection means fail: rewire not saftely possible
                         if(anythingInfeasible){
                             continue;
                         }
@@ -566,17 +564,16 @@ class MotionPlanner {
 
         /**
          * @brief Rebuild all trajectories of the tree. For the solution node, as well as for all leaf nodes, trajectories are generated. All remaining node trajectories are cleared.
-         * @param[in] staticObstacles List of static obstacles to be used for the guidance law of path exploration.
          * @param[in] dataIn Input data used for the latest solve.
          * @param[in] parameter Parameter set used for the latest solve.
          */
-        void RebuildAllTreeTrajectories(const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::MotionPlannerInput& dataIn, const mpsv::planner::MotionPlannerParameterSet& parameter) noexcept {
+        void RebuildAllTreeTrajectories(const mpsv::planner::MotionPlannerInput& dataIn, const mpsv::planner::MotionPlannerParameterSet& parameter) noexcept {
             const std::vector<int16_t>& indices = m_tree.GetActiveIndices();
             for(auto&& i : indices){
                 m_tree[i].trajectoryBuffer.clear();
                 if((m_tree[i].iFirstChild < 0) || (i == m_idxSolutionNode)){
                     m_tree.GetPathFromRootToNode(m_tree[i].pathBuffer, i);
-                    (void) m_vehicleSimulator.ExplorePathToEnd(m_tree[i].trajectoryBuffer, dataIn.initialStateAndInput, m_tree[i].pathBuffer, m_regionOfAttraction, staticObstacles, parameter.motionPlanner.sampletime);
+                    (void) m_vehicleSimulator.ExplorePathToEnd(m_tree[i].trajectoryBuffer, dataIn.initialStateAndInput, m_tree[i].pathBuffer, m_regionOfAttraction, dataIn.staticObstacles, parameter.motionPlanner.sampletime);
                 }
             }
         }

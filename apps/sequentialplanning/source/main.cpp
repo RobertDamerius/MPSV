@@ -39,7 +39,7 @@ int main(int, char**){
         parameter.WriteToFile(f, "parameter.");
         dataIn.WriteToFile(f, "input.");
         dataOut.WriteToFile(f, "output.");
-        planner.WriteToFile(f, "planner.", dataIn.staticObstacles);
+        planner.WriteToFile(f, "planner.");
         f.Close();
     }
 
