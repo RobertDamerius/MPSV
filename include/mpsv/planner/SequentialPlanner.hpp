@@ -54,6 +54,8 @@ class SequentialPlanner {
          * @param[in] minTrajectoryDuration The minimum duration (>= 0) of the trajectory in seconds, defaults to 0.
          */
         void Solve(mpsv::planner::SequentialPlannerOutput& dataOut, const mpsv::planner::SequentialPlannerInput& dataIn, const mpsv::planner::SequentialPlannerParameterSet& parameter, double maxComputationTimePathPlanning, double maxComputationTimeMotionPlanning, double minTrajectoryDuration = 0.0) noexcept {
+            m_interruptSolve = false;
+
             // Solve path planning problem
             m_pathPlannerInput.initialPose[0] = dataIn.initialStateAndInput[0];
             m_pathPlannerInput.initialPose[1] = dataIn.initialStateAndInput[1];
@@ -67,7 +69,7 @@ class SequentialPlanner {
             m_pathPlannerParameter.costMap = parameter.costMap;
             m_pathPlannerParameter.metric = parameter.metric;
             m_pathPlannerParameter.pathPlanner = parameter.pathPlanner;
-            m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, m_pathPlannerParameter, maxComputationTimePathPlanning);
+            m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, m_pathPlannerParameter, maxComputationTimePathPlanning, false, &m_interruptSolve);
 
             // Solve motion planning problem
             m_motionPlannerInput.initialPath = m_pathPlannerOutput.path;
@@ -80,7 +82,12 @@ class SequentialPlanner {
             m_motionPlannerParameter.metric = parameter.metric;
             m_motionPlannerParameter.model = parameter.model;
             m_motionPlannerParameter.motionPlanner = parameter.motionPlanner;
-            m_motionPlanner.Solve(m_motionPlannerOutput, m_motionPlannerInput, m_motionPlannerParameter, maxComputationTimeMotionPlanning);
+            if(!m_interruptSolve.load()){
+                m_motionPlanner.Solve(m_motionPlannerOutput, m_motionPlannerInput, m_motionPlannerParameter, maxComputationTimeMotionPlanning, false, &m_interruptSolve);
+            }
+            else{
+                m_motionPlannerOutput.Clear();
+            }
 
             // Move results to output data
             m_pathPlannerOutput.MoveTo(dataOut.pathPlanner);
@@ -88,12 +95,9 @@ class SequentialPlanner {
         }
 
         /**
-         * @brief Interrupt the @ref Solve operation of the sequential planner by interrupting the internal path and motion planners.
+         * @brief Interrupt the @ref Solve operation of the sequential planner, including both internal planners.
          */
-        void Interrupt(void) noexcept {
-            m_motionPlanner.Interrupt();
-            m_pathPlanner.Interrupt();
-        }
+        void Interrupt(void) noexcept { m_interruptSolve = true; }
 
         /**
          * @brief Predict the motion of the vehicle for a given prediction horizon assuming the control input to be constant all the time.
@@ -135,6 +139,7 @@ class SequentialPlanner {
         mpsv::planner::MotionPlannerInput m_motionPlannerInput;              // The input to the motion planner, set during @ref Solve.
         mpsv::planner::MotionPlannerOutput m_motionPlannerOutput;            // The output of the motion planner, set during @ref Solve.
         mpsv::planner::MotionPlannerParameterSet m_motionPlannerParameter;   // Parameters for the internal motion planner.
+        std::atomic<bool> m_interruptSolve{false};                           // True if the active sequential solve should be interrupted.
 };
 
 

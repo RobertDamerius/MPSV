@@ -26,7 +26,7 @@ namespace planner {
 
 /**
  * @brief The path planning algorithm. Use the @ref Solve member function to solve path planning problems. The
- * iteration loop can be interrupted by @ref Interrupt. To change the size of pre-allocated memory, run @ref Reconfigure.
+ * iteration loop can be interrupted by passing an atomic flag to @ref Solve. To change the size of pre-allocated memory, run @ref Reconfigure.
  */
 class PathPlanner {
     private:
@@ -50,7 +50,6 @@ class PathPlanner {
          * @param[in] maxNumCells Maximum number of cells to be used in the cost map.
          */
         void Reconfigure(int16_t maxNumNodes, uint32_t maxNumSamples, uint32_t maxNumCells) noexcept {
-            m_runSolve = false;
             m_tree.Resize(maxNumNodes);
             m_boxSampler.Generate(maxNumSamples);
             m_costMap.Resize(maxNumCells);
@@ -71,10 +70,9 @@ class PathPlanner {
          * @param[in] parameter The parameter set for path planning.
          * @param[in] maxComputationTime The maximum computation time in seconds allowed before leaving the iteration loop.
          * @param[in] forceColdStart True if no warm start should be performed and the path planner starts with an empty tree, false otherwise. The default value is false.
-         * @details This member function implements an iteration loop that is termimated if @ref Interrupt is called.
+         * @param[in] interruptFlag Optional atomic flag that terminates the iteration loop when set to true.
          */
-        void Solve(mpsv::planner::PathPlannerOutput& dataOut, mpsv::planner::PathPlannerInput& dataIn, const mpsv::planner::PathPlannerParameterSet& parameter, double maxComputationTime, bool forceColdStart = false) noexcept {
-            m_runSolve = true;
+        void Solve(mpsv::planner::PathPlannerOutput& dataOut, mpsv::planner::PathPlannerInput& dataIn, const mpsv::planner::PathPlannerParameterSet& parameter, double maxComputationTime, bool forceColdStart = false, const std::atomic<bool>* interruptFlag = nullptr) noexcept {
             mpsv::runtime::PerformanceCounter executionCounter;
 
             // Check validity of parameters and input
@@ -113,7 +111,7 @@ class PathPlanner {
 
             // Solve the path planning problem by doing several iterations
             double maxIterationTime = 0.0;
-            while(m_runSolve && (mpsv::error_code::NONE == dataOut.errorCode) && ((maxIterationTime + executionCounter.TimeToStart()) < maxComputationTime)){
+            while((!interruptFlag || !interruptFlag->load()) && (mpsv::error_code::NONE == dataOut.errorCode) && ((maxIterationTime + executionCounter.TimeToStart()) < maxComputationTime)){
                 mpsv::runtime::PerformanceCounter iterationCounter;
                 dataOut.errorCode = Iterate(dataIn, parameter);
                 dataOut.numberOfPerformedIterations++;
@@ -127,13 +125,7 @@ class PathPlanner {
                 m_tree.GetPathFromRootToNode(dataOut.path, m_idxSolutionNode);
             }
             dataOut.timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
-            m_runSolve = false;
         }
-
-        /**
-         * @brief Interrupt a running @ref Solve operation of the path planner.
-         */
-        void Interrupt(void) noexcept { m_runSolve = false; }
 
         /**
          * @brief Write data to the log file.
@@ -150,7 +142,6 @@ class PathPlanner {
         mpsv::sampler::UniformBoxSamplerSE2 m_boxSampler;                          // The box sampler to be used to draw random samples from SE(2).
         mpsv::structures::CostMap m_costMap;                                       // The cost map to be used as additional cost term in the objective function.
         std::vector<int16_t> m_idxNeighbors;                                       // Reserved memory for nearest neighbors and warm start.
-        std::atomic<bool> m_runSolve{false};                                       // True if a solve operation is running, false if not or is requested to terminate.
         uint32_t m_sampleIteration{0};                                             // Number of iterations since the last random sample was drawn.
         uint32_t m_goalSampleIteration{0};                                         // Number of iterations since the last goal sample was drawn.
         int16_t m_idxSolutionNode{-1};                                             // Index to the solution node or negative if no solution node exists.

@@ -30,7 +30,7 @@ namespace planner {
 
 /**
  * @brief The motion planning algorithm. Use the @ref Solve member function to solve motion planning problems. The
- * iteration loop can be interrupted by @ref Interrupt. To change the size of pre-allocated memory, run @ref Reconfigure.
+ * iteration loop can be interrupted by passing an atomic flag to @ref Solve. To change the size of pre-allocated memory, run @ref Reconfigure.
  */
 class MotionPlanner {
     private:
@@ -54,7 +54,6 @@ class MotionPlanner {
          * @param[in] maxNumCells Maximum number of cells to be used in the cost map.
          */
         void Reconfigure(int16_t maxNumNodes, uint32_t maxNumSamples, uint32_t maxNumCells) noexcept {
-            m_runSolve = false;
             m_tree.Resize(maxNumNodes);
             m_pathSampler.Generate(maxNumSamples);
             m_costMap.Resize(maxNumCells);
@@ -82,10 +81,9 @@ class MotionPlanner {
          * @param[in] parameter The parameter set for motion planning.
          * @param[in] maxComputationTime The maximum computation time in seconds allowed before leaving the iteration loop.
          * @param[in] forceColdStart True if the initial sample set of the motion planner should be initialized based on the input path only. False if the previous solution path should also be included into the sample set.
-         * @details This member function implements an iteration loop that is termimated if @ref Interrupt is called.
+         * @param[in] interruptFlag Optional atomic flag that terminates the iteration loop when set to true.
          */
-        void Solve(mpsv::planner::MotionPlannerOutput& dataOut, mpsv::planner::MotionPlannerInput& dataIn, const mpsv::planner::MotionPlannerParameterSet& parameter, double maxComputationTime, bool forceColdStart = false) noexcept {
-            m_runSolve = true;
+        void Solve(mpsv::planner::MotionPlannerOutput& dataOut, mpsv::planner::MotionPlannerInput& dataIn, const mpsv::planner::MotionPlannerParameterSet& parameter, double maxComputationTime, bool forceColdStart = false, const std::atomic<bool>* interruptFlag = nullptr) noexcept {
             mpsv::runtime::PerformanceCounter executionCounter;
 
             // Check validity of parameters and input
@@ -135,7 +133,7 @@ class MotionPlanner {
 
             // Solve the motion planning problem by doing several iterations
             double maxIterationTime = 0.0;
-            while(m_runSolve && (error_code::NONE == dataOut.errorCode) && ((maxIterationTime + executionCounter.TimeToStart()) < maxComputationTime)){
+            while((!interruptFlag || !interruptFlag->load()) && (error_code::NONE == dataOut.errorCode) && ((maxIterationTime + executionCounter.TimeToStart()) < maxComputationTime)){
                 mpsv::runtime::PerformanceCounter iterationCounter;
                 dataOut.errorCode = Iterate(dataIn, parameter);
                 dataOut.numberOfPerformedIterations++;
@@ -160,13 +158,7 @@ class MotionPlanner {
                 }
             }
             dataOut.timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
-            m_runSolve = false;
         }
-
-        /**
-         * @brief Interrupt a running @ref Solve operation of the motion planner.
-         */
-        void Interrupt(void) noexcept { m_runSolve = false; }
 
         /**
          * @brief Predict the motion of the vehicle for a given prediction horizon assuming the control input to be constant all the time.
@@ -221,7 +213,6 @@ class MotionPlanner {
         mpsv::sampler::PathSampler m_pathSampler;                                  // The path sampler to be used to draw random samples from SE(2).
         mpsv::structures::CostMap m_costMap;                                       // The cost map to be used as additional cost term in the objective function.
         std::vector<int16_t> m_idxNeighbors;                                       // Reserved memory for nearest neighbors.
-        std::atomic<bool> m_runSolve{false};                                       // True if a solve operation is running, false if not or is requested to terminate.
         uint32_t m_sampleIteration{0};                                             // Index of the next random sample.
         uint32_t m_goalSampleIteration{0};                                         // Goal-sampling iteration counter.
         int16_t m_idxSolutionNode{-1};                                             // Index to the solution node or negative if no solution node exists.
