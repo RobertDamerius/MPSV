@@ -24,11 +24,6 @@ class PathPlannerParameterSet {
         mpsv::planner::ParameterPathPlanner pathPlanner;   // Parameters for the RRT* path planning algorithm.
 
         /**
-         * @brief Construct a new path planner parameter object and set default values.
-         */
-        PathPlannerParameterSet() noexcept { Clear(); }
-
-        /**
          * @brief Clear the path planner parameter object and set default values.
          */
         void Clear(void) noexcept {

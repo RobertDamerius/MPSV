@@ -24,11 +24,6 @@ class SequentialPlannerOutput {
         mpsv::planner::MotionPlannerOutput motionPlanner;     // Output of the internal motion planner.
 
         /**
-         * @brief Construct a new sequential planner output object and set default values.
-         */
-        SequentialPlannerOutput() noexcept { Clear(); }
-
-        /**
          * @brief Clear the output and set default values.
          */
         void Clear(void) noexcept {

@@ -17,13 +17,8 @@ namespace planner {
  */
 class AsyncOnlinePlannerParameterSet: public mpsv::planner::OnlinePlannerParameterSet {
     public:
-        double timestamp;      // The user-defined timestamp that indicates the parameters to be used. This parameter set is only applied, if this value changes. The default value is quiet_NaN.
-        double timeoutInput;   // Timeout in seconds for the input data.
-
-        /**
-         * @brief Construct a new input object for the asynchronous online planner parameters and set default values.
-         */
-        AsyncOnlinePlannerParameterSet() noexcept { Clear(); }
+        double timestamp{std::numeric_limits<double>::quiet_NaN()};   // The user-defined timestamp that indicates the parameters to be used. This parameter set is only applied, if this value changes. The default value is quiet_NaN.
+        double timeoutInput{};                                        // Timeout in seconds for the input data.
 
         /**
          * @brief Clear the parameters and set default values.

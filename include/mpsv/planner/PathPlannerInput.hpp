@@ -19,23 +19,12 @@ namespace planner {
  */
 class PathPlannerInput {
     public:
-        std::array<double,3> initialPose;                              // Initial pose given as {x,y,psi}. The initial pose MUST be inside the sampling box defined by @ref samplingBoxCenterPose and @ref samplingBoxDimension.
-        std::array<double,3> finalPose;                                // Final pose given as {x,y,psi}. The final pose MUST be inside the sampling box defined by @ref samplingBoxCenterPose and @ref samplingBoxDimension.
-        std::array<double,2> originOldToNew;                           // Translation between two consecutive problems. If the origin of the previous problem is different to the origin of the new problem, then the tree must be transformed during a warm start. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).
-        std::array<double,3> samplingBoxCenterPose;                    // Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
-        std::array<double,2> samplingBoxDimension;                     // Dimension of the sampling box along major and minor axes of the box.
+        std::array<double,3> initialPose{};                            // Initial pose given as {x,y,psi}. The initial pose MUST be inside the sampling box defined by @ref samplingBoxCenterPose and @ref samplingBoxDimension.
+        std::array<double,3> finalPose{};                              // Final pose given as {x,y,psi}. The final pose MUST be inside the sampling box defined by @ref samplingBoxCenterPose and @ref samplingBoxDimension.
+        std::array<double,2> originOldToNew{};                         // Translation between two consecutive problems. If the origin of the previous problem is different to the origin of the new problem, then the tree must be transformed during a warm start. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).
+        std::array<double,3> samplingBoxCenterPose{};                  // Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
+        std::array<double,2> samplingBoxDimension{};                   // Dimension of the sampling box along major and minor axes of the box.
         std::vector<mpsv::geometry::StaticObstacle> staticObstacles;   // List of static obstacles, where each vertex is given as {x,y}.
-
-        /**
-         * @brief Construct a new path planner input object and set default values.
-         */
-        PathPlannerInput() noexcept {
-            initialPose.fill(0.0);
-            finalPose.fill(0.0);
-            originOldToNew.fill(0.0);
-            samplingBoxCenterPose.fill(0.0);
-            samplingBoxDimension.fill(0.0);
-        }
 
         /**
          * @brief Check whether the attributes are valid.

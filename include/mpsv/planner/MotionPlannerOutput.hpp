@@ -17,19 +17,14 @@ namespace planner {
  */
 class MotionPlannerOutput {
     public:
-        bool goalReached;                                  // True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-        mpsv::error_code errorCode;                        // Error code indicating the status of the motion planning operation.
-        uint32_t numberOfPerformedIterations;              // The total number of iterations that have been performed since the latest prepare step.
-        double timestampOfComputationUTC;                  // Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
-        double cost;                                       // The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
-        std::vector<std::array<double,3>> referencePath;   // Reference path that has been used as basis for trajectory generation. Each pose is given as {x,y,psi}. The first element always corresponds to the initial pose. If the goal is reached, then the final pose corresponds to the desired final pose of the planning problem.
-        std::vector<std::array<double,12>> trajectory;     // Resulting trajectory, where each element is given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state and input is not inserted.
-        double sampletime;                                 // The sampletime of the trajectory in seconds.
-
-        /**
-         * @brief Construct a new motion planner output object and set default values.
-         */
-        MotionPlannerOutput() noexcept { Clear(); }
+        bool goalReached{};                                   // True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
+        mpsv::error_code errorCode{mpsv::error_code::NONE};   // Error code indicating the status of the motion planning operation.
+        uint32_t numberOfPerformedIterations{};               // The total number of iterations that have been performed since the latest prepare step.
+        double timestampOfComputationUTC{};                   // Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
+        double cost{};                                        // The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
+        std::vector<std::array<double,3>> referencePath{};    // Reference path that has been used as basis for trajectory generation. Each pose is given as {x,y,psi}. The first element always corresponds to the initial pose. If the goal is reached, then the final pose corresponds to the desired final pose of the planning problem.
+        std::vector<std::array<double,12>> trajectory{};      // Resulting trajectory, where each element is given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state and input is not inserted.
+        double sampletime{};                                  // The sampletime of the trajectory in seconds.
 
         /**
          * @brief Clear the output and set default values.

@@ -23,11 +23,6 @@ class OnlinePlannerParameterSet {
         mpsv::planner::ParameterOnlinePlanner onlinePlanner;              // Parameters for the online planner.
 
         /**
-         * @brief Construct a new online planner parameter object and set default values.
-         */
-        OnlinePlannerParameterSet() noexcept { Clear(); }
-
-        /**
          * @brief Clear the sequential planner parameter object and set default values.
          */
         void Clear(void) noexcept {

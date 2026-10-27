@@ -25,11 +25,6 @@ class MotionPlannerParameterSet {
         mpsv::planner::ParameterMotionPlanner motionPlanner;   // Parameters for the RRT* motion planning algorithm.
 
         /**
-         * @brief Construct a new motion planner parameter object and set default values.
-         */
-        MotionPlannerParameterSet() noexcept { Clear(); }
-
-        /**
          * @brief Clear the motion planner parameter object and set default values.
          */
         void Clear(void) noexcept {

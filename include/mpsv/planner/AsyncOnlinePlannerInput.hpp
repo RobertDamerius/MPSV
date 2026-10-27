@@ -16,13 +16,8 @@ namespace planner {
  */
 class AsyncOnlinePlannerInput: public mpsv::planner::OnlinePlannerInput {
     public:
-        bool enable;   // True if the asynchronous online planner should be enabled, false if the planner should go into standby mode.
-        bool reset;    // True if the asynchronous online planner should be reset. A reset is ensured to be performed before the next internal solve operation of the planner.
-
-        /**
-         * @brief Construct a new input object for the asynchronous online planner and set default values.
-         */
-        AsyncOnlinePlannerInput() noexcept { Clear(); }
+        bool enable{};   // True if the asynchronous online planner should be enabled, false if the planner should go into standby mode.
+        bool reset{};    // True if the asynchronous online planner should be reset. A reset is ensured to be performed before the next internal solve operation of the planner.
 
         /**
          * @brief Clear the input and set default values.

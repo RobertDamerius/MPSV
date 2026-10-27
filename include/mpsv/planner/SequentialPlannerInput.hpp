@@ -19,23 +19,12 @@ namespace planner {
  */
 class SequentialPlannerInput {
     public:
-        std::array<double,12> initialStateAndInput;                    // Initial state and input given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
-        std::array<double,3> finalPose;                                // The final pose given as {x,y,psi}.
-        std::array<double,2> originOldToNew;                           // Translation between two consecutive problems. If the origin of the previous problem is different to the origin of the new problem, then the tree must be transformed during a warm start. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).
-        std::array<double,3> samplingBoxCenterPose;                    // Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
-        std::array<double,2> samplingBoxDimension;                     // Dimension of the sampling box along major and minor axes of the box.
+        std::array<double,12> initialStateAndInput{};                  // Initial state and input given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
+        std::array<double,3> finalPose{};                              // The final pose given as {x,y,psi}.
+        std::array<double,2> originOldToNew{};                         // Translation between two consecutive problems. If the origin of the previous problem is different to the origin of the new problem, then the tree must be transformed during a warm start. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).
+        std::array<double,3> samplingBoxCenterPose{};                  // Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
+        std::array<double,2> samplingBoxDimension{};                   // Dimension of the sampling box along major and minor axes of the box.
         std::vector<mpsv::geometry::StaticObstacle> staticObstacles;   // List of static obstacles, where each vertex is given as {x,y}.
-
-        /**
-         * @brief Construct a new sequential planner input object and set default values.
-         */
-        SequentialPlannerInput() noexcept {
-            initialStateAndInput.fill(0.0);
-            finalPose.fill(0.0);
-            originOldToNew.fill(0.0);
-            samplingBoxCenterPose.fill(0.0);
-            samplingBoxDimension.fill(0.0);
-        }
 
         /**
          * @brief Check whether the attributes are valid.

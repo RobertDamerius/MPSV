@@ -19,18 +19,13 @@ namespace planner {
  */
 class OnlinePlannerInput {
     public:
-        double timestamp;                                              // Monotonically increasing timestamp in seconds (arbitrary time origin defined by the user) indicating the initial timepoint corresponding to @ref initialStateAndInput.
-        std::array<double,3> originLLA;                                // Geographical origin to which this input belongs to, given as {lat,lon,alt}.
-        std::array<double,12> initialStateAndInput;                    // Initial state and input given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
-        std::array<double,3> finalPose;                                // The final pose given as {x,y,psi}.
-        std::array<double,3> samplingBoxCenterPose;                    // Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
-        std::array<double,2> samplingBoxDimension;                     // Dimension of the sampling box along major and minor axes of the box.
+        double timestamp{};                                            // Monotonically increasing timestamp in seconds (arbitrary time origin defined by the user) indicating the initial timepoint corresponding to @ref initialStateAndInput.
+        std::array<double,3> originLLA{};                              // Geographical origin to which this input belongs to, given as {lat,lon,alt}.
+        std::array<double,12> initialStateAndInput{};                  // Initial state and input given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
+        std::array<double,3> finalPose{};                              // The final pose given as {x,y,psi}.
+        std::array<double,3> samplingBoxCenterPose{};                  // Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
+        std::array<double,2> samplingBoxDimension{};                   // Dimension of the sampling box along major and minor axes of the box.
         std::vector<mpsv::geometry::StaticObstacle> staticObstacles;   // List of static obstacles, where each vertex is given as {x,y}.
-
-        /**
-         * @brief Construct a new online planner input object and set default values.
-         */
-        OnlinePlannerInput() noexcept { Clear(); }
 
         /**
          * @brief Clear the input and set default values.

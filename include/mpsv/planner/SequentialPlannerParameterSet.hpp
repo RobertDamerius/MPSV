@@ -26,11 +26,6 @@ class SequentialPlannerParameterSet {
         mpsv::planner::ParameterMotionPlanner motionPlanner;   // Parameters for the RRT* motion planning algorithm.
 
         /**
-         * @brief Construct a new sequential planner parameter object and set default values.
-         */
-        SequentialPlannerParameterSet() noexcept { Clear(); }
-
-        /**
          * @brief Clear the sequential planner parameter object and set default values.
          */
         void Clear(void) noexcept {
