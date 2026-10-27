@@ -36,6 +36,7 @@ int main(int, char**){
     std::string filename = example::GetDataFilename();
     if(f.Open(filename)){
         parameter.WriteToFile(f, "parameter.");
+        mpsv::planner::SequentialPlannerInput dataIn = example::GetInput();
         dataIn.WriteToFile(f, "input.");
         dataOut.WriteToFile(f, "output.");
         planner.WriteToFile(f, "planner.");

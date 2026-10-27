@@ -133,6 +133,7 @@ void IterationPerformanceTest::Solve(Scene& scene, bool recreateFile){
     std::string filename = "dataIterationPerformanceTest";
     if(f.Open(filename, !recreateFile)){
         //parameter.WriteToFile(f, "parameter.");
+        //dataIn = IterationPerformanceTest::GetInput(scene);
         //dataIn.WriteToFile(f, "input.");
         dataOut.WriteToFile(f, "output.");
         //planner.WriteToFile(f, "planner.", dataIn.staticObstacles);
