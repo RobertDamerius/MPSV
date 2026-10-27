@@ -22,11 +22,10 @@ class OnlinePlannerOutput {
         std::vector<std::array<double,12>> trajectory;         // Resulting trajectory, where each element is given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state and input is not inserted.
         double sampletime;                                     // The sampletime of the trajectory data in seconds.
         bool performedReset;                                   // True if reset has been performed, false otherwise.
-        bool error;                                            // True if the path or motion planner reported an error, false otherwise.
+        mpsv::error_code errorCode;                            // Error code of the sequential planning operation.
         struct {
             std::vector<std::array<double,3>> path;            // [PathPlanner] Resulting path of the internal path planning problem, where each pose is given as {x,y,psi}.
             bool goalReached;                                  // [PathPlanner] True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-            mpsv::error_code errorCode;                        // [PathPlanner] Error code indicating the type of error that occurred during planning.
             uint32_t numberOfPerformedIterations;              // [PathPlanner] The total number of iterations that have been performed since the latest prepare step.
             double timestampOfComputationUTC;                  // [PathPlanner] Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
             double cost;                                       // [PathPlanner] The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
@@ -36,7 +35,6 @@ class OnlinePlannerOutput {
             std::vector<std::array<double,12>> trajectory;     // [MotionPlanner] Resulting trajectory of the internal motion planning problem, where each element is given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state and input is not inserted.
             double startingTimepoint;                          // [MotionPlanner] The starting timepoint of the internal motion planner trajectory (arbitrary time origin defined by the user, same as @ref timestamp).
             bool goalReached;                                  // [MotionPlanner] True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-            mpsv::error_code errorCode;                        // [MotionPlanner] Error code indicating the type of error that occurred during planning.
             uint32_t numberOfPerformedIterations;              // [MotionPlanner] The total number of iterations that have been performed since the latest prepare step.
             double timestampOfComputationUTC;                  // [MotionPlanner] Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
             double cost;                                       // [MotionPlanner] The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
@@ -56,16 +54,14 @@ class OnlinePlannerOutput {
             trajectory.clear();
             sampletime = 0.0;
             performedReset = false;
-            error = true;
+            errorCode = mpsv::error_code::NONE;
             pathPlanner.path.clear();
             pathPlanner.goalReached = false;
-            pathPlanner.errorCode = mpsv::error_code::NONE;
             pathPlanner.numberOfPerformedIterations = 0;
             pathPlanner.timestampOfComputationUTC = pathPlanner.cost = 0.0;
             motionPlanner.referencePath.clear();
             motionPlanner.trajectory.clear();
             motionPlanner.goalReached = false;
-            motionPlanner.errorCode = mpsv::error_code::NONE;
             motionPlanner.numberOfPerformedIterations = 0;
             motionPlanner.startingTimepoint = motionPlanner.timestampOfComputationUTC = motionPlanner.cost = 0.0;
         }
@@ -80,10 +76,9 @@ class OnlinePlannerOutput {
             dst.trajectory.swap(trajectory);
             dst.sampletime = sampletime;
             dst.performedReset = performedReset;
-            dst.error = error;
+            dst.errorCode = errorCode;
             dst.pathPlanner.path.swap(pathPlanner.path);
             dst.pathPlanner.goalReached = pathPlanner.goalReached;
-            dst.pathPlanner.errorCode = pathPlanner.errorCode;
             dst.pathPlanner.numberOfPerformedIterations = pathPlanner.numberOfPerformedIterations;
             dst.pathPlanner.timestampOfComputationUTC = pathPlanner.timestampOfComputationUTC;
             dst.pathPlanner.cost = pathPlanner.cost;
@@ -91,7 +86,6 @@ class OnlinePlannerOutput {
             dst.motionPlanner.trajectory.swap(motionPlanner.trajectory);
             dst.motionPlanner.startingTimepoint = motionPlanner.startingTimepoint;
             dst.motionPlanner.goalReached = motionPlanner.goalReached;
-            dst.motionPlanner.errorCode = motionPlanner.errorCode;
             dst.motionPlanner.numberOfPerformedIterations = motionPlanner.numberOfPerformedIterations;
             dst.motionPlanner.timestampOfComputationUTC = motionPlanner.timestampOfComputationUTC;
             dst.motionPlanner.cost = motionPlanner.cost;
@@ -108,10 +102,9 @@ class OnlinePlannerOutput {
             file.WriteVectorField(preString + "trajectory", trajectory);
             file.WriteField("double", preString + "sampletime", {1}, &sampletime, sizeof(sampletime));
             file.WriteField("bool", preString + "performedReset", {1}, &performedReset, sizeof(performedReset));
-            file.WriteField("bool", preString + "error", {1}, &error, sizeof(error));
+            file.WriteField("uint8_t", preString + "errorCode", {1}, &errorCode, sizeof(errorCode));
             file.WriteVectorField(preString + "pathPlanner.path", pathPlanner.path);
             file.WriteField("bool", preString + "pathPlanner.goalReached", {1}, &pathPlanner.goalReached, sizeof(pathPlanner.goalReached));
-            file.WriteField("uint8_t", preString + "pathPlanner.errorCode", {1}, &pathPlanner.errorCode, sizeof(pathPlanner.errorCode));
             file.WriteField("uint32_t", preString + "pathPlanner.numberOfPerformedIterations", {1}, &pathPlanner.numberOfPerformedIterations, sizeof(pathPlanner.numberOfPerformedIterations));
             file.WriteField("double", preString + "pathPlanner.timestampOfComputationUTC", {1}, &pathPlanner.timestampOfComputationUTC, sizeof(pathPlanner.timestampOfComputationUTC));
             file.WriteField("double", preString + "pathPlanner.cost", {1}, &pathPlanner.cost, sizeof(pathPlanner.cost));
@@ -119,7 +112,6 @@ class OnlinePlannerOutput {
             file.WriteVectorField(preString + "motionPlanner.trajectory", motionPlanner.trajectory);
             file.WriteField("double", preString + "motionPlanner.startingTimepoint", {1}, &motionPlanner.startingTimepoint, sizeof(motionPlanner.startingTimepoint));
             file.WriteField("bool", preString + "motionPlanner.goalReached", {1}, &motionPlanner.goalReached, sizeof(motionPlanner.goalReached));
-            file.WriteField("uint8_t", preString + "motionPlanner.errorCode", {1}, &motionPlanner.errorCode, sizeof(motionPlanner.errorCode));
             file.WriteField("uint32_t", preString + "motionPlanner.numberOfPerformedIterations", {1}, &motionPlanner.numberOfPerformedIterations, sizeof(motionPlanner.numberOfPerformedIterations));
             file.WriteField("double", preString + "motionPlanner.timestampOfComputationUTC", {1}, &motionPlanner.timestampOfComputationUTC, sizeof(motionPlanner.timestampOfComputationUTC));
             file.WriteField("double", preString + "motionPlanner.cost", {1}, &motionPlanner.cost, sizeof(motionPlanner.cost));

@@ -37,7 +37,7 @@ int main(int, char**){
         // print result (at most 10 trajectory points)
         std::cout << "timestamp:        " << dataOut.timestamp << "\n";
         std::cout << "sampletime:       " << dataOut.sampletime << "\n";
-        std::cout << "error:            " << dataOut.error << "\n";
+        std::cout << "errorCode:        " << static_cast<int32_t>(dataOut.errorCode) << "\n";
         std::cout << "performedReset:   " << dataOut.performedReset << "\n";
         std::cout << "originLLA:        " << "{" << dataOut.originLLA[0] << ", " << dataOut.originLLA[1] << ", " << dataOut.originLLA[2] << "}\n";
         std::cout << "trajectory:       " << dataOut.trajectory.size() << " points\n";

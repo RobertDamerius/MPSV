@@ -285,7 +285,7 @@ inline void Serialize(mpsv::planner::serialization_output* output, const mpsv::p
     output->threadState                               = static_cast<uint8_t>(plannerOutput.threadState);
     output->performedReset                            = static_cast<uint8_t>(plannerOutput.performedReset);
     output->reserved                                  = static_cast<uint8_t>(0);
-    output->error                                     = static_cast<uint8_t>(plannerOutput.error);
+    output->error                                     = static_cast<uint8_t>(plannerOutput.errorCode != mpsv::error_code::NONE);
     output->originLLA                                 = plannerOutput.originLLA;
 
     // trajectory
@@ -303,8 +303,8 @@ inline void Serialize(mpsv::planner::serialization_output* output, const mpsv::p
         output->pathPlanner.path[k] = plannerOutput.pathPlanner.path[k];
     }
     output->pathPlanner.goalReached                   = static_cast<uint8_t>(plannerOutput.pathPlanner.goalReached);
-    output->pathPlanner.isFeasible                    = static_cast<uint8_t>(plannerOutput.pathPlanner.errorCode == mpsv::error_code::PATHPLANNER_INITIAL_POSE_COLLISION ? 0 : 1);
-    output->pathPlanner.outOfNodes                    = static_cast<uint8_t>(plannerOutput.pathPlanner.errorCode == mpsv::error_code::PATHPLANNER_OUT_OF_NODES ? 1 : 0);
+    output->pathPlanner.isFeasible                    = static_cast<uint8_t>(plannerOutput.errorCode != mpsv::error_code::PATHPLANNER_INITIAL_POSE_COLLISION);
+    output->pathPlanner.outOfNodes                    = static_cast<uint8_t>(plannerOutput.errorCode == mpsv::error_code::PATHPLANNER_OUT_OF_NODES);
     output->pathPlanner.numberOfPerformedIterations   = plannerOutput.pathPlanner.numberOfPerformedIterations;
     output->pathPlanner.timestampOfComputationUTC     = plannerOutput.pathPlanner.timestampOfComputationUTC;
     output->pathPlanner.cost                          = plannerOutput.pathPlanner.cost;
@@ -316,8 +316,8 @@ inline void Serialize(mpsv::planner::serialization_output* output, const mpsv::p
         output->motionPlanner.referencePath[k] = plannerOutput.motionPlanner.referencePath[k];
     }
     output->motionPlanner.goalReached                 = static_cast<uint8_t>(plannerOutput.motionPlanner.goalReached);
-    output->motionPlanner.isFeasible                  = static_cast<uint8_t>(plannerOutput.pathPlanner.errorCode == mpsv::error_code::MOTIONPLANNER_INITIAL_POSE_COLLISION ? 0 : 1);
-    output->motionPlanner.outOfNodes                  = static_cast<uint8_t>(plannerOutput.pathPlanner.errorCode == mpsv::error_code::PATHPLANNER_OUT_OF_NODES ? 1 : 0);
+    output->motionPlanner.isFeasible                  = static_cast<uint8_t>((plannerOutput.errorCode != mpsv::error_code::MOTIONPLANNER_INITIAL_POSE_COLLISION) && (plannerOutput.errorCode != mpsv::error_code::MOTIONPLANNER_INFEASIBLE_TRAJECTORY));
+    output->motionPlanner.outOfNodes                  = static_cast<uint8_t>(plannerOutput.errorCode == mpsv::error_code::MOTIONPLANNER_OUT_OF_NODES);
     output->motionPlanner.numberOfPerformedIterations = plannerOutput.motionPlanner.numberOfPerformedIterations;
     output->motionPlanner.timestampOfComputationUTC   = plannerOutput.motionPlanner.timestampOfComputationUTC;
     output->motionPlanner.cost                        = plannerOutput.motionPlanner.cost;

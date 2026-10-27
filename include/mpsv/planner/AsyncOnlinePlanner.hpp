@@ -255,7 +255,7 @@ class AsyncOnlinePlanner {
 
             // move result to internal database and run callback
             pthread_mutex_lock(&m_mtxDatabase);
-            if(dataOut.error || suspend){
+            if((dataOut.errorCode != mpsv::error_code::NONE) || suspend){
                 m_database.resetIsRequired = true; // reset is required when leaving the standby mode
                 m_workerThread.Suspend();
             }

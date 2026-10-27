@@ -43,6 +43,7 @@ int main(int, char**){
     }
 
     // print result (at most 10 trajectory points)
+    std::cout << "errorCode:                                    " << static_cast<int32_t>(dataOut.errorCode) << "\n";
     std::cout << "pathPlanner.goalReached:                     " << dataOut.pathPlanner.goalReached << "\n";
     std::cout << "pathPlanner.errorCode:                       " << static_cast<int32_t>(dataOut.pathPlanner.errorCode) << "\n";
     std::cout << "pathPlanner.numberOfPerformedIterations:     " << dataOut.pathPlanner.numberOfPerformedIterations << "\n";

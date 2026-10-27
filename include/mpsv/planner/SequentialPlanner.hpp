@@ -92,6 +92,7 @@ class SequentialPlanner {
             // Move results to output data
             m_pathPlannerOutput.MoveTo(dataOut.pathPlanner);
             m_motionPlannerOutput.MoveTo(dataOut.motionPlanner);
+            dataOut.errorCode = (mpsv::error_code::NONE != dataOut.pathPlanner.errorCode) ? dataOut.pathPlanner.errorCode : dataOut.motionPlanner.errorCode;
         }
 
         /**

@@ -146,6 +146,7 @@ class OnlinePlanner {
                 auto [success, simulationTime] = m_sequentialPlanner.PredictMotionTrajectory(predictionTrajectory, initialStateAndInput, aheadPlanningTime);
                 if(!success || predictionTrajectory.empty()){
                     m_state.Clear();
+                    m_state.errorCode = mpsv::error_code::MOTIONPLANNER_INFEASIBLE_TRAJECTORY;
                     return;
                 }
                 timestamp += simulationTime;
@@ -190,22 +191,20 @@ class OnlinePlanner {
             m_state.trajectory.swap(m_sequentialPlannerOutput.motionPlanner.trajectory);
             m_state.sampletime = m_sequentialPlannerOutput.motionPlanner.sampletime;
             m_state.performedReset = true;
-            m_state.error = (m_sequentialPlannerOutput.pathPlanner.errorCode != mpsv::error_code::NONE || m_sequentialPlannerOutput.motionPlanner.errorCode != mpsv::error_code::NONE);
+            m_state.errorCode = m_sequentialPlannerOutput.errorCode;
             m_state.pathPlanner.path.swap(m_sequentialPlannerOutput.pathPlanner.path);
             m_state.pathPlanner.goalReached = m_sequentialPlannerOutput.pathPlanner.goalReached;
-            m_state.pathPlanner.errorCode = m_sequentialPlannerOutput.pathPlanner.errorCode;
             m_state.pathPlanner.numberOfPerformedIterations = m_sequentialPlannerOutput.pathPlanner.numberOfPerformedIterations;
             m_state.pathPlanner.timestampOfComputationUTC = m_sequentialPlannerOutput.pathPlanner.timestampOfComputationUTC;
             m_state.pathPlanner.cost = m_sequentialPlannerOutput.pathPlanner.cost;
             m_state.motionPlanner.referencePath.swap(m_sequentialPlannerOutput.motionPlanner.referencePath);
             m_state.motionPlanner.goalReached = m_sequentialPlannerOutput.motionPlanner.goalReached;
-            m_state.motionPlanner.errorCode = m_sequentialPlannerOutput.motionPlanner.errorCode;
             m_state.motionPlanner.numberOfPerformedIterations = m_sequentialPlannerOutput.motionPlanner.numberOfPerformedIterations;
             m_state.motionPlanner.timestampOfComputationUTC = m_sequentialPlannerOutput.motionPlanner.timestampOfComputationUTC;
             m_state.motionPlanner.cost = m_sequentialPlannerOutput.motionPlanner.cost;
 
             // Set reset flag
-            m_reset = m_state.error;
+            m_reset = (m_state.errorCode != mpsv::error_code::NONE);
         }
 
         /**
@@ -274,22 +273,20 @@ class OnlinePlanner {
             m_state.trajectory.swap(m_sequentialPlannerOutput.motionPlanner.trajectory);
             m_state.sampletime = m_sequentialPlannerOutput.motionPlanner.sampletime;
             m_state.performedReset = false;
-            m_state.error = (m_sequentialPlannerOutput.pathPlanner.errorCode != mpsv::error_code::NONE || m_sequentialPlannerOutput.motionPlanner.errorCode != mpsv::error_code::NONE);
+            m_state.errorCode = m_sequentialPlannerOutput.errorCode;
             m_state.pathPlanner.path.swap(m_sequentialPlannerOutput.pathPlanner.path);
             m_state.pathPlanner.goalReached = m_sequentialPlannerOutput.pathPlanner.goalReached;
-            m_state.pathPlanner.errorCode = m_sequentialPlannerOutput.pathPlanner.errorCode;
             m_state.pathPlanner.numberOfPerformedIterations = m_sequentialPlannerOutput.pathPlanner.numberOfPerformedIterations;
             m_state.pathPlanner.timestampOfComputationUTC = m_sequentialPlannerOutput.pathPlanner.timestampOfComputationUTC;
             m_state.pathPlanner.cost = m_sequentialPlannerOutput.pathPlanner.cost;
             m_state.motionPlanner.referencePath.swap(m_sequentialPlannerOutput.motionPlanner.referencePath);
             m_state.motionPlanner.goalReached = m_sequentialPlannerOutput.motionPlanner.goalReached;
-            m_state.motionPlanner.errorCode = m_sequentialPlannerOutput.motionPlanner.errorCode;
             m_state.motionPlanner.numberOfPerformedIterations = m_sequentialPlannerOutput.motionPlanner.numberOfPerformedIterations;
             m_state.motionPlanner.timestampOfComputationUTC = m_sequentialPlannerOutput.motionPlanner.timestampOfComputationUTC;
             m_state.motionPlanner.cost = m_sequentialPlannerOutput.motionPlanner.cost;
 
             // Set reset flag
-            m_reset = m_state.error;
+            m_reset = (m_state.errorCode != mpsv::error_code::NONE);
         }
 };
 

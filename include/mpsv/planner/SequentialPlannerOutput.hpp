@@ -5,6 +5,7 @@
 #include <mpsv/planner/PathPlannerOutput.hpp>
 #include <mpsv/planner/MotionPlannerOutput.hpp>
 #include <mpsv/logging/File.hpp>
+#include <mpsv/common/ErrorCode.hpp>
 
 
 namespace mpsv {
@@ -18,8 +19,9 @@ namespace planner {
  */
 class SequentialPlannerOutput {
     public:
-        mpsv::planner::PathPlannerOutput pathPlanner;       // Output of the internal path planner.
-        mpsv::planner::MotionPlannerOutput motionPlanner;   // Output of the internal motion planner.
+        mpsv::error_code errorCode{mpsv::error_code::NONE};   // Path planner error if present, otherwise the motion planner error.
+        mpsv::planner::PathPlannerOutput pathPlanner;         // Output of the internal path planner.
+        mpsv::planner::MotionPlannerOutput motionPlanner;     // Output of the internal motion planner.
 
         /**
          * @brief Construct a new sequential planner output object and set default values.
@@ -30,6 +32,7 @@ class SequentialPlannerOutput {
          * @brief Clear the output and set default values.
          */
         void Clear(void) noexcept {
+            errorCode = mpsv::error_code::NONE;
             pathPlanner.Clear();
             motionPlanner.Clear();
         }
@@ -40,6 +43,7 @@ class SequentialPlannerOutput {
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
+            file.WriteField("uint8_t", preString + "errorCode", {1}, &errorCode, sizeof(errorCode));
             pathPlanner.WriteToFile(file, preString + "pathPlanner.");
             motionPlanner.WriteToFile(file, preString + "motionPlanner.");
         }

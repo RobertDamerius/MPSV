@@ -48,7 +48,7 @@ int main(int, char**){
                      ", timestampParameter=" << std::to_string(dataOut.timestampParameter) <<
                      ", inputError=" << static_cast<int32_t>(dataOut.inputError) <<
                      ", parameterError=" << static_cast<int32_t>(dataOut.parameterError) <<
-                     ", error=" << dataOut.error <<
+                     ", errorCode=" << static_cast<int32_t>(dataOut.errorCode) <<
                      ", performedReset=" << dataOut.performedReset <<
                      ", timestamp=" << dataOut.timestamp <<
                      ", sampletime=" << dataOut.sampletime <<
