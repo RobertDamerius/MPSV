@@ -3,14 +3,14 @@
 
 
 int main(int, char**){
-    // construct and initialize the online planner
+    // construct and reconfigure the online planner
     mpsv::planner::OnlinePlanner planner;
     constexpr int16_t pathMaxNumNodes = 200;
     constexpr uint32_t pathMaxNumSamples = 1000000;
     constexpr int16_t motionMaxNumNodes = 200;
     constexpr uint32_t motionMaxNumSamples = 1000000;
     constexpr uint32_t maxNumCells = 4096 * 4096;
-    planner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
+    planner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
 
     // get a valid parameter set for the online planner
     mpsv::planner::OnlinePlannerParameterSet parameter = example::GetParameterSet();
@@ -51,7 +51,5 @@ int main(int, char**){
         std::cout << std::endl;
     }
 
-    // terminate the planner
-    planner.Terminate();
     return 0;
 }

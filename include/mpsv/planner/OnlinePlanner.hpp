@@ -30,24 +30,17 @@ namespace planner {
 class OnlinePlanner {
     public:
         /**
-         * @brief Initialize or re-initialize the online planner.
+         * @brief Reconfigure the online planner with the specified capacities.
          * @param[in] pathMaxNumNodes Maximum number of nodes to be used in the tree (path planner).
          * @param[in] pathMaxNumSamples Maximum number of random samples to be generated in advance (path planner).
          * @param[in] motionMaxNumNodes Maximum number of nodes to be used in the tree (motion planner).
          * @param[in] motionMaxNumSamples Maximum number of random samples to be generated in advance (motion planner).
          * @param[in] maxNumCells Maximum number of cells to be used in the cost map.
          */
-        void Initialize(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, uint32_t maxNumCells) noexcept {
-            Terminate();
-            m_sequentialPlanner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
-        }
-
-        /**
-         * @brief Terminate the online planner. This calls the @ref Reset member function.
-         */
-        void Terminate(void) noexcept {
+        void Reconfigure(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, uint32_t maxNumCells) noexcept {
             m_state.Clear();
             Reset();
+            m_sequentialPlanner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
         }
 
         /**

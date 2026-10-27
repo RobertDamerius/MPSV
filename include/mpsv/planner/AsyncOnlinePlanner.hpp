@@ -65,7 +65,7 @@ class AsyncOnlinePlanner {
             pthread_mutex_lock(&m_mtxDatabase);
             m_database.Clear();
             pthread_mutex_unlock(&m_mtxDatabase);
-            m_onlinePlanner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
+            m_onlinePlanner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
             m_workerThread.Start(std::bind(&AsyncOnlinePlanner::WorkerThreadRun, this), threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
             return true;
         }
@@ -77,7 +77,6 @@ class AsyncOnlinePlanner {
             m_terminate = true;
             m_onlinePlanner.Interrupt();
             m_workerThread.Stop();
-            m_onlinePlanner.Terminate();
             pthread_mutex_lock(&m_mtxDatabase);
             m_database.Clear();
             pthread_mutex_unlock(&m_mtxDatabase);
