@@ -199,8 +199,7 @@ class OnlinePlanner {
             m_state.pathPlanner.cost = m_sequentialPlannerOutput.pathPlanner.cost;
             m_state.motionPlanner.referencePath.swap(m_sequentialPlannerOutput.motionPlanner.referencePath);
             m_state.motionPlanner.goalReached = m_sequentialPlannerOutput.motionPlanner.goalReached;
-            m_state.motionPlanner.isFeasible = (mpsv::error_code::NONE == m_sequentialPlannerOutput.motionPlanner.errorCode) || (mpsv::error_code::MOTIONPLANNER_OUT_OF_NODES == m_sequentialPlannerOutput.motionPlanner.errorCode);
-            m_state.motionPlanner.outOfNodes = (mpsv::error_code::MOTIONPLANNER_OUT_OF_NODES == m_sequentialPlannerOutput.motionPlanner.errorCode);
+            m_state.motionPlanner.errorCode = m_sequentialPlannerOutput.motionPlanner.errorCode;
             m_state.motionPlanner.numberOfPerformedIterations = m_sequentialPlannerOutput.motionPlanner.numberOfPerformedIterations;
             m_state.motionPlanner.timestampOfComputationUTC = m_sequentialPlannerOutput.motionPlanner.timestampOfComputationUTC;
             m_state.motionPlanner.cost = m_sequentialPlannerOutput.motionPlanner.cost;
@@ -284,8 +283,7 @@ class OnlinePlanner {
             m_state.pathPlanner.cost = m_sequentialPlannerOutput.pathPlanner.cost;
             m_state.motionPlanner.referencePath.swap(m_sequentialPlannerOutput.motionPlanner.referencePath);
             m_state.motionPlanner.goalReached = m_sequentialPlannerOutput.motionPlanner.goalReached;
-            m_state.motionPlanner.isFeasible = (mpsv::error_code::NONE == m_sequentialPlannerOutput.motionPlanner.errorCode) || (mpsv::error_code::MOTIONPLANNER_OUT_OF_NODES == m_sequentialPlannerOutput.motionPlanner.errorCode);
-            m_state.motionPlanner.outOfNodes = (mpsv::error_code::MOTIONPLANNER_OUT_OF_NODES == m_sequentialPlannerOutput.motionPlanner.errorCode);
+            m_state.motionPlanner.errorCode = m_sequentialPlannerOutput.motionPlanner.errorCode;
             m_state.motionPlanner.numberOfPerformedIterations = m_sequentialPlannerOutput.motionPlanner.numberOfPerformedIterations;
             m_state.motionPlanner.timestampOfComputationUTC = m_sequentialPlannerOutput.motionPlanner.timestampOfComputationUTC;
             m_state.motionPlanner.cost = m_sequentialPlannerOutput.motionPlanner.cost;

@@ -316,8 +316,8 @@ inline void Serialize(mpsv::planner::serialization_output* output, const mpsv::p
         output->motionPlanner.referencePath[k] = plannerOutput.motionPlanner.referencePath[k];
     }
     output->motionPlanner.goalReached                 = static_cast<uint8_t>(plannerOutput.motionPlanner.goalReached);
-    output->motionPlanner.isFeasible                  = static_cast<uint8_t>(plannerOutput.motionPlanner.isFeasible);
-    output->motionPlanner.outOfNodes                  = static_cast<uint8_t>(plannerOutput.motionPlanner.outOfNodes);
+    output->motionPlanner.isFeasible                  = static_cast<uint8_t>(plannerOutput.pathPlanner.errorCode == mpsv::error_code::MOTIONPLANNER_INITIAL_POSE_COLLISION ? 0 : 1);
+    output->motionPlanner.outOfNodes                  = static_cast<uint8_t>(plannerOutput.pathPlanner.errorCode == mpsv::error_code::PATHPLANNER_OUT_OF_NODES ? 1 : 0);
     output->motionPlanner.numberOfPerformedIterations = plannerOutput.motionPlanner.numberOfPerformedIterations;
     output->motionPlanner.timestampOfComputationUTC   = plannerOutput.motionPlanner.timestampOfComputationUTC;
     output->motionPlanner.cost                        = plannerOutput.motionPlanner.cost;
