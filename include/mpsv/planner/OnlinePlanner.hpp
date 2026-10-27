@@ -104,22 +104,22 @@ class OnlinePlanner {
          * @brief Get the state/input vector from the latest solution trajectory (@ref m_state) for a given absolute timestamp.
          * @param[in] timestamp The timestamp (time origin defined by user) for which to obtain the state/input vector.
          * @param[in] offsetOldToNew If the origin of the current trajectory (state.trajectory) is different to the origin of the new problem, then this coordinate translation must be taken into account. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).
-         * @return Tuple containing index, resulting timestamp and the actual state/input.
-         * @return [0] Index indicating the state/vector that was chosen from state.trajectory. If the given timestamp is out of range, -1 is returned.
-         * @return [1] The actual timestamp that corresponds to that index.
-         * @return [2] The state/input vector for that index.
+         * @return A tuple containing the following values.
+         * [0] Index indicating the state/vector that was chosen from state.trajectory. If the given timestamp is out of range, -1 is returned.
+         * [1] The actual timestamp that corresponds to that index.
+         * [2] The state/input vector for that index.
          */
         std::tuple<int32_t,double,std::array<double,12>> GetTrajectoryStateAtTimestamp(double timestamp, std::array<double,2> offsetOldToNew) noexcept {
             std::tuple<int32_t,double,std::array<double,12>> result{};
             auto& [retIndex, retTimestamp, retInitialStateAndInput] = result;
             double timeFromOldStart = timestamp - m_state.timestamp;
-            double dSteps = timeFromOldStart / m_state.sampletime;
-            retIndex = static_cast<int32_t>(std::floor(dSteps)); //#TODO: check for integer overflow
-            if((retIndex < 0) || (retIndex >= static_cast<int32_t>(m_state.trajectory.size()))){
+            double dSteps = std::floor(timeFromOldStart / m_state.sampletime);
+            if(!std::isfinite(dSteps) || (dSteps < 0.0) || (dSteps > static_cast<double>(std::numeric_limits<int32_t>::max())) || (static_cast<size_t>(dSteps) >= m_state.trajectory.size())){
                 retIndex = -1; // timestamp not within time range of latest trajectory
             }
             else{
                 // Update new starting point (time) to lie exactly on the grid of the old trajectory (at the returned index)
+                retIndex = static_cast<int32_t>(dSteps);
                 retTimestamp = m_state.timestamp + (m_state.sampletime * static_cast<double>(retIndex));
                 retInitialStateAndInput = m_state.trajectory[retIndex];
                 retInitialStateAndInput[0] -= offsetOldToNew[0];
@@ -134,12 +134,9 @@ class OnlinePlanner {
          * @param[in] parameter The parameter set to use for this solve operation.
          */
         void SolveInitialProblem(const mpsv::planner::OnlinePlannerInput& dataIn, const mpsv::planner::OnlinePlannerParameterSet& parameter) noexcept {
-            // Timestamp and initial state/input
             m_performanceCounter.Start();
             double timestamp = dataIn.timestamp;
             std::array<double,12> initialStateAndInput = dataIn.initialStateAndInput;
-
-            // Get the offset from the old origin (state) to the new origin (dataIn)
             std::array<double,2> offsetOldToNew = mpsv::math::wgs84::LLA2NE(dataIn.originLLA, m_state.originLLA);
 
             // Change the timestamp and the initial state vector by predicting the motion for the expected computation time
@@ -147,7 +144,7 @@ class OnlinePlanner {
             double aheadPlanningTime = parameter.onlinePlanner.maxComputationTimePathOnReset + parameter.onlinePlanner.maxComputationTimeMotionOnReset + parameter.onlinePlanner.additionalAheadPlanningTime;
             if(parameter.onlinePlanner.predictInitialStateOnReset){
                 auto [success, simulationTime] = m_sequentialPlanner.PredictMotionTrajectory(predictionTrajectory, initialStateAndInput, aheadPlanningTime);
-                if(!success){
+                if(!success || predictionTrajectory.empty()){
                     m_state.Clear();
                     return;
                 }
@@ -158,7 +155,7 @@ class OnlinePlanner {
                 predictionTrajectory.push_back(initialStateAndInput);
             }
 
-            // Assign input data for the sequential planner and solve the actual motion planning problem
+            // Assign input data for the sequential planner and solve the actual planning problem
             m_sequentialPlannerInput.initialStateAndInput = initialStateAndInput;
             m_sequentialPlannerInput.finalPose = dataIn.finalPose;
             m_sequentialPlannerInput.originOldToNew = offsetOldToNew;
