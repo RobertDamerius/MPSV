@@ -46,10 +46,12 @@ class OnlinePlannerParameterSet {
                 return e;
             if(error_code::NONE != (e = onlinePlanner.IsValid()))
                 return e;
-            if(static_cast<uint32_t>(std::floor((onlinePlanner.maxComputationTimeMotionOnReset + onlinePlanner.maxComputationTimePathOnReset + onlinePlanner.additionalAheadPlanningTime) / sequentialPlanner.motionPlanner.sampletime)) >= 0x0000FFFF){
+            double numStepsOnReset = (onlinePlanner.maxComputationTimeMotionOnReset + onlinePlanner.maxComputationTimePathOnReset + onlinePlanner.additionalAheadPlanningTime) / sequentialPlanner.motionPlanner.sampletime;
+            if(!std::isfinite(numStepsOnReset) || (numStepsOnReset >= 0x0000FFFF)){
                 return error_code::PARAM_ONLINEPLANNER_NUM_SIMULATION_STEPS;
             }
-            if(static_cast<uint32_t>(std::floor((onlinePlanner.maxComputationTimeMotion + onlinePlanner.maxComputationTimePath + onlinePlanner.additionalAheadPlanningTime) / sequentialPlanner.motionPlanner.sampletime)) >= 0x0000FFFF){
+            double numSteps = (onlinePlanner.maxComputationTimeMotion + onlinePlanner.maxComputationTimePath + onlinePlanner.additionalAheadPlanningTime) / sequentialPlanner.motionPlanner.sampletime;
+            if(!std::isfinite(numSteps) || (numSteps >= 0x0000FFFF)){
                 return error_code::PARAM_ONLINEPLANNER_NUM_SIMULATION_STEPS;
             }
             return error_code::NONE;

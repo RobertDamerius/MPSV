@@ -114,7 +114,7 @@ class OnlinePlanner {
             auto& [retIndex, retTimestamp, retInitialStateAndInput] = result;
             double timeFromOldStart = timestamp - m_state.timestamp;
             double dSteps = std::floor(timeFromOldStart / m_state.sampletime);
-            if(!std::isfinite(dSteps) || (dSteps < 0.0) || (dSteps > static_cast<double>(std::numeric_limits<int32_t>::max())) || (static_cast<size_t>(dSteps) >= m_state.trajectory.size())){
+            if(!std::isfinite(dSteps) || (dSteps < 0.0) || (dSteps >= static_cast<double>(std::numeric_limits<int32_t>::max())) || (static_cast<size_t>(dSteps) >= m_state.trajectory.size())){
                 retIndex = -1; // timestamp not within time range of latest trajectory
             }
             else{
@@ -176,9 +176,7 @@ class OnlinePlanner {
 
             // Merge prediction trajectory to solution trajectory
             double dt = timestamp - timeNow + parameter.onlinePlanner.timeKeepPastTrajectory;
-            int32_t numOldTrajectoryPoints = static_cast<int32_t>(std::ceil(dt / m_sequentialPlannerOutput.motionPlanner.sampletime));
-            numOldTrajectoryPoints = std::min(numOldTrajectoryPoints, 0x0000FFFF);
-            numOldTrajectoryPoints = std::min(numOldTrajectoryPoints, static_cast<int32_t>(predictionTrajectory.size()));
+            int32_t numOldTrajectoryPoints = static_cast<int32_t>(std::min<double>(std::ceil(dt / m_sequentialPlannerOutput.motionPlanner.sampletime), std::min<size_t>(predictionTrajectory.size(), 0x0000FFFF)));
             if(numOldTrajectoryPoints > 0){
                 // The prediction trajectory relates to the same origin, thus offsetOldToNew does not have to be considered
                 m_sequentialPlannerOutput.motionPlanner.trajectory.insert(m_sequentialPlannerOutput.motionPlanner.trajectory.begin(), predictionTrajectory.end() - numOldTrajectoryPoints, predictionTrajectory.end());
@@ -249,8 +247,7 @@ class OnlinePlanner {
 
             // Get indices to range of old trajectory that should be kept
             double dt = timestamp - timeNow + parameter.onlinePlanner.timeKeepPastTrajectory;
-            int32_t numOldTrajectoryPoints = static_cast<int32_t>(std::ceil(dt / m_state.sampletime));
-            numOldTrajectoryPoints = std::min(numOldTrajectoryPoints, 0x0000FFFF);
+            int32_t numOldTrajectoryPoints = static_cast<int32_t>(std::min<double>(std::ceil(dt / m_state.sampletime), 0x0000FFFF));
             int32_t indexOldEnd = index + 1;
             int32_t indexOldBegin = std::max(0, indexOldEnd - numOldTrajectoryPoints);
             numOldTrajectoryPoints = indexOldEnd - indexOldBegin; // index-range is [indexOldBegin, indexOldEnd), excluding indexOldEnd
