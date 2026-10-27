@@ -39,28 +39,32 @@ class OnlinePlanner {
          */
         void Reconfigure(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, uint32_t maxNumCells) noexcept {
             m_state.Clear();
-            Reset();
+            m_resetRequired = true;
             m_sequentialPlanner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
         }
-
-        /**
-         * @brief Reset the online planner to make it start from the initial state during the next solve operation.
-         * @details The interrupt flags are not changed. Parameters are supplied separately to each @ref Solve operation.
-         */
-        void Reset(void) noexcept { m_reset = true; }
 
         /**
          * @brief Solve the online sequential motion planning problem.
          * @param[out] dataOut The output data containing the results.
          * @param[in] dataIn Input data containing the scene data (time, initial state, final pose, obstacles). The timestamp must be monotonically increasing.
          * @param[in] parameter The parameter set to use for this solve operation.
-         * @details After a @ref Reset call this planner solves the motion planning based on the initial state by optionally predicting the initial state by the expected
-         * computation time. A solution trajectory is saved to the internal @ref m_state of this planner. The next solve operation selects the initial state for the
-         * planning problem on a future timepoint of the latest solution trajectory. If this is not possible, a reset is done internally and the planner falls back using
-         * the initial state given in the input data.
+         * @param[in] reset If true, reset the planner and solve based on the initial state by optionally predicting the initial state by the expected computation time. The default value is false
+         * @details A solution trajectory is saved to the internal @ref m_state of this planner. The next solve operation selects the initial state for the planning
+         * problem on a future timepoint of the latest solution trajectory. If this is not possible, a reset is done internally and the planner falls back using the
+         * initial state given in the input data.
          */
-        void Solve(mpsv::planner::OnlinePlannerOutput& dataOut, const mpsv::planner::OnlinePlannerInput& dataIn, const mpsv::planner::OnlinePlannerParameterSet& parameter) noexcept {
-            if(m_reset){
+        void Solve(mpsv::planner::OnlinePlannerOutput& dataOut, const mpsv::planner::OnlinePlannerInput& dataIn, const mpsv::planner::OnlinePlannerParameterSet& parameter, bool reset = false) noexcept {
+            // validate parameters
+            dataOut.Clear();
+            dataOut.errorCode = parameter.IsValid();
+            if(mpsv::error_code::NONE != dataOut.errorCode){
+                m_state.Clear();
+                m_resetRequired = true;
+                return;
+            }
+
+            // solve the planning problem
+            if(m_resetRequired || reset){
                 SolveInitialProblem(dataIn, parameter);
             }
             else{
@@ -94,7 +98,7 @@ class OnlinePlanner {
 
     protected:
         mpsv::planner::OnlinePlannerOutput m_state;                         // Internal state of the online planner representing the latest output.
-        bool m_reset{false};                                                // True if the online planner has been reset.
+        bool m_resetRequired{false};                                        // True if a reset is required, false otherwise.
         mpsv::planner::SequentialPlanner m_sequentialPlanner;               // Internal sequential planning solver.
         mpsv::planner::SequentialPlannerInput m_sequentialPlannerInput;     // Input to the @ref m_sequentialPlanner.
         mpsv::planner::SequentialPlannerOutput m_sequentialPlannerOutput;   // Output of the @ref m_sequentialPlanner.
@@ -202,7 +206,7 @@ class OnlinePlanner {
             m_state.motionPlanner.cost = m_sequentialPlannerOutput.motionPlanner.cost;
 
             // Set reset flag
-            m_reset = (m_state.errorCode != mpsv::error_code::NONE);
+            m_resetRequired = (m_state.errorCode != mpsv::error_code::NONE);
         }
 
         /**
@@ -283,7 +287,7 @@ class OnlinePlanner {
             m_state.motionPlanner.cost = m_sequentialPlannerOutput.motionPlanner.cost;
 
             // Set reset flag
-            m_reset = (m_state.errorCode != mpsv::error_code::NONE);
+            m_resetRequired = (m_state.errorCode != mpsv::error_code::NONE);
         }
 };
 

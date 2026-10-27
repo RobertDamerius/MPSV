@@ -230,12 +230,9 @@ class AsyncOnlinePlanner {
             if(m_database.timeoutCounter.TimeToStart() >= m_database.parameter.timeoutInput){
                 m_database.inputError = (m_database.inputError == error_code::NONE) ? error_code::NOT_AVAILABLE : m_database.inputError;
             }
-            if(m_database.parameterUpdateRequired){
-                m_onlinePlanner.Reset();
-                m_database.parameterUpdateRequired = false;
-            }
+            bool reset = m_database.resetIsRequired || m_database.parameterUpdateRequired;
+            m_database.parameterUpdateRequired = false;
             bool suspend = (error_code::NONE != m_database.inputError) || (error_code::NONE != m_database.parameterError) || !m_database.input.enable;
-            bool reset = m_database.resetIsRequired;
             m_database.resetIsRequired = false;
             dataIn = m_database.input;
             dataParameter = m_database.parameter;
@@ -247,10 +244,7 @@ class AsyncOnlinePlanner {
 
             // perform a reset if commanded and solve the planning problem
             if(!suspend){
-                if(reset){
-                    m_onlinePlanner.Reset();
-                }
-                m_onlinePlanner.Solve(dataOut, dataIn, dataParameter);
+                m_onlinePlanner.Solve(dataOut, dataIn, dataParameter, reset);
             }
 
             // move result to internal database and run callback
