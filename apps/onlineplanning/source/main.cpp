@@ -12,10 +12,10 @@ int main(int, char**){
     constexpr uint32_t maxNumCells = 4096 * 4096;
     planner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
 
-    // apply a parameter set to the online planner
+    // get a valid parameter set for the online planner
     mpsv::planner::OnlinePlannerParameterSet parameter = example::GetParameterSet();
-    if(mpsv::error_code::NONE != planner.ApplyParameterSet(parameter)){
-        std::cerr << "ERROR: Could not apply parameter set!\n";
+    if(mpsv::error_code::NONE != parameter.IsValid()){
+        std::cerr << "ERROR: Parameter set is invalid!\n";
         return 0;
     }
 
@@ -32,7 +32,7 @@ int main(int, char**){
 
         // solve the problem
         mpsv::planner::OnlinePlannerOutput dataOut;
-        planner.Solve(dataOut, dataIn);
+        planner.Solve(dataOut, dataIn, parameter);
 
         // print result (at most 10 trajectory points)
         std::cout << "timestamp:        " << dataOut.timestamp << "\n";

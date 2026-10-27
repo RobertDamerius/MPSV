@@ -221,9 +221,10 @@ class AsyncOnlinePlanner {
                 return;
             }
 
-            // storage for current input and output data
+            // storage for current input, output and parameter data
             mpsv::planner::AsyncOnlinePlannerInput dataIn;
             mpsv::planner::AsyncOnlinePlannerOutput dataOut;
+            mpsv::planner::OnlinePlannerParameterSet dataParameter;
 
             // get input, apply parameters, handle errors
             pthread_mutex_lock(&m_mtxDatabase);
@@ -231,13 +232,14 @@ class AsyncOnlinePlanner {
                 m_database.inputError = (m_database.inputError == error_code::NONE) ? error_code::NOT_AVAILABLE : m_database.inputError;
             }
             if(m_database.parameterUpdateRequired){
-                m_database.parameterError = m_onlinePlanner.ApplyParameterSet(m_database.parameter);
+                m_onlinePlanner.Reset();
                 m_database.parameterUpdateRequired = false;
             }
             bool suspend = (error_code::NONE != m_database.inputError) || (error_code::NONE != m_database.parameterError) || !m_database.input.enable;
             bool reset = m_database.resetIsRequired;
             m_database.resetIsRequired = false;
             dataIn = m_database.input;
+            dataParameter = m_database.parameter;
             dataOut.timestampInput = m_database.input.timestamp;
             dataOut.timestampParameter = m_database.parameter.timestamp;
             dataOut.inputError = m_database.inputError;
@@ -249,7 +251,7 @@ class AsyncOnlinePlanner {
                 if(reset){
                     m_onlinePlanner.Reset();
                 }
-                m_onlinePlanner.Solve(dataOut, dataIn);
+                m_onlinePlanner.Solve(dataOut, dataIn, dataParameter);
             }
 
             // move result to internal database and run callback
