@@ -47,13 +47,13 @@ class SequentialPlanner {
         /**
          * @brief Solve the sequential planning problem by solving a path planning problem, followed by a motion planning problem.
          * @param[out] dataOut The output data containing the results.
-         * @param[in] dataIn The input data containing the scene of the problem.
+         * @param[inout] dataIn The input data containing the scene of the problem. The data, e.g. static obstacles, may be modified by this member function.
          * @param[in] parameter The parameter set to be used.
          * @param[in] maxComputationTimePathPlanning The maximum computation time allowed for path planning. The iteration loop for path planning is terminated if this computation time limit is exceeded.
          * @param[in] maxComputationTimeMotionPlanning The maximum computation time allowed for motion planning. The iteration loop for motion planning is terminated if this computation time limit is exceeded.
          * @param[in] minTrajectoryDuration The minimum duration (>= 0) of the trajectory in seconds, defaults to 0.
          */
-        void Solve(mpsv::planner::SequentialPlannerOutput& dataOut, const mpsv::planner::SequentialPlannerInput& dataIn, const mpsv::planner::SequentialPlannerParameterSet& parameter, double maxComputationTimePathPlanning, double maxComputationTimeMotionPlanning, double minTrajectoryDuration = 0.0) noexcept {
+        void Solve(mpsv::planner::SequentialPlannerOutput& dataOut, mpsv::planner::SequentialPlannerInput& dataIn, const mpsv::planner::SequentialPlannerParameterSet& parameter, double maxComputationTimePathPlanning, double maxComputationTimeMotionPlanning, double minTrajectoryDuration = 0.0) noexcept {
             m_interruptSolve = false;
 
             // Solve path planning problem
@@ -72,17 +72,17 @@ class SequentialPlanner {
             m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, m_pathPlannerParameter, maxComputationTimePathPlanning, false, &m_interruptSolve);
 
             // Solve motion planning problem
-            m_motionPlannerInput.initialPath = m_pathPlannerOutput.path;
-            m_motionPlannerInput.initialStateAndInput = dataIn.initialStateAndInput;
-            m_motionPlannerInput.originOldToNew = dataIn.originOldToNew;
-            m_motionPlannerInput.staticObstacles = dataIn.staticObstacles;
-            m_motionPlannerInput.minTrajectoryDuration = minTrajectoryDuration;
-            m_motionPlannerParameter.geometry = parameter.geometry;
-            m_motionPlannerParameter.costMap = parameter.costMap;
-            m_motionPlannerParameter.metric = parameter.metric;
-            m_motionPlannerParameter.model = parameter.model;
-            m_motionPlannerParameter.motionPlanner = parameter.motionPlanner;
             if(!m_interruptSolve.load() && (mpsv::error_code::NONE == m_pathPlannerOutput.errorCode)){
+                m_motionPlannerInput.initialPath = m_pathPlannerOutput.path;
+                m_motionPlannerInput.initialStateAndInput = dataIn.initialStateAndInput;
+                m_motionPlannerInput.originOldToNew = dataIn.originOldToNew;
+                m_motionPlannerInput.staticObstacles.swap(dataIn.staticObstacles);
+                m_motionPlannerInput.minTrajectoryDuration = minTrajectoryDuration;
+                m_motionPlannerParameter.geometry = parameter.geometry;
+                m_motionPlannerParameter.costMap = parameter.costMap;
+                m_motionPlannerParameter.metric = parameter.metric;
+                m_motionPlannerParameter.model = parameter.model;
+                m_motionPlannerParameter.motionPlanner = parameter.motionPlanner;
                 m_motionPlanner.Solve(m_motionPlannerOutput, m_motionPlannerInput, m_motionPlannerParameter, maxComputationTimeMotionPlanning, false, &m_interruptSolve);
             }
             else{

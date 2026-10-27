@@ -46,14 +46,14 @@ class OnlinePlanner {
         /**
          * @brief Solve the online sequential motion planning problem.
          * @param[out] dataOut The output data containing the results.
-         * @param[in] dataIn Input data containing the scene data (time, initial state, final pose, obstacles). The timestamp must be monotonically increasing.
+         * @param[inout] dataIn Input data containing the scene data (time, initial state, final pose, obstacles). The timestamp must be monotonically increasing. The data, e.g. static obstacles, may be modified by this member function.
          * @param[in] parameter The parameter set to use for this solve operation.
          * @param[in] reset If true, reset the planner and solve based on the initial state by optionally predicting the initial state by the expected computation time. The default value is false
          * @details A solution trajectory is saved to the internal @ref m_state of this planner. The next solve operation selects the initial state for the planning
          * problem on a future timepoint of the latest solution trajectory. If this is not possible, a reset is done internally and the planner falls back using the
          * initial state given in the input data.
          */
-        void Solve(mpsv::planner::OnlinePlannerOutput& dataOut, const mpsv::planner::OnlinePlannerInput& dataIn, const mpsv::planner::OnlinePlannerParameterSet& parameter, bool reset = false) noexcept {
+        void Solve(mpsv::planner::OnlinePlannerOutput& dataOut, mpsv::planner::OnlinePlannerInput& dataIn, const mpsv::planner::OnlinePlannerParameterSet& parameter, bool reset = false) noexcept {
             // validate parameters
             dataOut.Clear();
             dataOut.errorCode = parameter.IsValid();
@@ -134,10 +134,10 @@ class OnlinePlanner {
 
         /**
          * @brief Solve the first online sequential planning problem using the initial state given in the input and optionally predicting it by the expected computation time.
-         * @param[in] dataIn Input data containing the scene data (time, initial state, final pose, obstacles).
+         * @param[inout] dataIn Input data containing the scene data (time, initial state, final pose, obstacles). The data, e.g. static obstacles, may be modified by this member function.
          * @param[in] parameter The parameter set to use for this solve operation.
          */
-        void SolveInitialProblem(const mpsv::planner::OnlinePlannerInput& dataIn, const mpsv::planner::OnlinePlannerParameterSet& parameter) noexcept {
+        void SolveInitialProblem(mpsv::planner::OnlinePlannerInput& dataIn, const mpsv::planner::OnlinePlannerParameterSet& parameter) noexcept {
             m_performanceCounter.Start();
             double timestamp = dataIn.timestamp;
             std::array<double,12> initialStateAndInput = dataIn.initialStateAndInput;
@@ -166,7 +166,7 @@ class OnlinePlanner {
             m_sequentialPlannerInput.originOldToNew = offsetOldToNew;
             m_sequentialPlannerInput.samplingBoxCenterPose = dataIn.samplingBoxCenterPose;
             m_sequentialPlannerInput.samplingBoxDimension = dataIn.samplingBoxDimension;
-            m_sequentialPlannerInput.staticObstacles = dataIn.staticObstacles;
+            m_sequentialPlannerInput.staticObstacles.swap(dataIn.staticObstacles);
             double minTrajectoryDuration = parameter.onlinePlanner.maxComputationTimePath + parameter.onlinePlanner.maxComputationTimeMotion + parameter.onlinePlanner.additionalAheadPlanningTime + parameter.onlinePlanner.additionalTrajectoryDuration;
             m_sequentialPlanner.Solve(m_sequentialPlannerOutput, m_sequentialPlannerInput, parameter.sequentialPlanner, parameter.onlinePlanner.maxComputationTimePathOnReset, parameter.onlinePlanner.maxComputationTimeMotionOnReset, minTrajectoryDuration);
             timestamp += m_sequentialPlannerOutput.motionPlanner.sampletime; // make the timestamp point to the first entry of the trajectory instead of pointing to the initial state (the trajectory itself does not include the initial state)
@@ -211,10 +211,10 @@ class OnlinePlanner {
 
         /**
          * @brief Solve the next online sequential planning problem by selecting the initial state from a future timepoint on the previous trajectory solution.
-         * @param[in] dataIn Input data containing the scene data (time, initial state, final pose, obstacles).
+         * @param[inout] dataIn Input data containing the scene data (time, initial state, final pose, obstacles). The data, e.g. static obstacles, may be modified by this member function.
          * @param[in] parameter The parameter set to use for this solve operation.
          */
-        void SolveNextProblem(const mpsv::planner::OnlinePlannerInput& dataIn, const mpsv::planner::OnlinePlannerParameterSet& parameter) noexcept {
+        void SolveNextProblem(mpsv::planner::OnlinePlannerInput& dataIn, const mpsv::planner::OnlinePlannerParameterSet& parameter) noexcept {
             // Calculate the absolute starting timepoint for the next problem
             m_performanceCounter.Start();
             double aheadPlanningTime = parameter.onlinePlanner.maxComputationTimePath + parameter.onlinePlanner.maxComputationTimeMotion + parameter.onlinePlanner.additionalAheadPlanningTime;
@@ -237,7 +237,7 @@ class OnlinePlanner {
             m_sequentialPlannerInput.originOldToNew = offsetOldToNew;
             m_sequentialPlannerInput.samplingBoxCenterPose = dataIn.samplingBoxCenterPose;
             m_sequentialPlannerInput.samplingBoxDimension = dataIn.samplingBoxDimension;
-            m_sequentialPlannerInput.staticObstacles = dataIn.staticObstacles;
+            m_sequentialPlannerInput.staticObstacles.swap(dataIn.staticObstacles);
             double minTrajectoryDuration = parameter.onlinePlanner.maxComputationTimePath + parameter.onlinePlanner.maxComputationTimeMotion + parameter.onlinePlanner.additionalAheadPlanningTime + parameter.onlinePlanner.additionalTrajectoryDuration;
             m_sequentialPlanner.Solve(m_sequentialPlannerOutput, m_sequentialPlannerInput, parameter.sequentialPlanner, parameter.onlinePlanner.maxComputationTimePath, parameter.onlinePlanner.maxComputationTimeMotion, minTrajectoryDuration);
             timestamp += m_sequentialPlannerOutput.motionPlanner.sampletime; // make the timestamp point to the first entry of the trajectory instead of pointing to the initial state (the trajectory itself does not include the initial state)
