@@ -82,7 +82,7 @@ class SequentialPlanner {
             m_motionPlannerParameter.metric = parameter.metric;
             m_motionPlannerParameter.model = parameter.model;
             m_motionPlannerParameter.motionPlanner = parameter.motionPlanner;
-            if(!m_interruptSolve.load()){
+            if(!m_interruptSolve.load() && (mpsv::error_code::NONE == m_pathPlannerOutput.errorCode)){
                 m_motionPlanner.Solve(m_motionPlannerOutput, m_motionPlannerInput, m_motionPlannerParameter, maxComputationTimeMotionPlanning, false, &m_interruptSolve);
             }
             else{
