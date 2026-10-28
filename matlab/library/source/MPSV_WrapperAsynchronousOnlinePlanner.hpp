@@ -8,6 +8,138 @@
 
 
 /**
+ * @brief Constant-size input data for the asynchronous online planner wrapper.
+ */
+struct __attribute__((packed)) serialization_asynchronous_online_planner_input {
+    double timestamp;
+    uint8_t enable:1;
+    uint8_t reset:1;
+    uint8_t reserved:6;
+    std::array<double,3> originLLA;
+    std::array<double,12> initialStateAndInput;
+    std::array<double,3> finalPose;
+    std::array<double,3> samplingBoxCenterPose;
+    std::array<double,2> samplingBoxDimension;
+    std::array<std::array<float,2>,8000> verticesStaticObstacles;
+};
+
+
+/**
+ * @brief Constant-size parameter data for the asynchronous online planner wrapper.
+ */
+struct __attribute__((packed)) serialization_asynchronous_online_planner_parameter {
+    double timestamp;
+    double timeoutInput;
+    struct __attribute__((packed)) {
+        struct __attribute__((packed)) {
+            double collisionCheckMaxPositionDeviation;
+            double collisionCheckMaxAngleDeviation;
+            std::array<std::array<float,2>,100> verticesVehicleShape;
+            std::array<std::array<float,2>,10> skeletalPoints;
+        } geometry;
+        struct __attribute__((packed)) {
+            int32_t modBreakpoints;
+            double resolution;
+            double distanceScale;
+            double distanceDecay;
+        } costMap;
+        struct __attribute__((packed)) {
+            double weightPsi;
+            double weightSway;
+            double weightReverseScale;
+            double weightReverseDecay;
+        } metric;
+        struct __attribute__((packed)) {
+            std::array<double,36> matF;
+            std::array<double,9> matB;
+            std::array<double,3> vecTimeconstantsXYN;
+            std::array<double,3> vecTimeconstantsInput;
+            std::array<double,3> lowerLimitXYN;
+            std::array<double,3> upperLimitXYN;
+        } model;
+        struct __attribute__((packed)) {
+            uint32_t periodGoalSampling;
+        } pathPlanner;
+        struct __attribute__((packed)) {
+            double samplingRangePosition;
+            double samplingRangeAngle;
+            uint32_t periodGoalSampling;
+            double sampletime;
+            double maxInputPathLength;
+            struct __attribute__((packed)) {
+                double maxRadiusX;
+                double maxRadiusY;
+                double maxRadiusPsi;
+                double minRadiusPosition;
+                std::array<double,36> matK;
+            } controller;
+            struct __attribute__((packed)) {
+                std::array<double,3> rangePose;
+                std::array<double,3> rangeUVR;
+                std::array<double,3> rangeXYN;
+            } regionOfAttraction;
+        } motionPlanner;
+    } sequentialPlanner;
+    struct __attribute__((packed)) {
+        uint8_t predictInitialStateOnReset:1;
+        uint8_t reserved:7;
+        double maxComputationTimePathOnReset;
+        double maxComputationTimeMotionOnReset;
+        double maxComputationTimePath;
+        double maxComputationTimeMotion;
+        double additionalAheadPlanningTime;
+        double additionalTrajectoryDuration;
+        double timeKeepPastTrajectory;
+    } onlinePlanner;
+};
+
+
+/**
+ * @brief Constant-size output data for the asynchronous online planner wrapper.
+ */
+struct __attribute__((packed)) serialization_asynchronous_online_planner_output {
+    double timestamp;
+    double timestampInput;
+    double timestampParameter;
+    uint8_t inputError;
+    uint8_t parameterError;
+    uint8_t threadState:2;
+    uint8_t performedReset:1;
+    uint8_t error:1;
+    uint8_t trajectoryShrinked:1;
+    uint8_t reserved:3;
+    std::array<double,3> originLLA;
+    uint16_t numTrajectoryPoints;
+    std::array<std::array<double,12>,500> trajectory;
+    double sampletime;
+    struct __attribute__((packed)) {
+        uint16_t numPoses;
+        std::array<std::array<double,3>,100> path;
+        uint8_t goalReached:1;
+        uint8_t isFeasible:1;
+        uint8_t outOfNodes:1;
+        uint8_t pathShrinked:1;
+        uint8_t reserved:4;
+        uint32_t numberOfPerformedIterations;
+        double timestampOfComputationUTC;
+        double cost;
+    } pathPlanner;
+    struct __attribute__((packed)) {
+        uint16_t numPoses;
+        std::array<std::array<double,3>,100> referencePath;
+        uint8_t goalReached:1;
+        uint8_t isFeasible:1;
+        uint8_t outOfNodes:1;
+        uint8_t referencePathShrinked:1;
+        uint8_t reserved:4;
+        uint32_t numberOfPerformedIterations;
+        double timestampOfComputationUTC;
+        double cost;
+    } motionPlanner;
+};
+
+
+/**
  * @brief This class represents a wrapper for the asynchronous online planner. It uses a custom IO data structure that is used to exchange data to simulink.
  */
 class MPSV_WrapperAsynchronousOnlinePlanner {
@@ -48,11 +180,29 @@ class MPSV_WrapperAsynchronousOnlinePlanner {
          * @param[in] input Input data defining the motion planning problem to be solved.
          * @param[in] parameter Parameter data to be set for the asynchronous online planner.
          */
-        void Step(mpsv::planner::serialization_output* output, mpsv::planner::serialization_input* input, mpsv::planner::serialization_parameter* parameter);
+        void Step(serialization_asynchronous_online_planner_output* output, serialization_asynchronous_online_planner_input* input, serialization_asynchronous_online_planner_parameter* parameter);
 
     protected:
         mpsv::planner::AsyncOnlinePlanner m_planner;                        // The internal asynchronous online planner.
         mpsv::planner::AsyncOnlinePlannerInput m_plannerInput;              // Stores the input data for the internal asynchronous online planner.
         mpsv::planner::AsyncOnlinePlannerParameterSet m_plannerParameter;   // Stores the parameter data for the internal asynchronous online planner.
         mpsv::planner::AsyncOnlinePlannerOutput m_plannerOutput;            // Stores the output of the asynchronous online planner.
+
+        /**
+         * @brief Deserialize parameter data for the internal asynchronous online planner.
+         * @param[in] parameter Serialized parameter data.
+         */
+        void DeserializeParameter(serialization_asynchronous_online_planner_parameter* parameter);
+
+        /**
+         * @brief Deserialize input data for the internal asynchronous online planner.
+         * @param[in] input Serialized input data.
+         */
+        void DeserializeInput(serialization_asynchronous_online_planner_input* input);
+
+        /**
+         * @brief Serialize the current output of the internal asynchronous online planner.
+         * @param[out] output Serialized output data.
+         */
+        void SerializeOutput(serialization_asynchronous_online_planner_output* output);
 };
