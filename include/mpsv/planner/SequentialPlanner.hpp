@@ -52,8 +52,9 @@ class SequentialPlanner {
          * @param[in] maxComputationTimePathPlanning The maximum computation time allowed for path planning. The iteration loop for path planning is terminated if this computation time limit is exceeded.
          * @param[in] maxComputationTimeMotionPlanning The maximum computation time allowed for motion planning. The iteration loop for motion planning is terminated if this computation time limit is exceeded.
          * @param[in] minTrajectoryDuration The minimum duration (>= 0) of the trajectory in seconds, defaults to 0.
+         * @param[in] forceColdStart If true, both internal planners discard their previous search trees.
          */
-        void Solve(mpsv::planner::SequentialPlannerOutput& dataOut, mpsv::planner::SequentialPlannerInput& dataIn, const mpsv::planner::SequentialPlannerParameterSet& parameter, double maxComputationTimePathPlanning, double maxComputationTimeMotionPlanning, double minTrajectoryDuration = 0.0) noexcept {
+        void Solve(mpsv::planner::SequentialPlannerOutput& dataOut, mpsv::planner::SequentialPlannerInput& dataIn, const mpsv::planner::SequentialPlannerParameterSet& parameter, double maxComputationTimePathPlanning, double maxComputationTimeMotionPlanning, double minTrajectoryDuration = 0.0, bool forceColdStart = false) noexcept {
             m_interruptSolve = false;
 
             // NOTE: Not needed to check parameters here as they are validated in path and motion planners Solve member functions
@@ -71,7 +72,7 @@ class SequentialPlanner {
             m_pathPlannerParameter.costMap = parameter.costMap;
             m_pathPlannerParameter.metric = parameter.metric;
             m_pathPlannerParameter.pathPlanner = parameter.pathPlanner;
-            m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, m_pathPlannerParameter, maxComputationTimePathPlanning, false, &m_interruptSolve);
+            m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, m_pathPlannerParameter, maxComputationTimePathPlanning, forceColdStart, &m_interruptSolve);
 
             // Solve motion planning problem
             if(!m_interruptSolve.load() && (mpsv::error_code::NONE == m_pathPlannerOutput.errorCode)){
@@ -85,7 +86,7 @@ class SequentialPlanner {
                 m_motionPlannerParameter.metric = parameter.metric;
                 m_motionPlannerParameter.model = parameter.model;
                 m_motionPlannerParameter.motionPlanner = parameter.motionPlanner;
-                m_motionPlanner.Solve(m_motionPlannerOutput, m_motionPlannerInput, m_motionPlannerParameter, maxComputationTimeMotionPlanning, false, &m_interruptSolve);
+                m_motionPlanner.Solve(m_motionPlannerOutput, m_motionPlannerInput, m_motionPlannerParameter, maxComputationTimeMotionPlanning, forceColdStart, &m_interruptSolve);
             }
             else{
                 m_motionPlannerOutput.Clear();
@@ -122,6 +123,20 @@ class SequentialPlanner {
          * [1] The total time that has been simulated.
          */
         [[nodiscard]] std::tuple<bool,double> PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double predictionHorizon) const noexcept { return m_motionPlanner.PredictMotionTrajectory(trajectory, initialStateAndInput, predictionHorizon, m_motionPlannerParameter); }
+
+        /**
+         * @brief Predict the motion trajectory using the specified sampletime.
+         * @param[out] trajectory The prediction trajectory where each entry contains the state and the input.
+         * @param[in] initialStateAndInput The initial state and input vector.
+         * @param[in] predictionHorizon The prediction horizon in seconds.
+         * @param[in] sampletime The sampletime to use for the prediction.
+         * @return True if the prediction succeeded and the total simulated time.
+         */
+        [[nodiscard]] std::tuple<bool,double> PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double predictionHorizon, double sampletime) const noexcept {
+            mpsv::planner::MotionPlannerParameterSet predictionParameter;
+            predictionParameter.motionPlanner.sampletime = sampletime;
+            return m_motionPlanner.PredictMotionTrajectory(trajectory, initialStateAndInput, predictionHorizon, predictionParameter);
+        }
 
         /**
          * @brief Write data to the log file.
