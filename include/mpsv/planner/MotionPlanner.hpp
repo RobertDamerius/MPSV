@@ -156,41 +156,6 @@ class MotionPlanner {
         }
 
         /**
-         * @brief Predict the motion of the vehicle for a given prediction horizon assuming the control input to be constant all the time.
-         * @param[in] initialStateAndInput The initial state and input vector given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
-         * @param[in] predictionHorizon The total simulation time for the prediction in seconds. Note that this value is gridded to the internal sampletime parameter. The actual simulation time is returned. This value is clamped to a minimum value of zero.
-         * @param[in] parameter A valid parameter set to be used. It is not checked whether this parameter set is valid or not!
-         * @return [0] The total time that has been simulated.
-         * @return [1] The predicted state given as {x,y,psi,u,v,r,X,Y,N}.
-         */
-        [[nodiscard]] std::tuple<double,std::array<double,9>> PredictMotion(const std::array<double,12>& initialStateAndInput, double predictionHorizon, const mpsv::planner::MotionPlannerParameterSet& parameter) const noexcept {
-            double requestedNumSteps = std::floor(predictionHorizon / parameter.motionPlanner.sampletime);
-            uint32_t numSimulationSteps = static_cast<uint32_t>(std::clamp(std::isnan(requestedNumSteps) ? 0.0 : requestedNumSteps, 0.0, static_cast<double>(std::numeric_limits<uint32_t>::max())));
-            double simulationTime = static_cast<double>(numSimulationSteps) * parameter.motionPlanner.sampletime;
-            std::array<double,9> finalState = m_vehicleSimulator.PredictMotion(initialStateAndInput, parameter.motionPlanner.sampletime, numSimulationSteps);
-            return std::make_tuple(simulationTime, finalState);
-        }
-
-        /**
-         * @brief Predict the motion trajectory of the vehicle for a given prediction horizon assuming the control input to be constant all the time. At least one simulation step is computed.
-         * @param[out] trajectory The prediction trajectory where each entry contains the state and the input given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state/input is not inserted.
-         * @param[in] initialStateAndInput The initial state and input vector given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
-         * @param[in] predictionHorizon The total simulation time for the prediction in seconds. Note that this value is gridded to the internal sampletime parameter. The actual simulation time is returned. This value is clamped to a minimum value of a sampletime.
-         * @param[in] parameter A valid parameter set to be used. It is not checked whether this parameter set is valid or not!
-         * @return A tuple containing the following values.
-         * [0] True if success, false otherwise. If the maximum number of simulation steps (0x0000FFFF) is exceeded, false is returned.
-         * [1] The total time that has been simulated.
-         */
-        [[nodiscard]] std::tuple<bool,double> PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double predictionHorizon, const mpsv::planner::MotionPlannerParameterSet& parameter) const noexcept {
-            constexpr uint32_t maxNumSimulationSteps = 0x0000FFFF;
-            double requestedNumSteps = std::floor(predictionHorizon / parameter.motionPlanner.sampletime);
-            uint32_t numSimulationSteps = static_cast<uint32_t>(std::clamp(std::isnan(requestedNumSteps) ? 1.0 : requestedNumSteps, 1.0, static_cast<double>(maxNumSimulationSteps)));
-            bool success = m_vehicleSimulator.PredictMotionTrajectory(trajectory, initialStateAndInput, parameter.motionPlanner.sampletime, numSimulationSteps, maxNumSimulationSteps);
-            double totalSimulationTime = parameter.motionPlanner.sampletime * static_cast<double>(trajectory.size());
-            return std::make_tuple(success, totalSimulationTime);
-        }
-
-        /**
          * @brief Write data to the log file.
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.

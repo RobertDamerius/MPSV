@@ -104,41 +104,6 @@ class SequentialPlanner {
         void Interrupt(void) noexcept { m_interruptSolve = true; }
 
         /**
-         * @brief Predict the motion of the vehicle for a given prediction horizon assuming the control input to be constant all the time.
-         * @param[in] initialStateAndInput The initial state and input vector given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
-         * @param[in] predictionHorizon The total simulation time for the prediction in seconds. Note that this value is gridded to the internal sampletime parameter. The actual simulation time is returned. This value is clamped to a minimum value of zero.
-         * @return A tuple containing the following values.
-         * [0] The total time that has been simulated.
-         * [1] The predicted state given as {x,y,psi,u,v,r,X,Y,N}.
-         */
-        [[nodiscard]] std::tuple<double,std::array<double,9>> PredictMotion(const std::array<double,12>& initialStateAndInput, double predictionHorizon) const noexcept { return m_motionPlanner.PredictMotion(initialStateAndInput, predictionHorizon, m_motionPlannerParameter); }
-
-        /**
-         * @brief Predict the motion trajectory of the vehicle for a given prediction horizon assuming the control input to be constant all the time. At least one simulation step is computed.
-         * @param[out] trajectory The prediction trajectory where each entry contains the state and the input given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state/input is not inserted.
-         * @param[in] initialStateAndInput The initial state and input vector given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
-         * @param[in] predictionHorizon The total simulation time for the prediction in seconds. Note that this value is gridded to the internal sampletime parameter. The actual simulation time is returned. This value is clamped to a minimum value of a sampletime.
-         * @return A tuple containing the following values.
-         * [0] True if success, false otherwise. If the maximum number of simulation steps is exceeded, false is returned.
-         * [1] The total time that has been simulated.
-         */
-        [[nodiscard]] std::tuple<bool,double> PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double predictionHorizon) const noexcept { return m_motionPlanner.PredictMotionTrajectory(trajectory, initialStateAndInput, predictionHorizon, m_motionPlannerParameter); }
-
-        /**
-         * @brief Predict the motion trajectory using the specified sampletime.
-         * @param[out] trajectory The prediction trajectory where each entry contains the state and the input.
-         * @param[in] initialStateAndInput The initial state and input vector.
-         * @param[in] predictionHorizon The prediction horizon in seconds.
-         * @param[in] sampletime The sampletime to use for the prediction.
-         * @return True if the prediction succeeded and the total simulated time.
-         */
-        [[nodiscard]] std::tuple<bool,double> PredictMotionTrajectory(std::vector<std::array<double,12>>& trajectory, const std::array<double,12>& initialStateAndInput, double predictionHorizon, double sampletime) const noexcept {
-            mpsv::planner::MotionPlannerParameterSet predictionParameter;
-            predictionParameter.motionPlanner.sampletime = sampletime;
-            return m_motionPlanner.PredictMotionTrajectory(trajectory, initialStateAndInput, predictionHorizon, predictionParameter);
-        }
-
-        /**
          * @brief Write data to the log file.
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.

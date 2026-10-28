@@ -88,20 +88,9 @@ class OnlinePlanner {
         void Interrupt(void) noexcept { m_sequentialPlanner.Interrupt(); }
 
         /**
-         * @brief Predict the motion of the vehicle for a given prediction horizon assuming the control input to be constant all the time.
-         * @param[in] initialStateAndInput The initial state and input vector given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
-         * @param[in] predictionHorizon The total simulation time for the prediction in seconds. Note that this value is gridded to the internal sampletime parameter. The actual simulation time is returned. This value is clamped to a minimum value of zero.
-         * @return [0] The total time that has been simulated.
-         * @return [1] The predicted state given as {x,y,psi,u,v,r,X,Y,N}.
-         * @note IMPORTANT: The caller of this function must make sure that all input values are valid!
-         */
-        [[nodiscard]] std::tuple<double,std::array<double,9>> PredictMotion(const std::array<double,12>& initialStateAndInput, double predictionHorizon) const noexcept { return m_sequentialPlanner.PredictMotion(initialStateAndInput, predictionHorizon); }
-
-        /**
          * @brief Write data to the log file.
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
-         * @note IMPORTANT: The caller of this function must make sure that static obstacles are valid!
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept { m_sequentialPlanner.WriteToFile(file, preString + "sequentialPlanner."); }
 
