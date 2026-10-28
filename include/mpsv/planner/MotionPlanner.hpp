@@ -70,8 +70,6 @@ class MotionPlanner {
             m_epsDistanceMetric = std::numeric_limits<double>::epsilon();
             m_initialSamplesReversed.clear();
             m_regionOfAttraction.Clear();
-            m_vehicleSimulator.ClearController();
-            m_vehicleSimulator.ClearModel();
         }
 
         /**
@@ -95,10 +93,7 @@ class MotionPlanner {
 
             // Configure model and controller
             if(error_code::NONE == dataOut.errorCode){
-                dataOut.errorCode = m_vehicleSimulator.SetModel(parameter.model);
-            }
-            if(error_code::NONE == dataOut.errorCode){
-                dataOut.errorCode = m_vehicleSimulator.SetController(parameter.motionPlanner.controller);
+                dataOut.errorCode = m_vehicleSimulator.SetParameter(parameter.model, parameter.motionPlanner.controller);
             }
             if(error_code::NONE == dataOut.errorCode){
                 dataOut.errorCode = m_regionOfAttraction.SetParameter(parameter.motionPlanner.regionOfAttraction);

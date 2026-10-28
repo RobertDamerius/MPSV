@@ -41,25 +41,18 @@ namespace control {
 class VehicleSimulator {
     public:
         /**
-         * @brief Construct a new vehicle simulator object.
-         * @details Calls the @ref ClearModel and @ref ClearController member function. All values are set to zero.
-         */
-        VehicleSimulator() noexcept { ClearModel(); ClearController(); }
-
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // INITIALIZATION
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        /**
-         * @brief Set parameters for the dynamic model.
+         * @brief Set parameters for the dynamic model and the control system.
          * @param[in] modelParameter The model parameter to be set.
+         * @param[in] controllerParameter The controller parameter to be set.
          * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
          */
-        [[nodiscard]] error_code SetModel(const mpsv::planner::ParameterModel& modelParameter) noexcept {
-            // Check input parameter
+        [[nodiscard]] error_code SetParameter(const mpsv::planner::ParameterModel& modelParameter, const mpsv::planner::ParameterController& controllerParameter) noexcept {
             error_code e = modelParameter.IsValid();
             if(error_code::NONE != e){
-                ClearModel();
+                return e;
+            }
+            e = controllerParameter.IsValid();
+            if(error_code::NONE != e){
                 return e;
             }
 
@@ -75,7 +68,6 @@ class VehicleSimulator {
                  std::isfinite(invMatB[6]) &&
                  std::isfinite(invMatB[7]) &&
                  std::isfinite(invMatB[8]))){
-                ClearModel();
                 return error_code::PARAM_MODEL_INV_MATB;
             }
 
@@ -141,23 +133,8 @@ class VehicleSimulator {
             m_f3a_6 = 6.0 * m_F[33];
             m_f3b_6 = 6.0 * m_F[34];
             m_f3c_6 = 6.0 * m_F[35];
-            return error_code::NONE;
-        }
 
-        /**
-         * @brief Set parameters for the control system.
-         * @param[in] controllerParameter The controller parameter to be set.
-         * @return mpsv::error_code::NONE if all parameters are valid and have been applied, a non-zero error code otherwise.
-         */
-        [[nodiscard]] error_code SetController(const mpsv::planner::ParameterController& controllerParameter) noexcept {
-            // Check input parameter
-            error_code e = controllerParameter.IsValid();
-            if(error_code::NONE != e){
-                ClearController();
-                return e;
-            }
-
-            // Set internal parameters
+            // Set controller parameters
             m_K = controllerParameter.matK;
             m_minSquaredRadiusPosition = controllerParameter.minRadiusPosition * controllerParameter.minRadiusPosition;
             m_invSquaredRadiusX = 1.0 / (controllerParameter.maxRadiusX * controllerParameter.maxRadiusX);
@@ -166,63 +143,6 @@ class VehicleSimulator {
             return error_code::NONE;
         }
 
-        /**
-         * @brief Clear model parameters. All values are set to zero.
-         */
-        void ClearModel(void) noexcept {
-            m_F.fill(0.0);
-            m_B.fill(0.0);
-            m_invB.fill(0.0);
-            m_invTXYN.fill(0.0);
-            m_invTf123.fill(0.0);
-            m_invBBB.fill(0.0);
-            m_M0.fill(0.0);
-            m_lowerLimitXYN.fill(0.0);
-            m_upperLimitXYN.fill(0.0);
-            m_f17_2 = 0.0;
-            m_f18_2 = 0.0;
-            m_f19_2 = 0.0;
-            m_f1a_3 = 0.0;
-            m_f1b_3 = 0.0;
-            m_f1c_3 = 0.0;
-            m_f27_2 = 0.0;
-            m_f28_2 = 0.0;
-            m_f29_2 = 0.0;
-            m_f2a_3 = 0.0;
-            m_f2b_3 = 0.0;
-            m_f2c_3 = 0.0;
-            m_f37_2 = 0.0;
-            m_f38_2 = 0.0;
-            m_f39_2 = 0.0;
-            m_f3a_3 = 0.0;
-            m_f3b_3 = 0.0;
-            m_f3c_3 = 0.0;
-            m_f1a_6 = 0.0;
-            m_f1b_6 = 0.0;
-            m_f1c_6 = 0.0;
-            m_f2a_6 = 0.0;
-            m_f2b_6 = 0.0;
-            m_f2c_6 = 0.0;
-            m_f3a_6 = 0.0;
-            m_f3b_6 = 0.0;
-            m_f3c_6 = 0.0;
-        }
-
-        /**
-         * @brief Clear controller parameters. All values are set to zero.
-         */
-        void ClearController(void) noexcept {
-            m_K.fill(0.0);
-            m_invSquaredRadiusX = 0.0;
-            m_invSquaredRadiusY = 0.0;
-            m_invSquaredRadiusPsi = 0.0;
-            m_minSquaredRadiusPosition = 0.0;
-        }
-
-
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // SIMULATION
-        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         /**
          * @brief Explore a path completely to the end by using the path guidance algorithm and a pose controller. The trajectory is simulated until the regionOfAttraction is entered AND the minNumSimulationSteps is exceeded.
          * @param[out] trajectory The full trajectory that has been simulated. It contains {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc} per data point. The initial state and input is not inserted.
@@ -840,57 +760,57 @@ class VehicleSimulator {
 
     protected:
         /* model parameters and precalculated values set by @ref SetModel */
-        std::array<double,36> m_F;              // 3-by-12 coefficient matrix (row-major order) of model nu_dot = F*n(nu) + B*tau.
-        std::array<double,9> m_B;               // 3-by-3 input matrix B (row-major order) of model nu_dot = F*n(nu) + B*tau.
-        std::array<double,9> m_invB;            // Inverse of input matrix B.
-        std::array<double,3> m_invTXYN;         // {1/TX, 1/TY, 1/TN}.
-        std::array<double,3> m_invTf123;        // {1/Tf1, 1/Tf2, 1/Tf3}.
-        std::array<double,9> m_invBBB;          // Matrix inverse of (B * B_tau * B_c) (row-major order).
-        std::array<double,9> m_M0;              // Row-major order of M0 = B * A_tau.
-        std::array<double,3> m_lowerLimitXYN;   // Lower saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
-        std::array<double,3> m_upperLimitXYN;   // Upper saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
+        std::array<double,36> m_F{};              // 3-by-12 coefficient matrix (row-major order) of model nu_dot = F*n(nu) + B*tau.
+        std::array<double,9> m_B{};               // 3-by-3 input matrix B (row-major order) of model nu_dot = F*n(nu) + B*tau.
+        std::array<double,9> m_invB{};            // Inverse of input matrix B.
+        std::array<double,3> m_invTXYN{};         // {1/TX, 1/TY, 1/TN}.
+        std::array<double,3> m_invTf123{};        // {1/Tf1, 1/Tf2, 1/Tf3}.
+        std::array<double,9> m_invBBB{};          // Matrix inverse of (B * B_tau * B_c) (row-major order).
+        std::array<double,9> m_M0{};              // Row-major order of M0 = B * A_tau.
+        std::array<double,3> m_lowerLimitXYN{};   // Lower saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
+        std::array<double,3> m_upperLimitXYN{};   // Upper saturation value for input vector u of model nu_dot = F*n(nu) + B*tau.
 
         /* precalculated coefficients for first derivatives set by @ref SetModel */
-        double m_f17_2;                         // 2 * f_17.
-        double m_f18_2;                         // 2 * f_18.
-        double m_f19_2;                         // 2 * f_19.
-        double m_f1a_3;                         // 3 * f_1a.
-        double m_f1b_3;                         // 3 * f_1b.
-        double m_f1c_3;                         // 3 * f_1c.
+        double m_f17_2{};                         // 2 * f_17.
+        double m_f18_2{};                         // 2 * f_18.
+        double m_f19_2{};                         // 2 * f_19.
+        double m_f1a_3{};                         // 3 * f_1a.
+        double m_f1b_3{};                         // 3 * f_1b.
+        double m_f1c_3{};                         // 3 * f_1c.
 
-        double m_f27_2;                         // 2 * f_27.
-        double m_f28_2;                         // 2 * f_28.
-        double m_f29_2;                         // 2 * f_29.
-        double m_f2a_3;                         // 3 * f_2a.
-        double m_f2b_3;                         // 3 * f_2b.
-        double m_f2c_3;                         // 3 * f_2c.
+        double m_f27_2{};                         // 2 * f_27.
+        double m_f28_2{};                         // 2 * f_28.
+        double m_f29_2{};                         // 2 * f_29.
+        double m_f2a_3{};                         // 3 * f_2a.
+        double m_f2b_3{};                         // 3 * f_2b.
+        double m_f2c_3{};                         // 3 * f_2c.
 
-        double m_f37_2;                         // 2 * f_37.
-        double m_f38_2;                         // 2 * f_38.
-        double m_f39_2;                         // 2 * f_39.
-        double m_f3a_3;                         // 3 * f_3a.
-        double m_f3b_3;                         // 3 * f_3b.
-        double m_f3c_3;                         // 3 * f_3c.
+        double m_f37_2{};                         // 2 * f_37.
+        double m_f38_2{};                         // 2 * f_38.
+        double m_f39_2{};                         // 2 * f_39.
+        double m_f3a_3{};                         // 3 * f_3a.
+        double m_f3b_3{};                         // 3 * f_3b.
+        double m_f3c_3{};                         // 3 * f_3c.
 
         /* precalculated coefficients for second derivatives set by @ref SetModel */
-        double m_f1a_6;                         // 6 * f_1a.
-        double m_f1b_6;                         // 6 * f_1b.
-        double m_f1c_6;                         // 6 * f_1c.
+        double m_f1a_6{};                         // 6 * f_1a.
+        double m_f1b_6{};                         // 6 * f_1b.
+        double m_f1c_6{};                         // 6 * f_1c.
 
-        double m_f2a_6;                         // 6 * f_2a.
-        double m_f2b_6;                         // 6 * f_2b.
-        double m_f2c_6;                         // 6 * f_2c.
+        double m_f2a_6{};                         // 6 * f_2a.
+        double m_f2b_6{};                         // 6 * f_2b.
+        double m_f2c_6{};                         // 6 * f_2c.
 
-        double m_f3a_6;                         // 6 * f_3a.
-        double m_f3b_6;                         // 6 * f_3b.
-        double m_f3c_6;                         // 6 * f_3c.
+        double m_f3a_6{};                         // 6 * f_3a.
+        double m_f3b_6{};                         // 6 * f_3b.
+        double m_f3c_6{};                         // 6 * f_3c.
 
         /* controller parameters and precalculated values set by @ref SetController */
-        double m_minSquaredRadiusPosition;      // r^2 with r being the minimum radius for position for the waypoint guidance law.
-        double m_invSquaredRadiusX;             // 1 / r^2 with r being the radius for the longitudinal distance for the waypoint guidance law.
-        double m_invSquaredRadiusY;             // 1 / r^2 with r being the radius for the lateral distance for the waypoint guidance law.
-        double m_invSquaredRadiusPsi;           // 1 / r^2 with r being the radius for the angular distrance for the waypoint guidance law.
-        std::array<double,36> m_K;              // 3-by-12 control gain matrix (row-major order) for pose control.
+        double m_minSquaredRadiusPosition{};      // r^2 with r being the minimum radius for position for the waypoint guidance law.
+        double m_invSquaredRadiusX{};             // 1 / r^2 with r being the radius for the longitudinal distance for the waypoint guidance law.
+        double m_invSquaredRadiusY{};             // 1 / r^2 with r being the radius for the lateral distance for the waypoint guidance law.
+        double m_invSquaredRadiusPsi{};           // 1 / r^2 with r being the radius for the angular distrance for the waypoint guidance law.
+        std::array<double,36> m_K{};              // 3-by-12 control gain matrix (row-major order) for pose control.
 
         /**
          * @brief The path guidance law calculates a target pose based on a given path and the current pose of the vehicle.

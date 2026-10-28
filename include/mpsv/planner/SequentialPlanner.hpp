@@ -56,6 +56,8 @@ class SequentialPlanner {
         void Solve(mpsv::planner::SequentialPlannerOutput& dataOut, mpsv::planner::SequentialPlannerInput& dataIn, const mpsv::planner::SequentialPlannerParameterSet& parameter, double maxComputationTimePathPlanning, double maxComputationTimeMotionPlanning, double minTrajectoryDuration = 0.0) noexcept {
             m_interruptSolve = false;
 
+            // NOTE: Not needed to check parameters here as they are validated in path and motion planners Solve member functions
+
             // Solve path planning problem
             m_pathPlannerInput.initialPose[0] = dataIn.initialStateAndInput[0];
             m_pathPlannerInput.initialPose[1] = dataIn.initialStateAndInput[1];

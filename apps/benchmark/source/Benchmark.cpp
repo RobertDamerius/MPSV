@@ -128,11 +128,8 @@ void Benchmark::InitializeVehicleSimulator(void){
     controller.maxRadiusY        = 6.0;
     controller.maxRadiusPsi      = 1.0;
     controller.minRadiusPosition = 2.0;
-    if(mpsv::error_code::NONE != m_vehicleSimulator.SetModel(model)){
-        fprintf(stderr,"ERROR: Failed to set model parameters!\n");
-    }
-    if(mpsv::error_code::NONE != m_vehicleSimulator.SetController(controller)){
-        fprintf(stderr,"ERROR: Failed to set controller parameters!\n");
+    if(mpsv::error_code::NONE != m_vehicleSimulator.SetParameter(model, controller)){
+        fprintf(stderr,"ERROR: Failed to set vehicle simulator parameters!\n");
     }
 }
 
