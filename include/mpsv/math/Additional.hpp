@@ -26,7 +26,7 @@ namespace math {
  * @param[in] angle Input angle in degrees.
  * @return Output angle in radians.
  */
-[[nodiscard]] inline double deg2rad(double angle) noexcept {
+[[nodiscard]] constexpr double deg2rad(double angle) noexcept {
     return 0.0174532925199433 * angle;
 }
 
