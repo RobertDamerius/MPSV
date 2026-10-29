@@ -16,8 +16,11 @@ namespace math {
  * @return The symmetrical angle in radians in range [-pi, +pi).
  */
 [[nodiscard]] inline double SymmetricalAngle(double d) noexcept {
-    d -= 6.28318530717959 * std::trunc(d * 0.159154943091895);
-    return (d + 6.28318530717959 * (static_cast<double>(d < -3.14159265358979) - static_cast<double>(d >= 3.14159265358979)));
+    constexpr double pi = std::numbers::pi;
+    constexpr double pi2 = 2.0 * std::numbers::pi;
+    constexpr double inv_pi2 = std::numbers::inv_pi / 2.0;
+    d -= pi2 * std::trunc(d * inv_pi2);
+    return (d + pi2 * (static_cast<double>(d < -pi) - static_cast<double>(d >= pi)));
 }
 
 
@@ -27,7 +30,8 @@ namespace math {
  * @return Output angle in radians.
  */
 [[nodiscard]] constexpr double deg2rad(double angle) noexcept {
-    return 0.0174532925199433 * angle;
+    constexpr double pi_over_180 = std::numbers::pi / 180.0;
+    return pi_over_180 * angle;
 }
 
 

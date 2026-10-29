@@ -266,9 +266,10 @@ class MotionPlanner {
          * @return The oriented box representing the rectangular hull of the sampling area.
          */
         mpsv::geometry::OrientedBox SetSamplingArea(const std::vector<std::array<double,3>>& path, const mpsv::planner::MotionPlannerParameterSet& parameter) noexcept {
+            constexpr double sqrt2 = std::numbers::sqrt2;
             mpsv::geometry::OrientedBox box;
             box.CreateFromPointCloud(path);
-            box.Extend(parameter.motionPlanner.samplingRangePosition * std::sqrt(2.0));
+            box.Extend(parameter.motionPlanner.samplingRangePosition * sqrt2);
             m_pathSampler.Reset(path, parameter.motionPlanner.samplingRangePosition, parameter.motionPlanner.samplingRangeAngle, parameter.metric.weightPsi);
             return box;
         }
@@ -279,9 +280,10 @@ class MotionPlanner {
          * @param[in] parameter The parameter set for path planning.
          */
         void SetNumericLimits(const mpsv::geometry::OrientedBox& samplingArea, const mpsv::planner::MotionPlannerParameterSet& parameter) noexcept {
+            constexpr double pi2 = 2.0 * std::numbers::pi;
             std::array<double,2> dimension = samplingArea.GetDimension();
             double epsPosition = std::numeric_limits<double>::epsilon() * std::max(1.0, std::max(dimension[0], dimension[1]));
-            double epsAngle = std::numeric_limits<double>::epsilon() * 6.28318530717959;
+            double epsAngle = std::numeric_limits<double>::epsilon() * pi2;
             double epsWeightedAngle = std::max(1.0, parameter.metric.weightPsi) * epsAngle;
             m_epsDistanceMetric = std::sqrt(2.0*epsPosition*epsPosition + epsWeightedAngle*epsWeightedAngle);
             m_tree.SetNumericLimit(m_epsDistanceMetric);

@@ -17,6 +17,7 @@
 #include <chrono>
 #include <random>
 #include <cmath>
+#include <numbers>
 #include <limits>
 #include <type_traits>
 #include <tuple>

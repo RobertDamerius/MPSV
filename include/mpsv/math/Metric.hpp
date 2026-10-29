@@ -47,6 +47,7 @@ template <class T, class U> [[nodiscard]] inline double SwayMetric(const T& a, c
     static_assert(mpsv::is_vec3<T>::value,"Argument {a} must be of type std::array<double,N> with N >= 3!");
     static_assert(mpsv::is_vec3<U>::value,"Argument {b} must be of type std::array<double,N> with N >= 3!");
     constexpr double eps = 100.0 * std::numeric_limits<double>::epsilon();
+    constexpr double pi = std::numbers::pi;
     double dx = b[0] - a[0];
     double dy = b[1] - a[1];
     double dpsi = mpsv::math::SymmetricalAngle(b[2] - a[2]);
@@ -71,14 +72,14 @@ template <class T, class U> [[nodiscard]] inline double SwayMetric(const T& a, c
     double bpsiA = weightReverseDecay * psiA;
     double bpsiAsq = bpsiA * bpsiA;
     double bpsiB = weightReverseDecay * psiB;
-    double bpi = weightReverseDecay * 3.14159265358979323;
+    double bpi = weightReverseDecay * pi;
     double bpisq = bpi * bpi;
     if(std::fabs(dpsi) < eps){
         result += weightReverseScale*L*bpsiAsq / (1.0 + bpsiAsq);
     }
     else{
-        if((psiA + dpsi) >= 3.14159265358979323){
-            double delta = 3.14159265358979323 - psiA;
+        if((psiA + dpsi) >= pi){
+            double delta = pi - psiA;
             double L1 = L * delta / dpsi;
             if(std::fabs(delta) < eps){
                 result += weightReverseScale*L1*bpsiAsq / (1.0 + bpsiAsq);
@@ -86,7 +87,7 @@ template <class T, class U> [[nodiscard]] inline double SwayMetric(const T& a, c
             else{
                 result += weightReverseScale*L1*(1.0 + (std::atan(bpsiA) - std::atan(bpi))/(weightReverseDecay*delta));
             }
-            delta = psiB + 3.14159265358979323;
+            delta = psiB + pi;
             if(std::fabs(delta) < eps){
                 result += weightReverseScale*(L - L1)*(bpisq / (1.0 + bpisq));
             }
@@ -94,8 +95,8 @@ template <class T, class U> [[nodiscard]] inline double SwayMetric(const T& a, c
                 result += weightReverseScale*(L - L1)*(1.0 + (std::atan(-bpi) - std::atan(bpsiB))/(weightReverseDecay*delta));
             }
         }
-        else if((psiA + dpsi) < -3.14159265358979323){
-            double delta = -3.14159265358979323 - psiA;
+        else if((psiA + dpsi) < -pi){
+            double delta = -pi - psiA;
             double L1 = L * delta / dpsi;
             if(std::fabs(delta) < eps){
                 result += weightReverseScale*L1*bpsiAsq / (1.0 + bpsiAsq);
@@ -103,7 +104,7 @@ template <class T, class U> [[nodiscard]] inline double SwayMetric(const T& a, c
             else{
                 result += weightReverseScale*L1*(1.0 + (std::atan(bpsiA) - std::atan(-bpi))/(weightReverseDecay*delta));
             }
-            delta = psiB - 3.14159265358979323;
+            delta = psiB - pi;
             if(std::fabs(delta) < eps){
                 result += weightReverseScale*(L - L1)*(bpisq / (1.0 + bpisq));
             }

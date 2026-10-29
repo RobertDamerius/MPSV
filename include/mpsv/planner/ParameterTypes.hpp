@@ -284,7 +284,7 @@ class ParameterGeometry {
          */
         [[nodiscard]] error_code IsValid(void) const noexcept {
             constexpr double minPositionDeviation = 0.01; // Minimum position deviation for path subdivision during collision checking.
-            constexpr double minAngleDeviation = 0.0174532925199433; // Minimum angle deviation for path subdivision during collision checking (= 1 deg).
+            constexpr double minAngleDeviation = mpsv::math::deg2rad(1.0); // Minimum angle deviation for path subdivision during collision checking.
             if(!(std::isfinite(collisionCheckMaxPositionDeviation) && (collisionCheckMaxPositionDeviation >= minPositionDeviation)))
                 return error_code::PARAM_GEOMETRY_MAX_POSITION_DEVIATION;
             if(!(std::isfinite(collisionCheckMaxAngleDeviation) && (collisionCheckMaxAngleDeviation >= minAngleDeviation)))

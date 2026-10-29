@@ -211,10 +211,11 @@ double Benchmark::ForwardSimulation(void){
     double sampletime = 0.01;
     uint32_t numSimulationSteps = 10000;
     constexpr int32_t numTrials = 1000;
+    constexpr double pi2 = 2.0 * std::numbers::pi;
 
     mpsv::runtime::PerformanceCounter timer;
     for(int32_t i = 0; i < numTrials; ++i){
-        double angle = 2.0 * 3.14159265358979323 * static_cast<double>(i) / static_cast<double>(numTrials);
+        double angle = pi2 * static_cast<double>(i) / static_cast<double>(numTrials);
         initialStateAndInput[0] = 100.0 * std::cos(angle);
         initialStateAndInput[1] = 100.0 * std::sin(angle);
         initialStateAndInput[2] = angle;

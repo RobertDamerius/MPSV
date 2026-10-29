@@ -57,11 +57,12 @@ class UniformBoxSamplerSE2 {
          * @return The output sample given as {x, y, psi}.
          */
         [[nodiscard]] std::array<double, 3> Sample(size_t idxSample) const noexcept {
+            constexpr double pi2 = 2.0 * std::numbers::pi;
             std::array<double, 3> sample = m_haltonSequence.Sample(idxSample);
             return {
                 m_R[0]*sample[0] + m_R[1]*sample[1] + m_offset[0],
                 m_R[2]*sample[0] + m_R[3]*sample[1] + m_offset[1],
-                mpsv::math::SymmetricalAngle(6.28318530717959 * sample[2])
+                mpsv::math::SymmetricalAngle(pi2 * sample[2])
             };
         }
 

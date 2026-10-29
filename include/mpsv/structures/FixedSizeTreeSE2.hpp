@@ -66,6 +66,7 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @param[in] maxNumNodes Maximum number of nodes to be stored in the tree. The value is clamped to a minimum of 1.
          */
         void Resize(int16_t maxNumNodes) noexcept {
+            constexpr double inv_pi_8 = 8.0 * std::numbers::inv_pi;
             maxNumNodes = std::max<int16_t>(1, maxNumNodes);
             m_freeIndices.resize(maxNumNodes);
             m_freeIndices.shrink_to_fit();
@@ -95,7 +96,7 @@ template <class Tnode> class FixedSizeTreeSE2 {
             std::uniform_real_distribution<double> dist(0.0, 1.0);
             for(int16_t n = 0; n < maxNumNodes; ++n){
                 double k = static_cast<double>(std::max<int16_t>(3, n));
-                m_lutR3[n] = std::cbrt(2.54647908947033 * std::log(k) / k); // 2.54647908947033 = 2^d*(1+1/d)/(4/3 * pi), with d=3
+                m_lutR3[n] = std::cbrt(inv_pi_8 * std::log(k) / k); // 8/pi = 2^d*(1+1/d)/(4/3 * pi), for d=3
                 m_lutOptimalRadius[n] = std::numeric_limits<double>::infinity(); // actual value set by @ref SetCSpaceVolume
                 m_lutRandom[n] = dist(gen);
             }

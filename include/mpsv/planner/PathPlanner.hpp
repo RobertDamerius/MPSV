@@ -165,9 +165,10 @@ class PathPlanner {
          * @param[in] parameter The parameter set for path planning.
          */
         void SetNumericLimits(const mpsv::geometry::OrientedBox& samplingArea, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
+            constexpr double pi2 = 2.0 * std::numbers::pi;
             std::array<double,2> dimension = samplingArea.GetDimension();
             double epsPosition = std::numeric_limits<double>::epsilon() * std::max(1.0, std::max(dimension[0], dimension[1]));
-            double epsAngle = std::numeric_limits<double>::epsilon() * 6.28318530717959;
+            double epsAngle = std::numeric_limits<double>::epsilon() * pi2;
             double epsWeightedAngle = std::max(1.0, parameter.metric.weightPsi) * epsAngle;
             m_epsDistanceMetric = std::sqrt(2.0*epsPosition*epsPosition + epsWeightedAngle*epsWeightedAngle);
             m_tree.SetNumericLimit(m_epsDistanceMetric);
