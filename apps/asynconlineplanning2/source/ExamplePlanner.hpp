@@ -9,7 +9,6 @@
 class ExamplePlanner: protected mpsv::planner::AsyncOnlinePlanner {
     public:
         /* make some member function public again */
-        using mpsv::planner::AsyncOnlinePlanner::SetParameter;
         using mpsv::planner::AsyncOnlinePlanner::SetInput;
 
         /**
@@ -44,10 +43,6 @@ class ExamplePlanner: protected mpsv::planner::AsyncOnlinePlanner {
         void CallbackNewOutputAvailable(void){
             mpsv::planner::AsyncOnlinePlannerOutput dataOut = GetOutput();
             std::cout << "threadState=" << mpsv::to_string(dataOut.threadState) <<
-                     ", timestampInput=" << std::to_string(dataOut.timestampInput) <<
-                     ", timestampParameter=" << std::to_string(dataOut.timestampParameter) <<
-                     ", inputError=" << static_cast<int32_t>(dataOut.inputError) <<
-                     ", parameterError=" << static_cast<int32_t>(dataOut.parameterError) <<
                      ", errorCode=" << static_cast<int32_t>(dataOut.errorCode) <<
                      ", performedReset=" << dataOut.performedReset <<
                      ", timestamp=" << dataOut.timestamp <<

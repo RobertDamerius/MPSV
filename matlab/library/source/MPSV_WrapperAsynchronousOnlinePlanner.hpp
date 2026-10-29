@@ -28,8 +28,8 @@ struct __attribute__((packed)) serialization_asynchronous_online_planner_input {
  * @brief Constant-size parameter data for the asynchronous online planner wrapper.
  */
 struct __attribute__((packed)) serialization_asynchronous_online_planner_parameter {
-    double timestamp;
-    double timeoutInput;
+    double timestamp;   //#TODO(remove)
+    double timeoutInput;   //#TODO(remove)
     struct __attribute__((packed)) {
         struct __attribute__((packed)) {
             double collisionCheckMaxPositionDeviation;
@@ -81,7 +81,7 @@ struct __attribute__((packed)) serialization_asynchronous_online_planner_paramet
         } motionPlanner;
     } sequentialPlanner;
     struct __attribute__((packed)) {
-        uint8_t reserved;
+        uint8_t reserved; //#TODO(remove)
         double maxComputationTimePathOnReset;
         double maxComputationTimeMotionOnReset;
         double maxComputationTimePath;
@@ -98,10 +98,10 @@ struct __attribute__((packed)) serialization_asynchronous_online_planner_paramet
  */
 struct __attribute__((packed)) serialization_asynchronous_online_planner_output {
     double timestamp;
-    double timestampInput;
-    double timestampParameter;
-    uint8_t inputError;
-    uint8_t parameterError;
+    double timestampInput; //#TODO(remove)
+    double timestampParameter; //#TODO(remove)
+    uint8_t inputError; //#TODO(remove)
+    uint8_t parameterError; //#TODO(remove)
     uint8_t threadState:2;
     uint8_t performedReset:1;
     uint8_t error:1;

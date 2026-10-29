@@ -10,12 +10,10 @@ int main(int, char**){
         return 0;
     }
 
-    // construct a timer for timestamp generation
+    // get input data
     mpsv::runtime::PerformanceCounter timer;
-
-    // get parameter and input
-    mpsv::planner::AsyncOnlinePlannerParameterSet parameter = example::GetParameterSet(timer.TimeToStart());
     mpsv::planner::AsyncOnlinePlannerInput dataIn = example::GetInput(timer.TimeToStart());
+    mpsv::planner::AsyncOnlinePlannerParameterSet parameter = example::GetParameterSet();
 
     // save parameter and input to a data file
     mpsv::logging::File f;
@@ -26,21 +24,20 @@ int main(int, char**){
         f.Close();
     }
 
-    // set parameter
-    planner.SetParameter(parameter);
-
     // set new input data for the next 120 seconds
     for(int i = 0; i != 120; ++i){
         dataIn = example::GetInput(timer.TimeToStart());
-        planner.SetInput(dataIn);
+        parameter = example::GetParameterSet();
+        planner.SetInput(dataIn, parameter);
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     // wait and bring the planner into standby mode
     std::this_thread::sleep_for(std::chrono::seconds(5));
     dataIn = example::GetInput(timer.TimeToStart());
+    parameter = example::GetParameterSet();
     dataIn.enable = false;
-    planner.SetInput(dataIn);
+    planner.SetInput(dataIn, parameter);
 
     // sleep for another second and stop the planner
     std::this_thread::sleep_for(std::chrono::seconds(1));

@@ -20,18 +20,16 @@ void MPSV_WrapperAsynchronousOnlinePlanner::Stop(void){
 
 void MPSV_WrapperAsynchronousOnlinePlanner::Step(serialization_asynchronous_online_planner_output* output, serialization_asynchronous_online_planner_input* input, serialization_asynchronous_online_planner_parameter* parameter){
     DeserializeParameter(parameter);
-    m_planner.SetParameter(m_plannerParameter);
-
     DeserializeInput(input);
-    m_planner.SetInput(m_plannerInput);
+    m_planner.SetInput(m_plannerInput, m_plannerParameter);
 
     m_plannerOutput = m_planner.GetOutput();
     SerializeOutput(output);
 }
 
 void MPSV_WrapperAsynchronousOnlinePlanner::DeserializeParameter(serialization_asynchronous_online_planner_parameter* parameter){
-    m_plannerParameter.timestamp                                                     = parameter->timestamp;
-    m_plannerParameter.timeoutInput                                                  = parameter->timeoutInput;
+    //#TODO(remove): m_plannerParameter.timestamp                                                     = parameter->timestamp;
+    //#TODO(remove): m_plannerParameter.timeoutInput                                                  = parameter->timeoutInput;
     m_plannerParameter.sequentialPlanner.geometry.collisionCheckMaxPositionDeviation = parameter->sequentialPlanner.geometry.collisionCheckMaxPositionDeviation;
     m_plannerParameter.sequentialPlanner.geometry.collisionCheckMaxAngleDeviation    = parameter->sequentialPlanner.geometry.collisionCheckMaxAngleDeviation;
 
@@ -149,10 +147,10 @@ void MPSV_WrapperAsynchronousOnlinePlanner::DeserializeInput(serialization_async
 
 void MPSV_WrapperAsynchronousOnlinePlanner::SerializeOutput(serialization_asynchronous_online_planner_output* output){
     output->timestamp           = m_plannerOutput.timestamp;
-    output->timestampInput      = m_plannerOutput.timestampInput;
-    output->timestampParameter  = m_plannerOutput.timestampParameter;
-    output->inputError          = static_cast<uint8_t>(m_plannerOutput.inputError);
-    output->parameterError      = static_cast<uint8_t>(m_plannerOutput.parameterError);
+    //#TODO(remove): output->timestampInput      = m_plannerOutput.timestampInput;
+    //#TODO(remove): output->timestampParameter  = m_plannerOutput.timestampParameter;
+    //#TODO(remove): output->inputError          = static_cast<uint8_t>(m_plannerOutput.inputError);
+    //#TODO(remove): output->parameterError      = static_cast<uint8_t>(m_plannerOutput.parameterError);
     output->threadState         = static_cast<uint8_t>(m_plannerOutput.threadState);
     output->performedReset      = static_cast<uint8_t>(m_plannerOutput.performedReset);
     output->reserved            = 0;

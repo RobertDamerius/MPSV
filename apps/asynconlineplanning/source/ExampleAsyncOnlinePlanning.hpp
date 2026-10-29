@@ -9,15 +9,10 @@ namespace example {
 
 /**
  * @brief Get an example parameter set for the async online planner.
- * @param[in] timestamp The timestamp to be set for the input data.
  * @return Example parameter set.
  */
-inline mpsv::planner::AsyncOnlinePlannerParameterSet GetParameterSet(double timestamp){
+inline mpsv::planner::AsyncOnlinePlannerParameterSet GetParameterSet(void){
     mpsv::planner::AsyncOnlinePlannerParameterSet parameterSet;
-
-    // async online planner
-    parameterSet.timestamp                                                               = timestamp;
-    parameterSet.timeoutInput                                                            = 3.0;
 
     // online planner
     parameterSet.onlinePlanner.maxComputationTimePathOnReset                             = 1.0;
