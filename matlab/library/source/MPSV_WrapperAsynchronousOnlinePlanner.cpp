@@ -7,15 +7,15 @@
 MPSV_WrapperAsynchronousOnlinePlanner::MPSV_WrapperAsynchronousOnlinePlanner(){}
 
 MPSV_WrapperAsynchronousOnlinePlanner::~MPSV_WrapperAsynchronousOnlinePlanner(){
-    Terminate();
+    Stop();
 }
 
-void MPSV_WrapperAsynchronousOnlinePlanner::Initialize(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, uint32_t maxNumCells, int32_t threadPriority, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs){
-    (void) m_planner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells, threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
+void MPSV_WrapperAsynchronousOnlinePlanner::Start(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, uint32_t maxNumCells, int32_t threadPriority, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs){
+    (void) m_planner.Start(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells, threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
 }
 
-void MPSV_WrapperAsynchronousOnlinePlanner::Terminate(void){
-    m_planner.Terminate();
+void MPSV_WrapperAsynchronousOnlinePlanner::Stop(void){
+    m_planner.Stop();
 }
 
 void MPSV_WrapperAsynchronousOnlinePlanner::Step(serialization_asynchronous_online_planner_output* output, serialization_asynchronous_online_planner_input* input, serialization_asynchronous_online_planner_parameter* parameter){

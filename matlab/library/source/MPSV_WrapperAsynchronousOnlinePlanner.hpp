@@ -150,12 +150,12 @@ class MPSV_WrapperAsynchronousOnlinePlanner {
 
         /**
          * @brief Destroy the wrapper object.
-         * @details Calls the @ref Terminate member function.
+         * @details Calls the @ref Stop member function.
          */
         ~MPSV_WrapperAsynchronousOnlinePlanner();
 
         /**
-         * @brief Initialize the wrapper. The memory for the internal planner is allocated.
+         * @brief Start the wrapper. The memory for the internal planner is allocated.
          * @param[in] pathMaxNumNodes Maximum number of nodes to be used in the tree (path planning). A fixed-node RRT* planner is used. If the tree contains the maximum number of nodes, random leaf nodes are removed. If all nodes belong to the solution and can't be removed, then the outOfNodes error is set in the output.
          * @param[in] pathMaxNumSamples Maximum number of random samples to be generated in advance (path planning). A circular buffer of random samples is generated for fast sampling. The buffer can be quite large to ensure, that no duplicated samples are drawn within one solve operation.
          * @param[in] motionMaxNumNodes Maximum number of nodes to be used in the tree (motion planning). A fixed-node RRT* planner is used. If the tree contains the maximum number of nodes, random leaf nodes are removed. If all nodes belong to the solution and can't be removed, then the outOfNodes error is set in the output.
@@ -166,12 +166,12 @@ class MPSV_WrapperAsynchronousOnlinePlanner {
          * @param[in] ompDynamic Greater than zero if dynamic adjustment of the number of threads should be enabled for parallel computing or zero to disable dynamic adjustment (OMP_DYNAMIC). If this value is set less than 0, this parameter is ignored.
          * @param[in] cpuCoreIDs (linux-only) List of CPU cores on which the worker thread is eligible to run. Only IDs in range and available to the worker are used.
          */
-        void Initialize(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, uint32_t maxNumCells, int32_t threadPriority, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs);
+        void Start(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, uint32_t maxNumCells, int32_t threadPriority, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs);
 
         /**
-         * @brief Terminate the wrapper. The memory for the internal planner is freed.
+         * @brief Stop the wrapper. The memory for the internal planner is freed.
          */
-        void Terminate(void);
+        void Stop(void);
 
         /**
          * @brief Perform one step of the wrapper. All data is forwarded to a separate thread that manages the actual planning.

@@ -26,14 +26,14 @@ class ExamplePlanner: protected mpsv::planner::AsyncOnlinePlanner {
             int32_t ompNumThreads = -1; // ignore
             int32_t ompDynamic = -1; // ignore
             std::vector<int32_t> cpuCoreIDs; // ignore
-            return Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells, threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
+            return mpsv::planner::AsyncOnlinePlanner::Start(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells, threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
         }
 
         /**
          * @brief Stop the custom example planner.
          */
         void Stop(void){
-            Terminate();
+            mpsv::planner::AsyncOnlinePlanner::Stop();
         }
 
     protected:

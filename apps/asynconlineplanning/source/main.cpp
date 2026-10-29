@@ -3,7 +3,7 @@
 
 
 int main(int, char**){
-    // construct and initialize the online planner
+    // construct and start the online planner
     mpsv::planner::AsyncOnlinePlanner planner;
     constexpr int16_t pathMaxNumNodes = 200;
     constexpr uint32_t pathMaxNumSamples = 1000000;
@@ -14,8 +14,8 @@ int main(int, char**){
     int32_t ompNumThreads = -1; // ignore
     int32_t ompDynamic = -1; // ignore
     std::vector<int32_t> cpuCoreIDs; // ignore
-    if(!planner.Initialize(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells, threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs)){
-        std::cerr << "ERROR: Could not initialize planner!\n";
+    if(!planner.Start(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells, threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs)){
+        std::cerr << "ERROR: Could not start planner!\n";
         return 0;
     }
 
@@ -55,7 +55,7 @@ int main(int, char**){
                      ", trajectory=" << dataOut.trajectory.size() << " points\n";
     }
 
-    // terminate the planner
-    planner.Terminate();
+    // stop the planner
+    planner.Stop();
     return 0;
 }

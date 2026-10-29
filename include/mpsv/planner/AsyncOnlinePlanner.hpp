@@ -39,15 +39,19 @@ class AsyncOnlinePlanner {
 
         /**
          * @brief Destroy the asynchronous online planner object.
-         * @details Calls the @ref Terminate member function.
+         * @details Calls the @ref Stop member function.
          */
         virtual ~AsyncOnlinePlanner() noexcept {
-            Terminate();
+            Stop();
             pthread_mutex_destroy(&m_mtxDatabase);
         }
 
+        /* Make this class non-copyable */
+        AsyncOnlinePlanner(const AsyncOnlinePlanner&) = delete;
+        AsyncOnlinePlanner& operator=(const AsyncOnlinePlanner&) = delete;
+
         /**
-         * @brief Initialize the asynchronous online planner.
+         * @brief Start the asynchronous online planner.
          * @param[in] pathMaxNumNodes Maximum number of nodes to be used in the tree (path planner).
          * @param[in] pathMaxNumSamples Maximum number of random samples to be generated in advance (path planner).
          * @param[in] motionMaxNumNodes Maximum number of nodes to be used in the tree (motion planner).
@@ -58,9 +62,8 @@ class AsyncOnlinePlanner {
          * @param[in] ompDynamic Greater than zero if dynamic adjustment of the number of threads should be enabled for parallel computing or zero to disable dynamic adjustment (OMP_DYNAMIC). If this value is set less than 0, this parameter is ignored.
          * @param[in] cpuCoreIDs (linux-only) List of CPU cores on which the worker thread is eligible to run. Only IDs in range and available to the worker are used.
          * @return True if success, false otherwise.
-         * @details Call this function before calling any of the other member functions.
          */
-        [[nodiscard]] bool Initialize(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, uint32_t maxNumCells, int32_t threadPriority, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs) noexcept {
+        [[nodiscard]] bool Start(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, uint32_t maxNumCells, int32_t threadPriority, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs) noexcept {
             m_terminate = false;
             pthread_mutex_lock(&m_mtxDatabase);
             m_database.Clear();
@@ -71,9 +74,9 @@ class AsyncOnlinePlanner {
         }
 
         /**
-         * @brief Terminate the asynchronous online planner.
+         * @brief Stop the asynchronous online planner.
          */
-        void Terminate(void) noexcept {
+        void Stop(void) noexcept {
             m_terminate = true;
             m_onlinePlanner.Interrupt();
             m_workerThread.Stop();
