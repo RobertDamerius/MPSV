@@ -13,7 +13,7 @@ namespace logging {
 
 /**
  * @brief This class represents a data log file to be used to store data to a binary file.
- * The file is always opened in appending mode. That is, an existing data log file is not deleted, but new data is appended.
+ * By default, opening an existing file replaces its contents.
  */
 class File {
     public:
@@ -67,11 +67,30 @@ class File {
             type.erase(std::find(type.begin(), type.end(), '\0'), type.end());
             name.erase(std::find(name.begin(), name.end(), '\0'), name.end());
 
+            // Vlidate inputs
+            constexpr uint64_t maxUint32 = std::numeric_limits<uint32_t>::max();
+            constexpr uint64_t maxUint64 = std::numeric_limits<uint64_t>::max();
+            if((type.size() > maxUint32) || (name.size() > maxUint32) || (dimension.size() > maxUint32) || (valueSize > static_cast<uint64_t>(std::numeric_limits<std::streamsize>::max())) || ((valueSize > 0) && (value == nullptr)) || !m_ofs.is_open() || !m_ofs.good()){
+                return;
+            }
+            uint64_t numElements = 1;
+            for(uint32_t d : dimension){
+                if((d != 0) && (numElements > (maxUint64 / d))){
+                    return;
+                }
+                numElements *= d;
+            }
+
             // Get lengths and compute field size
             uint32_t lengthOfType = static_cast<uint32_t>(type.size());
             uint32_t lengthOfName = static_cast<uint32_t>(name.size());
             uint32_t numberOfDimensions = static_cast<uint32_t>(dimension.size());
-            uint64_t fieldSize = sizeof(lengthOfType) + type.size() + sizeof(lengthOfName) + name.size() + sizeof(numberOfDimensions) + sizeof(uint32_t) * dimension.size() + sizeof(valueSize) + valueSize;
+            constexpr uint64_t fieldMetadataSize = sizeof(lengthOfType) + sizeof(lengthOfName) + sizeof(numberOfDimensions) + sizeof(uint64_t);
+            uint64_t fieldSize = fieldMetadataSize + type.size() + name.size() + sizeof(uint32_t) * dimension.size();
+            if(valueSize > (maxUint64 - fieldSize)){
+                return;
+            }
+            fieldSize += valueSize;
 
             // Write field start
             constexpr char fieldStart[] = {'#','#'};
