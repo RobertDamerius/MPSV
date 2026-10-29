@@ -161,15 +161,10 @@ class ParameterModel {
  */
 class ParameterCostMap {
     public:
-        int32_t modBreakpoints;    // A modulo factor (> 0) that indicates when to calculate the cost using the objective function and when to do bilinear interpolation.
-        double resolution;         // Resolution (> 1e-3) of the grid map (dimension of one cell).
-        double distanceScale;      // Scale factor (>= 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
-        double distanceDecay;      // Decay factor (> 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
-
-        /**
-         * @brief Construct a new costmap parameter object and set default values.
-         */
-        ParameterCostMap() noexcept { Clear(); }
+        int32_t modBreakpoints{10};   // A modulo factor (> 0) that indicates when to calculate the cost using the objective function and when to do bilinear interpolation.
+        double resolution{0.1};       // Resolution (> 1e-3) of the grid map (dimension of one cell).
+        double distanceScale{5.0};    // Scale factor (>= 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
+        double distanceDecay{0.02};   // Decay factor (> 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
 
         /**
          * @brief Clear the costmap parameter and set default values.
@@ -216,22 +211,17 @@ class ParameterCostMap {
  */
 class ParameterMetric {
     public:
-        double weightPsi;            // Weighting (> 0) for heading angle (psi) in distance metric function.
-        double weightSway;           // Weighting (>= 0) for sway movement (heading angle with respect to perpenticular direction of movement).
-        double weightReverseScale;   // Weighting (>= 0) for sway and reverse movement (heading angle with respect to line angle).
-        double weightReverseDecay;   // Decay factor (> 0) for the weighting function that weights sway and reverse movement.
-
-        /**
-         * @brief Construct a new metric parameter object and set default values.
-         */
-        ParameterMetric() noexcept { Clear(); }
+        double weightPsi{3.0};            // Weighting (> 0) for heading angle (psi) in distance metric function.
+        double weightSway{2.0};           // Weighting (>= 0) for sway movement (heading angle with respect to perpenticular direction of movement).
+        double weightReverseScale{0.0};   // Weighting (>= 0) for sway and reverse movement (heading angle with respect to line angle).
+        double weightReverseDecay{1.0};   // Decay factor (> 0) for the weighting function that weights sway and reverse movement.
 
         /**
          * @brief Clear the metric parameter and set default values.
          */
         void Clear(void) noexcept {
-            weightPsi  = 3.0;
-            weightSway = 2.0;
+            weightPsi          = 3.0;
+            weightSway         = 2.0;
             weightReverseScale = 0.0;
             weightReverseDecay = 1.0;
         }
@@ -271,22 +261,18 @@ class ParameterMetric {
  */
 class ParameterGeometry {
     public:
-        double collisionCheckMaxPositionDeviation;          // Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 meters.
-        double collisionCheckMaxAngleDeviation;             // Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree (0.0174532925199433 radians).
-        mpsv::geometry::VehicleShape vehicleShape;          // Static shape of the vehicle to be used for path planning described by several convex polyons.
-        std::vector<std::array<double,2>> skeletalPoints;   // Skeletal points (b-frame) at which the cost map is to be evaluated.
-
-        /**
-         * @brief Construct a new geometry parameter object and set default values.
-         */
-        ParameterGeometry() noexcept { Clear(); }
+        double collisionCheckMaxPositionDeviation{0.1};                    // Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 meters.
+        double collisionCheckMaxAngleDeviation{mpsv::math::deg2rad(5.0)};  // Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree (0.0174532925199433 radians).
+        mpsv::geometry::VehicleShape vehicleShape;                         // Static shape of the vehicle to be used for path planning described by several convex polyons.
+        std::vector<std::array<double,2>> skeletalPoints;                  // Skeletal points (b-frame) at which the cost map is to be evaluated.
 
         /**
          * @brief Clear the geometry parameter and set default values.
          */
         void Clear(void) noexcept {
+            constexpr double defaultAngle      = mpsv::math::deg2rad(5.0);
             collisionCheckMaxPositionDeviation = 0.1;
-            collisionCheckMaxAngleDeviation    = mpsv::math::deg2rad(5.0);
+            collisionCheckMaxAngleDeviation    = defaultAngle;
             vehicleShape.Clear();
             skeletalPoints.clear();
         }
@@ -334,12 +320,7 @@ class ParameterGeometry {
  */
 class ParameterPathPlanner {
     public:
-        uint32_t periodGoalSampling;        // Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
-
-        /**
-         * @brief Construct a new path planner parameter object and set default values.
-         */
-        ParameterPathPlanner() noexcept { Clear(); }
+        uint32_t periodGoalSampling{50};   // Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
 
         /**
          * @brief Clear the path planner parameters and set default values.
@@ -482,14 +463,9 @@ class ParameterController {
  */
 class ParameterRegionOfAttraction {
     public:
-        std::array<double,3> rangePose;   // Pose box constraints for the region of attraction.
-        std::array<double,3> rangeUVR;    // Velocity box constraints for the region of attraction.
-        std::array<double,3> rangeXYN;    // The force range {dX,dY,dN}. A given force must be in this range {[-dX,dX],[-dY,dY],[-dN,dN]} to be in the region of attraction.
-
-        /**
-         * @brief Construct a new region of attraction parameter object and set default values.
-         */
-        ParameterRegionOfAttraction() noexcept { Clear(); }
+        std::array<double,3> rangePose{0.25, 0.25, 0.15};   // Pose box constraints for the region of attraction.
+        std::array<double,3> rangeUVR{0.1, 0.1, 0.01};      // Velocity box constraints for the region of attraction.
+        std::array<double,3> rangeXYN{10.0, 10.0, 10.0};    // The force range {dX,dY,dN}. A given force must be in this range {[-dX,dX],[-dY,dY],[-dN,dN]} to be in the region of attraction.
 
         /**
          * @brief Clear the region of attraction parameters and set default values.
@@ -547,18 +523,13 @@ class ParameterRegionOfAttraction {
  */
 class ParameterMotionPlanner {
     public:
-        double samplingRangePosition;     // Range in meters for sampling the position around a given path.
-        double samplingRangeAngle;        // Range in radians for sampling the angle around a given path.
-        uint32_t periodGoalSampling;      // Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
-        double sampletime;                // Sampletime to be used for fixed-step trajectory simulation.
-        double maxInputPathLength;        // Maximum length (> 0) of the input path (x,y only). The input path is trimmed to ensure this maximum length. The trimmed pose may be interpolated.
-        ParameterController controller;
-        ParameterRegionOfAttraction regionOfAttraction;
-
-        /**
-         * @brief Construct a new motion planner parameter object and set default values.
-         */
-        ParameterMotionPlanner() noexcept { Clear(); }
+        double samplingRangePosition{10.0};               // Range in meters for sampling the position around a given path.
+        double samplingRangeAngle{1.0};                   // Range in radians for sampling the angle around a given path.
+        uint32_t periodGoalSampling{50};                  // Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
+        double sampletime{0.05};                          // Sampletime to be used for fixed-step trajectory simulation.
+        double maxInputPathLength{50.0};                  // Maximum length (> 0) of the input path (x,y only). The input path is trimmed to ensure this maximum length. The trimmed pose may be interpolated.
+        ParameterController controller;                   // Controller parameters for vehicle simulation.
+        ParameterRegionOfAttraction regionOfAttraction;   // Region of attraction parameters for vehicle simulation.
 
         /**
          * @brief Clear the motion planner parameters and set default values.
@@ -616,18 +587,13 @@ class ParameterMotionPlanner {
  */
 class ParameterOnlinePlanner {
     public:
-        double maxComputationTimePathOnReset;     // Maximum computation time in seconds for path planning after a reset.
-        double maxComputationTimeMotionOnReset;   // Maximum computation time in seconds for motion planning after a reset.
-        double maxComputationTimePath;            // Maximum computation time in seconds for path planning.
-        double maxComputationTimeMotion;          // Maximum computation time in seconds for motion planning.
-        double additionalAheadPlanningTime;       // Additional time added to the estimated computation time in seconds to obtain the future timepoint from where to start the next planning problem. This value must be greater than zero.
-        double additionalTrajectoryDuration;      // Additional time added to the ahead planning time (= estimated computation time (no reset) + additional ahead planning time) to obtain the minimum time duration of a trajectory to make sure that the next solve operation can access a future point of the trajectory. This value must be greater than zero.
-        double timeKeepPastTrajectory;            // Time in seconds to keep from a past trajectory. The past data of the previous trajectory is inserted at the beginning of a new solution. Inserting past data helps to handle imperfect time synchronization between this trajectory generator and the user of the trajectory data.
-
-        /**
-         * @brief Construct a new online planner parameter object and set default values.
-         */
-        ParameterOnlinePlanner() noexcept { Clear(); }
+        double maxComputationTimePathOnReset{0.1};     // Maximum computation time in seconds for path planning after a reset.
+        double maxComputationTimeMotionOnReset{0.2};   // Maximum computation time in seconds for motion planning after a reset.
+        double maxComputationTimePath{0.3};            // Maximum computation time in seconds for path planning.
+        double maxComputationTimeMotion{0.6};          // Maximum computation time in seconds for motion planning.
+        double additionalAheadPlanningTime{0.2};       // Additional time added to the estimated computation time in seconds to obtain the future timepoint from where to start the next planning problem. This value must be greater than zero.
+        double additionalTrajectoryDuration{1.0};      // Additional time added to the ahead planning time (= estimated computation time (no reset) + additional ahead planning time) to obtain the minimum time duration of a trajectory to make sure that the next solve operation can access a future point of the trajectory. This value must be greater than zero.
+        double timeKeepPastTrajectory{1.0};            // Time in seconds to keep from a past trajectory. The past data of the previous trajectory is inserted at the beginning of a new solution. Inserting past data helps to handle imperfect time synchronization between this trajectory generator and the user of the trajectory data.
 
         /**
          * @brief Clear the online planner parameters and set default values.
