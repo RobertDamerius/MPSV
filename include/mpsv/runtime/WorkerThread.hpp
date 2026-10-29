@@ -29,16 +29,6 @@ enum WorkerThreadState : uint8_t {
 class WorkerThread {
     public:
         /**
-         * @brief Construct a new worker thread object.
-         */
-        WorkerThread() noexcept {
-            m_isStarted = false;
-            m_stopWorkerThread = false;
-            m_state = mpsv::runtime::WorkerThreadState::offline;
-            m_commandedState = mpsv::runtime::WorkerThreadState::standby;
-        }
-
-        /**
          * @brief Destroy the worker thread object.
          */
         ~WorkerThread() noexcept { Stop(); }
@@ -49,9 +39,10 @@ class WorkerThread {
          * @param[in] threadPriority The priority to be set for the worker thread (1: low, 99: high).
          * @param[in] ompNumThreads The number of threads to be used for parallel computing (OMP_NUM_THREADS). This value is only set if it's greater than zero!
          * @param[in] ompDynamic Greater than zero if dynamic adjustment of the number of threads should be enabled for parallel computing or zero to disable dynamic adjustment (OMP_DYNAMIC). If this value is set less than 0, this parameter is ignored.
-         * @param[in] cpuCoreIDs (linux-only) List of CPU cores on which the worker thread is eligible to run. If no or invalid IDs are specified, no thread affinity is set.
+         * @param[in] cpuCoreIDs (linux-only) List of CPU cores on which the worker thread is eligible to run. Only IDs in range and available to the worker are used.
          * @details If the thread has already been started, nothing happens. The result of setting the thread priority is ignored.
          * @note The worker thread starts in standby mode. Call @ref Resume to enter the running state.
+         * @note Calls to @ref Start and @ref Stop must not run concurrently.
          */
         template <typename CallbackRun> void Start(CallbackRun callbackRun, int32_t threadPriority, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs) noexcept {
             if(!m_isStarted){
@@ -68,6 +59,7 @@ class WorkerThread {
 
         /**
          * @brief Stop the worker thread.
+         * @note Calls to @ref Start and @ref Stop must not run concurrently. This function must not be called from the worker thread.
          */
         void Stop(void) noexcept {
             // set flags to interrupt running thread
@@ -110,21 +102,20 @@ class WorkerThread {
             return m_state;
         }
 
-
     private:
-        std::thread m_workerThread;                                       // The internal worker thread.
-        std::atomic<bool> m_isStarted;                                    // True if the worker thread has been started, false otherwise.
-        std::atomic<bool> m_stopWorkerThread;                             // True if the worker thread should be stopped, false otherwise.
-        std::atomic<mpsv::runtime::WorkerThreadState> m_state;            // Internal state of the worker thread.
-        std::atomic<mpsv::runtime::WorkerThreadState> m_commandedState;   // The commanded state for this worker thread (either standby or running).
-        mpsv::runtime::Event m_eventLeaveStandby;                         // The event to be set if the standby state is to be left.
+        std::thread m_workerThread;                                                                                  // The internal worker thread.
+        std::atomic<bool> m_isStarted{false};                                                                        // True if the worker thread has been started, false otherwise.
+        std::atomic<bool> m_stopWorkerThread{false};                                                                 // True if the worker thread should be stopped, false otherwise.
+        std::atomic<mpsv::runtime::WorkerThreadState> m_state{mpsv::runtime::WorkerThreadState::offline};            // Internal state of the worker thread.
+        std::atomic<mpsv::runtime::WorkerThreadState> m_commandedState{mpsv::runtime::WorkerThreadState::standby};   // The commanded state for this worker thread (either standby or running).
+        mpsv::runtime::Event m_eventLeaveStandby;                                                                    // The event to be set if the standby state is to be left.
 
         /**
          * @brief The thread function of the worker thread.
          * @param[in] callbackRun A callable that is executed during the running state of the worker thread.
          * @param[in] ompNumThreads The number of threads to be used for parallel computing (OMP_NUM_THREADS). This value is only set if it's greater than zero!
          * @param[in] ompDynamic Greater than zero if dynamic adjustment of the number of threads should be enabled for parallel computing or zero to disable dynamic adjustment (OMP_DYNAMIC). If this value is set less than 0, this parameter is ignored.
-         * @param[in] cpuCoreIDs (linux-only) List of CPU cores on which the worker thread is eligible to run. If no or invalid IDs are specified, no thread affinity is set.
+         * @param[in] cpuCoreIDs (linux-only) List of CPU cores on which the worker thread is eligible to run. Only IDs in range and available to the worker are used.
          */
         template <typename CallbackRun> void WorkerThreadFunction(CallbackRun callbackRun, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs) noexcept {
             if(ompNumThreads > 0){
@@ -135,12 +126,22 @@ class WorkerThread {
             }
             #ifdef __linux__
             if(!cpuCoreIDs.empty()){
+                cpu_set_t availableCores;
                 cpu_set_t cores;
+                CPU_ZERO(&availableCores);
                 CPU_ZERO(&cores);
-                for(auto&& i : cpuCoreIDs){
-                    CPU_SET(i, &cores);
+                bool hasEligibleCore = false;
+                if(sched_getaffinity(0, sizeof(cpu_set_t), &availableCores) == 0){
+                    for(auto&& i : cpuCoreIDs){
+                        if((i >= 0) && (i < CPU_SETSIZE) && CPU_ISSET(i, &availableCores)){
+                            CPU_SET(i, &cores);
+                            hasEligibleCore = true;
+                        }
+                    }
+                    if(hasEligibleCore){
+                        (void) sched_setaffinity(0, sizeof(cpu_set_t), &cores);
+                    }
                 }
-                (void) sched_setaffinity(0, sizeof(cpu_set_t), &cores); // if all cores are invalid (not set), sched_setaffinity will report invalid argument and all available cores are used
             }
             #else
             (void) cpuCoreIDs;
