@@ -34,6 +34,7 @@ class AsyncOnlinePlanner {
             pthread_mutex_init(&m_mtxData, &attr);
             pthread_mutexattr_destroy(&attr);
             m_dataOut.errorCode = mpsv::error_code::NOT_AVAILABLE;
+            m_newInputData = false;
             m_terminate = false;
         }
 
@@ -70,6 +71,7 @@ class AsyncOnlinePlanner {
             m_dataParam.Clear();
             m_dataOut.Clear();
             m_dataOut.errorCode = mpsv::error_code::NOT_AVAILABLE;
+            m_newInputData = false;
             pthread_mutex_unlock(&m_mtxData);
             m_onlinePlanner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
             m_workerThread.Start(std::bind(&AsyncOnlinePlanner::WorkerThreadRun, this), threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
@@ -88,6 +90,7 @@ class AsyncOnlinePlanner {
             m_dataParam.Clear();
             m_dataOut.Clear();
             m_dataOut.errorCode = mpsv::error_code::NOT_AVAILABLE;
+            m_newInputData = false;
             pthread_mutex_unlock(&m_mtxData);
             m_terminate = false;
         }
@@ -102,7 +105,6 @@ class AsyncOnlinePlanner {
          * @note The geographical origin used for planning always relate to the latest input data.
          */
         void SetInput(mpsv::planner::AsyncOnlinePlannerInput& input, mpsv::planner::AsyncOnlinePlannerParameterSet& parameter) noexcept {
-            // move input to internal data and handle reset flag
             pthread_mutex_lock(&m_mtxData);
             bool suspendWorkerThread = !input.enable;
             input.reset |= suspendWorkerThread; // reset is required when going into standby and later leaving the standby mode
@@ -110,9 +112,7 @@ class AsyncOnlinePlanner {
             bool interruptPlanner = input.reset || suspendWorkerThread;
             input.MoveTo(m_dataIn);
             parameter.MoveTo(m_dataParam);
-            pthread_mutex_unlock(&m_mtxData);
-
-            // suspend or resume worker thread
+            m_newInputData = true;
             if(suspendWorkerThread){
                 m_workerThread.Suspend();
             }
@@ -122,6 +122,7 @@ class AsyncOnlinePlanner {
             if(interruptPlanner){
                 m_onlinePlanner.Interrupt();
             }
+            pthread_mutex_unlock(&m_mtxData);
         }
 
         /**
@@ -148,10 +149,11 @@ class AsyncOnlinePlanner {
         mpsv::runtime::WorkerThread m_workerThread;                  // The internal worker thread.
         mpsv::planner::OnlinePlanner m_onlinePlanner;                // The online sequential planner.
         std::atomic<bool> m_terminate{false};                        // True if the asynchronous online planner should be terminated, false otherwise.
+        bool m_newInputData{false};                                  // Thread-safe flag to indicate that new data has been set via @ref SetInput.
         mpsv::planner::AsyncOnlinePlannerInput m_dataIn;             // Thread-safe input data storage.
         mpsv::planner::AsyncOnlinePlannerParameterSet m_dataParam;   // Thread-safe parameter data storage.
         mpsv::planner::AsyncOnlinePlannerOutput m_dataOut;           // Thread-safe output data storage.
-        pthread_mutex_t m_mtxData;                                   // Protect @ref m_dataIn, @ref m_dataParam and @ref m_dataOut.
+        pthread_mutex_t m_mtxData;                                   // Protect @ref m_newInputData, @ref m_dataIn, @ref m_dataParam and @ref m_dataOut.
 
         /**
          * @brief The callback function that is executed if the next asynchronous step calculation is performed by the worker thread.
@@ -161,24 +163,29 @@ class AsyncOnlinePlanner {
                 return;
             }
 
-            // copy thread-safe input data to local storage
+            // Local storage
+            mpsv::planner::AsyncOnlinePlannerInput dataIn;
+            mpsv::planner::AsyncOnlinePlannerParameterSet dataParam;
+            mpsv::planner::AsyncOnlinePlannerOutput dataOut;
+
+            // Copy thread-safe input data to local storage
             pthread_mutex_lock(&m_mtxData);
-            mpsv::planner::AsyncOnlinePlannerInput dataIn = m_dataIn;
-            mpsv::planner::AsyncOnlinePlannerParameterSet dataParam = m_dataParam;
+            m_dataIn.MoveTo(dataIn);
+            m_dataParam.MoveTo(dataParam);
             m_dataIn.reset = !m_dataIn.enable;
+            m_newInputData = false;
             pthread_mutex_unlock(&m_mtxData);
 
-            // solve the planning problem
-            mpsv::planner::AsyncOnlinePlannerOutput dataOut;
+            // Solve the planning problem
             if(dataIn.enable){
                 m_onlinePlanner.Solve(dataOut, dataIn, dataParam, dataIn.reset);
             }
 
-            // move result to internal database and run callback
+            // Move result to internal database and check for new data and thread suspension
             pthread_mutex_lock(&m_mtxData);
             dataOut.MoveTo(m_dataOut);
-            if((m_dataOut.errorCode != mpsv::error_code::NONE) || !dataIn.enable){
-                m_dataIn.reset = true; // reset is required when going into standby and later leaving the standby mode
+            m_dataIn.reset = (m_dataOut.errorCode != mpsv::error_code::NONE) || !dataIn.enable;
+            if(m_dataIn.reset || !m_newInputData){
                 m_workerThread.Suspend();
             }
             pthread_mutex_unlock(&m_mtxData);
