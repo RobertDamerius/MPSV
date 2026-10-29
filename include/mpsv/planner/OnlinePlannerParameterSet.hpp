@@ -66,7 +66,6 @@ class OnlinePlannerParameterSet {
             dst.sequentialPlanner.model = sequentialPlanner.model;
             dst.sequentialPlanner.motionPlanner = sequentialPlanner.motionPlanner;
             dst.sequentialPlanner.pathPlanner = sequentialPlanner.pathPlanner;
-            dst.onlinePlanner.predictInitialStateOnReset = onlinePlanner.predictInitialStateOnReset;
             dst.onlinePlanner.maxComputationTimePathOnReset = onlinePlanner.maxComputationTimePathOnReset;
             dst.onlinePlanner.maxComputationTimeMotionOnReset = onlinePlanner.maxComputationTimeMotionOnReset;
             dst.onlinePlanner.maxComputationTimePath = onlinePlanner.maxComputationTimePath;

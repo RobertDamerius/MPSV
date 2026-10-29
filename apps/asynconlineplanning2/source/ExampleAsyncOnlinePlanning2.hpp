@@ -26,7 +26,6 @@ inline mpsv::planner::AsyncOnlinePlannerParameterSet GetParameterSet(double time
     parameterSet.timeoutInput                                                            = 10.0;
 
     // online planner
-    parameterSet.onlinePlanner.predictInitialStateOnReset                                = true;
     parameterSet.onlinePlanner.maxComputationTimePathOnReset                             = 1.0;
     parameterSet.onlinePlanner.maxComputationTimeMotionOnReset                           = 1.0;
     parameterSet.onlinePlanner.maxComputationTimePath                                    = 2.0;

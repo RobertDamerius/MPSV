@@ -103,7 +103,6 @@ void MPSV_WrapperAsynchronousOnlinePlanner::DeserializeParameter(serialization_a
     m_plannerParameter.sequentialPlanner.motionPlanner.regionOfAttraction.rangePose = parameter->sequentialPlanner.motionPlanner.regionOfAttraction.rangePose;
     m_plannerParameter.sequentialPlanner.motionPlanner.regionOfAttraction.rangeUVR  = parameter->sequentialPlanner.motionPlanner.regionOfAttraction.rangeUVR;
     m_plannerParameter.sequentialPlanner.motionPlanner.regionOfAttraction.rangeXYN  = parameter->sequentialPlanner.motionPlanner.regionOfAttraction.rangeXYN;
-    m_plannerParameter.onlinePlanner.predictInitialStateOnReset                     = parameter->onlinePlanner.predictInitialStateOnReset;
     m_plannerParameter.onlinePlanner.maxComputationTimePathOnReset                  = parameter->onlinePlanner.maxComputationTimePathOnReset;
     m_plannerParameter.onlinePlanner.maxComputationTimeMotionOnReset                = parameter->onlinePlanner.maxComputationTimeMotionOnReset;
     m_plannerParameter.onlinePlanner.maxComputationTimePath                         = parameter->onlinePlanner.maxComputationTimePath;

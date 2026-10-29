@@ -39,9 +39,9 @@ class OnlinePlanner {
          * @param[in] maxNumCells Maximum number of cells to be used in the cost map.
          */
         void Reconfigure(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, uint32_t maxNumCells) noexcept {
+            m_sequentialPlanner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
             m_state.Clear();
             m_resetRequired = true;
-            m_sequentialPlanner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
         }
 
         /**
@@ -60,24 +60,23 @@ class OnlinePlanner {
             if(mpsv::error_code::NONE == errorCode){
                 errorCode = dataIn.IsValid();
             }
-            if(mpsv::error_code::NONE != errorCode){
-                m_state.Clear();
-                m_state.errorCode = errorCode;
-                m_resetRequired = true;
-            }
-            else{
-                // reset is required if sampletime changed
+
+            // solve the planning problem (update m_state)
+            if(mpsv::error_code::NONE == errorCode){
                 if(!m_state.trajectory.empty() && (m_state.sampletime != parameter.sequentialPlanner.motionPlanner.sampletime)){
                     m_resetRequired = true;
                 }
-
-                // solve the planning problem
                 if(m_resetRequired || reset){
-                    SolveInitialProblem(dataIn, parameter); // updates m_state
+                    SolveInitialProblem(dataIn, parameter);
                 }
                 else{
-                    SolveNextProblem(dataIn, parameter); // updates m_state
+                    SolveNextProblem(dataIn, parameter);
                 }
+            }
+            else{
+                m_state.Clear();
+                m_state.errorCode = errorCode;
+                m_resetRequired = true;
             }
             dataOut = m_state;
         }
@@ -95,14 +94,14 @@ class OnlinePlanner {
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept { m_sequentialPlanner.WriteToFile(file, preString + "sequentialPlanner."); }
 
     protected:
-        mpsv::planner::OnlinePlannerOutput m_state;                         // Internal state of the online planner representing the latest output.
         bool m_resetRequired{false};                                        // True if a reset is required, false otherwise.
-        mpsv::planner::SequentialPlanner m_sequentialPlanner;               // Internal sequential planning solver.
-        mpsv::control::VehicleSimulator m_vehicleSimulator;                 // Simulator used for predicting the initial state on reset.
-        std::vector<std::array<double,12>> m_predictionTrajectory;           // Reusable buffer for predicted reset trajectories.
+        mpsv::planner::OnlinePlannerOutput m_state;                         // Internal state of the online planner representing the latest output.
         mpsv::planner::SequentialPlannerInput m_sequentialPlannerInput;     // Input to the @ref m_sequentialPlanner.
         mpsv::planner::SequentialPlannerOutput m_sequentialPlannerOutput;   // Output of the @ref m_sequentialPlanner.
+        mpsv::planner::SequentialPlanner m_sequentialPlanner;               // Internal sequential planning solver.
         mpsv::runtime::PerformanceCounter m_performanceCounter;             // Performance counter used to measure execution time.
+        mpsv::control::VehicleSimulator m_vehicleSimulator;                 // Simulator used for predicting the initial state on reset.
+        std::vector<std::array<double,12>> m_predictionTrajectory;          // Reusable buffer for predicted reset trajectories.
 
         /**
          * @brief Get the state/input vector from the latest solution trajectory (@ref m_state) for a given absolute timestamp.
@@ -133,7 +132,7 @@ class OnlinePlanner {
         }
 
         /**
-         * @brief Update m_state based on sequential planning results.
+         * @brief Update @ref m_state and @ref m_resetRequired based on sequential planning results.
          * @param[in] originLLA Geographic origin of the current planning input.
          * @param[in] timestamp Timestamp indicating the initial timepoint of the trajectory.
          * @param[in] performedReset Flag indicating if a reset has been performed or not.
@@ -171,31 +170,19 @@ class OnlinePlanner {
             // Change the timestamp and the initial state vector by predicting the motion for the expected computation time
             m_predictionTrajectory.clear();
             double aheadPlanningTime = parameter.onlinePlanner.maxComputationTimePathOnReset + parameter.onlinePlanner.maxComputationTimeMotionOnReset + parameter.onlinePlanner.additionalAheadPlanningTime;
-            if(parameter.onlinePlanner.predictInitialStateOnReset){
-                mpsv::error_code simulatorError = m_vehicleSimulator.SetParameter(parameter.sequentialPlanner.model, parameter.sequentialPlanner.motionPlanner.controller);
-                if(mpsv::error_code::NONE != simulatorError){
-                    m_state.Clear();
-                    m_state.errorCode = simulatorError;
-                    m_resetRequired = true;
-                    return;
-                }
+            mpsv::error_code e = m_vehicleSimulator.SetParameter(parameter.sequentialPlanner.model, parameter.sequentialPlanner.motionPlanner.controller);
+            if(mpsv::error_code::NONE == e){
                 constexpr uint32_t maxNumSimulationSteps = 0x0000FFFF;
                 double requestedNumSteps = std::floor(aheadPlanningTime / parameter.sequentialPlanner.motionPlanner.sampletime);
                 uint32_t numSimulationSteps = static_cast<uint32_t>(std::clamp(std::isnan(requestedNumSteps) ? 1.0 : requestedNumSteps, 1.0, static_cast<double>(maxNumSimulationSteps)));
-                bool success = m_vehicleSimulator.PredictMotionTrajectory(m_predictionTrajectory, initialStateAndInput, parameter.sequentialPlanner.motionPlanner.sampletime, numSimulationSteps, maxNumSimulationSteps);
+                (void) m_vehicleSimulator.PredictMotionTrajectory(m_predictionTrajectory, initialStateAndInput, parameter.sequentialPlanner.motionPlanner.sampletime, numSimulationSteps, maxNumSimulationSteps);
                 double simulationTime = parameter.sequentialPlanner.motionPlanner.sampletime * static_cast<double>(m_predictionTrajectory.size());
-                if(!success || m_predictionTrajectory.empty()){
-                    m_state.Clear();
-                    m_state.errorCode = mpsv::error_code::MOTIONPLANNER_INFEASIBLE_TRAJECTORY;
-                    m_resetRequired = true;
-                    return;
-                }
                 timestamp += simulationTime;
-                initialStateAndInput = m_predictionTrajectory.back();
             }
-            else{
+            if(m_predictionTrajectory.empty()){
                 m_predictionTrajectory.push_back(initialStateAndInput);
             }
+            initialStateAndInput = m_predictionTrajectory.back();
 
             // Assign input data for the sequential planner and solve the actual planning problem
             m_sequentialPlannerInput.initialStateAndInput = initialStateAndInput;
@@ -213,19 +200,16 @@ class OnlinePlanner {
             m_state.motionPlanner.trajectory = m_sequentialPlannerOutput.motionPlanner.trajectory;
 
             // Merge prediction trajectory to solution trajectory
-            const auto& motionOutput = m_sequentialPlannerOutput.motionPlanner;
-            if((m_sequentialPlannerOutput.errorCode == mpsv::error_code::NONE) && (motionOutput.sampletime > 0.0) && !motionOutput.trajectory.empty()){
+            if((m_sequentialPlannerOutput.errorCode == mpsv::error_code::NONE) && (m_sequentialPlannerOutput.motionPlanner.sampletime > 0.0) && !m_sequentialPlannerOutput.motionPlanner.trajectory.empty()){
                 double timeNow = dataIn.timestamp + m_performanceCounter.TimeToStart(); // current timestamp based on user timestamp definition
                 double dt = timestamp - timeNow + parameter.onlinePlanner.timeKeepPastTrajectory;
-                int32_t numOldTrajectoryPoints = static_cast<int32_t>(std::min<double>(std::ceil(dt / motionOutput.sampletime), std::min<size_t>(m_predictionTrajectory.size(), 0x0000FFFF)));
+                int32_t numOldTrajectoryPoints = static_cast<int32_t>(std::min<double>(std::ceil(dt / m_sequentialPlannerOutput.motionPlanner.sampletime), std::min<size_t>(m_predictionTrajectory.size(), 0x0000FFFF)));
                 if(numOldTrajectoryPoints > 0){
                     // The prediction trajectory relates to the same origin, thus offsetOldToNew does not have to be considered
                     m_sequentialPlannerOutput.motionPlanner.trajectory.insert(m_sequentialPlannerOutput.motionPlanner.trajectory.begin(), m_predictionTrajectory.end() - numOldTrajectoryPoints, m_predictionTrajectory.end());
-                    timestamp -= static_cast<double>(numOldTrajectoryPoints) * motionOutput.sampletime;
+                    timestamp -= static_cast<double>(numOldTrajectoryPoints) * m_sequentialPlannerOutput.motionPlanner.sampletime;
                 }
             }
-
-            // Update the internal state with the current planning results
             UpdateState(dataIn.originLLA, timestamp, true);
         }
 
@@ -263,8 +247,7 @@ class OnlinePlanner {
             m_state.motionPlanner.trajectory = m_sequentialPlannerOutput.motionPlanner.trajectory;
 
             // Get indices to range of old trajectory that should be kept
-            const auto& motionOutput = m_sequentialPlannerOutput.motionPlanner;
-            if((m_sequentialPlannerOutput.errorCode == mpsv::error_code::NONE) && (motionOutput.sampletime > 0.0) && !motionOutput.trajectory.empty() && (m_state.sampletime > 0.0)){
+            if((m_sequentialPlannerOutput.errorCode == mpsv::error_code::NONE) && (m_sequentialPlannerOutput.motionPlanner.sampletime > 0.0) && !m_sequentialPlannerOutput.motionPlanner.trajectory.empty() && (m_state.sampletime > 0.0)){
                 double timeNow = dataIn.timestamp + m_performanceCounter.TimeToStart(); // current timestamp based on user timestamp definition
                 double dt = timestamp - timeNow + parameter.onlinePlanner.timeKeepPastTrajectory;
                 int32_t numOldTrajectoryPoints = static_cast<int32_t>(std::min<double>(std::ceil(dt / m_state.sampletime), 0x0000FFFF));
@@ -274,7 +257,7 @@ class OnlinePlanner {
 
                 // Merge old trajectory to new solution trajectory
                 if(numOldTrajectoryPoints > 0){
-                    timestamp -= static_cast<double>(numOldTrajectoryPoints) * motionOutput.sampletime;
+                    timestamp -= static_cast<double>(numOldTrajectoryPoints) * m_sequentialPlannerOutput.motionPlanner.sampletime;
                     // The old trajectory refers to the old origin and must be transformed to the new origin
                     for(int32_t i = indexOldBegin; i < indexOldEnd; ++i){
                         m_state.trajectory[i][0] -= offsetOldToNew[0];
@@ -284,8 +267,6 @@ class OnlinePlanner {
                     m_sequentialPlannerOutput.motionPlanner.trajectory.insert(m_sequentialPlannerOutput.motionPlanner.trajectory.begin(), m_state.trajectory.begin() + indexOldBegin, m_state.trajectory.begin() + indexOldEnd);
                 }
             }
-
-            // Update the internal state with the current planning results
             UpdateState(dataIn.originLLA, timestamp, false);
         }
 };

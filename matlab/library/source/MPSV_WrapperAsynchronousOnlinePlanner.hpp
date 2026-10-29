@@ -81,8 +81,7 @@ struct __attribute__((packed)) serialization_asynchronous_online_planner_paramet
         } motionPlanner;
     } sequentialPlanner;
     struct __attribute__((packed)) {
-        uint8_t predictInitialStateOnReset:1;
-        uint8_t reserved:7;
+        uint8_t reserved;
         double maxComputationTimePathOnReset;
         double maxComputationTimeMotionOnReset;
         double maxComputationTimePath;

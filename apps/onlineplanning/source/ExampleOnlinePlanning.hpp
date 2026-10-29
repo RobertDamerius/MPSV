@@ -15,7 +15,6 @@ inline mpsv::planner::OnlinePlannerParameterSet GetParameterSet(void){
     mpsv::planner::OnlinePlannerParameterSet parameterSet;
 
     // online planner
-    parameterSet.onlinePlanner.predictInitialStateOnReset                                = true;
     parameterSet.onlinePlanner.maxComputationTimePathOnReset                             = 1.0;
     parameterSet.onlinePlanner.maxComputationTimeMotionOnReset                           = 1.0;
     parameterSet.onlinePlanner.maxComputationTimePath                                    = 1.0;

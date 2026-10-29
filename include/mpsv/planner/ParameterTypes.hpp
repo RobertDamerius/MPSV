@@ -616,7 +616,6 @@ class ParameterMotionPlanner {
  */
 class ParameterOnlinePlanner {
     public:
-        bool predictInitialStateOnReset;          // True if the initial state should be predicted by the expected computation time after a reset of the online planner (e.g. the first solve).
         double maxComputationTimePathOnReset;     // Maximum computation time in seconds for path planning after a reset.
         double maxComputationTimeMotionOnReset;   // Maximum computation time in seconds for motion planning after a reset.
         double maxComputationTimePath;            // Maximum computation time in seconds for path planning.
@@ -634,7 +633,6 @@ class ParameterOnlinePlanner {
          * @brief Clear the online planner parameters and set default values.
          */
         void Clear(void) noexcept {
-            predictInitialStateOnReset      = true;
             maxComputationTimePathOnReset   = 0.1;
             maxComputationTimeMotionOnReset = 0.2;
             maxComputationTimePath          = 0.3;
@@ -672,7 +670,6 @@ class ParameterOnlinePlanner {
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
-            file.WriteField("bool", preString + "predictInitialStateOnReset", {1}, &predictInitialStateOnReset, sizeof(predictInitialStateOnReset));
             file.WriteField("double", preString + "maxComputationTimePathOnReset", {1}, &maxComputationTimePathOnReset, sizeof(maxComputationTimePathOnReset));
             file.WriteField("double", preString + "maxComputationTimeMotionOnReset", {1}, &maxComputationTimeMotionOnReset, sizeof(maxComputationTimeMotionOnReset));
             file.WriteField("double", preString + "maxComputationTimePath", {1}, &maxComputationTimePath, sizeof(maxComputationTimePath));
