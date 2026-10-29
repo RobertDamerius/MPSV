@@ -17,12 +17,12 @@ namespace planner {
  */
 class OnlinePlannerOutput {
     public:
-        double timestamp{};                                    // Monotonically increasing timestamp in seconds (arbitrary time origin defined by the user) indicating the initial timepoint of the @ref trajectory.
-        std::array<double,3> originLLA{};                      // Geographical origin to which this outputs belongs to, given as {lat,lon,alt}.
-        std::vector<std::array<double,12>> trajectory{};       // Resulting trajectory, where each element is given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state and input is not inserted.
-        double sampletime{};                                   // The sampletime of the trajectory data in seconds.
-        bool performedReset{};                                 // True if reset has been performed, false otherwise.
-        mpsv::error_code errorCode{mpsv::error_code::NONE};    // Error code of the sequential planning operation.
+        double timestamp{};                                      // Monotonically increasing timestamp in seconds (arbitrary time origin defined by the user) indicating the initial timepoint of the @ref trajectory.
+        std::array<double,3> originLLA{};                        // Geographical origin to which this outputs belongs to, given as {lat,lon,alt}.
+        std::vector<std::array<double,12>> trajectory{};         // Resulting trajectory, where each element is given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state and input is not inserted.
+        double sampletime{};                                     // The sampletime of the trajectory data in seconds.
+        bool performedReset{};                                   // True if reset has been performed, false otherwise.
+        mpsv::error_code errorCode{mpsv::error_code::NONE};      // Error code of the sequential planning operation.
         struct {
             std::vector<std::array<double,3>> path{};            // [PathPlanner] Resulting path of the internal path planning problem, where each pose is given as {x,y,psi}.
             bool goalReached{};                                  // [PathPlanner] True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
@@ -31,13 +31,13 @@ class OnlinePlannerOutput {
             double cost{};                                       // [PathPlanner] The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
         } pathPlanner{};
         struct {
-            std::vector<std::array<double,3>> referencePath{};  // [MotionPlanner] Resulting reference path of the internal motion planning problem, where each pose is given as {x,y,psi}.
-            std::vector<std::array<double,12>> trajectory{};   // [MotionPlanner] Resulting trajectory of the internal motion planning problem, where each element is given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state and input is not inserted.
-            double startingTimepoint{};                        // [MotionPlanner] The starting timepoint of the internal motion planner trajectory (arbitrary time origin defined by the user, same as @ref timestamp).
-            bool goalReached{};                                // [MotionPlanner] True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-            uint32_t numberOfPerformedIterations{};            // [MotionPlanner] The total number of iterations that have been performed since the latest prepare step.
-            double timestampOfComputationUTC{};                // [MotionPlanner] Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
-            double cost{};                                     // [MotionPlanner] The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
+            std::vector<std::array<double,3>> referencePath{};   // [MotionPlanner] Resulting reference path of the internal motion planning problem, where each pose is given as {x,y,psi}.
+            std::vector<std::array<double,12>> trajectory{};     // [MotionPlanner] Resulting trajectory of the internal motion planning problem, where each element is given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state and input is not inserted.
+            double startingTimepoint{};                          // [MotionPlanner] The starting timepoint of the internal motion planner trajectory (arbitrary time origin defined by the user, same as @ref timestamp).
+            bool goalReached{};                                  // [MotionPlanner] True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
+            uint32_t numberOfPerformedIterations{};              // [MotionPlanner] The total number of iterations that have been performed since the latest prepare step.
+            double timestampOfComputationUTC{};                  // [MotionPlanner] Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
+            double cost{};                                       // [MotionPlanner] The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
         } motionPlanner{};
 
         /**
