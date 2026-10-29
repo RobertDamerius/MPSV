@@ -151,16 +151,21 @@ class File {
          */
         void WriteHeaderData(void) noexcept {
             // Create header data
-            auto timePoint = std::chrono::high_resolution_clock::now();
-            std::time_t systemTime = std::chrono::high_resolution_clock::to_time_t(timePoint);
-            std::tm* gmTime = std::gmtime(&systemTime);
-            auto duration = timePoint.time_since_epoch();
-            auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
-            duration -= seconds;
-            uint32_t year = static_cast<uint32_t>(gmTime->tm_year) + 1900;
-            uint8_t month = static_cast<uint8_t>(gmTime->tm_mon) + 1;
-            uint8_t day = static_cast<uint8_t>(gmTime->tm_mday);
-            double timestampUTC = 3600.0 * static_cast<double>(gmTime->tm_hour) + 60.0 * static_cast<double>(gmTime->tm_min) + static_cast<double>(gmTime->tm_sec) + 1e-9 * static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
+            const auto timePoint = std::chrono::system_clock::now();
+            const auto secondTimePoint = std::chrono::floor<std::chrono::seconds>(timePoint);
+            const std::time_t time = std::chrono::system_clock::to_time_t(secondTimePoint);
+            const std::tm* gmTime = std::gmtime(&time); //#TODO: use thread-safe alternatives gmtime_s or gmtime_r or use manual locks
+            uint32_t year{};
+            uint8_t month{};
+            uint8_t day{};
+            double timestampUTC{};
+            if(gmTime){
+                year = static_cast<uint32_t>(gmTime->tm_year) + 1900;
+                month = static_cast<uint8_t>(gmTime->tm_mon) + 1;
+                day = static_cast<uint8_t>(gmTime->tm_mday);
+                const double fractionalSeconds = 1e-9 * static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(timePoint - secondTimePoint).count());
+                timestampUTC = 3600.0 * static_cast<double>(gmTime->tm_hour) + 60.0 * static_cast<double>(gmTime->tm_min) + static_cast<double>(gmTime->tm_sec) + fractionalSeconds;
+            }
             constexpr char logStart[] = {'$','$'};
             const uint32_t headerSize = sizeof(year) + sizeof(month) + sizeof(day) + sizeof(timestampUTC);
 

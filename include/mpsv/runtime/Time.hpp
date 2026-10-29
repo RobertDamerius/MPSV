@@ -11,17 +11,19 @@ namespace runtime {
 
 
 /**
- * @brief Get the UTC timestamp which is defined to be the current second of the day (UTC).
+ * @brief Get the UTC timestamp which is defined to be the current second of the day (UTC, no leap seconds).
  * @return UTC timestamp: seconds of the day.
  */
 [[nodiscard]] inline double GetTimestampUTC(void) noexcept {
-    auto timePoint = std::chrono::high_resolution_clock::now();
-    std::time_t time = std::chrono::high_resolution_clock::to_time_t(timePoint);
-    std::tm* gmTime = std::gmtime(&time);
-    auto duration = timePoint.time_since_epoch();
-    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
-    duration -= seconds;
-    return 3600.0 * static_cast<double>(gmTime->tm_hour) + 60.0 * static_cast<double>(gmTime->tm_min) + static_cast<double>(gmTime->tm_sec) + 1e-9 * static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count());
+    const auto timePoint = std::chrono::system_clock::now();
+    const auto secondTimePoint = std::chrono::floor<std::chrono::seconds>(timePoint);
+    const std::time_t time = std::chrono::system_clock::to_time_t(secondTimePoint);
+    const std::tm* gmTime = std::gmtime(&time); //#TODO: use thread-safe alternatives gmtime_s or gmtime_r or use manual locks
+    if(!gmTime){
+        return 0.0;
+    }
+    const double fractionalSeconds = 1e-9 * static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(timePoint - secondTimePoint).count());
+    return 3600.0 * static_cast<double>(gmTime->tm_hour) + 60.0 * static_cast<double>(gmTime->tm_min) + static_cast<double>(gmTime->tm_sec) + fractionalSeconds;
 }
 
 
