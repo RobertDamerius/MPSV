@@ -72,9 +72,11 @@ mpsv::error_code MPSV_WrapperPathPlanner::AssignInput(serialization_path_planner
     m_pathPlannerParameter.metric.weightReverseDecay                   = input->parameter.metric.weightReverseDecay;
     m_pathPlannerParameter.pathPlanner.periodGoalSampling              = input->parameter.pathPlanner.periodGoalSampling;
 
-    // Assign maximum computation time
-    m_maxComputationTime                                               = input->parameter.pathPlanner.maxComputationTime;
-    bool validMaxComputationTime = std::isfinite(m_maxComputationTime) && (m_maxComputationTime >= 0.0);
+    // Assign maximum computation time and validate it
+    m_maxComputationTime                                               = std::max(0.0, input->parameter.pathPlanner.maxComputationTime);
+    if(!std::isfinite(m_maxComputationTime)){
+        m_maxComputationTime = 0.0;
+    }
 
     // Assign inputs
     m_pathPlannerInput.initialPose                                     = input->initialPose;
@@ -111,8 +113,6 @@ mpsv::error_code MPSV_WrapperPathPlanner::AssignInput(serialization_path_planner
         return e;
     if(mpsv::error_code::NONE != (e = m_pathPlannerInput.IsValid()))
         return e;
-    if(!validMaxComputationTime)
-        return mpsv::error_code::NOT_AVAILABLE;
     return mpsv::error_code::NONE;
 }
 
