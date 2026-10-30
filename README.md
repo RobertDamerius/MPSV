@@ -1,19 +1,17 @@
-![](documentation/img/icon.svg)
+# MPSV: Motion-Planner for Surface Vehicles
 
-# MPSV
+<div align="center"><img src="documentation/img/Logo.svg" alt="MPSV Logo" width="40%"><br><br></div>
 
-The **M**otion **P**lanner for **S**urface **V**ehicles solves motion planning problems for fully actuated surface vehicles with non-linear dynamics in an environment with non-convex non-moving obstacles.
-The method is based on the RRT* algorithm.
+The **M**otion-**P**lanner for **S**urface **V**ehicles solves motion planning problems for **fully actuated** surface vehicles with **non-linear dynamics** in an environment with **non-convex non-moving obstacles**.
+The method is based on the **RRT\*** algorithm.
 The problem is decomposed into two sequential problems in which first a feasible path is searched for and then a collision-free trajectory is calculated based on the path found.
-For references, see [below](#publication).
+For references, see [below](#-citation).
 
 
 ![](documentation/img/Overview.svg)
 
 
-## Repository Overview
-
-The directory structure of this repository is as follows.
+**📁 Repository Overview**
 
 | File / Directory   | Description                                               |
 | :----------------- | :-------------------------------------------------------- |
@@ -26,7 +24,7 @@ The directory structure of this repository is as follows.
 | README.md          | this file                                                 |
 
 
-## Header-only Library (C++)
+## 📦 Header-only Library (C++)
 
 The MPSV solver is implemented as a header-only C++ library and requires a compiler with C++23 support.
 Include the header as follows:
@@ -44,24 +42,24 @@ int main() {
 
 All public types are in the `mpsv` namespace (for example `mpsv::planner` and `mpsv::geometry`).
 
-**OpenMP**
+**⚙️ OpenMP**
 
 MPSV requires OpenMP for parallel computing.
 It has been tested on Windows via MSYS2/MinGW64 and Ubuntu.
 On Ubuntu/Debian, install `libomp-dev` (or use the GCC/OpenMP toolchain that ships with your compiler).
 
 
-## Planning Levels
+## 🌟 Planning Levels
 
 The API of MPSV consists of several planning levels that are shown in the following image.
 The snippets below are illustrative; see the files in [examples](examples/) for complete, compilable examples.
 
 ![](documentation/img/PlanningLevels.svg)
 
-### PathPlanner
+### ✨ PathPlanner
 
 - find path from initial pose to final pose
-- RRT* with fixed number of nodes and warm start capabilities
+- RRT\* with fixed number of nodes and warm start capabilities
 
 ```cpp
 mpsv::planner::PathPlanner planner;
@@ -75,10 +73,10 @@ constexpr double maxComputationTime = 1.0;
 planner.Solve(dataOut, dataIn, parameter, maxComputationTime);
 ```
 
-### MotionPlanner
+### ✨ MotionPlanner
 
 - find trajectory from initial state/input to final pose around a given path
-- RRT* with fixed number of nodes
+- RRT\* with fixed number of nodes
 - internal control system based on feedback linearization and full-state feedback to generate dynamically feasible trajectory
 
 ```cpp
@@ -93,7 +91,7 @@ constexpr double maxComputationTime = 1.0;
 planner.Solve(dataOut, dataIn, parameter, maxComputationTime);
 ```
 
-### SequentialPlanner
+### ✨ SequentialPlanner
 
 - combine path and motion planner in sequential manner
 - path from path planner is used as guidance for the motion planner
@@ -111,7 +109,7 @@ constexpr double maxComputationTimeMotion = 1.0;
 planner.Solve(dataOut, dataIn, parameter, maxComputationTimePath, maxComputationTimeMotion);
 ```
 
-### OnlinePlanner
+### ✨ OnlinePlanner
 
 - continuously solve sequential planning problems
 - solves motion planning problems for a future timepoint
@@ -129,7 +127,7 @@ for(...){
 }
 ```
 
-### AsyncOnlinePlanner
+### ✨ AsyncOnlinePlanner
 
 - run the online planner in a separate thread
 - results are obtained via polling or callback
@@ -160,7 +158,7 @@ for(...){
 planner.Stop();
 ```
 
-## Building Examples (C++)
+## 🛠️ Building Examples (C++)
 
 Take a look at the C++ examples in the [examples](examples/) directory to see how to use the different planning levels of MPSV.
 
@@ -179,7 +177,7 @@ make examples
 ```
 
 
-## MATLAB/Simulink Support
+## 🧩 MATLAB/Simulink Support
 
 A MATLAB/Simulink toolbox exists that allows you to run the planner in Simulink.
 Only the *PathPlanner* and the *AsyncOnlinePlanner* are currently implemented.
@@ -190,7 +188,7 @@ All blocks support C++ code generation.
 Example models for Simulink are located at [matlab/examples/](matlab/examples/).
 
 
-## Publication
+## 📖 Citation
 *Robert Damerius, Nick Eisenblätter, Johannes R. Marx, Muhammad Khalis Mohd Fadil and Torsten Jeinsch, Real-Time Motion Planning for Fully Actuated Autonomous Surface Vehicles, 34th Mediterranean Conference on Control and Automation (MED), 2026, doi: 10.1109/MED70602.2026.11598383*
 ```bibtex
 @inproceedings{Damerius2026,

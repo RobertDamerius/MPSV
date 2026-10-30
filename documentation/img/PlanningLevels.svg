@@ -1,16 +1,89 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <!-- Generiert durch Microsoft Visio, SVG Export PlanningLevels.svg Page-1 -->
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
-        xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="3.50044in" height="1.53193in"
-        viewBox="0 0 252.032 110.299" xml:space="preserve" color-interpolation-filters="sRGB" class="st10">
-    <v:documentProperties v:langID="1031" v:metric="true" v:viewMarkup="false">
+
+<svg
+   width="3.50044in"
+   height="1.53193in"
+   viewBox="0 0 252.032 110.299"
+   xml:space="preserve"
+   color-interpolation-filters="sRGB"
+   class="st10"
+   version="1.1"
+   id="svg11"
+   sodipodi:docname="PlanningLevels.svg"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/"><defs
+   id="defs11">
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+            
+            
+        
+            
+            
+        
+            
+            
+        
+            
+            
+        
+            
+            
+        
+            
+            
+        
+            
+            
+        </defs><sodipodi:namedview
+   id="namedview11"
+   pagecolor="#505050"
+   bordercolor="#eeeeee"
+   borderopacity="1"
+   inkscape:showpageshadow="0"
+   inkscape:pageopacity="0"
+   inkscape:pagecheckerboard="0"
+   inkscape:deskcolor="#505050"
+   inkscape:document-units="in"
+   inkscape:zoom="2.4864603"
+   inkscape:cx="162.88215"
+   inkscape:cy="57.310387"
+   inkscape:window-width="1920"
+   inkscape:window-height="998"
+   inkscape:window-x="0"
+   inkscape:window-y="0"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="svg11" />
+    <v:documentProperties
+   v:langID="1031"
+   v:metric="true"
+   v:viewMarkup="false">
         <v:userDefs>
-            <v:ud v:nameU="msvNoAutoConnect" v:val="VT0(1):26"/>
+            <v:ud
+   v:nameU="msvNoAutoConnect"
+   v:val="VT0(1):26" />
         </v:userDefs>
     </v:documentProperties>
 
-    <style type="text/css">
+    <style
+   type="text/css"
+   id="style1">
     <![CDATA[
         .st1 {fill:#fdf7f7;stroke:#be2a2a;stroke-width:2}
         .st2 {fill:#f2fcef;stroke:#1d7006;stroke-width:2}
@@ -25,64 +98,209 @@
     ]]>
     </style>
 
-    <g v:mID="0" v:index="1" v:groupContext="foregroundPage">
-        <title>Zeichenblatt-1</title>
-        <v:pageProperties v:drawingScale="0.0393701" v:pageScale="0.0393701" v:drawingUnits="24" v:shadowOffsetX="8.50394"
-                v:shadowOffsetY="-8.50394"/>
-        <g id="shape12-1" v:mID="12" v:groupContext="shape" transform="translate(2,-2)">
-            <title>Tabelle.12</title>
-            <rect x="0" y="4" width="248.031" height="106.299" rx="5.66929" ry="5.66929" class="st1"/>
-        </g>
-        <g id="shape10-3" v:mID="10" v:groupContext="shape" transform="translate(9.08662,-9.08663)">
-            <title>Tabelle.10</title>
-            <rect x="0" y="32.3465" width="233.858" height="77.9527" rx="5.66929" ry="5.66929" class="st2"/>
-        </g>
-        <g id="shape6-5" v:mID="6" v:groupContext="shape" transform="translate(16.1732,-16.1732)">
-            <title>Tabelle.6</title>
-            <rect x="0" y="60.6929" width="219.685" height="49.6063" rx="5.66929" ry="5.66929" class="st3"/>
-        </g>
-        <g id="shape1-7" v:mID="1" v:groupContext="shape" transform="translate(23.2598,-23.2598)">
-            <title>Tabelle.1</title>
-            <rect x="0" y="89.0394" width="99.2126" height="21.2598" rx="5.66929" ry="5.66929" class="st4"/>
-        </g>
-        <g id="shape3-9" v:mID="3" v:groupContext="shape" transform="translate(23.2598,-23.2598)">
-            <title>Tabelle.3</title>
-            <desc>PathPlanner</desc>
-            <v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
-            <v:textRect cx="49.6063" cy="99.6693" width="99.22" height="21.2598"/>
-            <rect x="0" y="89.0394" width="99.2126" height="21.2598" class="st5"/>
-            <text x="20.43" y="102.67" class="st6" v:langID="1031"><v:paragraph v:horizAlign="1"/><v:tabList/>PathPlanner</text>        </g>
-        <g id="shape4-12" v:mID="4" v:groupContext="shape" transform="translate(129.559,-23.2599)">
-            <title>Tabelle.4</title>
-            <rect x="0" y="89.0394" width="99.2126" height="21.2598" rx="5.66929" ry="5.66929" class="st4"/>
-        </g>
-        <g id="shape5-14" v:mID="5" v:groupContext="shape" transform="translate(129.559,-23.2599)">
-            <title>Tabelle.5</title>
-            <desc>MotionPlanner</desc>
-            <v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
-            <v:textRect cx="49.6063" cy="99.6693" width="99.22" height="21.2598"/>
-            <rect x="0" y="89.0394" width="99.2126" height="21.2598" class="st5"/>
-            <text x="14.88" y="102.67" class="st6" v:langID="1031"><v:paragraph v:horizAlign="1"/><v:tabList/>MotionPlanner</text>        </g>
-        <g id="shape9-17" v:mID="9" v:groupContext="shape" transform="translate(23.2598,-44.5197)">
-            <title>Tabelle.9</title>
-            <desc>SequentialPlanner</desc>
-            <v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
-            <v:textRect cx="102.756" cy="99.6693" width="205.52" height="21.2598"/>
-            <rect x="0" y="89.0394" width="205.512" height="21.2598" class="st5"/>
-            <text x="59.13" y="102.67" class="st7" v:langID="1031"><v:paragraph v:horizAlign="1"/><v:tabList/>SequentialPlanner</text>        </g>
-        <g id="shape11-20" v:mID="11" v:groupContext="shape" transform="translate(23.2598,-65.7795)">
-            <title>Tabelle.11</title>
-            <desc>OnlinePlanner</desc>
-            <v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
-            <v:textRect cx="102.756" cy="99.6693" width="205.52" height="21.2598"/>
-            <rect x="0" y="89.0394" width="205.512" height="21.2598" class="st5"/>
-            <text x="68.86" y="102.67" class="st8" v:langID="1031"><v:paragraph v:horizAlign="1"/><v:tabList/>OnlinePlanner</text>        </g>
-        <g id="shape13-23" v:mID="13" v:groupContext="shape" transform="translate(23.2598,-87.0394)">
-            <title>Tabelle.13</title>
-            <desc>AsyncOnlinePlanner</desc>
-            <v:textBlock v:margins="rect(4,4,4,4)" v:tabSpace="42.5197"/>
-            <v:textRect cx="102.756" cy="99.6693" width="205.52" height="21.2598"/>
-            <rect x="0" y="89.0394" width="205.512" height="21.2598" class="st5"/>
-            <text x="53.85" y="102.67" class="st9" v:langID="1031"><v:paragraph v:horizAlign="1"/><v:tabList/>AsyncOnlinePlanner</text>        </g>
-    </g>
+    <rect
+   x="2"
+   y="2"
+   width="248.03101"
+   height="106.299"
+   rx="5.6692901"
+   ry="5.6692901"
+   class="st1"
+   id="rect2"
+   style="fill:#671daf;fill-opacity:0.5;stroke:none;stroke-opacity:1" /><rect
+   x="9.0866203"
+   y="23.259871"
+   width="233.858"
+   height="77.952698"
+   rx="5.6692901"
+   ry="5.6692901"
+   class="st2"
+   id="rect3"
+   style="fill:#383894;fill-opacity:0.5;stroke:none;stroke-opacity:1" /><rect
+   x="16.173201"
+   y="44.519703"
+   width="219.685"
+   height="49.6063"
+   rx="5.6692901"
+   ry="5.6692901"
+   class="st3"
+   id="rect4"
+   style="fill:#2751a5;fill-opacity:0.5;stroke:none;stroke-opacity:1" /><rect
+   x="23.2598"
+   y="65.779594"
+   width="99.212601"
+   height="21.2598"
+   rx="5.6692901"
+   ry="5.6692901"
+   class="st4"
+   id="rect5"
+   style="fill:#1a356f;fill-opacity:0.80055052;stroke:none;stroke-opacity:1" /><g
+   id="shape3-9"
+   v:mID="3"
+   v:groupContext="shape"
+   transform="translate(23.2598,-23.2598)">
+            <title
+   id="title6">Tabelle.3</title>
+            <desc
+   id="desc6">PathPlanner</desc>
+            <v:textBlock
+   v:margins="rect(4,4,4,4)"
+   v:tabSpace="42.5197" />
+            <v:textRect
+   cx="49.6063"
+   cy="99.6693"
+   width="99.22"
+   height="21.2598" />
+            <rect
+   x="0"
+   y="89.039398"
+   width="99.212601"
+   height="21.2598"
+   class="st5"
+   id="rect6" />
+            <text
+   x="20.43"
+   y="102.67"
+   class="st6"
+   v:langID="1031"
+   id="text6"><v:paragraph
+   v:horizAlign="1" /><v:tabList />PathPlanner</text>        </g><rect
+   x="129.55901"
+   y="65.779495"
+   width="99.212601"
+   height="21.2598"
+   rx="5.6692901"
+   ry="5.6692901"
+   class="st4"
+   id="rect7"
+   style="fill:#1a356f;fill-opacity:0.80055052;stroke:none;stroke-opacity:1" /><g
+   id="shape5-14"
+   v:mID="5"
+   v:groupContext="shape"
+   transform="translate(129.559,-23.2599)">
+            <title
+   id="title8">Tabelle.5</title>
+            <desc
+   id="desc8">MotionPlanner</desc>
+            <v:textBlock
+   v:margins="rect(4,4,4,4)"
+   v:tabSpace="42.5197" />
+            <v:textRect
+   cx="49.6063"
+   cy="99.6693"
+   width="99.22"
+   height="21.2598" />
+            <rect
+   x="0"
+   y="89.039398"
+   width="99.212601"
+   height="21.2598"
+   class="st5"
+   id="rect8" />
+            <text
+   x="14.88"
+   y="102.67"
+   class="st6"
+   v:langID="1031"
+   id="text8"><v:paragraph
+   v:horizAlign="1" /><v:tabList />MotionPlanner</text>        </g><g
+   id="shape9-17"
+   v:mID="9"
+   v:groupContext="shape"
+   transform="translate(23.2598,-44.5197)">
+            <title
+   id="title9">Tabelle.9</title>
+            <desc
+   id="desc9">SequentialPlanner</desc>
+            <v:textBlock
+   v:margins="rect(4,4,4,4)"
+   v:tabSpace="42.5197" />
+            <v:textRect
+   cx="102.756"
+   cy="99.6693"
+   width="205.52"
+   height="21.2598" />
+            <rect
+   x="0"
+   y="89.039398"
+   width="205.51199"
+   height="21.2598"
+   class="st5"
+   id="rect9" />
+            <text
+   x="59.130001"
+   y="102.67"
+   class="st7"
+   v:langID="1031"
+   id="text9"
+   style="fill:#2a57b1;fill-opacity:1"><v:paragraph
+     v:horizAlign="1" /><v:tabList /><tspan
+     style="fill:#e8ecfd;fill-opacity:1"
+     id="tspan16">SequentialPlanner</tspan></text>        </g><g
+   id="shape11-20"
+   v:mID="11"
+   v:groupContext="shape"
+   transform="translate(23.2598,-65.7795)">
+            <title
+   id="title10">Tabelle.11</title>
+            <desc
+   id="desc10">OnlinePlanner</desc>
+            <v:textBlock
+   v:margins="rect(4,4,4,4)"
+   v:tabSpace="42.5197" />
+            <v:textRect
+   cx="102.756"
+   cy="99.6693"
+   width="205.52"
+   height="21.2598" />
+            <rect
+   x="0"
+   y="89.039398"
+   width="205.51199"
+   height="21.2598"
+   class="st5"
+   id="rect10" />
+            <text
+   x="68.860001"
+   y="102.67"
+   class="st8"
+   v:langID="1031"
+   id="text10"
+   style="fill:#3a3a9a;fill-opacity:1"><v:paragraph
+     v:horizAlign="1" /><v:tabList /><tspan
+     style="fill:#d9d9f2;fill-opacity:1"
+     id="tspan18">OnlinePlanner</tspan></text>        </g><g
+   id="shape13-23"
+   v:mID="13"
+   v:groupContext="shape"
+   transform="translate(23.2598,-87.0394)">
+            <title
+   id="title11">Tabelle.13</title>
+            <desc
+   id="desc11">AsyncOnlinePlanner</desc>
+            <v:textBlock
+   v:margins="rect(4,4,4,4)"
+   v:tabSpace="42.5197" />
+            <v:textRect
+   cx="102.756"
+   cy="99.6693"
+   width="205.52"
+   height="21.2598" />
+            <rect
+   x="0"
+   y="89.039398"
+   width="205.51199"
+   height="21.2598"
+   class="st5"
+   id="rect11" />
+            <text
+   x="53.849998"
+   y="102.67"
+   class="st9"
+   v:langID="1031"
+   id="text11"
+   style="fill:#4b167e;fill-opacity:1"><v:paragraph
+     v:horizAlign="1" /><v:tabList /><tspan
+     style="fill:#e6d3f8;fill-opacity:1"
+     id="tspan17">AsyncOnlinePlanner</tspan></text>        </g>
 </svg>
