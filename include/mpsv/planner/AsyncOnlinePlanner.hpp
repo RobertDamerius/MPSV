@@ -21,6 +21,7 @@ namespace planner {
  * @brief This class runs the online planner in a separate thread and continuously solves sequential planning problems (path + motion planning).
  * It solves motion planning problems for a future timepoint and merges the solution trajectory seamless with the previous solution. An overwritable
  * callback member function informs about new output data.
+ * @note Calls to @ref Start, @ref Stop and @ref SetInput must not run concurrently.
  */
 class AsyncOnlinePlanner {
     public:
@@ -183,11 +184,13 @@ class AsyncOnlinePlanner {
 
             // Move result to internal database and check for new data and thread suspension
             pthread_mutex_lock(&m_mtxData);
-            dataOut.MoveTo(m_dataOut);
-            m_dataIn.reset = (m_dataOut.errorCode != mpsv::error_code::NONE) || !dataIn.enable;
-            if(m_dataIn.reset || !m_newInputData){
+            bool solveFailed = dataOut.errorCode != mpsv::error_code::NONE;
+            bool suspendRequested = !dataIn.enable;
+            m_dataIn.reset |= solveFailed || suspendRequested;
+            if(!m_newInputData){
                 m_workerThread.Suspend();
             }
+            dataOut.MoveTo(m_dataOut);
             pthread_mutex_unlock(&m_mtxData);
             CallbackNewOutputAvailable();
         }
