@@ -3,25 +3,16 @@
 
 
 int main(int, char**){
-    // construct and reconfigure the path planner
-    mpsv::planner::PathPlanner planner;
+    // construct path planner
     constexpr int16_t maxNumNodes = 200;
     constexpr uint32_t maxNumSamples = 1000000;
     constexpr uint32_t maxNumCells = 4096 * 4096;
-    planner.Reconfigure(maxNumNodes, maxNumSamples, maxNumCells);
+    mpsv::planner::PathPlanner planner(maxNumNodes, maxNumSamples, maxNumCells);
 
-    // get parameters for path planning
-    mpsv::planner::PathPlannerParameterSet parameter = example::GetParameterSet();
-
-    // get valid input data for planning problem
-    mpsv::planner::PathPlannerInput dataIn = example::GetInput();
-    if(mpsv::error_code::NONE != dataIn.IsValid()){
-        std::cerr << "ERROR: Input data is invalid!\n";
-        return 0;
-    }
-
-    // prepare the planner and solve the path planning problem
+    // solve the path planning problem
     constexpr double maxComputationTime = 1.0;
+    mpsv::planner::PathPlannerInput dataIn = example::GetInput();
+    mpsv::planner::PathPlannerParameterSet parameter = example::GetParameterSet();
     mpsv::planner::PathPlannerOutput dataOut;
     std::cout << "solve path planning problem (computation time: " << maxComputationTime << " s)\n\n";
     planner.Solve(dataOut, dataIn, parameter, maxComputationTime);
@@ -35,6 +26,5 @@ int main(int, char**){
     for(auto&& pose : dataOut.path){
         std::cout << "    x,y,psi={" << pose[0] << ", " << pose[1] << ", " << pose[2] << "}\n";
     }
-
     return 0;
 }

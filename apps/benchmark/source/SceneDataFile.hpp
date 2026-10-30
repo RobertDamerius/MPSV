@@ -9,7 +9,7 @@
 
 class SceneDataFile {
     public:
-        std::vector<Scene> scenes;   ///< List of all scenes.
+        std::vector<Scene> scenes;   // List of all scenes.
 
         /**
          * @brief Read the @ref scenes from a binary file.

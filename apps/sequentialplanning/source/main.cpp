@@ -3,30 +3,20 @@
 
 
 int main(int, char**){
-    // construct and initialize the sequential planner
-    mpsv::planner::SequentialPlanner planner;
+    // construct sequential planner
     constexpr int16_t pathMaxNumNodes = 200;
     constexpr uint32_t pathMaxNumSamples = 1000000;
     constexpr int16_t motionMaxNumNodes = 200;
     constexpr uint32_t motionMaxNumSamples = 1000000;
     constexpr uint32_t maxNumCells = 4096 * 4096;
+    mpsv::planner::SequentialPlanner planner;
     planner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
-
-    // get valid input data for planning problem
-    mpsv::planner::SequentialPlannerInput dataIn = example::GetInput();
-    mpsv::planner::SequentialPlannerParameterSet parameter = example::GetParameterSet();
-    if(mpsv::error_code::NONE != dataIn.IsValid()){
-        std::cerr << "ERROR: Input data is invalid!\n";
-        return 0;
-    }
-    if(mpsv::error_code::NONE != parameter.IsValid()){
-        std::cerr << "ERROR: Parameter data is invalid!\n";
-        return 0;
-    }
 
     // solve the sequential planning problem
     constexpr double maxComputationTimePathPlanning = 1.0;
     constexpr double maxComputationTimeMotionPlanning = 1.0;
+    mpsv::planner::SequentialPlannerInput dataIn = example::GetInput();
+    mpsv::planner::SequentialPlannerParameterSet parameter = example::GetParameterSet();
     mpsv::planner::SequentialPlannerOutput dataOut;
     std::cout << "solve sequential planning problem (computation time (path): " << maxComputationTimePathPlanning << " s, computation time (motion): " << maxComputationTimeMotionPlanning << " s)\n\n";
     planner.Solve(dataOut, dataIn, parameter, maxComputationTimePathPlanning, maxComputationTimeMotionPlanning);
@@ -44,7 +34,7 @@ int main(int, char**){
     }
 
     // print result (at most 10 trajectory points)
-    std::cout << "errorCode:                                    " << static_cast<int32_t>(dataOut.errorCode) << "\n";
+    std::cout << "errorCode:                                   " << static_cast<int32_t>(dataOut.errorCode) << "\n";
     std::cout << "pathPlanner.goalReached:                     " << dataOut.pathPlanner.goalReached << "\n";
     std::cout << "pathPlanner.errorCode:                       " << static_cast<int32_t>(dataOut.pathPlanner.errorCode) << "\n";
     std::cout << "pathPlanner.numberOfPerformedIterations:     " << dataOut.pathPlanner.numberOfPerformedIterations << "\n";
@@ -65,7 +55,5 @@ int main(int, char**){
         std::cout << "X,Y,N={" << dataOut.motionPlanner.trajectory[i][6] << ", " << dataOut.motionPlanner.trajectory[i][7] << ", " << dataOut.motionPlanner.trajectory[i][8] << "} ";
         std::cout << "Xc,Yc,Nc={" << dataOut.motionPlanner.trajectory[i][9] << ", " << dataOut.motionPlanner.trajectory[i][10] << ", " << dataOut.motionPlanner.trajectory[i][11] << "}\n";
     }
-
-    // terminate the planner
     return 0;
 }

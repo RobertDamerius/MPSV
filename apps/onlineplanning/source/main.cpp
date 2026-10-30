@@ -3,34 +3,22 @@
 
 
 int main(int, char**){
-    // construct and reconfigure the online planner
-    mpsv::planner::OnlinePlanner planner;
+    // construct online planner
     constexpr int16_t pathMaxNumNodes = 200;
     constexpr uint32_t pathMaxNumSamples = 1000000;
     constexpr int16_t motionMaxNumNodes = 200;
     constexpr uint32_t motionMaxNumSamples = 1000000;
     constexpr uint32_t maxNumCells = 4096 * 4096;
+    mpsv::planner::OnlinePlanner planner;
     planner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
-
-    // get a valid parameter set for the online planner
-    mpsv::planner::OnlinePlannerParameterSet parameter = example::GetParameterSet();
-    if(mpsv::error_code::NONE != parameter.IsValid()){
-        std::cerr << "ERROR: Parameter set is invalid!\n";
-        return 0;
-    }
 
     // solve the online planning problem
     std::cout << "solve online planning problem (5 steps)\n\n";
     mpsv::runtime::PerformanceCounter timer;
     for(int i = 0; i != 5; ++i){
-        // get valid input data for planning problem
-        mpsv::planner::OnlinePlannerInput dataIn = example::GetInput(timer.TimeToStart());
-        if(mpsv::error_code::NONE != dataIn.IsValid()){
-            std::cerr << "ERROR: Input data is invalid!\n";
-            return 0;
-        }
-
         // solve the problem
+        mpsv::planner::OnlinePlannerInput dataIn = example::GetInput(timer.TimeToStart());
+        mpsv::planner::OnlinePlannerParameterSet parameter = example::GetParameterSet();
         mpsv::planner::OnlinePlannerOutput dataOut;
         planner.Solve(dataOut, dataIn, parameter);
 
@@ -50,6 +38,5 @@ int main(int, char**){
         }
         std::cout << std::endl;
     }
-
     return 0;
 }

@@ -22,8 +22,8 @@ class ExamplePlanner: protected mpsv::planner::AsyncOnlinePlanner {
             constexpr uint32_t motionMaxNumSamples = 1000000;
             constexpr uint32_t maxNumCells = 4096 * 4096;
             constexpr int32_t threadPriority = 20;
-            int32_t ompNumThreads = -1; // ignore
-            int32_t ompDynamic = -1; // ignore
+            constexpr int32_t ompNumThreads = -1; // ignore
+            constexpr int32_t ompDynamic = -1; // ignore
             std::vector<int32_t> cpuCoreIDs; // ignore
             return mpsv::planner::AsyncOnlinePlanner::Start(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells, threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
         }

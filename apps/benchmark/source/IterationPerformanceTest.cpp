@@ -99,15 +99,13 @@ mpsv::planner::SequentialPlannerInput IterationPerformanceTest::GetInput(Scene& 
 }
 
 void IterationPerformanceTest::Solve(Scene& scene, bool recreateFile){
-    // construct and initialize the sequential planner
-    mpsv::planner::SequentialPlanner planner;
+    // construct sequential planner
     constexpr int16_t pathMaxNumNodes = 200;
     constexpr uint32_t pathMaxNumSamples = 1000000;
     constexpr int16_t motionMaxNumNodes = 200;
     constexpr uint32_t motionMaxNumSamples = 1000000;
     constexpr uint32_t maxNumCells = 4096 * 4096;
-    constexpr double maxComputationTimePathPlanning = 1.0;
-    constexpr double maxComputationTimeMotionPlanning = 1.0;
+    mpsv::planner::SequentialPlanner planner;
     planner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
 
     // get valid input data for planning problem
@@ -125,6 +123,8 @@ void IterationPerformanceTest::Solve(Scene& scene, bool recreateFile){
     }
 
     // solve the sequential planning problem
+    constexpr double maxComputationTimePathPlanning = 1.0;
+    constexpr double maxComputationTimeMotionPlanning = 1.0;
     mpsv::planner::SequentialPlannerOutput dataOut;
     planner.Solve(dataOut, dataIn, parameter, maxComputationTimePathPlanning, maxComputationTimeMotionPlanning);
 

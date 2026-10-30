@@ -10,12 +10,10 @@ int main(int, char**){
         return 0;
     }
 
-    // get input data
+    // get input data and save to file
     mpsv::runtime::PerformanceCounter timer;
     mpsv::planner::AsyncOnlinePlannerInput dataIn = example::GetInput(timer.TimeToStart());
     mpsv::planner::AsyncOnlinePlannerParameterSet parameter = example::GetParameterSet();
-
-    // save parameter and input to a data file
     mpsv::logging::File f;
     std::string filename = example::GetDataFilename();
     if(f.Open(filename)){
@@ -35,8 +33,8 @@ int main(int, char**){
     // wait and bring the planner into standby mode
     std::this_thread::sleep_for(std::chrono::seconds(5));
     dataIn = example::GetInput(timer.TimeToStart());
-    parameter = example::GetParameterSet();
     dataIn.enable = false;
+    parameter = example::GetParameterSet();
     planner.SetInput(dataIn, parameter);
 
     // sleep for another second and stop the planner
