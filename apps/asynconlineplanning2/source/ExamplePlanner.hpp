@@ -8,14 +8,18 @@
 // define a custom class that inherits from the asynchronous online planner
 class ExamplePlanner: protected mpsv::planner::AsyncOnlinePlanner {
     public:
+        /**
+         * @brief Destroy the example planner.
+         */
+        ~ExamplePlanner() override { Stop(); }
+
         /* make some member function public again */
         using mpsv::planner::AsyncOnlinePlanner::SetInput;
 
         /**
          * @brief Start the custom example planner.
-         * @return True if success, false otherwise.
          */
-        bool Start(void){
+        void Start(void){
             constexpr int16_t pathMaxNumNodes = 200;
             constexpr uint32_t pathMaxNumSamples = 1000000;
             constexpr int16_t motionMaxNumNodes = 200;
@@ -25,7 +29,7 @@ class ExamplePlanner: protected mpsv::planner::AsyncOnlinePlanner {
             constexpr int32_t ompNumThreads = -1; // ignore
             constexpr int32_t ompDynamic = -1; // ignore
             std::vector<int32_t> cpuCoreIDs; // ignore
-            return mpsv::planner::AsyncOnlinePlanner::Start(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells, threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
+            mpsv::planner::AsyncOnlinePlanner::Start(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells, threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
         }
 
         /**
@@ -40,7 +44,7 @@ class ExamplePlanner: protected mpsv::planner::AsyncOnlinePlanner {
          * @brief This function is called from inside the worker thread of the planner, if a planning problem has been solved and new
          * output data is available. The actual data is obtained via @ref GetOutput.
          */
-        void CallbackNewOutputAvailable(void){
+        void CallbackNewOutputAvailable(void) override {
             mpsv::planner::AsyncOnlinePlannerOutput dataOut = GetOutput();
             std::cout << "threadState=" << mpsv::to_string(dataOut.threadState) <<
                      ", errorCode=" << static_cast<int32_t>(dataOut.errorCode) <<

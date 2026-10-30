@@ -22,6 +22,7 @@ namespace planner {
  * It solves motion planning problems for a future timepoint and merges the solution trajectory seamless with the previous solution. An overwritable
  * callback member function informs about new output data.
  * @note Calls to @ref Start, @ref Stop and @ref SetInput must not run concurrently.
+ * @note A derived class whose callback accesses derived members must call @ref Stop from its destructor before those members are destroyed.
  */
 class AsyncOnlinePlanner {
     public:
@@ -37,6 +38,7 @@ class AsyncOnlinePlanner {
             m_dataOut.errorCode = mpsv::error_code::NOT_AVAILABLE;
             m_newInputData = false;
             m_terminate = false;
+            m_started = false;
         }
 
         /**
@@ -63,37 +65,42 @@ class AsyncOnlinePlanner {
          * @param[in] ompNumThreads The number of threads to be used for parallel computing (OMP_NUM_THREADS). This value is only set if it's greater than zero!
          * @param[in] ompDynamic Greater than zero if dynamic adjustment of the number of threads should be enabled for parallel computing or zero to disable dynamic adjustment (OMP_DYNAMIC). If this value is set less than 0, this parameter is ignored.
          * @param[in] cpuCoreIDs (linux-only) List of CPU cores on which the worker thread is eligible to run. Only IDs in range and available to the worker are used.
-         * @return True if success, false otherwise.
+         * @details If the planner has already been started, this call does nothing. Call @ref Stop before calling @ref Start again to reconfigure it.
          */
-        [[nodiscard]] bool Start(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, uint32_t maxNumCells, int32_t threadPriority, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs) noexcept {
-            m_terminate = false;
-            pthread_mutex_lock(&m_mtxData);
-            m_dataIn.Clear();
-            m_dataParam.Clear();
-            m_dataOut.Clear();
-            m_dataOut.errorCode = mpsv::error_code::NOT_AVAILABLE;
-            m_newInputData = false;
-            pthread_mutex_unlock(&m_mtxData);
-            m_onlinePlanner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
-            m_workerThread.Start(std::bind(&AsyncOnlinePlanner::WorkerThreadRun, this), threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
-            return true;
+        void Start(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, uint32_t maxNumCells, int32_t threadPriority, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs) noexcept {
+            if(!m_started){
+                m_terminate = false;
+                pthread_mutex_lock(&m_mtxData);
+                m_dataIn.Clear();
+                m_dataParam.Clear();
+                m_dataOut.Clear();
+                m_dataOut.errorCode = mpsv::error_code::NOT_AVAILABLE;
+                m_newInputData = false;
+                pthread_mutex_unlock(&m_mtxData);
+                m_onlinePlanner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
+                m_workerThread.Start(std::bind(&AsyncOnlinePlanner::WorkerThreadRun, this), threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
+                m_started = true;
+            }
         }
 
         /**
          * @brief Stop the asynchronous online planner.
          */
         void Stop(void) noexcept {
-            m_terminate = true;
-            m_onlinePlanner.Interrupt();
-            m_workerThread.Stop();
-            pthread_mutex_lock(&m_mtxData);
-            m_dataIn.Clear();
-            m_dataParam.Clear();
-            m_dataOut.Clear();
-            m_dataOut.errorCode = mpsv::error_code::NOT_AVAILABLE;
-            m_newInputData = false;
-            pthread_mutex_unlock(&m_mtxData);
-            m_terminate = false;
+            if(m_started){
+                m_terminate = true;
+                m_onlinePlanner.Interrupt();
+                m_workerThread.Stop();
+                pthread_mutex_lock(&m_mtxData);
+                m_dataIn.Clear();
+                m_dataParam.Clear();
+                m_dataOut.Clear();
+                m_dataOut.errorCode = mpsv::error_code::NOT_AVAILABLE;
+                m_newInputData = false;
+                pthread_mutex_unlock(&m_mtxData);
+                m_terminate = false;
+                m_started = false;
+            }
         }
 
         /**
@@ -143,6 +150,7 @@ class AsyncOnlinePlanner {
         /**
          * @brief This function is called from inside the worker thread of the planner, if a planning problem has been solved and new
          * output data is available. The actual data is obtained via @ref GetOutput.
+         * @note Do not call @ref Start, @ref Stop or @ref SetInput from this callback.
          */
         virtual void CallbackNewOutputAvailable(void){}
 
@@ -150,6 +158,7 @@ class AsyncOnlinePlanner {
         mpsv::runtime::WorkerThread m_workerThread;                  // The internal worker thread.
         mpsv::planner::OnlinePlanner m_onlinePlanner;                // The online sequential planner.
         std::atomic<bool> m_terminate{false};                        // True if the asynchronous online planner should be terminated, false otherwise.
+        bool m_started{false};                                       // True if the asynchronous online planner has been started, false otherwise.
         bool m_newInputData{false};                                  // Thread-safe flag to indicate that new data has been set via @ref SetInput.
         mpsv::planner::AsyncOnlinePlannerInput m_dataIn;             // Thread-safe input data storage.
         mpsv::planner::AsyncOnlinePlannerParameterSet m_dataParam;   // Thread-safe parameter data storage.

@@ -14,10 +14,7 @@ int main(int, char**){
     constexpr int32_t ompDynamic = -1; // ignore
     std::vector<int32_t> cpuCoreIDs; // ignore
     mpsv::planner::AsyncOnlinePlanner planner;
-    if(!planner.Start(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells, threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs)){
-        std::cerr << "ERROR: Could not start planner!\n";
-        return 0;
-    }
+    planner.Start(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells, threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
 
     // set input data
     mpsv::runtime::PerformanceCounter timer;

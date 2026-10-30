@@ -5,10 +5,7 @@
 int main(int, char**){
     // construct and start the planner
     ExamplePlanner planner;
-    if(!planner.Start()){
-        std::cerr << "ERROR: Could not start the planner!\n";
-        return 0;
-    }
+    planner.Start();
 
     // get input data and save to file
     mpsv::runtime::PerformanceCounter timer;
