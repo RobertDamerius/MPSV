@@ -1,6 +1,7 @@
 ![](documentation/img/icon.svg)
 
 # MPSV
+
 The **M**otion **P**lanner for **S**urface **V**ehicles solves motion planning problems for fully actuated surface vehicles with non-linear dynamics in an environment with non-convex non-moving obstacles.
 The method is based on the RRT* algorithm.
 The problem is decomposed into two sequential problems in which first a feasible path is searched for and then a collision-free trajectory is calculated based on the path found.
@@ -10,22 +11,8 @@ For references, see [below](#publication).
 ![](documentation/img/Overview.svg)
 
 
-## Header-only library with MATLAB/Simulink support
-The MPSV solver is implemented as header-only library (C++) and requires a compiler that supports the C++23 language features.
-There exists a MATLAB/Simulink toolbox that allows you to run the planner in Simulink.
-To use the toolbox, open the [matlab/MPSV.prj](matlab/MPSV.prj) project file or add it as reference project to an existing MATLAB project.
-Run `mpsv.BuildDrivers()` once to build all driver blocks of the simulink library.
-All blocks are supported for C++ code generation.
+## Repository Overview
 
-**OpenMP**
-
-MPSV requires OpenMP for parallel computing.
-It has been tested on Windows via MSYS2/MinGW64 and Ubuntu.
-The package usually comes with GCC.
-On Ubuntu it can be installed via `sudo apt install libomp-dev`, for example.
-It may be necessary to set the environment variables `OMP_PLACES` or `OMP_PROC_BIND`.
-
-## Overview
 The directory structure of this repository is as follows.
 
 | File / Directory   | Description                                               |
@@ -39,62 +26,173 @@ The directory structure of this repository is as follows.
 | README.md          | this file                                                 |
 
 
+## Header-only Library (C++)
+
+The MPSV solver is implemented as a header-only C++ library and requires a compiler with C++23 support.
+Include the header as follows:
+
+```cpp
+#include <mpsv/mpsv.hpp>
+
+using namespace mpsv;
+
+int main() {
+    planner::PathPlanner planner;
+    return 0;
+}
+```
+
+All public types are in the `mpsv` namespace (for example `mpsv::planner` and `mpsv::geometry`).
+
+**OpenMP**
+
+MPSV requires OpenMP for parallel computing.
+It has been tested on Windows via MSYS2/MinGW64 and Ubuntu.
+On Ubuntu/Debian, install `libomp-dev` (or use the GCC/OpenMP toolchain that ships with your compiler).
+
+
 ## Planning Levels
+
 The API of MPSV consists of several planning levels that are shown in the following image.
+The snippets below are illustrative; see the files in [examples](examples/) for complete, compilable examples.
 
 ![](documentation/img/PlanningLevels.svg)
 
-**PathPlanner**
+### PathPlanner
+
 - find path from initial pose to final pose
 - RRT* with fixed number of nodes and warm start capabilities
 
-**MotionPlanner**
+```cpp
+mpsv::planner::PathPlanner planner;
+
+mpsv::planner::PathPlannerInput dataIn = GetInput();
+mpsv::planner::PathPlannerParameterSet parameter = GetParameter();
+mpsv::planner::PathPlannerOutput dataOut;
+
+constexpr double maxComputationTime = 1.0;
+
+planner.Solve(dataOut, dataIn, parameter, maxComputationTime);
+```
+
+### MotionPlanner
+
 - find trajectory from initial state/input to final pose around a given path
 - RRT* with fixed number of nodes
 - internal control system based on feedback linearization and full-state feedback to generate dynamically feasible trajectory
 
-**SequentialPlanner**
+```cpp
+mpsv::planner::MotionPlanner planner;
+
+mpsv::planner::MotionPlannerInput dataIn = GetInput();
+mpsv::planner::MotionPlannerParameterSet parameter = GetParameter();
+mpsv::planner::MotionPlannerOutput dataOut;
+
+constexpr double maxComputationTime = 1.0;
+
+planner.Solve(dataOut, dataIn, parameter, maxComputationTime);
+```
+
+### SequentialPlanner
+
 - combine path and motion planner in sequential manner
 - path from path planner is used as guidance for the motion planner
 
-**OnlinePlanner**
+```cpp
+mpsv::planner::SequentialPlanner planner;
+
+mpsv::planner::SequentialPlannerInput dataIn = GetInput();
+mpsv::planner::SequentialPlannerParameterSet parameter = GetParameter();
+mpsv::planner::SequentialPlannerOutput dataOut;
+
+constexpr double maxComputationTimePath = 1.0;
+constexpr double maxComputationTimeMotion = 1.0;
+
+planner.Solve(dataOut, dataIn, parameter, maxComputationTimePath, maxComputationTimeMotion);
+```
+
+### OnlinePlanner
+
 - continuously solve sequential planning problems
 - solves motion planning problems for a future timepoint
 - merges solution trajectory seamless with a previous solution
 
-**AsyncOnlinePlanner**
+```cpp
+mpsv::planner::OnlinePlanner planner;
+
+for(...){
+    mpsv::planner::OnlinePlannerInput dataIn = GetInput();
+    mpsv::planner::OnlinePlannerParameterSet parameter = GetParameter();
+    mpsv::planner::OnlinePlannerOutput dataOut;
+
+    planner.Solve(dataOut, dataIn, parameter);
+}
+```
+
+### AsyncOnlinePlanner
+
 - run the online planner in a separate thread
 - results are obtained via polling or callback
 
-When using the header-only library the desired planning level can be used directly in a custom C++ application (see examples).
-However, when using MATLAB/Simulink, only the *PathPlanner* and the *AsyncOnlinePlanner* are currently implemented.
+```cpp
+constexpr int16_t pathMaxNumNodes      = 200;
+constexpr uint32_t pathMaxNumSamples   = 1000000;
+constexpr int16_t motionMaxNumNodes    = 200;
+constexpr uint32_t motionMaxNumSamples = 1000000;
+constexpr uint32_t maxNumCells         = 4096 * 4096;
+constexpr int32_t threadPriority       = 20;
+constexpr int32_t ompNumThreads        = -1; // ignore
+constexpr int32_t ompDynamic           = -1; // ignore
+std::vector<int32_t> cpuCoreIDs        = {}; // ignore
 
+mpsv::planner::AsyncOnlinePlanner planner;
+planner.Start(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells, threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
 
-## Examples (C++)
+for(...){
+    mpsv::planner::AsyncOnlinePlannerInput dataIn = GetInput();
+    mpsv::planner::AsyncOnlinePlannerParameterSet parameter = GetParameter();
+    mpsv::planner::AsyncOnlinePlannerOutput dataOut;
+
+    planner.SetInput(dataIn, parameter);
+    planner.GetOutput(dataOut);
+}
+
+planner.Stop();
+```
+
+## Building Examples (C++)
+
 Take a look at the C++ examples in the [examples](examples/) directory to see how to use the different planning levels of MPSV.
 
-#### Building a single example
 To build a specific example, run
+
 ```
 make example=NAME
 ```
+
 where `NAME` has to be replaced by the name of the example, e.g. the folder name of the example to be built.
 
-#### Building all examples
 To build all examples, run
+
 ```
 make examples
 ```
 
 
-## Examples (MATLAB/Simulink)
+## MATLAB/Simulink Support
+
+A MATLAB/Simulink toolbox exists that allows you to run the planner in Simulink.
+Only the *PathPlanner* and the *AsyncOnlinePlanner* are currently implemented.
+To use the toolbox, open the [matlab/MPSV.prj](matlab/MPSV.prj) project file or add it as reference project to an existing MATLAB project.
+Run `mpsv.BuildDrivers()` once to build all driver blocks of the simulink library.
+All blocks support C++ code generation.
+
 Example models for Simulink are located at [matlab/examples/](matlab/examples/).
-Make sure that you build already build the driver blocks of the Simulink library with `mpsv.BuildDrivers()`.
 
 
 ## Publication
 *Robert Damerius, Nick Eisenblätter, Johannes R. Marx, Muhammad Khalis Mohd Fadil and Torsten Jeinsch, Real-Time Motion Planning for Fully Actuated Autonomous Surface Vehicles, 34th Mediterranean Conference on Control and Automation (MED), 2026, doi: 10.1109/MED70602.2026.11598383*
-```
+```bibtex
 @inproceedings{Damerius2026,
     author    = {Damerius, Robert and Eisenblätter, Nick and Marx, Johannes R. and Fadil, Muhammad Khalis Mohd and Jeinsch, Torsten},
     booktitle = {34th Mediterranean Conference on Control and Automation (MED)},
@@ -109,7 +207,7 @@ Make sure that you build already build the driver blocks of the Simulink library
 ```
 
 *Robert Damerius, Beitrag zur Bewegungsplanung autonomer Wasserfahrzeuge, Dissertation Universität Rostock, 2025, doi: 10.18453/rosdok_id00005155*
-```
+```bibtex
 @book{Damerius2025,
     author    = {Damerius, Robert},
     title     = {{Beitrag zur Bewegungsplanung autonomer Wasserfahrzeuge}},
@@ -122,7 +220,7 @@ Make sure that you build already build the driver blocks of the Simulink library
 ```
 
 *Robert Damerius, Johannes R. Marx and Torsten Jeinsch, Fast Trajectory Generation on a Path using Feedback Linearization, 22nd IFAC World Congress, 2023, doi: 10.1016/j.ifacol.2023.10.796*
-```
+```bibtex
 @inproceedings{Damerius2023,
     author    = {Robert Damerius and Johannes R. Marx and Torsten Jeinsch},
     title     = {{Fast Trajectory Generation on a Path using Feedback Linearization}},
@@ -140,7 +238,7 @@ Make sure that you build already build the driver blocks of the Simulink library
 ```
 
 *Robert Damerius and Torsten Jeinsch, Real-Time Path Planning for Fully Actuated Autonomous Surface Vehicles, 30th Mediterranean Conference on Control and Automation (MED), 2022, doi: 10.1109/MED54222.2022.9837178*
-```
+```bibtex
 @inproceedings{Damerius2022,
     author    = {Damerius, Robert and Jeinsch, Torsten},
     title     = {{Real-Time Path Planning for Fully Actuated Autonomous Surface Vehicles}},
