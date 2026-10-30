@@ -35,7 +35,7 @@ class AsyncOnlinePlanner {
             pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT);
             pthread_mutex_init(&m_mtxData, &attr);
             pthread_mutexattr_destroy(&attr);
-            m_dataOut.errorCode = mpsv::error_code::NOT_AVAILABLE;
+            m_dataOut.errorCode = mpsv::error_code::ASYNCONLINEPLANNER_OUTPUT_NOT_AVAILABLE;
             m_newInputData = false;
             m_terminate = false;
             m_started = false;
@@ -74,7 +74,7 @@ class AsyncOnlinePlanner {
                 m_dataIn.Clear();
                 m_dataParam.Clear();
                 m_dataOut.Clear();
-                m_dataOut.errorCode = mpsv::error_code::NOT_AVAILABLE;
+                m_dataOut.errorCode = mpsv::error_code::ASYNCONLINEPLANNER_OUTPUT_NOT_AVAILABLE;
                 m_newInputData = false;
                 pthread_mutex_unlock(&m_mtxData);
                 m_onlinePlanner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
@@ -95,7 +95,7 @@ class AsyncOnlinePlanner {
                 m_dataIn.Clear();
                 m_dataParam.Clear();
                 m_dataOut.Clear();
-                m_dataOut.errorCode = mpsv::error_code::NOT_AVAILABLE;
+                m_dataOut.errorCode = mpsv::error_code::ASYNCONLINEPLANNER_OUTPUT_NOT_AVAILABLE;
                 m_newInputData = false;
                 pthread_mutex_unlock(&m_mtxData);
                 m_terminate = false;
