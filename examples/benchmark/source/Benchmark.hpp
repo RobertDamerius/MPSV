@@ -20,7 +20,6 @@ inline constexpr std::string_view strOS{"Windows"};
 #else
 inline constexpr std::string_view strOS{"unknown"};
 #endif
-inline constexpr std::string_view strVersion{"1.0.0"};
 inline constexpr std::string_view strCompilerVersion{__VERSION__};
 inline constexpr std::string_view strBuilt{__DATE__ " " __TIME__};
 
