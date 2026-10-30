@@ -47,12 +47,13 @@ class OnlinePlanner {
         /**
          * @brief Solve the online sequential motion planning problem.
          * @param[out] dataOut The output data containing the results.
-         * @param[inout] dataIn Input data containing the scene data (time, initial state, final pose, obstacles). The timestamp must be monotonically increasing. The data, e.g. static obstacles, may be modified by this member function.
+         * @param[inout] dataIn Input data containing the scene data (time, initial state, final pose, obstacles). When solving sequential planning problems, the timestamp must be strictly greater than the previous input timestamp. The data, e.g. static obstacles, may be modified by this member function.
          * @param[in] parameter The parameter set to use for this solve operation.
          * @param[in] reset If true, reset the planner and solve based on the initial state by optionally predicting the initial state by the expected computation time. The default value is false
          * @details A solution trajectory is saved to the internal @ref m_state of this planner. The next solve operation selects the initial state for the planning
          * problem on a future timepoint of the latest solution trajectory. If this is not possible, a reset is done internally and the planner falls back using the
          * initial state given in the input data. The output indicates, whether a reset has been performed or not.
+         * @note An explicit or internally required reset starts a new timestamp baseline.
          */
         void Solve(mpsv::planner::OnlinePlannerOutput& dataOut, mpsv::planner::OnlinePlannerInput& dataIn, const mpsv::planner::OnlinePlannerParameterSet& parameter, bool reset = false) noexcept {
             // validate parameters and input
@@ -60,20 +61,27 @@ class OnlinePlanner {
             if(mpsv::error_code::NONE == errorCode){
                 errorCode = dataIn.IsValid();
             }
+            if((mpsv::error_code::NONE == errorCode) && !m_state.trajectory.empty() && (m_state.sampletime != parameter.sequentialPlanner.motionPlanner.sampletime)){
+                m_resetRequired = true;
+            }
 
             // solve the planning problem (update m_state)
             if(mpsv::error_code::NONE == errorCode){
-                if(!m_state.trajectory.empty() && (m_state.sampletime != parameter.sequentialPlanner.motionPlanner.sampletime)){
-                    m_resetRequired = true;
-                }
                 if(m_resetRequired || reset){
                     SolveInitialProblem(dataIn, parameter);
+                    m_lastInputTimestamp = dataIn.timestamp;
+                }
+                else if(!(dataIn.timestamp > m_lastInputTimestamp)){
+                    errorCode = mpsv::error_code::ONLINEPLANNER_TIMESTAMP_NOT_INCREASING;
                 }
                 else{
                     SolveNextProblem(dataIn, parameter);
+                    m_lastInputTimestamp = dataIn.timestamp;
                 }
             }
-            else{
+
+            // check for errors and assign output
+            if(mpsv::error_code::NONE != errorCode){
                 m_state.Clear();
                 m_state.errorCode = errorCode;
                 m_resetRequired = true;
@@ -95,6 +103,7 @@ class OnlinePlanner {
 
     protected:
         bool m_resetRequired{false};                                        // True if a reset is required, false otherwise.
+        double m_lastInputTimestamp{};                                      // Timestamp of the latest accepted input.
         mpsv::planner::OnlinePlannerOutput m_state;                         // Internal state of the online planner representing the latest output.
         mpsv::planner::SequentialPlannerInput m_sequentialPlannerInput;     // Input to the @ref m_sequentialPlanner.
         mpsv::planner::SequentialPlannerOutput m_sequentialPlannerOutput;   // Output of the @ref m_sequentialPlanner.
