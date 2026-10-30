@@ -1,6 +1,6 @@
 # Benchmark
 This directory contains the source code of the benchmark application.
-The application is built by running `make app=benchmark` in the repository root directory.
+The application is built by running `make example=benchmark` in the repository root directory.
 The binaries will be built to this directory.
 
 The application runs different tests using single-threading and multi-threading and measures execution times or iteration counts.

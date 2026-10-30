@@ -30,12 +30,12 @@ The directory structure of this repository is as follows.
 
 | File / Directory   | Description                                               |
 | :----------------- | :-------------------------------------------------------- |
-| apps               | contains example applications (C++)                       |
+| examples           | contains C++ examples                                     |
 | documentation      | contains an HTML-based documentation                      |
 | include            | contains the header-only library (C++)                    |
 | matlab             | contains the MATLAB/Simulink project for the MPSV toolbox |
 | LICENSE            | license information                                       |
-| Makefile           | used to build example applications                        |
+| Makefile           | used to build C++ examples                                |
 | README.md          | this file                                                 |
 
 
@@ -71,19 +71,19 @@ However, when using MATLAB/Simulink, only the *PathPlanner* and the *AsyncOnline
 
 
 ## Examples (C++)
-Take a look to example applications in the [apps](apps/) directory on how to use the different planning levels of MPSV.
+Take a look at the C++ examples in the [examples](examples/) directory to see how to use the different planning levels of MPSV.
 
 #### Building a single example
-To build a specific application example, run
+To build a specific example, run
 ```
-make app=NAME
+make example=NAME
 ```
-where `NAME` has to be replaced by the name of the application, e.g. the folder name of the application to be built.
+where `NAME` has to be replaced by the name of the example, e.g. the folder name of the example to be built.
 
 #### Building all examples
-To build all example applications, run
+To build all examples, run
 ```
-make apps
+make examples
 ```
 
 
@@ -152,4 +152,3 @@ Make sure that you build already build the driver blocks of the Simulink library
     doi       = {10.1109/MED54222.2022.9837178}
 }
 ```
-

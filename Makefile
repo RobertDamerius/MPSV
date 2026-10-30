@@ -2,7 +2,7 @@
 #
 # Generic Multi-Application Makefile (g++)
 #
-# Version 20231025
+# Version 20261030
 # Copyright (c) Robert Damerius
 #
 #########################################################################
@@ -24,10 +24,10 @@ MKDIR      := mkdir -p
 # Project settings
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Directories
-DIRECTORY_APPS          := apps/
-DIRECTORY_BUILD         := build/
-DIRECTORY_INCLUDE       := include/
-SUBDIRECTORY_APP_SOURCE := source/
+DIRECTORY_EXAMPLES          := examples/
+DIRECTORY_BUILD             := build/
+DIRECTORY_INCLUDE           := include/
+SUBDIRECTORY_EXAMPLE_SOURCE := source/
 
 # Compiler flags
 CC_FLAGS        = -Wall -Wextra -fopenmp -mtune=native
@@ -66,13 +66,13 @@ SOURCES_BIN     = $(call rwildcard,$(DIRECTORY_INCLUDE),*.bin)
 SOURCES_C       = $(call rwildcard,$(DIRECTORY_INCLUDE),*.c)
 SOURCES_CPP     = $(call rwildcard,$(DIRECTORY_INCLUDE),*.cpp)
 
-# Application content
-ifneq ($(app), )
-    DIRECTORY_APP_SOURCE  = $(DIRECTORY_APPS)$(app)/$(SUBDIRECTORY_APP_SOURCE)
-    DIRECTORY_ALL        += $(dir $(call rwildcard,$(DIRECTORY_APP_SOURCE),.))
-    SOURCES_BIN          += $(call rwildcard,$(DIRECTORY_APP_SOURCE),*.bin)
-    SOURCES_C            += $(call rwildcard,$(DIRECTORY_APP_SOURCE),*.c)
-    SOURCES_CPP          += $(call rwildcard,$(DIRECTORY_APP_SOURCE),*.cpp)
+# Example content
+ifneq ($(example), )
+    DIRECTORY_EXAMPLE_SOURCE = $(DIRECTORY_EXAMPLES)$(example)/$(SUBDIRECTORY_EXAMPLE_SOURCE)
+    DIRECTORY_ALL          += $(dir $(call rwildcard,$(DIRECTORY_EXAMPLE_SOURCE),.))
+    SOURCES_BIN            += $(call rwildcard,$(DIRECTORY_EXAMPLE_SOURCE),*.bin)
+    SOURCES_C              += $(call rwildcard,$(DIRECTORY_EXAMPLE_SOURCE),*.c)
+    SOURCES_CPP            += $(call rwildcard,$(DIRECTORY_EXAMPLE_SOURCE),*.cpp)
 endif
 
 # Include and library paths
@@ -89,8 +89,8 @@ OBJECTS_ALL  = $(addprefix $(DIRECTORY_BUILD), $(OBJECTS_BIN) $(OBJECTS_C) $(OBJ
 PRODUCT      = header-only
 LINK_MESSAGE = header-only library is ready.\n
 LINK_COMMAND = 
-ifneq ($(app), )
-    PRODUCT = $(DIRECTORY_APPS)$(app)/$(app)
+ifneq ($(example), )
+    PRODUCT = $(DIRECTORY_EXAMPLES)$(example)/$(example)
     LINK_MESSAGE = [APP]  > $@\n
     LINK_COMMAND = $(CC) $(LD_FLAGS) $(LIBRARY_PATHS) -o $@ $^ $(LD_LIBS)
 endif
@@ -102,31 +102,31 @@ $(shell $(MKDIR) $(DIRECTORY_BUILD) $(addprefix $(DIRECTORY_BUILD), $(DIRECTORY_
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Make targets
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.PHONY: all apps clean
+.PHONY: all examples clean
 
 all: $(PRODUCT)
 
-apps:
+examples:
 	@echo "Building benchmark"
-	@make -j8 --no-print-directory app=benchmark
+	@make -j8 --no-print-directory example=benchmark
 	@echo ""
 	@echo "Building pathplanning"
-	@make -j8 --no-print-directory app=pathplanning
+	@make -j8 --no-print-directory example=pathplanning
 	@echo ""
 	@echo "Building motionplanning"
-	@make -j8 --no-print-directory app=motionplanning
+	@make -j8 --no-print-directory example=motionplanning
 	@echo ""
 	@echo "Building sequentialplanning"
-	@make -j8 --no-print-directory app=sequentialplanning
+	@make -j8 --no-print-directory example=sequentialplanning
 	@echo ""
 	@echo "Building onlineplanning"
-	@make -j8 --no-print-directory app=onlineplanning
+	@make -j8 --no-print-directory example=onlineplanning
 	@echo ""
 	@echo "Building asynconlineplanning"
-	@make -j8 --no-print-directory app=asynconlineplanning
+	@make -j8 --no-print-directory example=asynconlineplanning
 	@echo ""
 	@echo "Building asynconlineplanning2"
-	@make -j8 --no-print-directory app=asynconlineplanning2
+	@make -j8 --no-print-directory example=asynconlineplanning2
 
 clean:
 	@$(RM) $(DIRECTORY_BUILD)
@@ -156,4 +156,3 @@ $(DIRECTORY_BUILD)%.d: ;
 .PRECIOUS: $(DIRECTORY_BUILD)%.d
 
 -include $(patsubst %,$(DIRECTORY_BUILD)%.d,$(basename $(SOURCES_C) $(SOURCES_CPP)))
-

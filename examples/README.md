@@ -1,5 +1,5 @@
 # MPSV Examples (C++)
-This directory contains several example applications that show how to use the different planning levels of MPSV.
+This directory contains several C++ examples that show how to use the different planning levels of MPSV.
 
 
 | App                  | Description                                                                                                    |

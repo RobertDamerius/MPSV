@@ -8,7 +8,7 @@ fprintf('Reading data file ... ');
 data = mpsv.ReadLogFile('dataIterationPerformanceTest');
 fprintf('data contains %d entries\n',numel(data));
 
-% plot scene by scene if all data is recorded by the benchmark app (see IterationPerformanceTest.cpp:136-139)
+% plot scene by scene if all data is recorded by the benchmark app (see IterationPerformanceTest.cpp:Solve)
 % for i = 1:numel(data)
 %     figure(1);
 %     clf; hold on;
