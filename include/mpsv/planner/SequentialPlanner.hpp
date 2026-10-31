@@ -90,6 +90,7 @@ class SequentialPlanner {
             }
             else{
                 m_motionPlannerOutput.Clear();
+                m_motionPlannerOutput.errorCode = mpsv::error_code::SEQUENTIALPLANNER_INCOMPLETE_MOTION;
             }
 
             // Move results to output data

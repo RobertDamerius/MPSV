@@ -84,11 +84,14 @@ enum class error_code : uint8_t {
     MOTIONPLANNER_OUT_OF_NODES                            = 62,   // The motion planner has run out of nodes and cannot sample new nodes anymore.
     MOTIONPLANNER_INFEASIBLE_TRAJECTORY                   = 63,   // The final motion planner trajectory is dynamically infeasible.
 
+    // sequential planner
+    SEQUENTIALPLANNER_INCOMPLETE_MOTION                   = 64,   // The motion planner has not been executed either due to a requested interrupt or because the path planner failed. The motion planner output is empty.
+
     // online planner
-    ONLINEPLANNER_TIMESTAMP_NOT_INCREASING                = 64,   // timestamp is not greater than the previous input timestamp for solving sequential problems.
+    ONLINEPLANNER_TIMESTAMP_NOT_INCREASING                = 65,   // timestamp is not greater than the previous input timestamp for solving sequential problems.
 
     // asynchronous online planner
-    ASYNCONLINEPLANNER_OUTPUT_NOT_AVAILABLE               = 65    // The output does not contain a planning result yet.
+    ASYNCONLINEPLANNER_OUTPUT_NOT_AVAILABLE               = 66    // The output does not contain a planning result yet.
 };
 
 
