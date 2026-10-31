@@ -55,7 +55,7 @@ class PathPlannerOutput {
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             file.WriteField("bool", preString + "goalReached", {1}, &goalReached, sizeof(goalReached));
-            file.WriteField("bool", preString + "errorCode", {1}, &errorCode, sizeof(errorCode));
+            file.WriteField("uint8_t", preString + "errorCode", {1}, &errorCode, sizeof(errorCode));
             file.WriteField("uint32_t", preString + "numberOfPerformedIterations", {1}, &numberOfPerformedIterations, sizeof(numberOfPerformedIterations));
             file.WriteField("double", preString + "timestampOfComputationUTC", {1}, &timestampOfComputationUTC, sizeof(timestampOfComputationUTC));
             file.WriteField("double", preString + "cost", {1}, &cost, sizeof(cost));
