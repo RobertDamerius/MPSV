@@ -10,23 +10,12 @@ void MPSV_WrapperPathPlanner::Terminate(void){
 }
 
 void MPSV_WrapperPathPlanner::Step(serialization_path_planner_output* output, serialization_path_planner_input* input){
-    // Assign input data to path planner data
-    mpsv::error_code errorCode = AssignInput(input);
-
-    // Set default output values
-    ClearOutput(output, errorCode);
-
-    // Solve the planning problem
-    if(mpsv::error_code::NONE == errorCode){
-        m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, m_pathPlannerParameter, input->parameter.pathPlanner.maxComputationTime);
-        errorCode = m_pathPlannerOutput.errorCode;
-
-        // Assign output data
-        AssignOutput(output, errorCode);
-    }
+    DeserializeInput(input);
+    m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, m_pathPlannerParameter, input->parameter.pathPlanner.maxComputationTime);
+    SerializeOutput(output);
 }
 
-mpsv::error_code MPSV_WrapperPathPlanner::AssignInput(serialization_path_planner_input* input){
+void MPSV_WrapperPathPlanner::DeserializeInput(serialization_path_planner_input* input){
     // Assign parameters
     m_pathPlannerParameter.costMap.modBreakpoints                      = input->parameter.costMap.modBreakpoints;
     m_pathPlannerParameter.costMap.resolution                          = input->parameter.costMap.resolution;
@@ -106,44 +95,22 @@ mpsv::error_code MPSV_WrapperPathPlanner::AssignInput(serialization_path_planner
             i0 = -1;
         }
     }
-
-    // Check for data validity
-    mpsv::error_code e;
-    if(mpsv::error_code::NONE != (e = m_pathPlannerParameter.IsValid()))
-        return e;
-    if(mpsv::error_code::NONE != (e = m_pathPlannerInput.IsValid()))
-        return e;
-    return mpsv::error_code::NONE;
 }
 
-void MPSV_WrapperPathPlanner::AssignOutput(serialization_path_planner_output* output, mpsv::error_code errorCode){
+void MPSV_WrapperPathPlanner::SerializeOutput(serialization_path_planner_output* output){
     // Limit the number of poses to at most 1000
     if(m_pathPlannerOutput.path.size() > 1000){
         m_pathPlannerOutput.path.resize(1000);
     }
 
     // Copy planning results to the output
-    output->errorCode                   = static_cast<uint8_t>(errorCode);
+    output->errorCode                   = static_cast<uint8_t>(m_pathPlannerOutput.errorCode);
     output->cost                        = m_pathPlannerOutput.cost;
     output->goalReached                 = m_pathPlannerOutput.goalReached;
-    output->isFeasible                  = (m_pathPlannerOutput.errorCode == mpsv::error_code::PATHPLANNER_INITIAL_POSE_COLLISION ? 0 : 1);
-    output->outOfNodes                  = (m_pathPlannerOutput.errorCode == mpsv::error_code::PATHPLANNER_OUT_OF_NODES ? 1 : 0);
     output->numberOfPerformedIterations = m_pathPlannerOutput.numberOfPerformedIterations;
     output->timestampOfComputationUTC   = m_pathPlannerOutput.timestampOfComputationUTC;
-    output->numPoses                    = static_cast<uint16_t>(m_pathPlannerOutput.path.size());
+    output->numPoses                    = static_cast<int32_t>(m_pathPlannerOutput.path.size());
     for(size_t k = 0; k < m_pathPlannerOutput.path.size(); ++k){
         output->path[k] = m_pathPlannerOutput.path[k];
     }
-}
-
-void MPSV_WrapperPathPlanner::ClearOutput(serialization_path_planner_output* output, mpsv::error_code errorCode){
-    output->cost = 0.0;
-    output->goalReached = 0;
-    output->isFeasible = 0;
-    output->outOfNodes = 0;
-    output->reserved = 0;
-    output->errorCode = static_cast<uint8_t>(errorCode);
-    output->numberOfPerformedIterations = 0;
-    output->numPoses = 0;
-    output->timestampOfComputationUTC = mpsv::runtime::GetTimestampUTC();
 }

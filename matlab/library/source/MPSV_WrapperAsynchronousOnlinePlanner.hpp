@@ -28,8 +28,6 @@ struct __attribute__((packed)) serialization_asynchronous_online_planner_input {
  * @brief Constant-size parameter data for the asynchronous online planner wrapper.
  */
 struct __attribute__((packed)) serialization_asynchronous_online_planner_parameter {
-    double timestamp;   //#TODO(remove)
-    double timeoutInput;   //#TODO(remove)
     struct __attribute__((packed)) {
         struct __attribute__((packed)) {
             double collisionCheckMaxPositionDeviation;
@@ -81,7 +79,6 @@ struct __attribute__((packed)) serialization_asynchronous_online_planner_paramet
         } motionPlanner;
     } sequentialPlanner;
     struct __attribute__((packed)) {
-        uint8_t reserved; //#TODO(remove)
         double maxComputationTimePathOnReset;
         double maxComputationTimeMotionOnReset;
         double maxComputationTimePath;
@@ -98,39 +95,31 @@ struct __attribute__((packed)) serialization_asynchronous_online_planner_paramet
  */
 struct __attribute__((packed)) serialization_asynchronous_online_planner_output {
     double timestamp;
-    double timestampInput; //#TODO(remove)
-    double timestampParameter; //#TODO(remove)
-    uint8_t inputError; //#TODO(remove)
-    uint8_t parameterError; //#TODO(remove)
+    uint8_t errorCode;
     uint8_t threadState:2;
     uint8_t performedReset:1;
-    uint8_t error:1;
     uint8_t trajectoryShrinked:1;
-    uint8_t reserved:3;
+    uint8_t reserved:4;
     std::array<double,3> originLLA;
-    uint16_t numTrajectoryPoints;
+    int32_t numTrajectoryPoints;
     std::array<std::array<double,12>,500> trajectory;
     double sampletime;
     struct __attribute__((packed)) {
-        uint16_t numPoses;
+        int32_t numPoses;
         std::array<std::array<double,3>,100> path;
         uint8_t goalReached:1;
-        uint8_t isFeasible:1;
-        uint8_t outOfNodes:1;
         uint8_t pathShrinked:1;
-        uint8_t reserved:4;
+        uint8_t reserved:6;
         uint32_t numberOfPerformedIterations;
         double timestampOfComputationUTC;
         double cost;
     } pathPlanner;
     struct __attribute__((packed)) {
-        uint16_t numPoses;
+        int32_t numPoses;
         std::array<std::array<double,3>,100> referencePath;
         uint8_t goalReached:1;
-        uint8_t isFeasible:1;
-        uint8_t outOfNodes:1;
         uint8_t referencePathShrinked:1;
-        uint8_t reserved:4;
+        uint8_t reserved:6;
         uint32_t numberOfPerformedIterations;
         double timestampOfComputationUTC;
         double cost;

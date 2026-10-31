@@ -22,14 +22,11 @@ void MPSV_WrapperAsynchronousOnlinePlanner::Step(serialization_asynchronous_onli
     DeserializeParameter(parameter);
     DeserializeInput(input);
     m_planner.SetInput(m_plannerInput, m_plannerParameter);
-
     m_plannerOutput = m_planner.GetOutput();
     SerializeOutput(output);
 }
 
 void MPSV_WrapperAsynchronousOnlinePlanner::DeserializeParameter(serialization_asynchronous_online_planner_parameter* parameter){
-    //#TODO(remove): m_plannerParameter.timestamp                                                     = parameter->timestamp;
-    //#TODO(remove): m_plannerParameter.timeoutInput                                                  = parameter->timeoutInput;
     m_plannerParameter.sequentialPlanner.geometry.collisionCheckMaxPositionDeviation = parameter->sequentialPlanner.geometry.collisionCheckMaxPositionDeviation;
     m_plannerParameter.sequentialPlanner.geometry.collisionCheckMaxAngleDeviation    = parameter->sequentialPlanner.geometry.collisionCheckMaxAngleDeviation;
 
@@ -147,46 +144,38 @@ void MPSV_WrapperAsynchronousOnlinePlanner::DeserializeInput(serialization_async
 
 void MPSV_WrapperAsynchronousOnlinePlanner::SerializeOutput(serialization_asynchronous_online_planner_output* output){
     output->timestamp           = m_plannerOutput.timestamp;
-    //#TODO(remove): output->timestampInput      = m_plannerOutput.timestampInput;
-    //#TODO(remove): output->timestampParameter  = m_plannerOutput.timestampParameter;
-    //#TODO(remove): output->inputError          = static_cast<uint8_t>(m_plannerOutput.inputError);
-    //#TODO(remove): output->parameterError      = static_cast<uint8_t>(m_plannerOutput.parameterError);
+    output->errorCode           = static_cast<uint8_t>(m_plannerOutput.errorCode);
     output->threadState         = static_cast<uint8_t>(m_plannerOutput.threadState);
     output->performedReset      = static_cast<uint8_t>(m_plannerOutput.performedReset);
     output->reserved            = 0;
-    output->error               = static_cast<uint8_t>(m_plannerOutput.errorCode != mpsv::error_code::NONE);
     output->originLLA           = m_plannerOutput.originLLA;
 
     // trajectory
-    output->numTrajectoryPoints = static_cast<uint16_t>(std::min(m_plannerOutput.trajectory.size(), output->trajectory.size()));
+    output->numTrajectoryPoints = static_cast<int32_t>(std::min(m_plannerOutput.trajectory.size(), output->trajectory.size()));
     output->trajectoryShrinked  = static_cast<uint8_t>(m_plannerOutput.trajectory.size() > output->trajectory.size());
     output->sampletime          = m_plannerOutput.sampletime;
-    for(uint16_t k = 0; k < output->numTrajectoryPoints; ++k){
+    for(int32_t k = 0; k < output->numTrajectoryPoints; ++k){
         output->trajectory[k] = m_plannerOutput.trajectory[k];
     }
 
     // pathPlanner.path
-    output->pathPlanner.numPoses                      = static_cast<uint16_t>(std::min(m_plannerOutput.pathPlanner.path.size(), output->pathPlanner.path.size()));
+    output->pathPlanner.numPoses                      = static_cast<int32_t>(std::min(m_plannerOutput.pathPlanner.path.size(), output->pathPlanner.path.size()));
     output->pathPlanner.pathShrinked                  = static_cast<uint8_t>(m_plannerOutput.pathPlanner.path.size() > output->pathPlanner.path.size());
-    for(uint16_t k = 0; k < output->pathPlanner.numPoses; ++k){
+    for(int32_t k = 0; k < output->pathPlanner.numPoses; ++k){
         output->pathPlanner.path[k] = m_plannerOutput.pathPlanner.path[k];
     }
     output->pathPlanner.goalReached                   = static_cast<uint8_t>(m_plannerOutput.pathPlanner.goalReached);
-    output->pathPlanner.isFeasible                    = static_cast<uint8_t>(m_plannerOutput.errorCode != mpsv::error_code::PATHPLANNER_INITIAL_POSE_COLLISION);
-    output->pathPlanner.outOfNodes                    = static_cast<uint8_t>(m_plannerOutput.errorCode == mpsv::error_code::PATHPLANNER_OUT_OF_NODES);
     output->pathPlanner.numberOfPerformedIterations   = m_plannerOutput.pathPlanner.numberOfPerformedIterations;
     output->pathPlanner.timestampOfComputationUTC     = m_plannerOutput.pathPlanner.timestampOfComputationUTC;
     output->pathPlanner.cost                          = m_plannerOutput.pathPlanner.cost;
 
     // motionPlanner.referencePath
-    output->motionPlanner.numPoses                    = static_cast<uint16_t>(std::min(m_plannerOutput.motionPlanner.referencePath.size(), output->motionPlanner.referencePath.size()));
+    output->motionPlanner.numPoses                    = static_cast<int32_t>(std::min(m_plannerOutput.motionPlanner.referencePath.size(), output->motionPlanner.referencePath.size()));
     output->motionPlanner.referencePathShrinked       = static_cast<uint8_t>(m_plannerOutput.motionPlanner.referencePath.size() > output->motionPlanner.referencePath.size());
-    for(uint16_t k = 0; k < output->motionPlanner.numPoses; ++k){
+    for(int32_t k = 0; k < output->motionPlanner.numPoses; ++k){
         output->motionPlanner.referencePath[k] = m_plannerOutput.motionPlanner.referencePath[k];
     }
     output->motionPlanner.goalReached                 = static_cast<uint8_t>(m_plannerOutput.motionPlanner.goalReached);
-    output->motionPlanner.isFeasible                  = static_cast<uint8_t>((m_plannerOutput.errorCode != mpsv::error_code::MOTIONPLANNER_INITIAL_POSE_COLLISION) && (m_plannerOutput.errorCode != mpsv::error_code::MOTIONPLANNER_INFEASIBLE_TRAJECTORY));
-    output->motionPlanner.outOfNodes                  = static_cast<uint8_t>(m_plannerOutput.errorCode == mpsv::error_code::MOTIONPLANNER_OUT_OF_NODES);
     output->motionPlanner.numberOfPerformedIterations = m_plannerOutput.motionPlanner.numberOfPerformedIterations;
     output->motionPlanner.timestampOfComputationUTC   = m_plannerOutput.motionPlanner.timestampOfComputationUTC;
     output->motionPlanner.cost                        = m_plannerOutput.motionPlanner.cost;

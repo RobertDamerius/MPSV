@@ -1,6 +1,6 @@
 # MPSV Examples (C++)
-This directory contains several C++ examples that show how to use the different planning levels of MPSV.
 
+This directory contains several C++ examples that show how to use the different planning levels of MPSV.
 
 | App                  | Description                                                                                                    |
 | :------------------- | :------------------------------------------------------------------------------------------------------------- |
@@ -11,4 +11,3 @@ This directory contains several C++ examples that show how to use the different 
 | onlineplanning       | solves several sequential planning problems in a loop                                                          |
 | asynconlineplanning  | solves one asynchronous planning problem in a separate thread and polls for results                            |
 | asynconlineplanning2 | solves online planning problems for 120 seconds and writes results to a file                                   |
-

@@ -1,4 +1,5 @@
 # Benchmark
+
 This directory contains the source code of the benchmark application.
 The application is built by running `make example=benchmark` in the repository root directory.
 The binaries will be built to this directory.
@@ -34,13 +35,16 @@ There are the following benchmark tests:
 > Solves a realistic motion planning problem with 126 static obstacles for one second.
 
 **Additional Performance Tests**
+
 > **Iteration Performance Test**
 > 
 > Runs sequential planning (1 second path planning + 1 second motion planning) on 100 different scenes based on real map data and writes results to a data log file.
 
 
 ## Running the Benchmark
+
 Simply run the benchmark application from the command line, e.g. (Linux)
+
 ```
 ./benchmark
 ```
@@ -49,10 +53,13 @@ On some systems like debian with the PREEMPT_RT patch the default behaviour of O
 Pay attention when using `taskset` to pin the program to specific cores.
 When running the benchmark on multiple cores, benchmark 3 should always be faster than benchmark 2.
 If this is not the case, try to explicitly set the environment variable `OMP_PROC_BIND` to `true`, for example by running
+
 ```
 OMP_PROC_BIND=true taskset 0xff ./benchmark
 ```
+
 or set `OMP_PLACES` to `threads` with
+
 ```
 OMP_PLACES=threads taskset 0xff ./benchmark
 ```
