@@ -467,17 +467,17 @@ template <class Tnode> class FixedSizeTreeSE2 {
             std::vector<int16_t> vecParentIndices;
             uint32_t Na = static_cast<uint32_t>(m_activeIndices.size());
             uint32_t Nn = static_cast<uint32_t>(m_nodes.size());
-            vecPoses.reserve(3 * Nn);
-            vecCost.reserve(Nn);
-            vecParentIndices.reserve(Nn);
-            for(uint32_t n = 0; n != Nn; ++n){
-                vecPoses.push_back(m_nodes[n].pose[0]);
-                vecPoses.push_back(m_nodes[n].pose[1]);
-                vecPoses.push_back(m_nodes[n].pose[2]);
-                vecCost.push_back(m_nodes[n].cost);
-                vecParentIndices.push_back(m_nodes[n].iParent);
-            }
-            if(Nn){
+            if(Nn && Na){
+                vecPoses.reserve(3 * Nn);
+                vecCost.reserve(Nn);
+                vecParentIndices.reserve(Nn);
+                for(uint32_t n = 0; n != Nn; ++n){
+                    vecPoses.push_back(m_nodes[n].pose[0]);
+                    vecPoses.push_back(m_nodes[n].pose[1]);
+                    vecPoses.push_back(m_nodes[n].pose[2]);
+                    vecCost.push_back(m_nodes[n].cost);
+                    vecParentIndices.push_back(m_nodes[n].iParent);
+                }
                 file.WriteField("double", preString + "pose", {3, Nn}, &vecPoses[0], sizeof(double) * vecPoses.size());
                 file.WriteField("int16_t", preString + "iParent", {Nn}, &vecParentIndices[0], sizeof(int16_t) * vecParentIndices.size());
                 file.WriteField("double", preString + "cost", {Nn}, &vecCost[0], sizeof(double) * vecCost.size());

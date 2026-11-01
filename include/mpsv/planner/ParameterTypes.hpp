@@ -128,6 +128,7 @@ class ParameterModel {
          * @brief Write the whole parameter set to the log file.
          * @param[in] file The log file to which to write the data to.
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
+         * @note Matrix data is written in column-major order to the log file, as used by MATLAB.
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
             std::array<double,36> tmp;
@@ -149,7 +150,7 @@ class ParameterModel {
             tmp[0] = matB[0]; tmp[1] = matB[3]; tmp[2] = matB[6];
             tmp[3] = matB[1]; tmp[4] = matB[4]; tmp[5] = matB[7];
             tmp[6] = matB[2]; tmp[7] = matB[5]; tmp[8] = matB[8];
-            file.WriteField("double", preString + "matB", {3,3}, &matB[0], sizeof(matB));
+            file.WriteField("double", preString + "matB", {3,3}, &tmp[0], sizeof(matB));
             file.WriteField("double", preString + "lowerLimitXYN", {3,1}, &lowerLimitXYN[0], sizeof(lowerLimitXYN));
             file.WriteField("double", preString + "upperLimitXYN", {3,1}, &upperLimitXYN[0], sizeof(upperLimitXYN));
         }
