@@ -17,7 +17,6 @@ void MPSV_AsynchronousOnlinePlannerTerminate(void* workVector){
     MPSV_WrapperAsynchronousOnlinePlanner* wrapper = reinterpret_cast<MPSV_WrapperAsynchronousOnlinePlanner*>(workVector);
     wrapper->Stop();
     delete wrapper;
-    workVector = nullptr;
 }
 
 void MPSV_AsynchronousOnlinePlannerStep(void* workVector, uint8_t* serializedOutput, uint8_t* serializedInput, uint8_t* serializedParameter){

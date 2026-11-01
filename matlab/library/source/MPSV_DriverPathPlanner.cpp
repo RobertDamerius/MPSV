@@ -12,7 +12,6 @@ void MPSV_PathPlannerTerminate(void* workVector){
     MPSV_WrapperPathPlanner* wrapper = reinterpret_cast<MPSV_WrapperPathPlanner*>(workVector);
     wrapper->Terminate();
     delete wrapper;
-    workVector = nullptr;
 }
 
 void MPSV_PathPlannerStep(void* workVector, uint8_t* serializedDataOut, uint8_t* serializedDataIn){
