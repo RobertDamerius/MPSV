@@ -29,7 +29,6 @@ int main(int, char**){
         std::cout << "performedReset:   " << dataOut.performedReset << "\n";
         std::cout << "originLLA:        " << "{" << dataOut.originLLA[0] << ", " << dataOut.originLLA[1] << ", " << dataOut.originLLA[2] << "}\n";
         std::cout << "trajectory:       " << dataOut.trajectory.size() << " points\n";
-        std::cout << "trajectory:       " << dataOut.trajectory.size() << " points\n";
         for(size_t i = 0; (i < dataOut.trajectory.size()) && (i < 10); ++i){
             std::cout << "    x,y,psi={" << dataOut.trajectory[i][0] << ", " << dataOut.trajectory[i][1] << ", " << dataOut.trajectory[i][2] << "} ";
             std::cout << "u,v,r={" << dataOut.trajectory[i][3] << ", " << dataOut.trajectory[i][4] << ", " << dataOut.trajectory[i][5] << "} ";
