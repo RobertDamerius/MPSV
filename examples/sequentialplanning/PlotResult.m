@@ -88,7 +88,7 @@ plot(qG(1), qG(2), '.', 'MarkerSize', 12, 'Color', GetColor(1));
 view(90,-90); grid on; box on; axis image; xlabel('x in m'); ylabel('y in m');
 xlim([-150,100]);
 ylim([-200,400]);
-f1.Renderer = "painters";
+f4.Renderer = "painters";
 
 
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
