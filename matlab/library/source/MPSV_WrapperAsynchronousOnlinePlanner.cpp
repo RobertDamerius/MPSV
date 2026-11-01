@@ -165,6 +165,7 @@ void MPSV_WrapperAsynchronousOnlinePlanner::SerializeOutput(serialization_asynch
         output->pathPlanner.path[k] = m_plannerOutput.pathPlanner.path[k];
     }
     output->pathPlanner.goalReached                   = static_cast<uint8_t>(m_plannerOutput.pathPlanner.goalReached);
+    output->pathPlanner.reserved                      = 0;
     output->pathPlanner.numberOfPerformedIterations   = m_plannerOutput.pathPlanner.numberOfPerformedIterations;
     output->pathPlanner.timestampOfComputationUTC     = m_plannerOutput.pathPlanner.timestampOfComputationUTC;
     output->pathPlanner.cost                          = m_plannerOutput.pathPlanner.cost;
@@ -176,6 +177,7 @@ void MPSV_WrapperAsynchronousOnlinePlanner::SerializeOutput(serialization_asynch
         output->motionPlanner.referencePath[k] = m_plannerOutput.motionPlanner.referencePath[k];
     }
     output->motionPlanner.goalReached                 = static_cast<uint8_t>(m_plannerOutput.motionPlanner.goalReached);
+    output->motionPlanner.reserved                    = 0;
     output->motionPlanner.numberOfPerformedIterations = m_plannerOutput.motionPlanner.numberOfPerformedIterations;
     output->motionPlanner.timestampOfComputationUTC   = m_plannerOutput.motionPlanner.timestampOfComputationUTC;
     output->motionPlanner.cost                        = m_plannerOutput.motionPlanner.cost;
