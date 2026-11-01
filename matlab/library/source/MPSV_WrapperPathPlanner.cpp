@@ -95,20 +95,16 @@ void MPSV_WrapperPathPlanner::DeserializeInput(serialization_path_planner_input*
 }
 
 void MPSV_WrapperPathPlanner::SerializeOutput(serialization_path_planner_output* output){
-    // Limit the number of poses to at most 1000
-    if(m_pathPlannerOutput.path.size() > 1000){
-        m_pathPlannerOutput.path.resize(1000);
-    }
-
     // Copy planning results to the output
     output->errorCode                   = static_cast<uint8_t>(m_pathPlannerOutput.errorCode);
     output->cost                        = m_pathPlannerOutput.cost;
     output->goalReached                 = m_pathPlannerOutput.goalReached;
+    output->pathShrinked                = static_cast<uint8_t>(m_pathPlannerOutput.path.size() > output->path.size());
     output->reserved                    = 0;
     output->numberOfPerformedIterations = m_pathPlannerOutput.numberOfPerformedIterations;
     output->timestampOfComputationUTC   = m_pathPlannerOutput.timestampOfComputationUTC;
-    output->numPoses                    = static_cast<int32_t>(m_pathPlannerOutput.path.size());
-    for(size_t k = 0; k < m_pathPlannerOutput.path.size(); ++k){
+    output->numPoses                    = static_cast<int32_t>(std::min(m_pathPlannerOutput.path.size(), output->path.size()));
+    for(size_t k = 0; k < static_cast<size_t>(output->numPoses); ++k){
         output->path[k] = m_pathPlannerOutput.path[k];
     }
 }
