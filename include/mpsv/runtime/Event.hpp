@@ -34,6 +34,7 @@ class Event {
 
         /**
          * @brief Notify a thread waiting for this event.
+         * @note This is a binary event, not a counting semaphore. Notifications that arrive before a wait consumes the event may coalesce.
          */
         void Notify(void) noexcept {
             #if defined(_WIN32)

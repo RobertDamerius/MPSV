@@ -279,9 +279,8 @@ class ParameterGeometry {
         }
 
         /**
-         * @brief Check whether this parameter is valid. Vertices of @ref vehicleShape might be reordered.
+         * @brief Check whether this parameter is valid.
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
-         * @details The vertex order of polygon data may be adjusted if possible.
          */
         [[nodiscard]] error_code IsValid(void) const noexcept {
             constexpr double minPositionDeviation = 0.01; // Minimum position deviation for path subdivision during collision checking.

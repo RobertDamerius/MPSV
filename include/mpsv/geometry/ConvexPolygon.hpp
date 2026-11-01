@@ -40,7 +40,7 @@ class ConvexPolygon {
         /**
          * @brief Create the convex polygon based on vertices.
          * @param[inout] vertices Reference to a container that contains vertices. This container is empty after a successful polygon creation.
-         * @note The vertex order may be changed to ensure a valid math. positive order of vertices. If the given vertices do not indicate a valid
+         * @note The vertex order may be reversed to ensure a mathematically positive (counterclockwise) orientation. If the given vertices do not indicate a valid
          * polygon, the internal vertex storage of this convex polygon remains empty.
          */
         void Create(std::vector<std::array<double, 2>>& vertices) noexcept {

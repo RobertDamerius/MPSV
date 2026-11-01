@@ -131,8 +131,8 @@ template <class Tnode> class FixedSizeTreeSE2 {
 
         /**
          * @brief Add a new node to the tree.
-         * @param[in] idxParent The index of the parent node. Make sure that this index is valid and points to an existing node.
-         * @param[in] node The node to be added. The index to the parent is set by this member function and the child container of the node is cleared.
+         * @param[in] idxParent The parent node index, or -1 to add a root node. A nonnegative index must refer to an active node.
+         * @param[in] node The node whose pose and cost are copied. Tree links are initialized by this function; other derived-node data is not copied or cleared.
          * @return The index to the added node, or -1 if the operation failed.
          */
         [[nodiscard]] int16_t Add(int16_t idxParent, const Tnode& node) noexcept {
@@ -303,7 +303,7 @@ template <class Tnode> class FixedSizeTreeSE2 {
          * @param[in] childIndex The index of the child to be connected to the root node. The tree remains unchanged from this child node on. All old branches before this child are removed.
          * If this value is invalid, @ref Reset is called.
          * @return Index to the new root node.
-         * @note A random leaf node is removed if there's no size in the node container, except for the node specified by childIndex. If no random leaf could be removed, @ref Reset is called.
+         * @note When a new root node is needed and the tree has no free node, a random leaf other than the root or childIndex is removed. If no such leaf can be removed, @ref Reset is called.
          */
         template <class T> [[nodiscard]] int16_t ChangeRoot(const T& newRootPose, int16_t childIndex, const double metricWeightPsi) noexcept {
             static_assert(mpsv::is_vec3<T>::value,"Argument {newRootPose} must be of type std::array<double,N> with N >= 3!");

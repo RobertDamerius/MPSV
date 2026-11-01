@@ -15,7 +15,7 @@ namespace geometry {
  * @brief Compute the convex hull for a set of 2D points using the QuickHull algorithm.
  * @tparam T This template represents the type of a point and must be of type std::array<double,N> with N being greater than 1.
  * @param[in] refPoints The reference points (2D) to be used by the algorithm. A point must be at least of dimension 2.
- * @return Indices to input reference points that form the convex hull. The indices output container will be empty if the number of 2D points is less than three!
+ * @return Indices to input reference points that form the convex hull. The result is empty if the input has fewer than three points or the computed hull has fewer than three vertices (for example, if the points are collinear).
  * @note The ring is not closed, that is the last index in the list is not equal to the first one.
  */
 template <class T> [[nodiscard]] inline std::vector<int32_t> QuickHull2DIndices(const std::vector<T>& refPoints) noexcept {

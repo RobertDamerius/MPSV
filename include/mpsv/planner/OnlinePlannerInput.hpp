@@ -43,7 +43,6 @@ class OnlinePlannerInput {
         /**
          * @brief Check whether the attributes are valid.
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
-         * @details The vertex order of polygon data may be adjusted if possible.
          */
         [[nodiscard]] error_code IsValid(void) const noexcept {
             if(!std::isfinite(timestamp))

@@ -80,7 +80,7 @@ class WorkerThread {
 
         /**
          * @brief Suspend the worker thread.
-         * @details The next time the thread is scheduled, it goes into standby mode. A running user callback (@ref ThreadCallbackRunning) cannot be interrupted.
+         * @details A running callback passed to @ref Start cannot be interrupted. After it returns, the worker enters standby mode.
          */
         void Suspend(void) noexcept {
             m_commandedState = mpsv::runtime::WorkerThreadState::standby;

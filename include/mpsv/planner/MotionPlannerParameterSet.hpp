@@ -38,7 +38,6 @@ class MotionPlannerParameterSet {
         /**
          * @brief Check whether this parameter set is valid or not.
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
-         * @details The vertex order of polygon data may be adjusted if possible.
          */
         [[nodiscard]] error_code IsValid(void) const noexcept {
             error_code e;
