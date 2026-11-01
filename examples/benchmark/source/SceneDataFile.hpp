@@ -2,6 +2,9 @@
 
 
 #include <mpsv/mpsv.hpp>
+#include <cstdint>
+#include <cstring>
+#include <limits>
 #include <string>
 #include <fstream>
 #include <Scene.hpp>
@@ -21,17 +24,22 @@ class SceneDataFile {
             std::ifstream file(filename, std::ifstream::binary);
             if(file){
                 file.seekg(0, file.end);
-                size_t length = file.tellg();
-                file.seekg(0, file.beg);
-                char* buffer = new char[length];
-                file.read(buffer, length);
-                bool success = static_cast<bool>(file);
-                file.close();
-                if(success){
-                    success = Deserialize(buffer, length);
+                if(!file) return false;
+                std::streampos endPosition = file.tellg();
+                if(endPosition == std::streampos(-1)) return false;
+                std::streamoff fileSize = endPosition;
+                if(fileSize < 0 ||
+                   static_cast<std::uintmax_t>(fileSize) > std::numeric_limits<size_t>::max() ||
+                   static_cast<std::uintmax_t>(fileSize) > std::numeric_limits<std::streamsize>::max()){
+                    return false;
                 }
-                delete[] buffer;
-                return success;
+                size_t length = static_cast<size_t>(fileSize);
+                file.seekg(0, file.beg);
+                if(!file) return false;
+                std::vector<char> buffer(length);
+                file.read(buffer.data(), static_cast<std::streamsize>(length));
+                if(!file) return false;
+                return Deserialize(buffer.data(), length);
             }
             return false;
         }
@@ -55,7 +63,8 @@ class SceneDataFile {
 
             // numScenes (4 bytes)
             if((i + 4) > length) return false;
-            uint32_t numScenes = *reinterpret_cast<uint32_t*>(&buffer[i]); i += 4;
+            uint32_t numScenes;
+            std::memcpy(&numScenes, buffer + i, sizeof(numScenes)); i += sizeof(numScenes);
 
             // Deserialize all scene data
             for(uint32_t s = 0; s < numScenes; ++s){
@@ -63,25 +72,27 @@ class SceneDataFile {
 
                 // initialPose (3*8 bytes)
                 if((i + 24) > length) return false;
-                data.back().initialStateAndInput[0] = *reinterpret_cast<double*>(&buffer[i]); i += 8;
-                data.back().initialStateAndInput[1] = *reinterpret_cast<double*>(&buffer[i]); i += 8;
-                data.back().initialStateAndInput[2] = *reinterpret_cast<double*>(&buffer[i]); i += 8;
+                std::memcpy(&data.back().initialStateAndInput[0], buffer + i, sizeof(double)); i += sizeof(double);
+                std::memcpy(&data.back().initialStateAndInput[1], buffer + i, sizeof(double)); i += sizeof(double);
+                std::memcpy(&data.back().initialStateAndInput[2], buffer + i, sizeof(double)); i += sizeof(double);
 
                 // finalPose (3*8 bytes)
                 if((i + 24) > length) return false;
-                data.back().finalPose[0] = *reinterpret_cast<double*>(&buffer[i]); i += 8;
-                data.back().finalPose[1] = *reinterpret_cast<double*>(&buffer[i]); i += 8;
-                data.back().finalPose[2] = *reinterpret_cast<double*>(&buffer[i]); i += 8;
+                std::memcpy(&data.back().finalPose[0], buffer + i, sizeof(double)); i += sizeof(double);
+                std::memcpy(&data.back().finalPose[1], buffer + i, sizeof(double)); i += sizeof(double);
+                std::memcpy(&data.back().finalPose[2], buffer + i, sizeof(double)); i += sizeof(double);
 
                 // numStaticObstacles (4 bytes)
                 if((i + 4) > length) return false;
-                uint32_t numStaticObstacles = *reinterpret_cast<uint32_t*>(&buffer[i]); i += 4;
+                uint32_t numStaticObstacles;
+                std::memcpy(&numStaticObstacles, buffer + i, sizeof(numStaticObstacles)); i += sizeof(numStaticObstacles);
 
                 // Deserialize all static obstacles
                 for(uint32_t p = 0; p < numStaticObstacles; ++p){
                     // numVertices (4 bytes)
                     if((i + 4) > length) return false;
-                    uint32_t numVertices = *reinterpret_cast<uint32_t*>(&buffer[i]); i += 4;
+                    uint32_t numVertices;
+                    std::memcpy(&numVertices, buffer + i, sizeof(numVertices)); i += sizeof(numVertices);
 
                     // Deserialize all vertices
                     std::vector<std::array<double,2>> vertices;
@@ -90,8 +101,8 @@ class SceneDataFile {
 
                         // vertex (2*8 bytes)
                         if((i + 16) > length) return false;
-                        vertices.back()[0] = *reinterpret_cast<double*>(&buffer[i]); i += 8;
-                        vertices.back()[1] = *reinterpret_cast<double*>(&buffer[i]); i += 8;
+                        std::memcpy(&vertices.back()[0], buffer + i, sizeof(double)); i += sizeof(double);
+                        std::memcpy(&vertices.back()[1], buffer + i, sizeof(double)); i += sizeof(double);
                     }
                     data.back().staticObstacles.push_back(mpsv::geometry::StaticObstacle(vertices));
                 }
