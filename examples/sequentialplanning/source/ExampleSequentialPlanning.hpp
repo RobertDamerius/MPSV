@@ -77,8 +77,7 @@ inline mpsv::planner::SequentialPlannerParameterSet GetParameterSet(void){
 inline mpsv::planner::SequentialPlannerInput GetInput(void){
     mpsv::planner::SequentialPlannerInput dataIn;
     dataIn.initialStateAndInput  = {-70.0, -130.0, 0.7, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    dataIn.finalPose             = {-37.0, 243.0, 1.6923};
-    dataIn.finalPose             = {-37.0, 243.0, -1.4492};
+    dataIn.finalPose             = {-37.0, 243.0, -1.4492}; // with alternative heading: {-37.0, 243.0, 1.6923}
     dataIn.originOldToNew        = {0.0, 0.0};
     dataIn.samplingBoxCenterPose = {-20.0, 50.0, 0.0};
     dataIn.samplingBoxDimension  = {200.0, 550.0};

@@ -32,6 +32,9 @@ int main(int, char**){
         planner.WriteToFile(f, "planner.");
         f.Close();
     }
+    else{
+        std::cerr << "Failed to open output file: " << filename << "\n";
+    }
 
     // print result (at most 10 trajectory points)
     std::cout << "errorCode:                                   " << static_cast<int32_t>(dataOut.errorCode) << "\n";
