@@ -6,12 +6,15 @@ void MPSV_WrapperPathPlanner::Initialize(int16_t maxNumNodes, uint32_t maxNumSam
 }
 
 void MPSV_WrapperPathPlanner::Terminate(void){
-    m_maxComputationTime = 0.0;
 }
 
 void MPSV_WrapperPathPlanner::Step(serialization_path_planner_output* output, serialization_path_planner_input* input){
     DeserializeInput(input);
-    m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, m_pathPlannerParameter, input->parameter.pathPlanner.maxComputationTime);
+    double maxComputationTime = std::max(0.0, input->parameter.pathPlanner.maxComputationTime);
+    if(!std::isfinite(maxComputationTime)){
+        maxComputationTime = 0.0;
+    }
+    m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, m_pathPlannerParameter, maxComputationTime);
     SerializeOutput(output);
 }
 
@@ -60,12 +63,6 @@ void MPSV_WrapperPathPlanner::DeserializeInput(serialization_path_planner_input*
     m_pathPlannerParameter.metric.weightReverseScale                   = input->parameter.metric.weightReverseScale;
     m_pathPlannerParameter.metric.weightReverseDecay                   = input->parameter.metric.weightReverseDecay;
     m_pathPlannerParameter.pathPlanner.periodGoalSampling              = input->parameter.pathPlanner.periodGoalSampling;
-
-    // Assign maximum computation time and validate it
-    m_maxComputationTime                                               = std::max(0.0, input->parameter.pathPlanner.maxComputationTime);
-    if(!std::isfinite(m_maxComputationTime)){
-        m_maxComputationTime = 0.0;
-    }
 
     // Assign inputs
     m_pathPlannerInput.initialPose                                     = input->initialPose;

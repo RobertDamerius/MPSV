@@ -94,7 +94,6 @@ class MPSV_WrapperPathPlanner {
         mpsv::planner::PathPlannerInput m_pathPlannerInput;              // The input data to the path planner.
         mpsv::planner::PathPlannerOutput m_pathPlannerOutput;            // The output data from the path planner.
         mpsv::planner::PathPlannerParameterSet m_pathPlannerParameter;   // The parameter set for the path planner.
-        double m_maxComputationTime{0.0};                                // The maximum computation time in seconds allowed before leaving the iteration loop.
 
         /**
          * @brief Deserialize the input data to the internal path planner data.
