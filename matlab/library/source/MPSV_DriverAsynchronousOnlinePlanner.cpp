@@ -5,7 +5,10 @@
 
 void MPSV_AsynchronousOnlinePlannerInitialize(void** workVector, int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, uint32_t maxNumCells, int32_t threadPriority, int32_t ompNumThreads, int32_t ompDynamic, int32_t* cpuCoreIDs, uint32_t numCPUCoreIDs){
     MPSV_WrapperAsynchronousOnlinePlanner* wrapper = new MPSV_WrapperAsynchronousOnlinePlanner();
-    std::vector<int32_t> cpuCoreIDsVec(cpuCoreIDs, cpuCoreIDs + numCPUCoreIDs);
+    std::vector<int32_t> cpuCoreIDsVec;
+    if(cpuCoreIDs && (numCPUCoreIDs > 0)){
+        cpuCoreIDsVec.assign(cpuCoreIDs, cpuCoreIDs + numCPUCoreIDs);
+    }
     wrapper->Start(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells, threadPriority, ompNumThreads, ompDynamic, cpuCoreIDsVec);
     *workVector = reinterpret_cast<void*>(wrapper);
 }
