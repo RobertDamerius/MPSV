@@ -112,7 +112,7 @@ function tparam = AutoTune(asv, controlEffort, desiredRadiusX)
 
     % calculate thresholds for reaching a pose
     tparam.explorePath.rangePose(1) = 0.05 * norm(vehicleDimension/2);
-    tparam.explorePath.rangePose(2) = tparam.explorePath.rangePose(2);
+    tparam.explorePath.rangePose(2) = tparam.explorePath.rangePose(1);
     tparam.explorePath.rangePose(3) = deg2rad(5);
     tparam.explorePath.rangeUVR = diag([0.05, 0.1, 0.05]) * tparam.info.maxUVR;
     tparam.explorePath.rangeXYN = 0.05 * asv.model.vecSatXYN;
