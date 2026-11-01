@@ -4,7 +4,15 @@ function log = ReadLogFile(filename)
     % PARAMETER
     % filename   ... Name of the logfile.
     assert(ischar(filename), 'ERROR: Input "filename" must be a string!');
-    file = fopen(filename,'r');
+    file = fopen(filename,'rb');
+    assert(file >= 0, 'ERROR: Could not open logfile "%s"!', filename);
+    fileCleanup = onCleanup(@() fclose(file));
+    status = fseek(file, 0, 'eof');
+    assert(status == 0, 'ERROR: Could not seek to the end of the logfile!');
+    fileSize = ftell(file);
+    assert((fileSize >= 0) && (fileSize <= flintmax), 'ERROR: Could not determine logfile size!');
+    status = fseek(file, 0, 'bof');
+    assert(status == 0, 'ERROR: Could not seek to the start of the logfile!');
     startPatternCounter = int32(0);
     fieldPatternCounter = int32(0);
     logNumber = 0;
@@ -65,7 +73,10 @@ function log = ReadLogFile(filename)
             % Field size
             [V,L] = fread(file,1,'uint64'); assert(L == 1, 'ERROR: Invalid field data format!');
             fieldSize = uint64(V);
-            
+            assert(fieldSize <= uint64(flintmax), 'ERROR: Invalid field data format!');
+            fieldDataStart = ftell(file);
+            assert((fieldDataStart >= 0) && (double(fieldSize) <= (fileSize - fieldDataStart)), 'ERROR: Invalid field data format!');
+
             % Type
             assert(fieldSize >= uint64(4), 'ERROR: Invalid field data format!');
             fieldSize = fieldSize - uint64(4);
@@ -92,33 +103,58 @@ function log = ReadLogFile(filename)
             fieldSize = fieldSize - uint64(4);
             [V,L] = fread(file,1,'uint32'); assert(L == 1, 'ERROR: Invalid field data format!');
             numberOfDimensions = uint32(V);
-            assert(fieldSize >= uint64(numberOfDimensions * 4), 'ERROR: Invalid field data format!');
-            fieldSize = fieldSize - uint64(numberOfDimensions * 4);
+            dimensionDataSize = uint64(numberOfDimensions) * uint64(4);
+            assert((numberOfDimensions > 0) && (numberOfDimensions <= 32) && (fieldSize >= dimensionDataSize), 'ERROR: Invalid field data format!');
+            fieldSize = fieldSize - dimensionDataSize;
             [V,L] = fread(file,numberOfDimensions,'uint32'); assert(L == numberOfDimensions, 'ERROR: Invalid field data format!');
             dimension = uint32(V)';
+            numberOfElements = uint64(1);
+            for d = dimension
+                assert((d == 0) || (numberOfElements <= idivide(intmax('uint64'), uint64(d), 'floor')), 'ERROR: Invalid field dimensions!');
+                numberOfElements = numberOfElements * uint64(d);
+            end
 
             % Value
             assert(fieldSize >= uint64(8), 'ERROR: Invalid field data format!');
             fieldSize = fieldSize - uint64(8);
             [V,L] = fread(file,1,'uint64'); assert(L == 1, 'ERROR: Invalid field data format!');
             sizeofValue = uint64(V);
-            assert(fieldSize >= sizeofValue, 'ERROR: Invalid field data format!');
+            elementSize = BytesPerElement(dataType);
+            assert(numberOfElements <= idivide(intmax('uint64'), elementSize, 'floor'), 'ERROR: Invalid field dimensions!');
+            expectedValueSize = numberOfElements * elementSize;
+            assert((sizeofValue == expectedValueSize) && (fieldSize >= sizeofValue), 'ERROR: Invalid field data format!');
+            assert(numberOfElements <= uint64(flintmax), 'ERROR: Field contains too many values to load!');
             fieldSize = fieldSize - sizeofValue;
             if(strcmp('boolean',dataType))
-                [V,L] = fread(file,dimension,'uint8'); assert(L == prod(dimension), 'ERROR: Invalid field data format!');
+                [V,L] = fread(file,dimension,'uint8'); assert(uint64(L) == numberOfElements, 'ERROR: Invalid field data format!');
                 eval(['log{logNumber}.',name,' = ' dataType '(V > 0);']);
             else
-                [V,L] = fread(file,dimension,dataType); assert(L == prod(dimension), 'ERROR: Invalid field data format!');
+                [V,L] = fread(file,dimension,dataType); assert(uint64(L) == numberOfElements, 'ERROR: Invalid field data format!');
                 eval(['log{logNumber}.',name,' = ' dataType '(V);']);
             end
 
             % Unknown field data
             if(fieldSize)
-                fread(file,fieldSize,'uint8');
+                [~,L] = fread(file,double(fieldSize),'uint8');
+                assert(uint64(L) == fieldSize, 'ERROR: Invalid field data format!');
             end
         end
     end
-    fclose(file);
+end
+
+function elementSize = BytesPerElement(dataType)
+    switch(dataType)
+        case {'boolean','char','int8','uint8'}
+            elementSize = uint64(1);
+        case {'int16','uint16'}
+            elementSize = uint64(2);
+        case {'int32','uint32','single'}
+            elementSize = uint64(4);
+        case {'int64','uint64','double'}
+            elementSize = uint64(8);
+        otherwise
+            error('ERROR: Unsupported data type "%s"!', dataType);
+    end
 end
 
 function dataType = ToInternalDataType(type)
