@@ -220,7 +220,7 @@ class OrientedBox {
                 return;
             }
 
-            // Find largest distance perpenticular to the line (both sides of the line)
+            // Find largest distance perpendicular to the line (both sides of the line)
             double aEdge = points[idxB][1] - points[idxA][1];
             double bEdge = points[idxA][0] - points[idxB][0];
             double cEdge = -aEdge*points[idxA][0] - bEdge*points[idxA][1];

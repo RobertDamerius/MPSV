@@ -17,7 +17,7 @@ class SceneDataFile {
         /**
          * @brief Read the @ref scenes from a binary file.
          * @param [in] filename The name of the scene file to read.
-         * @return True if file reading and deserialization was successfull, false otherwise.
+         * @return True if file reading and deserialization was successful, false otherwise.
          * @note The scenes are not checked for validity.
          */
         bool Read(std::string filename){

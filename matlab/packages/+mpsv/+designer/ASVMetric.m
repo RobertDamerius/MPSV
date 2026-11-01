@@ -3,7 +3,7 @@ classdef ASVMetric < handle
         % Weighting (> 0) for heading angle (psi) in distance metric function.
         weightPsi (1,1) double {mustBeFinite, mustBePositive} = 5
 
-        % Weighting (>= 0) for sway movement (heading angle with respect to perpenticular direction of movement).
+        % Weighting (>= 0) for sway movement (heading angle with respect to perpendicular direction of movement).
         weightSway (1,1) double {mustBeFinite, mustBeNonnegative} = 0
 
         % Weighting (>= 0) for sway and reverse movement (heading angle with respect to line angle).

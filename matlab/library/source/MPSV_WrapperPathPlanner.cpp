@@ -99,7 +99,7 @@ void MPSV_WrapperPathPlanner::SerializeOutput(serialization_path_planner_output*
     output->errorCode                   = static_cast<uint8_t>(m_pathPlannerOutput.errorCode);
     output->cost                        = m_pathPlannerOutput.cost;
     output->goalReached                 = m_pathPlannerOutput.goalReached;
-    output->pathShrinked                = static_cast<uint8_t>(m_pathPlannerOutput.path.size() > output->path.size());
+    output->pathTruncated               = static_cast<uint8_t>(m_pathPlannerOutput.path.size() > output->path.size());
     output->reserved                    = 0;
     output->numberOfPerformedIterations = m_pathPlannerOutput.numberOfPerformedIterations;
     output->timestampOfComputationUTC   = m_pathPlannerOutput.timestampOfComputationUTC;

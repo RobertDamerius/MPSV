@@ -25,7 +25,7 @@ struct __attribute__((packed)) serialization_path_planner_input {
         } geometry;
         struct __attribute__((packed)) {
             double weightPsi;                                           // Weighting for yaw angle in distance metric function.
-            double weightSway;                                          // Weighting for sway movement (heading angle with respect to perpenticular direction of movement).
+            double weightSway;                                          // Weighting for sway movement (heading angle with respect to perpendicular direction of movement).
             double weightReverseScale;                                  // Weighting for sway and reverse movement (heading angle with respect to line angle).
             double weightReverseDecay;                                  // Decay factor (> 0) for the weighting function that weights sway and reverse movement.
         } metric;
@@ -49,13 +49,13 @@ struct __attribute__((packed)) serialization_path_planner_input {
 struct __attribute__((packed)) serialization_path_planner_output {
     uint8_t errorCode;                            // Non-zero error code value if input or parameter data is invalid.
     uint8_t goalReached:1;                        // True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-    uint8_t pathShrinked:1;                       // True if the path was truncated to fit the output buffer.
+    uint8_t pathTruncated:1;                      // True if the path was truncated to fit the output buffer.
     uint8_t reserved:6;                           // Reserved bits, unused, set to zero.
     uint32_t numberOfPerformedIterations;         // The total number of iterations that have been performed since the latest prepare step.
     double timestampOfComputationUTC;             // Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
     double cost;                                  // The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
-    int32_t numPoses;                             // The total number of poses that represent the actual path.
-    std::array<std::array<double,3>,1000> path;   // Resulting path, where each pose is given as {x,y,psi}. The first element always corresponds to the initial pose. If the goal is reached, then the final pose corresponds to the desired final pose of the path planning problem.
+    int32_t numPoses;                             // Number of poses included in the output path.
+    std::array<std::array<double,3>,1000> path;   // Resulting path, where each pose is given as {x,y,psi}. The first element always corresponds to the initial pose. If the goal is reached and pathTruncated is false, the final pose corresponds to the desired final pose of the path planning problem.
 };
 
 

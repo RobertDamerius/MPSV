@@ -50,6 +50,14 @@ class File {
         }
 
         /**
+         * @brief Check whether the file is open and the stream has no errors.
+         * @return True if the stream is open and good, false otherwise.
+         */
+        [[nodiscard]] bool IsGood(void) const noexcept {
+            return m_ofs.is_open() && m_ofs.good();
+        }
+
+        /**
          * @brief Close the data log file.
          */
         void Close(void) noexcept { m_ofs.close(); }
@@ -67,7 +75,7 @@ class File {
             type.erase(std::find(type.begin(), type.end(), '\0'), type.end());
             name.erase(std::find(name.begin(), name.end(), '\0'), name.end());
 
-            // Vlidate inputs
+            // Validate inputs
             constexpr uint64_t maxUint32 = std::numeric_limits<uint32_t>::max();
             constexpr uint64_t maxUint64 = std::numeric_limits<uint64_t>::max();
             if((type.size() > maxUint32) || (name.size() > maxUint32) || (dimension.size() > maxUint32) || (valueSize > static_cast<uint64_t>(std::numeric_limits<std::streamsize>::max())) || ((valueSize > 0) && (value == nullptr)) || !m_ofs.is_open() || !m_ofs.good()){

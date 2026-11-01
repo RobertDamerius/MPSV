@@ -213,7 +213,7 @@ class ParameterCostMap {
 class ParameterMetric {
     public:
         double weightPsi{3.0};            // Weighting (> 0) for heading angle (psi) in distance metric function.
-        double weightSway{2.0};           // Weighting (>= 0) for sway movement (heading angle with respect to perpenticular direction of movement).
+        double weightSway{2.0};           // Weighting (>= 0) for sway movement (heading angle with respect to perpendicular direction of movement).
         double weightReverseScale{0.0};   // Weighting (>= 0) for sway and reverse movement (heading angle with respect to line angle).
         double weightReverseDecay{1.0};   // Decay factor (> 0) for the weighting function that weights sway and reverse movement.
 

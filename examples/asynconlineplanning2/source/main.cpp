@@ -18,6 +18,9 @@ int main(int, char**){
         dataIn.WriteToFile(f, "input.");
         f.Close();
     }
+    else{
+        std::cerr << "Failed to open output file: " << filename << "\n";
+    }
 
     // set new input data for the next 120 seconds
     for(int i = 0; i != 120; ++i){

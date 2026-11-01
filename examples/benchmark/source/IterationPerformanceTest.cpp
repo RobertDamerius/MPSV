@@ -139,4 +139,7 @@ void IterationPerformanceTest::Solve(Scene& scene, bool recreateFile){
         //planner.WriteToFile(f, "planner.", dataIn.staticObstacles);
         f.Close();
     }
+    else{
+        std::cerr << "Failed to open output file: " << filename << "\n";
+    }
 }

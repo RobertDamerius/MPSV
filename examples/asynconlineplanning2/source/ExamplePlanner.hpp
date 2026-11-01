@@ -61,5 +61,8 @@ class ExamplePlanner: protected mpsv::planner::AsyncOnlinePlanner {
                 dataOut.WriteToFile(f, "examplePlanner.");
                 f.Close();
             }
+            else{
+                std::cerr << "Failed to open output file: " << filename << "\n";
+            }
         }
 };

@@ -152,7 +152,7 @@ void MPSV_WrapperAsynchronousOnlinePlanner::SerializeOutput(serialization_asynch
 
     // trajectory
     output->numTrajectoryPoints = static_cast<int32_t>(std::min(m_plannerOutput.trajectory.size(), output->trajectory.size()));
-    output->trajectoryShrinked  = static_cast<uint8_t>(m_plannerOutput.trajectory.size() > output->trajectory.size());
+    output->trajectoryTruncated = static_cast<uint8_t>(m_plannerOutput.trajectory.size() > output->trajectory.size());
     output->sampletime          = m_plannerOutput.sampletime;
     for(int32_t k = 0; k < output->numTrajectoryPoints; ++k){
         output->trajectory[k] = m_plannerOutput.trajectory[k];
@@ -160,7 +160,7 @@ void MPSV_WrapperAsynchronousOnlinePlanner::SerializeOutput(serialization_asynch
 
     // pathPlanner.path
     output->pathPlanner.numPoses                      = static_cast<int32_t>(std::min(m_plannerOutput.pathPlanner.path.size(), output->pathPlanner.path.size()));
-    output->pathPlanner.pathShrinked                  = static_cast<uint8_t>(m_plannerOutput.pathPlanner.path.size() > output->pathPlanner.path.size());
+    output->pathPlanner.pathTruncated                 = static_cast<uint8_t>(m_plannerOutput.pathPlanner.path.size() > output->pathPlanner.path.size());
     for(int32_t k = 0; k < output->pathPlanner.numPoses; ++k){
         output->pathPlanner.path[k] = m_plannerOutput.pathPlanner.path[k];
     }
@@ -172,7 +172,7 @@ void MPSV_WrapperAsynchronousOnlinePlanner::SerializeOutput(serialization_asynch
 
     // motionPlanner.referencePath
     output->motionPlanner.numPoses                    = static_cast<int32_t>(std::min(m_plannerOutput.motionPlanner.referencePath.size(), output->motionPlanner.referencePath.size()));
-    output->motionPlanner.referencePathShrinked       = static_cast<uint8_t>(m_plannerOutput.motionPlanner.referencePath.size() > output->motionPlanner.referencePath.size());
+    output->motionPlanner.referencePathTruncated      = static_cast<uint8_t>(m_plannerOutput.motionPlanner.referencePath.size() > output->motionPlanner.referencePath.size());
     for(int32_t k = 0; k < output->motionPlanner.numPoses; ++k){
         output->motionPlanner.referencePath[k] = m_plannerOutput.motionPlanner.referencePath[k];
     }

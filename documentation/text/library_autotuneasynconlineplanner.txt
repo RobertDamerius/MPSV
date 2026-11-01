@@ -54,7 +54,7 @@ Maximum computation time in seconds for motion planning.
 Weighting (greater than 0) for heading angle (psi) in distance metric function.
 
 <h3>metric_weightSway</h3>
-Weighting (greater than or equal to 0) for sway movement (heading angle with respect to perpenticular direction of movement).
+Weighting (greater than or equal to 0) for sway movement (heading angle with respect to perpendicular direction of movement).
 
 <h3>metric_weightReverseScale</h3>
 Weighting (greater than or equal to 0) for sway and reverse movement (heading angle with respect to line angle).
@@ -156,4 +156,3 @@ Each DoF is considered separately, assuming that <code>matB</code> of the model 
 <h3>steadyStateUVR (information-purpose only)</h3>
 This value represents the steady-state velocity that is reached when driving with a nominal force of <code>controlEffort*satXYN</code>, where <code>satXYN</code> is the input saturation value of the model.
 Each DoF is considered separately, assuming that <code>matB</code> of the model is mainly diagonal.
-

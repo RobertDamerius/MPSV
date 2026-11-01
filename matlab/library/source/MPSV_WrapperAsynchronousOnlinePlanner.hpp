@@ -98,7 +98,7 @@ struct __attribute__((packed)) serialization_asynchronous_online_planner_output 
     uint8_t errorCode;
     uint8_t threadState:2;
     uint8_t performedReset:1;
-    uint8_t trajectoryShrinked:1;
+    uint8_t trajectoryTruncated:1;
     uint8_t reserved:4;
     std::array<double,3> originLLA;
     int32_t numTrajectoryPoints;
@@ -108,7 +108,7 @@ struct __attribute__((packed)) serialization_asynchronous_online_planner_output 
         int32_t numPoses;
         std::array<std::array<double,3>,100> path;
         uint8_t goalReached:1;
-        uint8_t pathShrinked:1;
+        uint8_t pathTruncated:1;
         uint8_t reserved:6;
         uint32_t numberOfPerformedIterations;
         double timestampOfComputationUTC;
@@ -118,7 +118,7 @@ struct __attribute__((packed)) serialization_asynchronous_online_planner_output 
         int32_t numPoses;
         std::array<std::array<double,3>,100> referencePath;
         uint8_t goalReached:1;
-        uint8_t referencePathShrinked:1;
+        uint8_t referencePathTruncated:1;
         uint8_t reserved:6;
         uint32_t numberOfPerformedIterations;
         double timestampOfComputationUTC;
