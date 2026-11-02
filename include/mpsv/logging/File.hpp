@@ -181,7 +181,8 @@ class File {
             const auto timePoint = std::chrono::system_clock::now();
             const auto secondTimePoint = std::chrono::floor<std::chrono::seconds>(timePoint);
             const std::time_t time = std::chrono::system_clock::to_time_t(secondTimePoint);
-            const std::tm* gmTime = std::gmtime(&time); //#TODO: use std::gmtime_r for thread-safety when C++26 is fully supported
+            std::tm gmTimeBuffer{};
+            const std::tm* gmTime = mpsv::gmtime_r(&time, &gmTimeBuffer); // #TODO: use std::gmtime_r when C++26 is fully supported
             uint32_t year{};
             uint8_t month{};
             uint8_t day{};

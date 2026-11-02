@@ -40,7 +40,7 @@
 namespace mpsv {
 
 
-// MPSV version number
+/* MPSV version number */
 inline constexpr std::string_view version{"2.1.0"};
 
 
@@ -62,6 +62,18 @@ template <size_t N> struct is_vec6<std::array<double,N>> : std::true_type { stat
 /* Types that must be at least 9-dimensional arrays */
 template <typename C> struct is_vec9 : std::false_type {};
 template <size_t N> struct is_vec9<std::array<double,N>> : std::true_type { static_assert(N > 8, "Array must contain at least 9 elements!"); };
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// #TODO: use std::gmtime_r when C++26 is fully supported
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+inline struct tm* gmtime_r(const time_t* timer, struct tm* result) {
+    #if defined(_WIN32)
+        return gmtime_s(result, timer) == 0 ? result : nullptr;
+    #else
+        return ::gmtime_r(timer, result);
+    #endif
+}
 
 
 } /* namespace: mpsv */
