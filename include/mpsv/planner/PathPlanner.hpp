@@ -199,7 +199,7 @@ class PathPlanner {
             }
             samplingArea.Extend(maxSekeletalPointDistance + 2.0 * parameter.costMap.resolution); // extend by the maximum distance of skeletal points and two more cells as safety threshold
             mpsv::structures::CostMapArgument args(parameter.costMap.distanceScale, parameter.costMap.distanceDecay, staticObstacles);
-            m_costMap.Build(samplingArea, parameter.costMap.resolution, parameter.costMap.modBreakpoints, args);
+            m_costMap.Build(samplingArea, parameter.costMap.resolution, args);
         }
 
         /**

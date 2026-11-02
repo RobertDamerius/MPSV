@@ -162,7 +162,6 @@ class ParameterModel {
  */
 class ParameterCostMap {
     public:
-        int32_t modBreakpoints{10};   // A modulo factor (> 0) that indicates when to calculate the cost using the objective function and when to do bilinear interpolation.
         double resolution{0.1};       // Resolution (> 1e-3) of the grid map (dimension of one cell).
         double distanceScale{5.0};    // Scale factor (>= 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
         double distanceDecay{0.02};   // Decay factor (> 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
@@ -171,7 +170,6 @@ class ParameterCostMap {
          * @brief Clear the costmap parameter and set default values.
          */
         void Clear(void) noexcept {
-            modBreakpoints = 10;
             resolution     = 0.1;
             distanceScale  = 5.0;
             distanceDecay  = 0.02;
@@ -182,8 +180,6 @@ class ParameterCostMap {
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
         [[nodiscard]] error_code IsValid(void) const noexcept {
-            if(!(modBreakpoints > 0))
-                return error_code::PARAM_COSTMAP_MOD_BREAKPOINTS;
             if(!(std::isfinite(resolution) && (resolution > 1e-3)))
                 return error_code::PARAM_COSTMAP_RESOLUTION;
             if(!(std::isfinite(distanceScale) && (distanceScale >= 0.0)))
@@ -199,7 +195,6 @@ class ParameterCostMap {
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
-            file.WriteField("int32_t", preString + "modBreakpoints", {1}, &modBreakpoints, sizeof(modBreakpoints));
             file.WriteField("double", preString + "resolution", {1}, &resolution, sizeof(resolution));
             file.WriteField("double", preString + "distanceScale", {1}, &distanceScale, sizeof(distanceScale));
             file.WriteField("double", preString + "distanceDecay", {1}, &distanceDecay, sizeof(distanceDecay));

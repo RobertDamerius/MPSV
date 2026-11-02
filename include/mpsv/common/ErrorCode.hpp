@@ -38,60 +38,59 @@ enum class error_code : uint8_t {
     PARAM_MODEL_LOWER_LIMIT_XYN                           = 20,   // lowerLimitXYN is not finite.
     PARAM_MODEL_UPPER_LIMIT_XYN                           = 21,   // upperLimitXYN is not finite.
     PARAM_MODEL_LOWER_GREATER_UPPER_LIMIT                 = 22,   // lowerLimitXYN is greater than upperLimitXYN.
-    PARAM_COSTMAP_MOD_BREAKPOINTS                         = 23,   // modBreakpoints is not positive.
-    PARAM_COSTMAP_RESOLUTION                              = 24,   // resolution is not finite or is too low.
-    PARAM_COSTMAP_DISTANCE_SCALE                          = 25,   // distanceScale is not finite or negative.
-    PARAM_COSTMAP_DISTANCE_DECAY                          = 26,   // distanceDecay is not finite or not positive.
-    PARAM_METRIC_WEIGHT_PSI                               = 27,   // weightPsi is not finite or not positive.
-    PARAM_METRIC_WEIGHT_SWAY                              = 28,   // weightSway is not finite or negative.
-    PARAM_METRIC_WEIGHT_REVERSE_SCALE                     = 29,   // weightReverseScale is not finite or negative.
-    PARAM_METRIC_WEIGHT_REVERSE_DECAY                     = 30,   // weightReverseDecay is not finite or not positive.
-    PARAM_GEOMETRY_MAX_POSITION_DEVIATION                 = 31,   // collisionCheckMaxPositionDeviation is not finite or too low.
-    PARAM_GEOMETRY_MAX_ANGLE_DEVIATION                    = 32,   // collisionCheckMaxAngleDeviation is not finite or too low.
-    PARAM_GEOMETRY_VEHICLE_SHAPE                          = 33,   // Vertices of vehicleShape are not finite, not convex or vertex order is inconsistent.
-    PARAM_GEOMETRY_SKELETAL_POINTS                        = 34,   // skeletalPoints is empty or not finite.
-    PARAM_PATHPLANNER_PERIOD_GOAL_SAMPLING                = 35,   // periodGoalSampling for path planner is not positive.
-    PARAM_MOTIONPLANNER_SAMPLING_RANGE_POSITION           = 36,   // samplingRangePosition is not finite or not positive.
-    PARAM_MOTIONPLANNER_SAMPLING_RANGE_ANGLE              = 37,   // samplingRangeAngle is not finite or not positive.
-    PARAM_MOTIONPLANNER_PERIOD_GOAL_SAMPLING              = 38,   // periodGoalSampling for motion planner is not positive.
-    PARAM_MOTIONPLANNER_SAMPLETIME                        = 39,   // sampletime is not finite or not positive.
-    PARAM_MOTIONPLANNER_MAX_INPUT_PATH_LENGTH             = 40,   // maxInputPathLength is not finite or not positive.
-    PARAM_CONTROLLER_MAT_K                                = 41,   // matK is not finite.
-    PARAM_CONTROLLER_MAX_RADIUS_X                         = 42,   // maxRadiusX is not finite or not positive.
-    PARAM_CONTROLLER_MAX_RADIUS_Y                         = 43,   // maxRadiusY is not finite or not positive.
-    PARAM_CONTROLLER_MAX_RADIUS_PSI                       = 44,   // maxRadiusPsi is not finite or not positive.
-    PARAM_CONTROLLER_MIN_RADIUS_POSITION                  = 45,   // minRadiusPosition is not finite or not positive.
-    PARAM_REGION_OF_ATTRACTION_RANGE_POSE                 = 46,   // rangePose is not finite or not positive.
-    PARAM_REGION_OF_ATTRACTION_RANGE_UVR                  = 47,   // rangeUVR is not finite or not positive.
-    PARAM_REGION_OF_ATTRACTION_RANGE_XYN                  = 48,   // rangeXYN is not finite or not positive.
-    PARAM_ONLINEPLANNER_MAX_COMPUTATION_TIME_PATH_RESET   = 49,   // maxComputationTimePathOnReset is not finite or not positive.
-    PARAM_ONLINEPLANNER_MAX_COMPUTATION_TIME_MOTION_RESET = 50,   // maxComputationTimeMotionOnReset is not finite or not positive.
-    PARAM_ONLINEPLANNER_MAX_COMPUTATION_TIME_PATH         = 51,   // maxComputationTimePath is not finite or not positive.
-    PARAM_ONLINEPLANNER_MAX_COMPUTATION_TIME_MOTION       = 52,   // maxComputationTimeMotion is not finite or not positive.
-    PARAM_ONLINEPLANNER_ADDITIONAL_AHEAD_PLANNING_TIME    = 53,   // additionalAheadPlanningTime is not finite or not positive.
-    PARAM_ONLINEPLANNER_ADDITIONAL_TRAJECTORY_DURATION    = 54,   // additionalTrajectoryDuration is not finite or not positive.
-    PARAM_ONLINEPLANNER_TIME_KEEP_PAST_TRAJECTORY         = 55,   // timeKeepPastTrajectory is not finite or negative.
-    PARAM_ONLINEPLANNER_NUM_SIMULATION_STEPS              = 56,   // The number of simulation steps is too high: either planning time is too high and/or sampletime is too low.
-    PARAM_ASYNCPLANNER_TIMESTAMP                          = 57,   // timestamp is not finite.
-    PARAM_ASYNCPLANNER_TIMEOUT_INPUT                      = 58,   // timeoutInput is not finite.
+    PARAM_COSTMAP_RESOLUTION                              = 23,   // resolution is not finite or is too low.
+    PARAM_COSTMAP_DISTANCE_SCALE                          = 24,   // distanceScale is not finite or negative.
+    PARAM_COSTMAP_DISTANCE_DECAY                          = 25,   // distanceDecay is not finite or not positive.
+    PARAM_METRIC_WEIGHT_PSI                               = 26,   // weightPsi is not finite or not positive.
+    PARAM_METRIC_WEIGHT_SWAY                              = 27,   // weightSway is not finite or negative.
+    PARAM_METRIC_WEIGHT_REVERSE_SCALE                     = 28,   // weightReverseScale is not finite or negative.
+    PARAM_METRIC_WEIGHT_REVERSE_DECAY                     = 29,   // weightReverseDecay is not finite or not positive.
+    PARAM_GEOMETRY_MAX_POSITION_DEVIATION                 = 30,   // collisionCheckMaxPositionDeviation is not finite or too low.
+    PARAM_GEOMETRY_MAX_ANGLE_DEVIATION                    = 31,   // collisionCheckMaxAngleDeviation is not finite or too low.
+    PARAM_GEOMETRY_VEHICLE_SHAPE                          = 32,   // Vertices of vehicleShape are not finite, not convex or vertex order is inconsistent.
+    PARAM_GEOMETRY_SKELETAL_POINTS                        = 33,   // skeletalPoints is empty or not finite.
+    PARAM_PATHPLANNER_PERIOD_GOAL_SAMPLING                = 34,   // periodGoalSampling for path planner is not positive.
+    PARAM_MOTIONPLANNER_SAMPLING_RANGE_POSITION           = 35,   // samplingRangePosition is not finite or not positive.
+    PARAM_MOTIONPLANNER_SAMPLING_RANGE_ANGLE              = 36,   // samplingRangeAngle is not finite or not positive.
+    PARAM_MOTIONPLANNER_PERIOD_GOAL_SAMPLING              = 37,   // periodGoalSampling for motion planner is not positive.
+    PARAM_MOTIONPLANNER_SAMPLETIME                        = 38,   // sampletime is not finite or not positive.
+    PARAM_MOTIONPLANNER_MAX_INPUT_PATH_LENGTH             = 39,   // maxInputPathLength is not finite or not positive.
+    PARAM_CONTROLLER_MAT_K                                = 40,   // matK is not finite.
+    PARAM_CONTROLLER_MAX_RADIUS_X                         = 41,   // maxRadiusX is not finite or not positive.
+    PARAM_CONTROLLER_MAX_RADIUS_Y                         = 42,   // maxRadiusY is not finite or not positive.
+    PARAM_CONTROLLER_MAX_RADIUS_PSI                       = 43,   // maxRadiusPsi is not finite or not positive.
+    PARAM_CONTROLLER_MIN_RADIUS_POSITION                  = 44,   // minRadiusPosition is not finite or not positive.
+    PARAM_REGION_OF_ATTRACTION_RANGE_POSE                 = 45,   // rangePose is not finite or not positive.
+    PARAM_REGION_OF_ATTRACTION_RANGE_UVR                  = 46,   // rangeUVR is not finite or not positive.
+    PARAM_REGION_OF_ATTRACTION_RANGE_XYN                  = 47,   // rangeXYN is not finite or not positive.
+    PARAM_ONLINEPLANNER_MAX_COMPUTATION_TIME_PATH_RESET   = 48,   // maxComputationTimePathOnReset is not finite or not positive.
+    PARAM_ONLINEPLANNER_MAX_COMPUTATION_TIME_MOTION_RESET = 49,   // maxComputationTimeMotionOnReset is not finite or not positive.
+    PARAM_ONLINEPLANNER_MAX_COMPUTATION_TIME_PATH         = 50,   // maxComputationTimePath is not finite or not positive.
+    PARAM_ONLINEPLANNER_MAX_COMPUTATION_TIME_MOTION       = 51,   // maxComputationTimeMotion is not finite or not positive.
+    PARAM_ONLINEPLANNER_ADDITIONAL_AHEAD_PLANNING_TIME    = 52,   // additionalAheadPlanningTime is not finite or not positive.
+    PARAM_ONLINEPLANNER_ADDITIONAL_TRAJECTORY_DURATION    = 53,   // additionalTrajectoryDuration is not finite or not positive.
+    PARAM_ONLINEPLANNER_TIME_KEEP_PAST_TRAJECTORY         = 54,   // timeKeepPastTrajectory is not finite or negative.
+    PARAM_ONLINEPLANNER_NUM_SIMULATION_STEPS              = 55,   // The number of simulation steps is too high: either planning time is too high and/or sampletime is too low.
+    PARAM_ASYNCPLANNER_TIMESTAMP                          = 56,   // timestamp is not finite.
+    PARAM_ASYNCPLANNER_TIMEOUT_INPUT                      = 57,   // timeoutInput is not finite.
 
     // path planner
-    PATHPLANNER_INITIAL_POSE_COLLISION                    = 59,   // The initial pose of the path planner collides with static obstacles.
-    PATHPLANNER_OUT_OF_NODES                              = 60,   // The path planner has run out of nodes and cannot sample new nodes anymore.
+    PATHPLANNER_INITIAL_POSE_COLLISION                    = 58,   // The initial pose of the path planner collides with static obstacles.
+    PATHPLANNER_OUT_OF_NODES                              = 59,   // The path planner has run out of nodes and cannot sample new nodes anymore.
 
     // motion planner
-    MOTIONPLANNER_INITIAL_POSE_COLLISION                  = 61,   // The initial pose of the motion planner collides with static obstacles.
-    MOTIONPLANNER_OUT_OF_NODES                            = 62,   // The motion planner has run out of nodes and cannot sample new nodes anymore.
-    MOTIONPLANNER_INFEASIBLE_TRAJECTORY                   = 63,   // The final motion planner trajectory is dynamically infeasible.
+    MOTIONPLANNER_INITIAL_POSE_COLLISION                  = 60,   // The initial pose of the motion planner collides with static obstacles.
+    MOTIONPLANNER_OUT_OF_NODES                            = 61,   // The motion planner has run out of nodes and cannot sample new nodes anymore.
+    MOTIONPLANNER_INFEASIBLE_TRAJECTORY                   = 62,   // The final motion planner trajectory is dynamically infeasible.
 
     // sequential planner
-    SEQUENTIALPLANNER_INCOMPLETE_MOTION                   = 64,   // The motion planner has not been executed either due to a requested interrupt or because the path planner failed. The motion planner output is empty.
+    SEQUENTIALPLANNER_INCOMPLETE_MOTION                   = 63,   // The motion planner has not been executed either due to a requested interrupt or because the path planner failed. The motion planner output is empty.
 
     // online planner
-    ONLINEPLANNER_TIMESTAMP_NOT_INCREASING                = 65,   // timestamp is not greater than the previous input timestamp for solving sequential problems.
+    ONLINEPLANNER_TIMESTAMP_NOT_INCREASING                = 64,   // timestamp is not greater than the previous input timestamp for solving sequential problems.
 
     // asynchronous online planner
-    ASYNCONLINEPLANNER_OUTPUT_NOT_AVAILABLE               = 66    // The output does not contain a planning result yet.
+    ASYNCONLINEPLANNER_OUTPUT_NOT_AVAILABLE               = 65    // The output does not contain a planning result yet.
 };
 
 

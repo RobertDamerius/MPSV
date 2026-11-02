@@ -20,8 +20,8 @@ function tparam = AutoTune(asv, controlEffort, desiredRadiusX)
     %   vertex coordinates of the vehicle shape vertices, respectively, and ymean is the average y coordinate of the
     %   vehicle shape vertices.
     % 
-    % > costMapResolution, costMapModBreakpoints
-    %   The modulo factor for breakpoints is set to 10 and the resolution is 1 percent of the largest vehicle dimension.
+    % > costMapResolution
+    %   The resolution is the half of the lowest vehicle dimension.
     % 
     % > matK, maxRadiusX, maxRadiusY, maxRadiusPsi
     %   The controller gain and guidance radii are connected to each other. First, the longitudinal stop distance is
@@ -74,8 +74,7 @@ function tparam = AutoTune(asv, controlEffort, desiredRadiusX)
 
     % geometry
     [tparam.geometry.skeletalPoints, vehicleDimension] = mpsv.designer.details.BuildSkeletalPoints(asv.geometry.verticesVehicleShape);
-    tparam.geometry.costMapResolution = max(1e-3, max(vehicleDimension) / 100);
-    tparam.geometry.costMapModBreakpoints = int32(10);
+    tparam.geometry.costMapResolution = max(1e-3, min(vehicleDimension) / 2);
 
     % steady-state control effort
     steadyStateXYN = controlEffort * asv.model.vecSatXYN;

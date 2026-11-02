@@ -37,12 +37,9 @@ template <class Targ, class Tdata> class LookUpTable2D {
          * @brief Build the 2D look-up table by applying a new size and calculating new multi-dimensional table values.
          * @param[in] orientedBox The oriented box that represents the area of the LUT.
          * @param[in] resolution Resolution of the grid map (dimension of one cell). This value must be at least 1.0e-3 and is automatically increased if the dimension is too large.
-         * @param[in] modInterpolate A modulo factor that indicates when to calculate the data using the LUT function and when to do linear interpolation.
          * @param[in] args User-defined arguments passed to the LUT data callback function.
          */
-        void Build(const mpsv::geometry::OrientedBox& orientedBox, double resolution, int32_t modInterpolate, const Targ& args) noexcept {
-            // Ensure correct values
-            modInterpolate = std::max(static_cast<int32_t>(1),modInterpolate);
+        void Build(const mpsv::geometry::OrientedBox& orientedBox, double resolution, const Targ& args) noexcept {
             std::array<double,2> dimension = orientedBox.GetDimension();
 
             // Adjust lower/upper limit of resolution based on maximum number of cells
@@ -52,19 +49,15 @@ template <class Targ, class Tdata> class LookUpTable2D {
             double r = (b + std::sqrt(b * b - 4.0 * a * c)) / (-2.0 * a);
             m_res = std::max(1.0e-3, std::max(resolution, r));
 
-            // Get box parameters and calculate the LUT dimension based on size, resolution and modulo factor
+            // Get box parameters and calculate the LUT dimension based on size and resolution
             m_position = orientedBox.GetPosition();
             m_normal = orientedBox.GetNormal();
-            int32_t ux, uy, mx, my;
+            int32_t ux, uy;
             while(true){
-                ux = static_cast<int32_t>(std::ceil(dimension[0] / m_res));
-                uy = static_cast<int32_t>(std::ceil(dimension[1] / m_res));
-                mx = (ux - 1) % modInterpolate;
-                my = (uy - 1) % modInterpolate;
-                ux += mx ? (modInterpolate - mx) : 0;
-                uy += my ? (modInterpolate - my) : 0;
-                m_numX = 2 + std::max(static_cast<int32_t>(1), ux);
-                m_numY = 2 + std::max(static_cast<int32_t>(1), uy);
+                ux = std::max(static_cast<int32_t>(1), static_cast<int32_t>(std::ceil(dimension[0] / m_res)));
+                uy = std::max(static_cast<int32_t>(1), static_cast<int32_t>(std::ceil(dimension[1] / m_res)));
+                m_numX = 2 + ux;
+                m_numY = 2 + uy;
                 size_t numCells = static_cast<size_t>(m_numX) * static_cast<size_t>(m_numY);
                 if(numCells <= m_lut.size()){
                     break;
@@ -86,124 +79,18 @@ template <class Targ, class Tdata> class LookUpTable2D {
             double x0 = m_position[0] + d * (m_normal[0] - m_normal[1]);
             double y0 = m_position[1] + d * (m_normal[1] + m_normal[0]);
 
-            // Calculate cost on specific grid points (modulo grid points)
-            // A 2-by-3 grid with a modulo factor of 3 looks like this (note that there is a border of zeros around the actual data):
-            // 
-            //  0 0 0 0 0 0 0 0 0 0 0 0
-            //  0 x . . x . . x . . x 0
-            //  0 . . . . . . . . . . 0
-            //  0 . . . . . . . . . . 0
-            //  0 x . . x . . x . . x 0
-            //  0 . . . . . . . . . . 0
-            //  0 . . . . . . . . . . 0
-            //  0 x . . x . . x . . x 0
-            //  0 0 0 0 0 0 0 0 0 0 0 0
-            // 
-            // The following loop only calculates the cost for marked cells (x).
-            int32_t numBreakpointsX = ((m_numX - 3) / modInterpolate) + 1;
-            int32_t numBreakpointsY = ((m_numY - 3) / modInterpolate) + 1;
-            int32_t numTotal = numBreakpointsX * numBreakpointsY;
+            // Calculate the data for every cell in the active LUT region
+            int32_t numTotal = ux * uy;
             double dX = m_res * m_normal[0];
             double dY = m_res * m_normal[1];
             #pragma omp parallel for shared(m_lut)
             for(int32_t i = 0; i < numTotal; ++i){
-                int32_t bi = (i / numBreakpointsY) * modInterpolate;
-                int32_t bj = (i % numBreakpointsY) * modInterpolate;
+                int32_t bi = i / uy;
+                int32_t bj = i % uy;
                 int32_t index = (bi + 1) * m_numY + (bj + 1);
                 double x = x0 + static_cast<double>(bi)*dX - static_cast<double>(bj)*dY;
                 double y = y0 + static_cast<double>(bi)*dY + static_cast<double>(bj)*dX;
                 m_lut[index] = CallbackTableData(x, y, args);
-            }
-
-            // Linear interpolation of "non-modul" grid points
-            // Going on with the actual LUT, x indicates the grids for which cost values have been calculated.
-            // 
-            //  0 0 0 0 0 0 0 0 0 0 0 0
-            //  0 x . . x . . x . . x 0
-            //  0 + + + - - - + + + . 0
-            //  0 + + + - - - + + + . 0
-            //  0 x + + x - - x + + x 0
-            //  0 - - - + + + - - - . 0
-            //  0 - - - + + + - - - . 0
-            //  0 x - - x + + x - - x 0
-            //  0 0 0 0 0 0 0 0 0 0 0 0
-            // 
-            // The following loop interpolates the grid data (+,-) for all blocks. One block is indicated by a square of 'x'. The last row, column before the zero border is handled later.
-            int32_t numBlocksX = ux / modInterpolate;
-            int32_t numBlocksY = uy / modInterpolate;
-            double invMod = 1.0 / static_cast<double>(modInterpolate);
-            double invMod2 = 1.0 / static_cast<double>(modInterpolate * modInterpolate);
-            numTotal = numBlocksX * numBlocksY;
-            #pragma omp parallel for shared(m_lut)
-            for(int32_t i = 0; i < numTotal; ++i){
-                int32_t i00 = (i / numBlocksY) * modInterpolate + 1;
-                int32_t j00 = (i % numBlocksY) * modInterpolate + 1;
-                int32_t index = i00 * m_numY + j00;
-                int32_t mn = modInterpolate * m_numY;
-                Tdata c00 = m_lut[index];
-                Tdata c10 = m_lut[index + mn];
-                Tdata c01 = m_lut[index + modInterpolate];
-                Tdata c11 = m_lut[index + mn + modInterpolate];
-                Tdata d1 = (c10 - c00) * invMod;
-                Tdata d2 = (c01 - c00) * invMod;
-                Tdata d3 = (c00 + c11 - c01 - c10) * invMod2;
-                Tdata sd1 = {0.0};
-                Tdata sd3 = {0.0};
-                for(int32_t ix = 0, w = 0; ix < modInterpolate; ++ix, w += m_numY){
-                    Tdata sd2 = {0.0};
-                    Tdata ssd3 = {0.0};
-                    for(int32_t iy = 0; iy < modInterpolate; ++iy){
-                        m_lut[index + w + iy] = c00 + sd1 + sd2 + ssd3;
-                        sd2 += d2;
-                        ssd3 += sd3;
-                    }
-                    sd1 += d1;
-                    sd3 += d3;
-                }
-            }
-
-            // Go on with the remaining edges. In the following two loops we assign the values for A and B which gives us the following LUT:
-            // 
-            //  0 0 0 0 0 0 0 0 0 0 0 0
-            //  0 x B B x B B x B B x 0
-            //  0 + + + - - - + + + A 0
-            //  0 + + + - - - + + + A 0
-            //  0 x + + x - - x + + x 0
-            //  0 - - - + + + - - - A 0
-            //  0 - - - + + + - - - A 0
-            //  0 x - - x + + x - - x 0
-            //  0 0 0 0 0 0 0 0 0 0 0 0
-            int32_t ix0, ix1, iy0, iy1;
-            Tdata c10, c01, c11, sd1;
-            mx = modInterpolate * m_numY;
-            Tdata vd;
-            ix0 = m_numY;
-            iy1 = m_numY - 2;
-            for(int32_t bx = 0; bx < numBlocksX; ++bx){
-                ix1 = ix0 + mx;
-                c01 = m_lut[ix0 + iy1];
-                c11 = m_lut[ix1 + iy1];
-                vd = (c11 - c01) * invMod;
-                sd1 = vd;
-                for(int32_t ix = m_numY; ix < mx; ix += m_numY){
-                    m_lut[ix0 + ix + iy1] = c01 + sd1;
-                    sd1 += vd;
-                }
-                ix0 += mx;
-            }
-            iy0 = 1;
-            ix1 = (m_numX - 2) * m_numY;
-            for(int32_t by = 0; by < numBlocksY; ++by){
-                iy1 = iy0 + modInterpolate;
-                c10 = m_lut[ix1 + iy0];
-                c11 = m_lut[ix1 + iy1];
-                vd = (c11 - c10) * invMod;
-                sd1 = vd;
-                for(int32_t iy = 1; iy < modInterpolate; ++iy){
-                    m_lut[ix1 + iy0 + iy] = c10 + sd1;
-                    sd1 += vd;
-                }
-                iy0 += modInterpolate;
             }
         }
 

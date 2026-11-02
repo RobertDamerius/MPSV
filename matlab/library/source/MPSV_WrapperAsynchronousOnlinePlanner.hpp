@@ -36,7 +36,6 @@ struct __attribute__((packed)) serialization_asynchronous_online_planner_paramet
             std::array<std::array<float,2>,10> skeletalPoints;
         } geometry;
         struct __attribute__((packed)) {
-            int32_t modBreakpoints;
             double resolution;
             double distanceScale;
             double distanceDecay;

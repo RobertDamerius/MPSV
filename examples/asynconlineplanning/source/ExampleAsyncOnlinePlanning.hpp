@@ -32,8 +32,7 @@ inline mpsv::planner::AsyncOnlinePlannerParameterSet GetParameterSet(void){
     parameterSet.sequentialPlanner.model.upperLimitXYN                                   = {630.0, 495.0, 675.0};
 
     // cost map
-    parameterSet.sequentialPlanner.costMap.modBreakpoints                                = 10;
-    parameterSet.sequentialPlanner.costMap.resolution                                    = 0.05;
+    parameterSet.sequentialPlanner.costMap.resolution                                    = 0.8;
     parameterSet.sequentialPlanner.costMap.distanceScale                                 = 5.0;
     parameterSet.sequentialPlanner.costMap.distanceDecay                                 = 0.02;
 

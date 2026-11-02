@@ -20,7 +20,6 @@ void MPSV_WrapperPathPlanner::Step(serialization_path_planner_output* output, se
 
 void MPSV_WrapperPathPlanner::DeserializeInput(serialization_path_planner_input* input){
     // Assign parameters
-    m_pathPlannerParameter.costMap.modBreakpoints                      = input->parameter.costMap.modBreakpoints;
     m_pathPlannerParameter.costMap.resolution                          = input->parameter.costMap.resolution;
     m_pathPlannerParameter.costMap.distanceScale                       = input->parameter.costMap.distanceScale;
     m_pathPlannerParameter.costMap.distanceDecay                       = input->parameter.costMap.distanceDecay;

@@ -8,9 +8,6 @@ Calculate all tuning parameters for the MPSV AsyncOnlinePlanner based on given v
 
 
 <h2>Input Ports</h2>
-<h3>timestamp</h3>
-The timestamp to be set for the parameter data whenever at least one parameter changes.
-
 <h3>controlEffort</h3>
 The amount of control effort in range <code>(0,1]</code> used to drive the vehicle in a steady-state in longitudinal direction.
 A low value makes the vehicle move slower and a high value makes the vehicle move faster.
@@ -109,7 +106,6 @@ A bus, which provides informative details about the auto tuner.
 The following table shows all block parameters.
 <table>
     <tr><th>Parameter Name</th><th>Description</th></tr>
-    <tr><td style="font-family: Courier New;">timeoutInput</td><td>Timeout for input data to the solver (default is 1).</td></tr>
     <tr><td style="font-family: Courier New;">periodGoalSampling</td><td>Goal sampling period to be used for path and motion planning (default is 30).</td></tr>
 </table>
 
@@ -124,8 +120,8 @@ The additional ahead planning time is <code>max(0.2, 10*sampletime)</code>.
 <h3>skeletalPoints</h3>
 The skeletal points are two points <code>[xmax; ymean]</code> and <code>[xmin; ymean]</code>, where <code>xmax</code> and <code>xmin</code> are the maximum and minimum vertex coordinates of the vehicle shape vertices, respectively, and <code>ymean</code> is the average <code>y</code> coordinate of the vehicle shape vertices.
 
-<h3>costMapResolution, costMapModBreakpoints</h3>
-The modulo factor for breakpoints is set to 10 and the resolution is 1 percent of the largest vehicle dimension.
+<h3>costMapResolution</h3>
+The resolution is the half of the lowest vehicle dimension.
 
 <h3>matK, maxRadiusX, maxRadiusY, maxRadiusPsi</h3>
 The controller gain and guidance radii are connected to each other.

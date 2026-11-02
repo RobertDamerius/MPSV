@@ -70,7 +70,6 @@ void MPSV_WrapperAsynchronousOnlinePlanner::DeserializeParameter(serialization_a
         }
     }
 
-    m_plannerParameter.sequentialPlanner.costMap.modBreakpoints                     = parameter->sequentialPlanner.costMap.modBreakpoints;
     m_plannerParameter.sequentialPlanner.costMap.resolution                         = parameter->sequentialPlanner.costMap.resolution;
     m_plannerParameter.sequentialPlanner.costMap.distanceScale                      = parameter->sequentialPlanner.costMap.distanceScale;
     m_plannerParameter.sequentialPlanner.costMap.distanceDecay                      = parameter->sequentialPlanner.costMap.distanceDecay;

@@ -33,8 +33,7 @@ mpsv::planner::SequentialPlannerParameterSet IterationPerformanceTest::GetParame
     mpsv::planner::SequentialPlannerParameterSet parameterSet;
 
     // cost map
-    parameterSet.costMap.modBreakpoints                                = 10;
-    parameterSet.costMap.resolution                                    = 0.05;
+    parameterSet.costMap.resolution                                    = 0.8;
     parameterSet.costMap.distanceScale                                 = 5.0;
     parameterSet.costMap.distanceDecay                                 = 0.02;
 

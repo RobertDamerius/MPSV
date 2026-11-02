@@ -239,8 +239,7 @@ uint32_t Benchmark::PathPlanning(void){
     int16_t maxNumNodes = 1000;
     uint32_t maxNumSamples = 1000000;
     uint32_t maxNumCells = 4096 * 4096;
-    parameterSet.costMap.modBreakpoints                                = 10;
-    parameterSet.costMap.resolution                                    = 0.05;
+    parameterSet.costMap.resolution                                    = 0.8;
     parameterSet.costMap.distanceScale                                 = 5.0;
     parameterSet.costMap.distanceDecay                                 = 0.02;
     parameterSet.geometry.collisionCheckMaxPositionDeviation           = 0.100000000000000;
@@ -294,8 +293,7 @@ uint32_t Benchmark::MotionPlanning(void){
     parameterSet.model.vecTimeconstantsInput                           = {0.5, 0.5, 0.5};
     parameterSet.model.lowerLimitXYN                                   = {-630.0, -495.0, -675.0};
     parameterSet.model.upperLimitXYN                                   = {630.0, 495.0, 675.0};
-    parameterSet.costMap.modBreakpoints                                = 10;
-    parameterSet.costMap.resolution                                    = 0.05;
+    parameterSet.costMap.resolution                                    = 0.8;
     parameterSet.costMap.distanceScale                                 = 5.0;
     parameterSet.costMap.distanceDecay                                 = 0.02;
     parameterSet.geometry.collisionCheckMaxPositionDeviation           = 0.100000000000000;

@@ -12,7 +12,6 @@
 struct __attribute__((packed)) serialization_path_planner_input {
     struct __attribute__((packed)) {
         struct __attribute__((packed)) {
-            int32_t modBreakpoints;                                     // A modulo factor (> 0) that indicates when to calculate the cost using the cost function and when to do linear interpolation.
             double resolution;                                          // Resolution (> 1e-3) of the grid map (dimension of one cell).
             double distanceScale;                                       // Scale factor (>= 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
             double distanceDecay;                                       // Decay factor (> 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
