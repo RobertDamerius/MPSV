@@ -416,15 +416,17 @@ class PathPlanner {
                 Node& possibleParent = m_tree[index];
                 double resultCost = possibleParent.cost;
                 resultCost += mpsv::math::DistanceMetricSE2(possibleParent.pose, newSample.pose, parameter.metric.weightPsi);
-                resultCost += mpsv::math::SwayMetric(possibleParent.pose, newSample.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                 if((resultCost + m_epsDistanceMetric) < newSample.cost){
-                    resultCost += m_costMap.CostAlongLine(possibleParent.pose, newSample.pose, parameter.geometry.skeletalPoints);
+                    resultCost += mpsv::math::SwayMetric(possibleParent.pose, newSample.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                     if((resultCost + m_epsDistanceMetric) < newSample.cost){
-                        if(parameter.geometry.vehicleShape.CheckCollisionLine(staticObstacles, newSample.pose, possibleParent.pose, parameter.geometry.collisionCheckMaxAngleDeviation)){
-                            continue; // collision detected, cannot be a better parent
+                        resultCost += m_costMap.CostAlongLine(possibleParent.pose, newSample.pose, parameter.geometry.skeletalPoints);
+                        if((resultCost + m_epsDistanceMetric) < newSample.cost){
+                            if(parameter.geometry.vehicleShape.CheckCollisionLine(staticObstacles, newSample.pose, possibleParent.pose, parameter.geometry.collisionCheckMaxAngleDeviation)){
+                                continue; // collision detected, cannot be a better parent
+                            }
+                            idxBestParent = index;
+                            newSample.cost = resultCost;
                         }
-                        idxBestParent = index;
-                        newSample.cost = resultCost;
                     }
                 }
             }
@@ -449,15 +451,17 @@ class PathPlanner {
                 Node& destination = m_tree[index];
                 double resultCost = addedSample.cost;
                 resultCost += mpsv::math::DistanceMetricSE2(addedSample.pose, destination.pose, parameter.metric.weightPsi);
-                resultCost += mpsv::math::SwayMetric(addedSample.pose, destination.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                 if((resultCost + m_epsDistanceMetric) < destination.cost){
-                    resultCost += m_costMap.CostAlongLine(addedSample.pose, destination.pose, parameter.geometry.skeletalPoints);
+                    resultCost += mpsv::math::SwayMetric(addedSample.pose, destination.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                     if((resultCost + m_epsDistanceMetric) < destination.cost){
-                        if(parameter.geometry.vehicleShape.CheckCollisionLine(staticObstacles, destination.pose, addedSample.pose, parameter.geometry.collisionCheckMaxAngleDeviation)){
-                            continue; // collision detected, cannot be a better parent
+                        resultCost += m_costMap.CostAlongLine(addedSample.pose, destination.pose, parameter.geometry.skeletalPoints);
+                        if((resultCost + m_epsDistanceMetric) < destination.cost){
+                            if(parameter.geometry.vehicleShape.CheckCollisionLine(staticObstacles, destination.pose, addedSample.pose, parameter.geometry.collisionCheckMaxAngleDeviation)){
+                                continue; // collision detected, cannot be a better parent
+                            }
+                            double deltaCost = resultCost - destination.cost;
+                            m_tree.Rewire(index, idxAddedSample, deltaCost);
                         }
-                        double deltaCost = resultCost - destination.cost;
-                        m_tree.Rewire(index, idxAddedSample, deltaCost);
                     }
                 }
             }

@@ -430,17 +430,19 @@ class MotionPlanner {
                 Node& possibleParent = m_tree[index];
                 double resultCost = possibleParent.cost;
                 resultCost += mpsv::math::DistanceMetricSE2(possibleParent.pose, newSample.pose, parameter.metric.weightPsi);
-                resultCost += mpsv::math::SwayMetric(possibleParent.pose, newSample.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                 if((resultCost + m_epsDistanceMetric) < newSample.cost){
-                    resultCost += m_costMap.CostAlongLine(possibleParent.pose, newSample.pose, parameter.geometry.skeletalPoints);
+                    resultCost += mpsv::math::SwayMetric(possibleParent.pose, newSample.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                     if((resultCost + m_epsDistanceMetric) < newSample.cost){
-                        m_tree.GetPathFromRootToNode(m_tree[index].pathBuffer, index);
-                        m_tree[index].pathBuffer.push_back(newSample.pose);
-                        if(!PathFromRootIsFeasible(m_tree[index], dataIn, parameter)){
-                            continue; // infeasible, cannot be a better parent
+                        resultCost += m_costMap.CostAlongLine(possibleParent.pose, newSample.pose, parameter.geometry.skeletalPoints);
+                        if((resultCost + m_epsDistanceMetric) < newSample.cost){
+                            m_tree.GetPathFromRootToNode(m_tree[index].pathBuffer, index);
+                            m_tree[index].pathBuffer.push_back(newSample.pose);
+                            if(!PathFromRootIsFeasible(m_tree[index], dataIn, parameter)){
+                                continue; // infeasible, cannot be a better parent
+                            }
+                            idxBestParent = index;
+                            newSample.cost = resultCost;
                         }
-                        idxBestParent = index;
-                        newSample.cost = resultCost;
                     }
                 }
             }
@@ -465,38 +467,40 @@ class MotionPlanner {
                 Node& destination = m_tree[index];
                 double resultCost = addedSample.cost;
                 resultCost += mpsv::math::DistanceMetricSE2(addedSample.pose, destination.pose, parameter.metric.weightPsi);
-                resultCost += mpsv::math::SwayMetric(addedSample.pose, destination.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                 if((resultCost + m_epsDistanceMetric) < destination.cost){
-                    resultCost += m_costMap.CostAlongLine(addedSample.pose, destination.pose, parameter.geometry.skeletalPoints);
+                    resultCost += mpsv::math::SwayMetric(addedSample.pose, destination.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                     if((resultCost + m_epsDistanceMetric) < destination.cost){
-                        m_tree.GetLeafIndices(m_idxLeafNodes, index);
+                        resultCost += m_costMap.CostAlongLine(addedSample.pose, destination.pose, parameter.geometry.skeletalPoints);
+                        if((resultCost + m_epsDistanceMetric) < destination.cost){
+                            m_tree.GetLeafIndices(m_idxLeafNodes, index);
 
-                        // change parent temporarily to idxAddedSample
-                        int16_t idxOriginalParent = m_tree[index].iParent;
-                        m_tree[index].iParent = idxAddedSample;
+                            // change parent temporarily to idxAddedSample
+                            int16_t idxOriginalParent = m_tree[index].iParent;
+                            m_tree[index].iParent = idxAddedSample;
 
-                        // if original parent only has one child (index) it would become a leaf node and must be checked for feasibility as well
-                        if((m_tree[idxOriginalParent].iFirstChild >= 0) && (m_tree[m_tree[idxOriginalParent].iFirstChild].iNextSibling < 0)){
-                            m_idxLeafNodes.push_back(idxOriginalParent);
-                        }
-
-                        // check all paths from all leafs to the root
-                        bool anythingInfeasible = false;
-                        #pragma omp parallel for shared(m_tree, dataIn, parameter) reduction(||:anythingInfeasible)
-                        for(auto&& idxLeaf : m_idxLeafNodes){
-                            m_tree.GetPathFromRootToNode(m_tree[idxLeaf].pathBuffer, idxLeaf); // only traverses through parents
-                            if(!PathFromRootIsFeasible(m_tree[idxLeaf], dataIn, parameter)){
-                                anythingInfeasible = true;
+                            // if original parent only has one child (index) it would become a leaf node and must be checked for feasibility as well
+                            if((m_tree[idxOriginalParent].iFirstChild >= 0) && (m_tree[m_tree[idxOriginalParent].iFirstChild].iNextSibling < 0)){
+                                m_idxLeafNodes.push_back(idxOriginalParent);
                             }
-                        }
 
-                        // reset parent to original parent and check for feasibility
-                        m_tree[index].iParent = idxOriginalParent;
-                        if(anythingInfeasible){
-                            continue;
+                            // check all paths from all leafs to the root
+                            bool anythingInfeasible = false;
+                            #pragma omp parallel for shared(m_tree, dataIn, parameter) reduction(||:anythingInfeasible)
+                            for(auto&& idxLeaf : m_idxLeafNodes){
+                                m_tree.GetPathFromRootToNode(m_tree[idxLeaf].pathBuffer, idxLeaf); // only traverses through parents
+                                if(!PathFromRootIsFeasible(m_tree[idxLeaf], dataIn, parameter)){
+                                    anythingInfeasible = true;
+                                }
+                            }
+
+                            // reset parent to original parent and check for feasibility
+                            m_tree[index].iParent = idxOriginalParent;
+                            if(anythingInfeasible){
+                                continue;
+                            }
+                            double deltaCost = resultCost - destination.cost;
+                            m_tree.Rewire(index, idxAddedSample, deltaCost);
                         }
-                        double deltaCost = resultCost - destination.cost;
-                        m_tree.Rewire(index, idxAddedSample, deltaCost);
                     }
                 }
             }
