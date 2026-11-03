@@ -178,11 +178,12 @@ class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
             static_assert(mpsv::is_vec3<U>::value,"Argument {pose1} must be of type std::array<double,N> with N >= 3!");
             mpsv::geometry::AABB aabb(pose0[0], pose0[1], pose1[0], pose1[1]);
             aabb.Extend(m_farthestVertexDistance);
-            bool overlap = false;
             for(auto&& obs : staticObstacles){
-                overlap |= obs.OverlapAABB(aabb);
+                if(obs.OverlapAABB(aabb)){
+                    return true;
+                }
             }
-            return overlap;
+            return false;
         }
 };
 
