@@ -170,8 +170,15 @@ template <class Tnode> class FixedSizeTreeSE2 {
         [[nodiscard]] int16_t FindNearestNode(const Tnode& node, const double metricWeightPsi) noexcept {
             int16_t result = -1;
             double distance = std::numeric_limits<double>::infinity();
+            const auto& queryPose = node.pose;
             for(auto&& i : m_activeIndices){
-                double d = mpsv::math::DistanceMetricSE2(m_nodes[i].pose, node.pose, metricWeightPsi);
+                const auto& candidatePose = m_nodes[i].pose;
+                double dx = queryPose[0] - candidatePose[0];
+                double dy = queryPose[1] - candidatePose[1];
+                double planarDistanceSquared = dx*dx + dy*dy;
+                if((result >= 0) && (planarDistanceSquared >= distance*distance)) continue;
+                double dpsi = metricWeightPsi * mpsv::math::SymmetricalAngle(queryPose[2] - candidatePose[2]);
+                double d = std::sqrt(planarDistanceSquared + dpsi*dpsi);
                 if(d < distance){
                     distance = d;
                     result = i;
