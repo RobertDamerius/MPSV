@@ -108,25 +108,25 @@ template <class T> [[nodiscard]] inline std::vector<int32_t> QuickHull2DIndices(
         double dmaxA = 0.0, dmaxB = 0.0;
         int32_t idxFarthestA = -1, idxFarthestB = -1;
         for(int32_t k = 0; k < N; k++){
-            if(action.idxFarthest == action.points[k]) continue;
-            double dA = aEdgeA * refPoints[action.points[k]][0] + bEdgeA * refPoints[action.points[k]][1] + cEdgeA;
-            double dB = aEdgeB * refPoints[action.points[k]][0] + bEdgeB * refPoints[action.points[k]][1] + cEdgeB;
+            int32_t pointIndex = action.points[k];
+            if(action.idxFarthest == pointIndex) continue;
+            double dA = aEdgeA * refPoints[pointIndex][0] + bEdgeA * refPoints[pointIndex][1] + cEdgeA;
+            double dB = aEdgeB * refPoints[pointIndex][0] + bEdgeB * refPoints[pointIndex][1] + cEdgeB;
             if(dA > 0){
-                idxPointsA.push_back(action.points[k]);
+                idxPointsA.push_back(pointIndex);
                 if(dA > dmaxA){
                     dmaxA = dA;
-                    idxFarthestA = action.points[k];
+                    idxFarthestA = pointIndex;
                 }
             }
             if(dB > 0){
-                idxPointsB.push_back(action.points[k]);
+                idxPointsB.push_back(pointIndex);
                 if(dB > dmaxB){
                     dmaxB = dB;
-                    idxFarthestB = action.points[k];
+                    idxFarthestB = pointIndex;
                 }
             }
         }
-
         // Push new actions to the stack
         if(idxFarthestB >= 0){
             stack.push_back({std::move(idxPointsB), action.idxFarthest, action.idxB, idxFarthestB, false});
@@ -143,9 +143,9 @@ template <class T> [[nodiscard]] inline std::vector<int32_t> QuickHull2DIndices(
     }
     else{
         constexpr double eps = 100.0 * std::numeric_limits<double>::epsilon();
-        std::vector<int32_t> keep;
         int32_t N = static_cast<int32_t>(indices.size());
-        keep.reserve(N);
+        int32_t numKept = 0;
+        int32_t firstIndex = indices[0];
         double curNormalX, curNormalY;
         double prevNormalX = refPoints[indices[0]][1] - refPoints[indices.back()][1];
         double prevNormalY = refPoints[indices.back()][0] - refPoints[indices[0]][0];
@@ -155,19 +155,21 @@ template <class T> [[nodiscard]] inline std::vector<int32_t> QuickHull2DIndices(
         prevNormalY *= len;
         for(int32_t i = 0; i < N; i++){
             int32_t iNext = (i + 1) % N;
-            curNormalX = refPoints[indices[iNext]][1] - refPoints[indices[i]][1];
-            curNormalY = refPoints[indices[i]][0] - refPoints[indices[iNext]][0];
+            int32_t idx = indices[i];
+            int32_t idxNext = (iNext == 0) ? firstIndex : indices[iNext];
+            curNormalX = refPoints[idxNext][1] - refPoints[idx][1];
+            curNormalY = refPoints[idx][0] - refPoints[idxNext][0];
             len = std::sqrt(curNormalX*curNormalX + curNormalY*curNormalY);
             len = 1.0 / (len + double(len == 0.0));
             curNormalX *= len;
             curNormalY *= len;
             if(std::fabs(prevNormalX * curNormalY - prevNormalY * curNormalX) > eps){
-                keep.push_back(indices[i]);
+                indices[numKept++] = idx;
                 prevNormalX = curNormalX;
                 prevNormalY = curNormalY;
             }
         }
-        indices.swap(keep);
+        indices.resize(static_cast<size_t>(numKept));
         if(indices.size() < 3){
             indices.clear();
         }
