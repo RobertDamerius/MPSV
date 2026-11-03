@@ -226,74 +226,21 @@ class ConvexPolygon {
                 return false;
             }
 
-            // Type Edge-Vertex (edges of this with vertices of polygon input)
-            size_t numVertices = polygon.m_vertices.size();
-            size_t thisNumVertices = m_vertices.size();
-            double vx, vy, v1x, v1y, v2x, v2y;
-            bool inCFree = false;
-            for(size_t n = 0; (n < thisNumVertices) && !inCFree; ++n){
-                const double& nx = m_edges[n][0];
-                const double& ny = m_edges[n][1];
-                const double& x1 = m_vertices[n][0];
-                const double& y1 = m_vertices[n][1];
-                vx = polygon.m_vertices[0][0] - x1;
-                vy = polygon.m_vertices[0][1] - y1;
-                v1x = polygon.m_vertices[numVertices-1][0] - polygon.m_vertices[0][0];
-                v1y = polygon.m_vertices[numVertices-1][1] - polygon.m_vertices[0][1];
-                v2x = polygon.m_vertices[1][0] - polygon.m_vertices[0][0];
-                v2y = polygon.m_vertices[1][1] - polygon.m_vertices[0][1];
-                inCFree |= (((nx*vx + ny*vy) > 0.0) && ((nx*v1x + ny*v1y) >= 0.0) && ((nx*v2x + ny*v2y) >= 0.0));
-                for(size_t k = 1; (k < (numVertices - 1)) && !inCFree; k++){
-                    vx = polygon.m_vertices[k][0] - x1;
-                    vy = polygon.m_vertices[k][1] - y1;
-                    v1x = polygon.m_vertices[k-1][0] - polygon.m_vertices[k][0];
-                    v1y = polygon.m_vertices[k-1][1] - polygon.m_vertices[k][1];
-                    v2x = polygon.m_vertices[k+1][0] - polygon.m_vertices[k][0];
-                    v2y = polygon.m_vertices[k+1][1] - polygon.m_vertices[k][1];
-                    inCFree |= (((nx*vx + ny*vy) > 0.0) && ((nx*v1x + ny*v1y) >= 0.0) && ((nx*v2x + ny*v2y) >= 0.0));
+            // Check for separation by edges
+            const auto isSeparated = [](const std::vector<std::array<double, 3>>& edges, const std::vector<std::array<double, 2>>& vertices) noexcept {
+                for(const auto& edge : edges){
+                    bool allVerticesOutside = true;
+                    for(const auto& vertex : vertices){
+                        if((edge[0] * vertex[0] + edge[1] * vertex[1] + edge[2]) <= 0.0){
+                            allVerticesOutside = false;
+                            break;
+                        }
+                    }
+                    if(allVerticesOutside) return true;
                 }
-                vx = polygon.m_vertices[numVertices-1][0] - x1;
-                vy = polygon.m_vertices[numVertices-1][1] - y1;
-                v1x = polygon.m_vertices[numVertices-2][0] - polygon.m_vertices[numVertices-1][0];
-                v1y = polygon.m_vertices[numVertices-2][1] - polygon.m_vertices[numVertices-1][1];
-                v2x = polygon.m_vertices[0][0] - polygon.m_vertices[numVertices-1][0];
-                v2y = polygon.m_vertices[0][1] - polygon.m_vertices[numVertices-1][1];
-                inCFree |= (((nx*vx + ny*vy) > 0.0) && ((nx*v1x + ny*v1y) >= 0.0) && ((nx*v2x + ny*v2y) >= 0.0));
-            }
-
-            // Type Vertex-Edge (vertices of this with edges of polygon input)
-            for(size_t n = 0; (n < numVertices) && !inCFree; ++n){
-                const double& nx = polygon.m_edges[n][0];
-                const double& ny = polygon.m_edges[n][1];
-                const double& x1 = polygon.m_vertices[n][0];
-                const double& y1 = polygon.m_vertices[n][1];
-                vx = m_vertices[0][0] - x1;
-                vy = m_vertices[0][1] - y1;
-                v1x = m_vertices[thisNumVertices-1][0] - m_vertices[0][0];
-                v1y = m_vertices[thisNumVertices-1][1] - m_vertices[0][1];
-                v2x = m_vertices[1][0] - m_vertices[0][0];
-                v2y = m_vertices[1][1] - m_vertices[0][1];
-                inCFree |= (((nx*vx + ny*vy) > 0.0) && ((nx*v1x + ny*v1y) >= 0.0) && ((nx*v2x + ny*v2y) >= 0.0));
-                for(size_t k = 1; (k < (thisNumVertices - 1)) && !inCFree; k++){
-                    vx = m_vertices[k][0] - x1;
-                    vy = m_vertices[k][1] - y1;
-                    v1x = m_vertices[k-1][0] - m_vertices[k][0];
-                    v1y = m_vertices[k-1][1] - m_vertices[k][1];
-                    v2x = m_vertices[k+1][0] - m_vertices[k][0];
-                    v2y = m_vertices[k+1][1] - m_vertices[k][1];
-                    inCFree |= (((nx*vx + ny*vy) > 0.0) && ((nx*v1x + ny*v1y) >= 0.0) && ((nx*v2x + ny*v2y) >= 0.0));
-                }
-                vx = m_vertices[thisNumVertices-1][0] - x1;
-                vy = m_vertices[thisNumVertices-1][1] - y1;
-                v1x = m_vertices[thisNumVertices-2][0] - m_vertices[thisNumVertices-1][0];
-                v1y = m_vertices[thisNumVertices-2][1] - m_vertices[thisNumVertices-1][1];
-                v2x = m_vertices[0][0] - m_vertices[thisNumVertices-1][0];
-                v2y = m_vertices[0][1] - m_vertices[thisNumVertices-1][1];
-                inCFree |= (((nx*vx + ny*vy) > 0.0) && ((nx*v1x + ny*v1y) >= 0.0) && ((nx*v2x + ny*v2y) >= 0.0));
-            }
-
-            // It's a collision if no configuration is in CFree
-            return !inCFree;
+                return false;
+            };
+            return !isSeparated(m_edges, polygon.m_vertices) && !isSeparated(polygon.m_edges, m_vertices);
         }
 
         /**
