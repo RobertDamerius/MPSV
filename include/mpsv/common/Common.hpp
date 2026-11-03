@@ -41,7 +41,7 @@ namespace mpsv {
 
 
 /* MPSV version number */
-inline constexpr std::string_view version{"2.1.0"};
+inline constexpr std::string_view version{"3.0.0"};
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
