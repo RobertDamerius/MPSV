@@ -183,22 +183,19 @@ class File {
          */
         void WriteHeaderData() noexcept {
             // Create header data
-            const auto timePoint = std::chrono::system_clock::now();
-            const auto secondTimePoint = std::chrono::floor<std::chrono::seconds>(timePoint);
-            const std::time_t time = std::chrono::system_clock::to_time_t(secondTimePoint);
-            std::tm gmTimeBuffer{};
-            const std::tm* gmTime = mpsv::gmtime_r(&time, &gmTimeBuffer); // #TODO: use std::gmtime_r when C++26 is fully supported
-            std::uint32_t year{};
-            std::uint8_t month{};
-            std::uint8_t day{};
-            double timestampUTC{};
-            if (gmTime) {
-                year = static_cast<std::uint32_t>(gmTime->tm_year) + 1900U;
-                month = static_cast<std::uint8_t>(gmTime->tm_mon) + 1U;
-                day = static_cast<std::uint8_t>(gmTime->tm_mday);
-                const double fractionalSeconds{1e-9 * static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(timePoint - secondTimePoint).count())};
-                timestampUTC = 3600.0 * static_cast<double>(gmTime->tm_hour) + 60.0 * static_cast<double>(gmTime->tm_min) + static_cast<double>(gmTime->tm_sec) + fractionalSeconds;
-            }
+            namespace chr = std::chrono;
+            const chr::system_clock::time_point now{chr::system_clock::now()};
+            const chr::sys_days today{chr::floor<chr::days>(now)};
+            const chr::hh_mm_ss<chr::nanoseconds> timeOfDay{chr::duration_cast<chr::nanoseconds>(now - today)};
+            const chr::year_month_day ymd{today};
+            const std::int32_t nanosecond{static_cast<std::int32_t>(timeOfDay.subseconds().count())};
+            const std::int32_t second{static_cast<std::int32_t>(timeOfDay.seconds().count())};
+            const std::int32_t minute{static_cast<std::int32_t>(timeOfDay.minutes().count())};
+            const std::int32_t hour{static_cast<std::int32_t>(timeOfDay.hours().count())};
+            const std::uint32_t day{static_cast<std::uint32_t>(static_cast<unsigned int>(ymd.day()))};
+            const std::uint32_t month{static_cast<std::uint32_t>(static_cast<unsigned int>(ymd.month()))};
+            const std::uint32_t year{static_cast<std::uint32_t>(static_cast<int>(ymd.year()))};
+            const double timestampUTC{3600.0 * static_cast<double>(hour) + 60.0 * static_cast<double>(minute) + static_cast<double>(second) + 1.0e-9 * static_cast<double>(nanosecond)};
             constexpr char logStart[] = {'$', '$'};
             const std::uint32_t headerSize{sizeof(year) + sizeof(month) + sizeof(day) + sizeof(timestampUTC)};
 

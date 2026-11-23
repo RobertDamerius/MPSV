@@ -15,7 +15,6 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
-#include <ctime>
 #include <random>
 #include <cmath>
 #include <numbers>
@@ -62,18 +61,6 @@ template <std::size_t N> struct is_vec6<std::array<double, N>> : std::true_type 
 /* Types that must be at least 9-dimensional arrays */
 template <typename Ttype> struct is_vec9 : std::false_type {};
 template <std::size_t N> struct is_vec9<std::array<double, N>> : std::true_type { static_assert(N > 8U, "Array must contain at least 9 elements!"); };
-
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// #TODO: use std::gmtime_r when C++26 is fully supported
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-inline struct tm* gmtime_r(const time_t* timer, struct tm* result) {
-    #if defined(_WIN32)
-        return gmtime_s(result, timer) == 0 ? result : nullptr;
-    #else
-        return ::gmtime_r(timer, result);
-    #endif
-}
 
 
 } /* namespace: mpsv */

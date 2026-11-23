@@ -12,7 +12,7 @@
 struct __attribute__((packed)) serialization_path_planner_input {
     struct __attribute__((packed)) {
         struct __attribute__((packed)) {
-            double resolution;                                              // Resolution (> 1e-3) of the grid map (dimension of one cell).
+            double resolution;                                              // Resolution (> 1.0e-3) of the grid map (dimension of one cell).
             double distanceScale;                                           // Scale factor (>= 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
             double distanceDecay;                                           // Decay factor (> 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
         } costMap;
@@ -29,7 +29,7 @@ struct __attribute__((packed)) serialization_path_planner_input {
             double weightReverseDecay;                                      // Decay factor (> 0) for the weighting function that weights sway and reverse movement.
         } metric;
         struct __attribute__((packed)) {
-            std::uint32_t periodGoalSampling;                                    // Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
+            std::uint32_t periodGoalSampling;                               // Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
             double maxComputationTime;                                      // The maximum computation time in seconds allowed before leaving the iteration loop.
         } pathPlanner;
     } parameter;

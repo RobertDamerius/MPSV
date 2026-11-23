@@ -15,16 +15,31 @@ namespace runtime {
  * @return UTC timestamp: seconds of the day.
  */
 [[nodiscard]] inline double GetTimestampUTC() noexcept {
-    const auto timePoint = std::chrono::system_clock::now();
-    const auto secondTimePoint = std::chrono::floor<std::chrono::seconds>(timePoint);
-    const std::time_t time = std::chrono::system_clock::to_time_t(secondTimePoint);
-    std::tm gmTimeBuffer{};
-    const std::tm* gmTime = mpsv::gmtime_r(&time, &gmTimeBuffer); // #TODO: use std::gmtime_r when C++26 is fully supported
-    if (!gmTime) {
-        return 0.0;
+    namespace chr = std::chrono;
+
+    // capture current wall-clock time since Unix epoch (1970-01-01 00:00:00 UTC)
+    const chr::system_clock::time_point timeNow{chr::system_clock::now()};
+    const chr::system_clock::duration sinceEpoch{timeNow.time_since_epoch()};
+
+    // extract whole seconds and sub-second remainder
+    const chr::seconds totalSeconds{chr::duration_cast<chr::seconds>(sinceEpoch)};
+    const chr::system_clock::duration subseconds{sinceEpoch - totalSeconds};
+
+    // compute seconds elapsed since UTC midnight (86400 seconds per UTC day)
+    constexpr std::int64_t kSecondsPerDay{86400};
+    std::int64_t secondsToday{totalSeconds.count() % kSecondsPerDay};
+    if (secondsToday < 0) {
+        secondsToday += kSecondsPerDay; // handle pre-1970 timestamps safely
     }
-    const double fractionalSeconds{1.0e-9 * static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(timePoint - secondTimePoint).count())};
-    return 3600.0 * static_cast<double>(gmTime->tm_hour) + 60.0 * static_cast<double>(gmTime->tm_min) + static_cast<double>(gmTime->tm_sec) + fractionalSeconds;
+
+    // combine whole seconds of the day with fractional seconds
+    constexpr double kSecondsPerDayDouble{86400.0};
+    const chr::duration<double> fractional_seconds{chr::duration_cast<chr::duration<double>>(subseconds)};
+    double result{static_cast<double>(secondsToday) + fractional_seconds.count()};
+    if (result >= kSecondsPerDayDouble) {
+        result = 0.0; // boundary guard: if floating point arithmetic would lead to exactly 86400.0
+    }
+    return result;
 }
 
 

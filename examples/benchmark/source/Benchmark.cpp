@@ -495,13 +495,21 @@ void Benchmark::PrintSystemInfo() {
     #endif
 
     // Version and date
-    auto timePoint = std::chrono::system_clock::now();
-    std::time_t systemTime = std::chrono::system_clock::to_time_t(timePoint);
-    std::tm* gmTime = std::gmtime(&systemTime);
+    namespace chr = std::chrono;
+    const chr::system_clock::time_point now{chr::system_clock::now()};
+    const chr::sys_days today{chr::floor<chr::days>(now)};
+    const chr::hh_mm_ss<chr::nanoseconds> timeOfDay{chr::duration_cast<chr::nanoseconds>(now - today)};
+    const chr::year_month_day ymd{today};
+    const std::int32_t second = static_cast<std::int32_t>(timeOfDay.seconds().count());
+    const std::int32_t minute = static_cast<std::int32_t>(timeOfDay.minutes().count());
+    const std::int32_t hour   = static_cast<std::int32_t>(timeOfDay.hours().count());
+    const std::int32_t mday   = static_cast<std::int32_t>(static_cast<unsigned int>(ymd.day()));
+    const std::int32_t month  = static_cast<std::int32_t>(static_cast<unsigned int>(ymd.month()));
+    const std::int32_t year   = static_cast<std::int32_t>(static_cast<int>(ymd.year()));
     printf("MPSV API Version:         %.*s\n", static_cast<int>(mpsv::version.length()), mpsv::version.data());
     printf("Compiler Version:         %.*s\n", static_cast<int>(strCompilerVersion.length()), strCompilerVersion.data());
     printf("Built (local):            %.*s\n", static_cast<int>(strBuilt.length()), strBuilt.data());
-    printf("Current time (UTC):       %04u-%02u-%02u %02u:%02u:%02u\n", 1900 + gmTime->tm_year, 1 + gmTime->tm_mon, gmTime->tm_mday, gmTime->tm_hour, gmTime->tm_min, gmTime->tm_sec);
+    printf("Current time (UTC):       %04d-%02d-%02d %02d:%02d:%02d\n", year, month, mday, hour, minute, second);
     #ifdef DEBUG
     printf("DEBUG:                    1\n");
     #else
