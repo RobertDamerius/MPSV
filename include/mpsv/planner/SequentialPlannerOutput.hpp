@@ -26,7 +26,7 @@ class SequentialPlannerOutput {
         /**
          * @brief Clear the output and set default values.
          */
-        void Clear(void) noexcept {
+        void Clear() noexcept {
             errorCode = mpsv::error_code::NONE;
             pathPlanner.Clear();
             motionPlanner.Clear();
@@ -38,7 +38,7 @@ class SequentialPlannerOutput {
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
-            file.WriteField("uint8_t", preString + "errorCode", {1}, &errorCode, sizeof(errorCode));
+            file.WriteField("uint8_t", preString + "errorCode", {1U}, &errorCode, sizeof(errorCode));
             pathPlanner.WriteToFile(file, preString + "pathPlanner.");
             motionPlanner.WriteToFile(file, preString + "motionPlanner.");
         }

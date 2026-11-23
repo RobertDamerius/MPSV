@@ -32,7 +32,7 @@ class Benchmark {
         /**
          * @brief Run the main entry function for benchmark tests.
          */
-        static void Run(void);
+        static void Run();
 
     protected:
         static std::vector<mpsv::geometry::ConvexPolygon> m_convexPolygons;   // List of randomly generated polygons for benchmark tests.
@@ -44,35 +44,35 @@ class Benchmark {
          * @param[in] numPolygons Number of polygons to be generated.
          * @details Random triangles are generated.
          */
-        static void GeneratePolygons(const size_t numPolygons);
+        static void GeneratePolygons(const std::size_t numPolygons);
 
         /**
          * @brief Initialize the vehicle simulator by setting model and controller parameters.
          */
-        static void InitializeVehicleSimulator(void);
+        static void InitializeVehicleSimulator();
 
         /**
          * @brief Idle some time between benchmark tests.
          */
-        static void Idle(void);
+        static void Idle();
 
         /**
          * @brief Run the polygon overlap benchmark test.
          * @return Computation time of the benchmark test.
          */
-        static double PolygonOverlap(void);
+        static double PolygonOverlap();
 
         /**
          * @brief Run the cost map benchmark in single threading mode.
          * @return Computation time of the benchmark test.
          */
-        static double CostMapSingleThread(void);
+        static double CostMapSingleThread();
 
         /**
          * @brief Run the cost map benchmark in multi threading mode.
          * @return Computation time of the benchmark test.
          */
-        static double CostMapMultiThread(void);
+        static double CostMapMultiThread();
 
         /**
          * @brief Cost function to be used for generating data of the cost map benchmarks.
@@ -86,25 +86,25 @@ class Benchmark {
          * @brief Run the forward simulation benchmark.
          * @return Computation time of the benchmark test.
          */
-        static double ForwardSimulation(void);
+        static double ForwardSimulation();
 
         /**
          * @brief Run the path planning benchmark.
          * @return Number of iterations of the benchmark test.
          */
-        static uint32_t PathPlanning(void);
+        static std::uint32_t PathPlanning();
 
         /**
          * @brief Run the motion planning benchmark.
          * @return Number of iterations of the benchmark test.
          */
-        static uint32_t MotionPlanning(void);
+        static std::uint32_t MotionPlanning();
 
         /**
          * @brief Print header of benchmark result table.
          */
-        static void PrintResultHeaderTimes(void);
-        static void PrintResultHeaderIterations(void);
+        static void PrintResultHeaderTimes();
+        static void PrintResultHeaderIterations();
 
         /**
          * @brief Print result of a benchmark test.
@@ -118,17 +118,17 @@ class Benchmark {
          * @param[in] name Name of the benchmark test.
          * @param[in] iterations Number of iterations of the same benchmark.
          */
-        static void PrintResultDataIterations(std::string name, std::vector<uint32_t>& iterations);
+        static void PrintResultDataIterations(std::string name, std::vector<std::uint32_t>& iterations);
 
         /**
          * @brief Print footer of benchmark result table.
          */
-        static void PrintResultFooter(void);
+        static void PrintResultFooter();
 
         /**
          * @brief Print system information to the output.
          */
-        static void PrintSystemInfo(void);
+        static void PrintSystemInfo();
 
         /**
          * @brief Generate a list of static obstacles for path and motion planning benchmarks.

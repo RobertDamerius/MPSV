@@ -18,9 +18,9 @@ namespace planner {
  */
 class MotionPlannerInput {
     public:
-        std::array<double,12> initialStateAndInput{};                  // Initial state and input given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
-        std::vector<std::array<double,3>> initialPath{};               // The initial path starting from the initial state. The final pose is indicated by the last element. Each element is given as {x,y,psi}.
-        std::array<double,2> originOldToNew{};                         // Translation between two consecutive problems. If the origin of the previous problem is different to the origin of the new problem, then the old solution must be transformed to be used as initial sample set in the new problem. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).
+        std::array<double, 12U> initialStateAndInput{};                // Initial state and input given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
+        std::vector<std::array<double, 3U>> initialPath{};             // The initial path starting from the initial state. The final pose is indicated by the last element. Each element is given as {x,y,psi}.
+        std::array<double, 2U> originOldToNew{};                       // Translation between two consecutive problems. If the origin of the previous problem is different to the origin of the new problem, then the old solution must be transformed to be used as initial sample set in the new problem. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).
         std::vector<mpsv::geometry::StaticObstacle> staticObstacles;   // List of static obstacles, where each vertex is given as {x,y}.
         double minTrajectoryDuration{};                                // Minimum duration (>= 0) of the resulting trajectory in seconds.
 
@@ -28,35 +28,37 @@ class MotionPlannerInput {
          * @brief Check whether the attributes are valid.
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        [[nodiscard]] error_code IsValid(void) const noexcept {
-            if(!(std::isfinite(initialStateAndInput[0]) &&
-                 std::isfinite(initialStateAndInput[1]) &&
-                 std::isfinite(initialStateAndInput[2]) &&
-                 std::isfinite(initialStateAndInput[3]) &&
-                 std::isfinite(initialStateAndInput[4]) &&
-                 std::isfinite(initialStateAndInput[5]) &&
-                 std::isfinite(initialStateAndInput[6]) &&
-                 std::isfinite(initialStateAndInput[7]) &&
-                 std::isfinite(initialStateAndInput[8]) &&
-                 std::isfinite(initialStateAndInput[9]) &&
-                 std::isfinite(initialStateAndInput[10]) &&
-                 std::isfinite(initialStateAndInput[11])))
+        [[nodiscard]] error_code IsValid() const noexcept {
+            if (!(std::isfinite(initialStateAndInput[0U]) &&
+                 std::isfinite(initialStateAndInput[1U]) &&
+                 std::isfinite(initialStateAndInput[2U]) &&
+                 std::isfinite(initialStateAndInput[3U]) &&
+                 std::isfinite(initialStateAndInput[4U]) &&
+                 std::isfinite(initialStateAndInput[5U]) &&
+                 std::isfinite(initialStateAndInput[6U]) &&
+                 std::isfinite(initialStateAndInput[7U]) &&
+                 std::isfinite(initialStateAndInput[8U]) &&
+                 std::isfinite(initialStateAndInput[9U]) &&
+                 std::isfinite(initialStateAndInput[10U]) &&
+                 std::isfinite(initialStateAndInput[11U])))
                 return error_code::INPUT_INITIAL_STATE_AND_INPUT;
-            if(!(std::isfinite(originOldToNew[0]) &&
-                 std::isfinite(originOldToNew[1])))
+            if (!(std::isfinite(originOldToNew[0U]) &&
+                 std::isfinite(originOldToNew[1U])))
                 return error_code::INPUT_ORIGIN_OLD_TO_NEW;
-            for(auto&& pose : initialPath){
-                if(!(std::isfinite(pose[0]) &&
-                     std::isfinite(pose[1]) &&
-                     std::isfinite(pose[2])))
+            for (auto&& pose : initialPath) {
+                if (!(std::isfinite(pose[0U]) &&
+                     std::isfinite(pose[1U]) &&
+                     std::isfinite(pose[2U])))
                     return error_code::INPUT_INITIAL_PATH;
             }
-            for(auto&& obstacle : staticObstacles){
-                if(!obstacle.IsValid())
+            for (auto&& obstacle : staticObstacles) {
+                if (!obstacle.IsValid()) {
                     return error_code::INPUT_STATIC_OBSTACLES;
+                }
             }
-            if(!(std::isfinite(minTrajectoryDuration) && (minTrajectoryDuration >= 0.0)))
+            if (!(std::isfinite(minTrajectoryDuration) && (minTrajectoryDuration >= 0.0))) {
                 return error_code::INPUT_MIN_TRAJECTORY_DURATION;
+            }
             return error_code::NONE;
         }
 
@@ -66,11 +68,11 @@ class MotionPlannerInput {
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
-            file.WriteField("double", preString + "initialStateAndInput", {12}, &initialStateAndInput[0], sizeof(initialStateAndInput));
+            file.WriteField("double", preString + "initialStateAndInput", {12U}, &initialStateAndInput[0U], sizeof(initialStateAndInput));
             file.WriteVectorField(preString + "initialPath", initialPath);
-            file.WriteField("double", preString + "originOldToNew", {2}, &originOldToNew[0], sizeof(originOldToNew));
+            file.WriteField("double", preString + "originOldToNew", {2U}, &originOldToNew[0U], sizeof(originOldToNew));
             file.WriteConvexPolygonsField(preString + "staticObstacles", staticObstacles);
-            file.WriteField("double", preString + "minTrajectoryDuration", {1}, &minTrajectoryDuration, sizeof(minTrajectoryDuration));
+            file.WriteField("double", preString + "minTrajectoryDuration", {1U}, &minTrajectoryDuration, sizeof(minTrajectoryDuration));
         }
 };
 

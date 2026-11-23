@@ -14,7 +14,7 @@ namespace geometry {
 
 /* Forward declaration */
 class ConvexPolygon;
-template <class T> ConvexPolygon QuickHull2DPolygon(const std::vector<T>& refPoints) noexcept;
+template <class Tpoint> ConvexPolygon QuickHull2DPolygon(const std::vector<Tpoint>& refPoints) noexcept;
 
 
 /**
@@ -33,7 +33,7 @@ class ConvexPolygon {
          * @brief Construct a convex polygon based on given vertices.
          * @param[in] vertices Container of vertices.
          */
-        explicit ConvexPolygon(std::vector<std::array<double, 2>> vertices) noexcept {
+        explicit ConvexPolygon(std::vector<std::array<double, 2U>> vertices) noexcept {
             Create(vertices);
         }
 
@@ -43,7 +43,7 @@ class ConvexPolygon {
          * @note The vertex order may be reversed to ensure a mathematically positive (counterclockwise) orientation. If the given vertices do not indicate a valid
          * polygon, the internal vertex storage of this convex polygon remains empty.
          */
-        void Create(std::vector<std::array<double, 2>>& vertices) noexcept {
+        void Create(std::vector<std::array<double, 2U>>& vertices) noexcept {
             // Clear existing data
             m_vertices.clear();
             m_edges.clear();
@@ -52,130 +52,132 @@ class ConvexPolygon {
 
             // Validate input
             const auto& vRef = vertices;
-            if(vRef.size() < 3){
+            if (vRef.size() < 3U) {
                 return;
             }
-            constexpr double eps = 100.0 * std::numeric_limits<double>::epsilon();
-            uint32_t N = static_cast<uint32_t>(vRef.size());
-            int32_t order = 0;
-            int32_t numSignChangesX = 0;
-            int32_t numSignChangesY = 0;
-            for(uint32_t k = 0; k < N; ++k){
-                const auto& v0 = vRef[(k + N - 1) % N];
+            constexpr double eps{100.0 * std::numeric_limits<double>::epsilon()};
+            std::uint32_t N{static_cast<std::uint32_t>(vRef.size())};
+            std::int32_t order{0};
+            std::int32_t numSignChangesX{0};
+            std::int32_t numSignChangesY{0};
+            for (std::uint32_t k{0U}; k < N; ++k) {
+                const auto& v0 = vRef[(k + N - 1U) % N];
                 const auto& v1 = vRef[k];
-                const auto& v2 = vRef[(k + 1) % N];
-                double dx1 = v1[0] - v0[0];
-                double dy1 = v1[1] - v0[1];
-                if(!std::isfinite(v1[0]) || !std::isfinite(v1[1])){
+                const auto& v2 = vRef[(k + 1U) % N];
+                double dx1{v1[0U] - v0[0U]};
+                double dy1{v1[1U] - v0[1U]};
+                if (!std::isfinite(v1[0U]) || !std::isfinite(v1[1U])) {
                     return; // non-finite vertex
                 }
-                if((dx1*dx1 + dy1*dy1) <= eps){
+                if ((dx1*dx1 + dy1*dy1) <= eps) {
                     return; // zero-length edge: duplicate point -> invalid polygon
                 }
-                double dx2 = v2[0] - v1[0];
-                double dy2 = v2[1] - v1[1];
-                double z = dx1*dy2 - dy1*dx2;
-                if(!order){
+                double dx2{v2[0U] - v1[0U]};
+                double dy2{v2[1U] - v1[1U]};
+                double z{dx1*dy2 - dy1*dx2};
+                if (!order) {
                     order = (z >= 0.0) ? 1 : -1;
                 }
-                if(((order > 0) && (z < eps)) || ((order < 0) && (z > eps))){
+                if (((order > 0) && (z < eps)) || ((order < 0) && (z > eps))) {
                     return; // invalid vertex order
                 }
-                bool sx1 = (dx1 >= 0.0);
-                bool sy1 = (dy1 >= 0.0);
-                bool sx2 = (dx2 >= 0.0);
-                bool sy2 = (dy2 >= 0.0);
-                numSignChangesX += static_cast<int32_t>(sx1 != sx2);
-                numSignChangesY += static_cast<int32_t>(sy1 != sy2);
+                bool sx1{(dx1 >= 0.0)};
+                bool sy1{(dy1 >= 0.0)};
+                bool sx2{(dx2 >= 0.0)};
+                bool sy2{(dy2 >= 0.0)};
+                numSignChangesX += static_cast<std::int32_t>(sx1 != sx2);
+                numSignChangesY += static_cast<std::int32_t>(sy1 != sy2);
             }
-            if((2 != numSignChangesX) || (2 != numSignChangesY)){
+            if ((2 != numSignChangesX) || (2 != numSignChangesY)) {
                 return; // line or spiral -> invalid polygon
             }
-            if(order < 0){
+            if (order < 0) {
                 std::reverse(vertices.begin(), vertices.end()); // ensure math. positive order
             }
 
             // Store vertices and set container sizes
             m_vertices.swap(vertices);
-            size_t numVertices = m_vertices.size();
+            std::size_t numVertices{m_vertices.size()};
             m_edges.resize(numVertices);
 
             // Update all properties of the convex polygon (AABB, edges, ...)
-            m_farthestVertexDistance = std::sqrt(m_vertices[0][0]*m_vertices[0][0] + m_vertices[0][1]*m_vertices[0][1]);
-            m_aabb.Reset(m_vertices[0]);
-            for(size_t k = 1; k < numVertices; ++k){
-                RebuildEdge(k - 1, k);
+            m_farthestVertexDistance = std::sqrt(m_vertices[0U][0U]*m_vertices[0U][0U] + m_vertices[0U][1U]*m_vertices[0U][1U]);
+            m_aabb.Reset(m_vertices[0U]);
+            for (std::size_t k{1U}; k < numVertices; ++k) {
+                RebuildEdge(k - 1U, k);
                 m_aabb += m_vertices[k];
-                m_farthestVertexDistance = std::max(m_farthestVertexDistance, std::sqrt(m_vertices[k][0]*m_vertices[k][0] + m_vertices[k][1]*m_vertices[k][1]));
+                m_farthestVertexDistance = std::max(m_farthestVertexDistance, std::sqrt(m_vertices[k][0U]*m_vertices[k][0U] + m_vertices[k][1U]*m_vertices[k][1U]));
             }
-            RebuildEdge(numVertices - 1, 0);
+            RebuildEdge(numVertices - 1U, 0U);
         }
 
         /**
          * @brief Check if this polygon is valid, e.g. contains valid data.
          * @return True if this polygon represents a valid convex polygon, false otherwise.
          */
-        [[nodiscard]] bool IsValid(void) const noexcept { return (m_vertices.size() > 2); }
+        [[nodiscard]] bool IsValid() const noexcept {
+            return (m_vertices.size() > 2U);
+        }
 
         /**
          * @brief Check whether a point is inside the convex polygon or not.
-         * @tparam T Template parameter must be of type std::array<double,N> with N >= 2.
+         * @tparam Tpoint Template parameter must be of type std::array<double,N> with N >= 2.
          * @param[in] point The query point. The array must contain at least 2 elements {x,y}.
          * @return True if point is inside the convex polygon (closed set, including borders), false otherwise. If this polygon is invalid, false is returned.
          */
-        template <class T> [[nodiscard]] bool IsInside(const T point) const noexcept {
-            static_assert(mpsv::is_vec2<T>::value,"Argument {point} must be of type std::array<double,N> with N >= 2!");
-            if(m_edges.empty()){
+        template <class Tpoint> [[nodiscard]] bool IsInside(const Tpoint point) const noexcept {
+            static_assert(mpsv::is_vec2<Tpoint>::value, "Argument {point} must be of type std::array<double,N> with N >= 2!");
+            if (m_edges.empty()) {
                 return false;
             }
-            bool outside = false;
-            for(auto&& edgeParameter : m_edges){
-                outside |= ((edgeParameter[0] * point[0] + edgeParameter[1] * point[1] + edgeParameter[2]) > 0.0);
+            bool outside{false};
+            for (auto&& edgeParameter : m_edges) {
+                outside |= ((edgeParameter[0U] * point[0U] + edgeParameter[1U] * point[1U] + edgeParameter[2U]) > 0.0);
             }
             return !outside;
         }
 
         /**
          * @brief Transform all vertices of the convex polygon. The transformation is specified by a rotation around the origin {0,0} followed by a translation.
-         * @tparam T Template parameter must be of type std::array<double,N> with N >= 3.
+         * @tparam Tpose Template parameter must be of type std::array<double,N> with N >= 3.
          * @param[in] pose The pose to be used for transformation.
          * @details All edges are rebuild after the transformation of all vertices. @ref m_farthestVertexDistance ist updated.
          * @note This member function has no effect, if this polygon is not valid.
          */
-        template <class T> void Transform(T pose) noexcept {
-            static_assert(mpsv::is_vec3<T>::value,"Argument {pose} must be of type std::array<double,N> with N >= 3!");
-            size_t numVertices = m_vertices.size();
-            bool validInput = std::isfinite(pose[0]) && std::isfinite(pose[1]) && std::isfinite(pose[2]);
-            if(validInput && (numVertices > 2)){
-                double cosPsi = std::cos(pose[2]);
-                double sinPsi = std::sin(pose[2]);
-                double vx = m_vertices[0][0];
-                double vy = m_vertices[0][1];
-                m_vertices[0][0] = pose[0] + cosPsi * vx - sinPsi * vy;
-                m_vertices[0][1] = pose[1] + sinPsi * vx + cosPsi * vy;
-                m_aabb.Reset(m_vertices[0]);
-                m_farthestVertexDistance = std::sqrt(m_vertices[0][0]*m_vertices[0][0] + m_vertices[0][1]*m_vertices[0][1]);
-                for(size_t k = 1; k < numVertices; ++k){
-                    vx = m_vertices[k][0];
-                    vy = m_vertices[k][1];
-                    m_vertices[k][0] = pose[0] + cosPsi * vx - sinPsi * vy;
-                    m_vertices[k][1] = pose[1] + sinPsi * vx + cosPsi * vy;
-                    RebuildEdge(k - 1, k);
+        template <class Tpose> void Transform(Tpose pose) noexcept {
+            static_assert(mpsv::is_vec3<Tpose>::value, "Argument {pose} must be of type std::array<double,N> with N >= 3!");
+            std::size_t numVertices{m_vertices.size()};
+            bool validInput{std::isfinite(pose[0U]) && std::isfinite(pose[1U]) && std::isfinite(pose[2U])};
+            if (validInput && (numVertices > 2U)) {
+                double cosPsi{std::cos(pose[2U])};
+                double sinPsi{std::sin(pose[2U])};
+                double vx{m_vertices[0U][0U]};
+                double vy{m_vertices[0U][1U]};
+                m_vertices[0U][0U] = pose[0U] + cosPsi * vx - sinPsi * vy;
+                m_vertices[0U][1U] = pose[1U] + sinPsi * vx + cosPsi * vy;
+                m_aabb.Reset(m_vertices[0U]);
+                m_farthestVertexDistance = std::sqrt(m_vertices[0U][0U]*m_vertices[0U][0U] + m_vertices[0U][1U]*m_vertices[0U][1U]);
+                for (std::size_t k{1U}; k < numVertices; ++k) {
+                    vx = m_vertices[k][0U];
+                    vy = m_vertices[k][1U];
+                    m_vertices[k][0U] = pose[0U] + cosPsi * vx - sinPsi * vy;
+                    m_vertices[k][1U] = pose[1U] + sinPsi * vx + cosPsi * vy;
+                    RebuildEdge(k - 1U, k);
                     m_aabb += m_vertices[k];
-                    m_farthestVertexDistance = std::max(m_farthestVertexDistance, std::sqrt(m_vertices[k][0]*m_vertices[k][0] + m_vertices[k][1]*m_vertices[k][1]));
+                    m_farthestVertexDistance = std::max(m_farthestVertexDistance, std::sqrt(m_vertices[k][0U]*m_vertices[k][0U] + m_vertices[k][1U]*m_vertices[k][1U]));
                 }
-                RebuildEdge(numVertices - 1, 0);
+                RebuildEdge(numVertices - 1U, 0U);
             }
         }
 
         /**
          * @brief Create a convex polygon from all transformed vertices.
-         * @tparam T Template parameter must be of type std::array<double,N> with N >= 3.
+         * @tparam Tpose Template parameter must be of type std::array<double,N> with N >= 3.
          * @param[in] pose The pose to be used for transformation.
          * @return A convex polygon that indicates the transformed convex polygon. If this convex polygon contains less than 3 vertices, a copy of this convex polygon without transformation is returned.
          */
-        template <class T> [[nodiscard]] ConvexPolygon CreateTransformedPolygon(T pose) const noexcept {
-            static_assert(mpsv::is_vec3<T>::value,"Argument {pose} must be of type std::array<double,N> with N >= 3!");
+        template <class Tpose> [[nodiscard]] ConvexPolygon CreateTransformedPolygon(Tpose pose) const noexcept {
+            static_assert(mpsv::is_vec3<Tpose>::value, "Argument {pose} must be of type std::array<double,N> with N >= 3!");
             ConvexPolygon result = *this;
             result.Transform(pose);
             return result;
@@ -196,14 +198,14 @@ class ConvexPolygon {
          */
         [[nodiscard]] ConvexPolygon CreateTransformedConvexHull(double x0, double y0, double cosPsi0, double sinPsi0, double x1, double y1, double cosPsi1, double sinPsi1) const noexcept {
             // Transform vertices by two configurations and create point cloud
-            size_t numVertices = m_vertices.size();
-            std::vector<std::array<double,2>> points;
-            points.resize(2 * numVertices);
-            for(size_t k = 0; k < numVertices; ++k){
-                points[k][0] = x0 + cosPsi0 * m_vertices[k][0] - sinPsi0 * m_vertices[k][1];
-                points[k][1] = y0 + sinPsi0 * m_vertices[k][0] + cosPsi0 * m_vertices[k][1];
-                points[k + numVertices][0] = x1 + cosPsi1 * m_vertices[k][0] - sinPsi1 * m_vertices[k][1];
-                points[k + numVertices][1] = y1 + sinPsi1 * m_vertices[k][0] + cosPsi1 * m_vertices[k][1];
+            std::size_t numVertices{m_vertices.size()};
+            std::vector<std::array<double, 2U>> points;
+            points.resize(2U * numVertices);
+            for (std::size_t k{0U}; k < numVertices; ++k) {
+                points[k][0U] = x0 + cosPsi0 * m_vertices[k][0U] - sinPsi0 * m_vertices[k][1U];
+                points[k][1U] = y0 + sinPsi0 * m_vertices[k][0U] + cosPsi0 * m_vertices[k][1U];
+                points[k + numVertices][0U] = x1 + cosPsi1 * m_vertices[k][0U] - sinPsi1 * m_vertices[k][1U];
+                points[k + numVertices][1U] = y1 + sinPsi1 * m_vertices[k][0U] + cosPsi1 * m_vertices[k][1U];
             }
 
             // Compute the convex hull
@@ -217,26 +219,28 @@ class ConvexPolygon {
          */
         [[nodiscard]] bool Overlap(const ConvexPolygon& polygon) const noexcept {
             // Check for validity
-            if(!IsValid() || !polygon.IsValid()){
+            if (!IsValid() || !polygon.IsValid()) {
                 return false;
             }
 
             // Check if AABBs overlap
-            if(!m_aabb.Overlap(polygon.m_aabb)){
+            if (!m_aabb.Overlap(polygon.m_aabb)) {
                 return false;
             }
 
             // Check for separation by edges
-            const auto isSeparated = [](const std::vector<std::array<double, 3>>& edges, const std::vector<std::array<double, 2>>& vertices) noexcept {
-                for(const auto& edge : edges){
-                    bool allVerticesOutside = true;
-                    for(const auto& vertex : vertices){
-                        if((edge[0] * vertex[0] + edge[1] * vertex[1] + edge[2]) <= 0.0){
+            const auto isSeparated = [](const std::vector<std::array<double, 3U>>& edges, const std::vector<std::array<double, 2U>>& vertices) noexcept {
+                for (const auto& edge : edges) {
+                    bool allVerticesOutside{true};
+                    for (const auto& vertex : vertices) {
+                        if ((edge[0U] * vertex[0U] + edge[1U] * vertex[1U] + edge[2U]) <= 0.0) {
                             allVerticesOutside = false;
                             break;
                         }
                     }
-                    if(allVerticesOutside) return true;
+                    if (allVerticesOutside) {
+                        return true;
+                    }
                 }
                 return false;
             };
@@ -248,7 +252,9 @@ class ConvexPolygon {
          * @param[in] aabb Axis-aligned bounding box to be checked for overlapping.
          * @return True if AABBs overlap, false otherwise. If this polygon is invalid, false is returned.
          */
-        [[nodiscard]] bool OverlapAABB(mpsv::geometry::AABB& aabb) const noexcept { return IsValid() && m_aabb.Overlap(aabb); }
+        [[nodiscard]] bool OverlapAABB(mpsv::geometry::AABB& aabb) const noexcept {
+            return IsValid() && m_aabb.Overlap(aabb);
+        }
 
         /**
          * @brief Calculate the minimum squared distance to all edges of this convex polygon.
@@ -257,24 +263,24 @@ class ConvexPolygon {
          * @return The minimum squared distance to all edges of this convex polygon or infinity, if this convex polygon is invalid.
          */
         [[nodiscard]] double MinimumSquaredDistanceToEdges(double x, double y) const noexcept {
-            size_t numVertices = m_vertices.size();
-            if(numVertices < 3){
+            std::size_t numVertices{m_vertices.size()};
+            if (numVertices < 3U) {
                 return std::numeric_limits<double>::infinity();
             }
-            double ax = x - m_vertices[numVertices - 1][0];
-            double ay = y - m_vertices[numVertices - 1][1];
-            double bx = m_vertices[0][0] - m_vertices[numVertices - 1][0];
-            double by = m_vertices[0][1] - m_vertices[numVertices - 1][1];
-            double aa = ax*ax + ay*ay;
-            double ab = ax*bx + ay*by;
-            double bb = bx*bx + by*by;
-            double lambda = std::clamp(ab / bb, 0.0, 1.0);
-            double minSquaredDistance = aa + (bb*lambda - 2.0 * ab)*lambda;
-            for(size_t k = 1; k < numVertices; ++k){
-                ax = x - m_vertices[k - 1][0];
-                ay = y - m_vertices[k - 1][1];
-                bx = m_vertices[k][0] - m_vertices[k - 1][0];
-                by = m_vertices[k][1] - m_vertices[k - 1][1];
+            double ax{x - m_vertices[numVertices - 1U][0U]};
+            double ay{y - m_vertices[numVertices - 1U][1U]};
+            double bx{m_vertices[0U][0U] - m_vertices[numVertices - 1U][0U]};
+            double by{m_vertices[0U][1U] - m_vertices[numVertices - 1U][1U]};
+            double aa{ax*ax + ay*ay};
+            double ab{ax*bx + ay*by};
+            double bb{bx*bx + by*by};
+            double lambda{std::clamp(ab / bb, 0.0, 1.0)};
+            double minSquaredDistance{aa + (bb*lambda - 2.0 * ab)*lambda};
+            for (std::size_t k{1U}; k < numVertices; ++k) {
+                ax = x - m_vertices[k - 1U][0U];
+                ay = y - m_vertices[k - 1U][1U];
+                bx = m_vertices[k][0U] - m_vertices[k - 1U][0U];
+                by = m_vertices[k][1U] - m_vertices[k - 1U][1U];
                 aa = ax*ax + ay*ay;
                 ab = ax*bx + ay*by;
                 bb = bx*bx + by*by;
@@ -289,19 +295,25 @@ class ConvexPolygon {
          * @return Farthest distance to all vertices from the origin {0,0} or 0, if this polygon is invalid.
          * @details The distance is calculated, if the vertex data is changed, e.g. during @ref Create, @ref Translate, @ref Transform, ...
          */
-        [[nodiscard]] double GetFarthestVertexDistance(void) const noexcept { return m_farthestVertexDistance; }
+        [[nodiscard]] double GetFarthestVertexDistance() const noexcept {
+            return m_farthestVertexDistance;
+        }
 
         /**
          * @brief Get a copy of the internal vertices.
          * @return Copy of the internal vertices.
          */
-        [[nodiscard]] std::vector<std::array<double, 2>> GetVertices(void) const noexcept { return m_vertices; }
+        [[nodiscard]] std::vector<std::array<double, 2U>> GetVertices() const noexcept {
+            return m_vertices;
+        }
 
         /**
          * @brief Get the 2D axis-aligned bounding box of this convex polygon.
          * @return 2D axis-aligned bounding box of this convex polygon.
          */
-        [[nodiscard]] mpsv::geometry::AABB GetAABB(void) const noexcept { return m_aabb; }
+        [[nodiscard]] mpsv::geometry::AABB GetAABB() const noexcept {
+            return m_aabb;
+        }
 
         /**
          * @brief Swap this convex polygon with a given convex polygon.
@@ -315,8 +327,8 @@ class ConvexPolygon {
         }
 
     protected:
-        std::vector<std::array<double, 2>> m_vertices;   // Container of vertices. One data point indicates vertex coordinates (x, y).
-        std::vector<std::array<double, 3>> m_edges;      // Container of edges. One data point (a,b,c) indicates edge parameters (function coefficient a of implicit equation a*x + b*y + c = 0). The size of this container is equal to that of @ref m_vertices. Edge [i] goes from vertex [i] to vertex [i+1].
+        std::vector<std::array<double, 2U>> m_vertices;   // Container of vertices. One data point indicates vertex coordinates (x, y).
+        std::vector<std::array<double, 3U>> m_edges;      // Container of edges. One data point (a,b,c) indicates edge parameters (function coefficient a of implicit equation a*x + b*y + c = 0). The size of this container is equal to that of @ref m_vertices. Edge [i] goes from vertex [i] to vertex [i+1].
         mpsv::geometry::AABB m_aabb;                     // The 2D axis-aligned bounding box of the polygon.
         double m_farthestVertexDistance;                 // Distance to the farthest vertex from the origin. The distance is calculated, if the vertex data is changed, e.g. during @ref Create, @ref Translate, @ref Transform, ...
 
@@ -325,14 +337,14 @@ class ConvexPolygon {
          * @param[in] idx Index of the vertex where the edge starts.
          * @param[in] idxNext Index of the next vertex where the edge ends.
          */
-        void RebuildEdge(size_t idx, size_t idxNext) noexcept {
-            double nx = m_vertices[idxNext][1] - m_vertices[idx][1];
-            double ny = m_vertices[idx][0] - m_vertices[idxNext][0];
-            double len = std::sqrt(nx*nx + ny*ny);
-            double invlen = 1.0 / (len + static_cast<double>(len == 0.0));
-            m_edges[idx][0] = invlen * nx;
-            m_edges[idx][1] = invlen * ny;
-            m_edges[idx][2] = -m_edges[idx][0] * m_vertices[idx][0] - m_edges[idx][1] * m_vertices[idx][1];
+        void RebuildEdge(std::size_t idx, std::size_t idxNext) noexcept {
+            double nx{m_vertices[idxNext][1U] - m_vertices[idx][1U]};
+            double ny{m_vertices[idx][0U] - m_vertices[idxNext][0U]};
+            double len{std::sqrt(nx*nx + ny*ny)};
+            double invlen{1.0 / (len + static_cast<double>(len == 0.0))};
+            m_edges[idx][0U] = invlen * nx;
+            m_edges[idx][1U] = invlen * ny;
+            m_edges[idx][2U] = -m_edges[idx][0U] * m_vertices[idx][0U] - m_edges[idx][1U] * m_vertices[idx][1U];
         }
 };
 

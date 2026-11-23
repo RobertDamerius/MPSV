@@ -39,7 +39,7 @@ class SequentialPlanner {
          * @param[in] motionMaxNumSamples Maximum number of random samples to be generated in advance (motion planner).
          * @param[in] maxNumCells Maximum number of cells to be used in the cost map.
          */
-        void Reconfigure(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, uint32_t maxNumCells) noexcept {
+        void Reconfigure(std::int16_t pathMaxNumNodes, std::uint32_t pathMaxNumSamples, std::int16_t motionMaxNumNodes, std::uint32_t motionMaxNumSamples, std::uint32_t maxNumCells) noexcept {
             m_pathPlanner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, maxNumCells);
             m_motionPlanner.Reconfigure(motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
         }
@@ -60,9 +60,9 @@ class SequentialPlanner {
             // NOTE: Not needed to check parameters here as they are validated in path and motion planners Solve member functions
 
             // Solve path planning problem
-            m_pathPlannerInput.initialPose[0] = dataIn.initialStateAndInput[0];
-            m_pathPlannerInput.initialPose[1] = dataIn.initialStateAndInput[1];
-            m_pathPlannerInput.initialPose[2] = dataIn.initialStateAndInput[2];
+            m_pathPlannerInput.initialPose[0U] = dataIn.initialStateAndInput[0U];
+            m_pathPlannerInput.initialPose[1U] = dataIn.initialStateAndInput[1U];
+            m_pathPlannerInput.initialPose[2U] = dataIn.initialStateAndInput[2U];
             m_pathPlannerInput.finalPose = dataIn.finalPose;
             m_pathPlannerInput.originOldToNew = dataIn.originOldToNew;
             m_pathPlannerInput.samplingBoxCenterPose = dataIn.samplingBoxCenterPose;
@@ -75,7 +75,7 @@ class SequentialPlanner {
             m_pathPlanner.Solve(m_pathPlannerOutput, m_pathPlannerInput, m_pathPlannerParameter, maxComputationTimePathPlanning, forceColdStart, &m_interruptSolve);
 
             // Solve motion planning problem
-            if(!m_interruptSolve.load() && (mpsv::error_code::NONE == m_pathPlannerOutput.errorCode)){
+            if (!m_interruptSolve.load() && (mpsv::error_code::NONE == m_pathPlannerOutput.errorCode)) {
                 m_motionPlannerInput.initialPath = m_pathPlannerOutput.path;
                 m_motionPlannerInput.initialStateAndInput = dataIn.initialStateAndInput;
                 m_motionPlannerInput.originOldToNew = dataIn.originOldToNew;
@@ -87,8 +87,7 @@ class SequentialPlanner {
                 m_motionPlannerParameter.model = parameter.model;
                 m_motionPlannerParameter.motionPlanner = parameter.motionPlanner;
                 m_motionPlanner.Solve(m_motionPlannerOutput, m_motionPlannerInput, m_motionPlannerParameter, maxComputationTimeMotionPlanning, forceColdStart, &m_interruptSolve);
-            }
-            else{
+            } else {
                 m_motionPlannerOutput.Clear();
                 m_motionPlannerOutput.errorCode = mpsv::error_code::SEQUENTIALPLANNER_INCOMPLETE_MOTION;
             }
@@ -102,7 +101,9 @@ class SequentialPlanner {
         /**
          * @brief Interrupt the @ref Solve operation of the sequential planner, including both internal planners.
          */
-        void Interrupt(void) noexcept { m_interruptSolve = true; }
+        void Interrupt() noexcept {
+            m_interruptSolve = true;
+        }
 
         /**
          * @brief Write data to the log file.

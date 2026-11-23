@@ -23,10 +23,10 @@ class UniformBoxSamplerSE2 {
          * @brief Generate samples for the uniform box sampler.
          * @param[in] maxNumSamples Maximum number of samples to be generated.
          */
-        void Generate(size_t maxNumSamples) noexcept {
-            m_R[0] = m_R[3] = m_invR[0] = m_invR[3] = 1.0;
-            m_R[1] = m_R[2] = m_invR[1] = m_invR[2] = 0.0;
-            m_offset[0] = m_offset[1] = 0.0;
+        void Generate(std::size_t maxNumSamples) noexcept {
+            m_R[0U] = m_R[3U] = m_invR[0U] = m_invR[3U] = 1.0;
+            m_R[1U] = m_R[2U] = m_invR[1U] = m_invR[2U] = 0.0;
+            m_offset[0U] = m_offset[1U] = 0.0;
             m_haltonSequence.Generate(maxNumSamples);
         }
 
@@ -36,19 +36,19 @@ class UniformBoxSamplerSE2 {
          */
         void SetSize(const mpsv::geometry::OrientedBox& box) noexcept {
             m_offset = box.GetPosition();
-            std::array<double,2> dimension = box.GetDimension();
-            std::array<double,2> normal = box.GetNormal();
-            dimension[0] = std::max(dimension[0], 1.0e-6);
-            dimension[1] = std::max(dimension[1], 1.0e-6);
-            m_R[0] = normal[0] * dimension[0];
-            m_R[1] = -normal[1] * dimension[1];
-            m_R[2] = normal[1] * dimension[0];
-            m_R[3] = normal[0] * dimension[1];
-            double invDetR = 1.0 / (m_R[0]*m_R[3] - m_R[1]*m_R[2]);
-            m_invR[0] = m_R[3] * invDetR;
-            m_invR[1] = -m_R[1] * invDetR;
-            m_invR[2] = -m_R[2] * invDetR;
-            m_invR[3] = m_R[0] * invDetR;
+            std::array<double, 2U> dimension = box.GetDimension();
+            std::array<double, 2U> normal = box.GetNormal();
+            dimension[0U] = std::max(dimension[0U], 1.0e-6);
+            dimension[1U] = std::max(dimension[1U], 1.0e-6);
+            m_R[0U] = normal[0U] * dimension[0U];
+            m_R[1U] = -normal[1U] * dimension[1U];
+            m_R[2U] = normal[1U] * dimension[0U];
+            m_R[3U] = normal[0U] * dimension[1U];
+            double invDetR{1.0 / (m_R[0U]*m_R[3U] - m_R[1U]*m_R[2U])};
+            m_invR[0U] = m_R[3U] * invDetR;
+            m_invR[1U] = -m_R[1U] * invDetR;
+            m_invR[2U] = -m_R[2U] * invDetR;
+            m_invR[3U] = m_R[0U] * invDetR;
         }
 
         /**
@@ -56,36 +56,36 @@ class UniformBoxSamplerSE2 {
          * @param[in] idxSample Index of the sample.
          * @return The output sample given as {x, y, psi}.
          */
-        [[nodiscard]] std::array<double, 3> Sample(size_t idxSample) const noexcept {
-            constexpr double pi2 = 2.0 * std::numbers::pi;
-            std::array<double, 3> sample = m_haltonSequence.Sample(idxSample);
+        [[nodiscard]] std::array<double, 3U> Sample(std::size_t idxSample) const noexcept {
+            constexpr double pi2{2.0 * std::numbers::pi};
+            std::array<double, 3U> sample = m_haltonSequence.Sample(idxSample);
             return {
-                m_R[0]*sample[0] + m_R[1]*sample[1] + m_offset[0],
-                m_R[2]*sample[0] + m_R[3]*sample[1] + m_offset[1],
-                mpsv::math::SymmetricalAngle(pi2 * sample[2])
+                m_R[0U]*sample[0U] + m_R[1U]*sample[1U] + m_offset[0U],
+                m_R[2U]*sample[0U] + m_R[3U]*sample[1U] + m_offset[1U],
+                mpsv::math::SymmetricalAngle(pi2 * sample[2U])
             };
         }
 
         /**
          * @brief Check whether a given point is inside the sampling area or not.
-         * @tparam T Template parameter must be of type std::array<double,N> with N >= 2.
+         * @tparam Tpoint Template parameter must be of type std::array<double,N> with N >= 2.
          * @param[in] point The point to be checked.
          * @return True if given point is inside the sampling area, false otherwise.
          */
-        template <class T> [[nodiscard]] bool IsInside(const T& point) const noexcept {
-            static_assert(mpsv::is_vec2<T>::value,"Argument {point} must be of type std::array<double,N> with N >= 2!");
-            double x = point[0] - m_offset[0];
-            double y = point[1] - m_offset[1];
-            double sx = m_invR[0]*x + m_invR[1]*y;
-            double sy = m_invR[2]*x + m_invR[3]*y;
+        template <class Tpoint> [[nodiscard]] bool IsInside(const Tpoint& point) const noexcept {
+            static_assert(mpsv::is_vec2<Tpoint>::value, "Argument {point} must be of type std::array<double,N> with N >= 2!");
+            double x{point[0U] - m_offset[0U]};
+            double y{point[1U] - m_offset[1U]};
+            double sx{m_invR[0U]*x + m_invR[1U]*y};
+            double sy{m_invR[2U]*x + m_invR[3U]*y};
             return (sx >= 0.0) && (sx <= 1.0) && (sy >= 0.0) && (sy <= 1.0);
         }
 
     protected:
-        mpsv::sampler::HaltonSequence<3> m_haltonSequence;   // Internal halton sequence sampler.
-        std::array<double, 4> m_R{1.0, 0.0, 0.0, 1.0};       // Scaled rotation matrix (row major order). A sample within the box is calculated by R*sample + offset.
-        std::array<double, 4> m_invR{1.0, 0.0, 0.0, 1.0};    // Inverse scaled rotation matrix (row major order).
-        std::array<double, 2> m_offset{0.0, 0.0};            // The origin of the box. This is the lower-left corner in the box frame.
+        mpsv::sampler::HaltonSequence<3U> m_haltonSequence;   // Internal halton sequence sampler.
+        std::array<double, 4U> m_R{1.0, 0.0, 0.0, 1.0};       // Scaled rotation matrix (row major order). A sample within the box is calculated by R*sample + offset.
+        std::array<double, 4U> m_invR{1.0, 0.0, 0.0, 1.0};    // Inverse scaled rotation matrix (row major order).
+        std::array<double, 2U> m_offset{0.0, 0.0};            // The origin of the box. This is the lower-left corner in the box frame.
 };
 
 

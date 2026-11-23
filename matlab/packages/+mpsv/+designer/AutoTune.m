@@ -74,7 +74,7 @@ function tparam = AutoTune(asv, controlEffort, desiredRadiusX)
 
     % geometry
     [tparam.geometry.skeletalPoints, vehicleDimension] = mpsv.designer.details.BuildSkeletalPoints(asv.geometry.verticesVehicleShape);
-    tparam.geometry.costMapResolution = max(1e-3, min(vehicleDimension) / 2);
+    tparam.geometry.costMapResolution = max(1.0e-3, min(vehicleDimension) / 2);
 
     % steady-state control effort
     steadyStateXYN = controlEffort * asv.model.vecSatXYN;
@@ -165,7 +165,7 @@ function stopDistance = LongitudinalStopDistance(u_max, model)
     satX = model.vecSatXYN(1);
 
     % select step size (h) based on greatest eigenvalue
-    avg_eigenvalues = max([1e-9, abs(a1), 1/T1, 1/T2]);
+    avg_eigenvalues = max([1.0e-9, abs(a1), 1/T1, 1/T2]);
     h = 1/avg_eigenvalues;
     h_over_2 = h / 2;
     h_over_6 = h / 6;

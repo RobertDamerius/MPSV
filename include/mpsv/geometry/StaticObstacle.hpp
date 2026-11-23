@@ -19,13 +19,13 @@ class StaticObstacle : public mpsv::geometry::ConvexPolygon {
         /**
          * @brief Default construction for a static obstacle.
          */
-        StaticObstacle() noexcept : mpsv::geometry::ConvexPolygon::ConvexPolygon(){}
+        StaticObstacle() noexcept : mpsv::geometry::ConvexPolygon::ConvexPolygon() {}
 
         /**
          * @brief Construct a static obstacle based on given vertices.
          * @param[in] vertices Container of vertices.
          */
-        explicit StaticObstacle(std::vector<std::array<double, 2>> vertices) noexcept : mpsv::geometry::ConvexPolygon::ConvexPolygon(vertices){}
+        explicit StaticObstacle(std::vector<std::array<double, 2U>> vertices) noexcept : mpsv::geometry::ConvexPolygon::ConvexPolygon(vertices) {}
 };
 
 

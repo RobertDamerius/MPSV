@@ -2,7 +2,7 @@
 #include <ExampleAsyncOnlinePlanning2.hpp>
 
 
-int main(int, char**){
+int main(int, char**) {
     // construct and start the planner
     ExamplePlanner planner;
     planner.Start();
@@ -13,17 +13,16 @@ int main(int, char**){
     mpsv::planner::AsyncOnlinePlannerParameterSet parameter = example::GetParameterSet();
     mpsv::logging::File f;
     std::string filename = example::GetDataFilename();
-    if(f.Open(filename)){
+    if (f.Open(filename)) {
         parameter.WriteToFile(f, "parameter.");
         dataIn.WriteToFile(f, "input.");
         f.Close();
-    }
-    else{
+    } else {
         std::cerr << "Failed to open output file: " << filename << "\n";
     }
 
     // set new input data for the next 120 seconds
-    for(int i = 0; i != 120; ++i){
+    for (int i{0}; i != 120; ++i) {
         dataIn = example::GetInput(timer.TimeToStart());
         parameter = example::GetParameterSet();
         planner.SetInput(dataIn, parameter);

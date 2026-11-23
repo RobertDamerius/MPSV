@@ -22,7 +22,7 @@ class AsyncOnlinePlannerInput: public mpsv::planner::OnlinePlannerInput {
         /**
          * @brief Clear the input and set default values.
          */
-        void Clear(void) noexcept {
+        void Clear() noexcept {
             mpsv::planner::OnlinePlannerInput::Clear();
             enable = false;
             reset = false;

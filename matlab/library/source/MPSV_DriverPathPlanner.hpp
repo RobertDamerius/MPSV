@@ -11,7 +11,7 @@
  * @param[in] maxNumSamples Maximum number of random samples to be generated in advance. A circular buffer of random samples is generated for fast sampling. The buffer can be quite large to ensure, that no duplicated samples are drawn within one solve operation.
  * @param[in] maxNumCells Maximum number of cells in the cost map.
  */
-extern void MPSV_PathPlannerInitialize(void** workVector, int16_t maxNumNodes, uint32_t maxNumSamples, uint32_t maxNumCells);
+extern void MPSV_PathPlannerInitialize(void** workVector, std::int16_t maxNumNodes, std::uint32_t maxNumSamples, std::uint32_t maxNumCells);
 
 /**
  * @brief Terminate the driver.
@@ -25,4 +25,4 @@ extern void MPSV_PathPlannerTerminate(void* workVector);
  * @param[out] serializedDataOut Serialized data (bytes) representing the output data.
  * @param[in] serializedDataIn Serialized data (bytes) representing the input data.
  */
-extern void MPSV_PathPlannerStep(void* workVector, uint8_t* serializedDataOut, uint8_t* serializedDataIn);
+extern void MPSV_PathPlannerStep(void* workVector, std::uint8_t* serializedDataOut, std::uint8_t* serializedDataIn);

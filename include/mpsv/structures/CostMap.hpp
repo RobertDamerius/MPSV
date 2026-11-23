@@ -44,30 +44,30 @@ class CostMap: public mpsv::structures::LookUpTable2DScalar<mpsv::structures::Co
     public:
         /**
          * @brief Calculate the cost along a given line between two poses. Two additional points are added along the longitudinal axis to consider the angle of the pose.
-         * @tparam T This template represents the type of a point and must be of type std::array<double,N> with N being greater than 1.
-         * @tparam U This template represents the type of a point and must be of type std::array<double,N> with N being greater than 1.
+         * @tparam Tpose0 This template represents the type of a point and must be of type std::array<double,N> with N being greater than 1.
+         * @tparam Tpose1 This template represents the type of a point and must be of type std::array<double,N> with N being greater than 1.
          * @param[in] pose0 First pose from which the numerical integration starts.
          * @param[in] pose1 Last pose where the numerical interation ends.
          * @param[in] skeletalPoints Skeletal points (b-frame) at which the cost map is to be evaluated.
          * @return Resulting cost value. This is a numerical integration through the internal LUT along a line between two points.
          */
-        template <class T, class U> [[nodiscard]] double CostAlongLine(const T& pose0, const U& pose1, const std::vector<std::array<double,2>>& skeletalPoints) const noexcept {
-            static_assert(mpsv::is_vec2<T>::value,"Argument {pose0} must be of type std::array<double,N> with N >= 2!");
-            static_assert(mpsv::is_vec2<U>::value,"Argument {pose1} must be of type std::array<double,N> with N >= 2!");
-            std::array<double,2> p0, p1;
-            double c0 = std::cos(pose0[2]);
-            double s0 = std::sin(pose0[2]);
-            double c1 = std::cos(pose1[2]);
-            double s1 = std::sin(pose1[2]);
-            double cost = 0.0;
-            for(auto&& point : skeletalPoints){
-                p0[0] = pose0[0] + c0*point[0] - s0*point[1];
-                p0[1] = pose0[1] + s0*point[0] + c0*point[1];
-                p1[0] = pose1[0] + c1*point[0] - s1*point[1];
-                p1[1] = pose1[1] + s1*point[0] + c1*point[1];
+        template <class Tpose0, class Tpose1> [[nodiscard]] double CostAlongLine(const Tpose0& pose0, const Tpose1& pose1, const std::vector<std::array<double, 2U>>& skeletalPoints) const noexcept {
+            static_assert(mpsv::is_vec2<Tpose0>::value, "Argument {pose0} must be of type std::array<double,N> with N >= 2!");
+            static_assert(mpsv::is_vec2<Tpose1>::value, "Argument {pose1} must be of type std::array<double,N> with N >= 2!");
+            std::array<double, 2U> p0, p1;
+            double c0{std::cos(pose0[2U])};
+            double s0{std::sin(pose0[2U])};
+            double c1{std::cos(pose1[2U])};
+            double s1{std::sin(pose1[2U])};
+            double cost{0.0};
+            for (auto&& point : skeletalPoints) {
+                p0[0U] = pose0[0U] + c0*point[0U] - s0*point[1U];
+                p0[1U] = pose0[1U] + s0*point[0U] + c0*point[1U];
+                p1[0U] = pose1[0U] + c1*point[0U] - s1*point[1U];
+                p1[1U] = pose1[1U] + s1*point[0U] + c1*point[1U];
                 cost += LineIntegral(p0, p1);
             }
-            return cost / static_cast<double>(std::max(static_cast<size_t>(1), skeletalPoints.size()));
+            return cost / static_cast<double>(std::max(std::size_t{1U}, skeletalPoints.size()));
         }
 
     protected:
@@ -80,17 +80,17 @@ class CostMap: public mpsv::structures::LookUpTable2DScalar<mpsv::structures::Co
          * @note This callback may be invoked concurrently from multiple OpenMP threads. Overrides must be thread-safe.
          */
         double CallbackTableData(double x, double y, const CostMapArgument& args) noexcept {
-            double result = 0.0;
-            double squaredDistance = std::numeric_limits<double>::infinity();
-            bool vertexInsidePolygon = false;
-            std::array<double,2> position({x, y});
-            for(auto&& obstacle : args.staticObstacles){
-                squaredDistance = std::min(squaredDistance, obstacle.MinimumSquaredDistanceToEdges(x,y));
+            double result{0.0};
+            double squaredDistance{std::numeric_limits<double>::infinity()};
+            bool vertexInsidePolygon{false};
+            std::array<double, 2U> position({x, y});
+            for (auto&& obstacle : args.staticObstacles) {
+                squaredDistance = std::min(squaredDistance, obstacle.MinimumSquaredDistanceToEdges(x, y));
                 vertexInsidePolygon |= obstacle.IsInside(position);
             }
-            if(std::isfinite(squaredDistance)){
+            if (std::isfinite(squaredDistance)) {
                 result = args.weightScale;
-                if(!vertexInsidePolygon){
+                if (!vertexInsidePolygon) {
                     result *= std::exp(-args.weightDecay * squaredDistance);
                 }
             }

@@ -17,86 +17,83 @@ namespace structures {
  * @tparam Targ A user-defined argument that is passed to the callback function for calculating look-up table data.
  * @tparam Tdim The dimension of the value to be stored in the 2D look-up table data.
  */
-template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::structures::LookUpTable2D<Targ, std::array<double,Tdim>> {
-    static_assert(Tdim > 0, "Array dimension for one element of the the look-up table data must not be zero!");
+template <class Targ, std::size_t Tdim> class LookUpTable2DVector: public mpsv::structures::LookUpTable2D<Targ, std::array<double, Tdim>> {
+    static_assert(Tdim > 0U, "Array dimension for one element of the the look-up table data must not be zero!");
 
     public:
         /**
          * @brief Calculate the line integral along a linear line between two points in one dimension of the multi-dimensional table data.
-         * @tparam T Template parameter must be of type std::array<double,N> with N >= 2.
-         * @tparam U Template parameter must be of type std::array<double,N> with N >= 2.
+         * @tparam Tpoint0 Template parameter must be of type std::array<double,N> with N >= 2.
+         * @tparam Tpoint1 Template parameter must be of type std::array<double,N> with N >= 2.
          * @param p0 Start point of the line from where to start the line integral, given in earth-fixed coordinates (meters).
          * @param p1 End point of the line where to end the line integral, given in earth-fixed coordinates (meters).
          * @param indexDimension The index to the dimension of the multi-dimensional value to be considered. Make sure that this index lies in range [0, Tdim) to prevent access violation.
          * @return Final value of the line integral along a linear line over the look-up table data.
          */
-        template <class T, class U> [[nodiscard]] double LineIntegralForDimension(const T& p0, const U& p1, size_t indexDimension) const noexcept {
+        template <class Tpoint0, class Tpoint1> [[nodiscard]] double LineIntegralForDimension(const Tpoint0& p0, const Tpoint1& p1, std::size_t indexDimension) const noexcept {
             // Convert to index position ({0,0} indicates origin of lower-left corner of LUT data cell (lut[0]), {0.5,0.5} would be the center of the lower-left cell, all data corresponds to the center of a cell)
-            std::array<double,2> iPos0 = this->ConvertToLUTPosition(p0) / this->m_res;
-            std::array<double,2> iPos1 = this->ConvertToLUTPosition(p1) / this->m_res;
+            std::array<double, 2U> iPos0 = this->ConvertToLUTPosition(p0) / this->m_res;
+            std::array<double, 2U> iPos1 = this->ConvertToLUTPosition(p1) / this->m_res;
 
             // Flooring the fractional index position (iPos) gives the true index
-            int32_t ix0 = static_cast<int32_t>(std::floor(iPos0[0]));
-            int32_t iy0 = static_cast<int32_t>(std::floor(iPos0[1]));
-            int32_t ix1 = static_cast<int32_t>(std::floor(iPos1[0]));
-            int32_t iy1 = static_cast<int32_t>(std::floor(iPos1[1]));
+            std::int32_t ix0{static_cast<std::int32_t>(std::floor(iPos0[0U]))};
+            std::int32_t iy0{static_cast<std::int32_t>(std::floor(iPos0[1U]))};
+            std::int32_t ix1{static_cast<std::int32_t>(std::floor(iPos1[0U]))};
+            std::int32_t iy1{static_cast<std::int32_t>(std::floor(iPos1[1U]))};
 
             // Vector from start to end {vx,vy} and the length (in index position coordinates, 1 cell = 1.0)
-            double vx = iPos1[0] - iPos0[0];
-            double vy = iPos1[1] - iPos0[1];
-            double L = std::sqrt(vx*vx + vy*vy);
+            double vx{iPos1[0U] - iPos0[0U]};
+            double vy{iPos1[1U] - iPos0[1U]};
+            double L{std::sqrt(vx*vx + vy*vy)};
 
             // Find direction for raytracing
-            int32_t sx = 0;    // direction for raytracing in x direction, either -1,0,+1
-            int32_t sy = 0;    // direction for raytracing in y direction, either -1,0,+1
-            double dtx = 0.0;  // amount of path variable t to go one more cell in x direction (ray starts at t=0 and stops at t=1)
-            double dty = 0.0;  // amount of path variable t to go one more cell in y direction (ray starts at t=0 and stops at t=1)
-            double tx = std::numeric_limits<double>::infinity(); // path variable t where the ray intersects with the next cell border in x direction (ray starts at t=0 and stops at t=1)
-            double ty = std::numeric_limits<double>::infinity(); // path variable t where the ray intersects with the next cell border in y direction (ray starts at t=0 and stops at t=1)
-            if(std::fabs(vx) > 0.0){ // ray makes any progress in x direction
-                if(vx > 0.0){
+            std::int32_t sx{0}; // direction for raytracing in x direction, either -1,0,+1
+            std::int32_t sy{0}; // direction for raytracing in y direction, either -1,0,+1
+            double dtx{0.0}; // amount of path variable t to go one more cell in x direction (ray starts at t=0 and stops at t=1)
+            double dty{0.0}; // amount of path variable t to go one more cell in y direction (ray starts at t=0 and stops at t=1)
+            double tx{std::numeric_limits<double>::infinity()}; // path variable t where the ray intersects with the next cell border in x direction (ray starts at t=0 and stops at t=1)
+            double ty{std::numeric_limits<double>::infinity()}; // path variable t where the ray intersects with the next cell border in y direction (ray starts at t=0 and stops at t=1)
+            if (std::fabs(vx) > 0.0) { // ray makes any progress in x direction
+                if (vx > 0.0) {
                     sx = 1;
-                    tx = std::fabs((1.0 - (iPos0[0] - static_cast<double>(ix0))) / vx);
-                }
-                else{
+                    tx = std::fabs((1.0 - (iPos0[0U] - static_cast<double>(ix0))) / vx);
+                } else {
                     sx = -1;
-                    tx = std::fabs((static_cast<double>(ix0) - iPos0[0]) / vx);
+                    tx = std::fabs((static_cast<double>(ix0) - iPos0[0U]) / vx);
                 }
                 dtx = std::fabs(1.0 / vx);
             }
-            if(std::fabs(vy) > 0.0){ // ray makes any progress in y direction
-                if(vy > 0.0){
+            if (std::fabs(vy) > 0.0) { // ray makes any progress in y direction
+                if (vy > 0.0) {
                     sy = 1;
-                    ty = std::fabs((1.0 - (iPos0[1] - static_cast<double>(iy0))) / vy);
-                }
-                else{
+                    ty = std::fabs((1.0 - (iPos0[1U] - static_cast<double>(iy0))) / vy);
+                } else {
                     sy = -1;
-                    ty = std::fabs((static_cast<double>(iy0) - iPos0[1]) / vy);
+                    ty = std::fabs((static_cast<double>(iy0) - iPos0[1U]) / vy);
                 }
                 dty = std::fabs(1.0 / vy);
             }
 
             // Raytracing, start at t=0. The next cell to go is defined by tx,ty (the next intersection cell border is either in x or y direction)
             double ds;
-            double t = 0;
-            double sum = 0.0;
-            int32_t i = std::clamp(ix0, 0, this->m_numX - 1) * this->m_numY; // safe index clamped to valid range, all indices (ix0,ix1) that are outside the range are clamped to the zero border
-            int32_t j = std::clamp(iy0, 0, this->m_numY - 1); // safe index clamped to valid range, all indices (iy0,iy1) that are outside the range are clamped to the zero border
-            while(t <= 1.0){
-                if((ix0 == ix1) && (iy0 == iy1)){ // goal cell reached
+            double t{0.0};
+            double sum{0.0};
+            std::int32_t i{std::clamp(ix0, 0, this->m_numX - 1) * this->m_numY}; // safe index clamped to valid range, all indices (ix0,ix1) that are outside the range are clamped to the zero border
+            std::int32_t j{std::clamp(iy0, 0, this->m_numY - 1)}; // safe index clamped to valid range, all indices (iy0,iy1) that are outside the range are clamped to the zero border
+            while (t <= 1.0) {
+                if ((ix0 == ix1) && (iy0 == iy1)) { // goal cell reached
                     ds = (1.0 - t) * L;
                     sum += this->m_lut[i + j][indexDimension] * ds;
                     break;
                 }
-                if(tx < ty){ // next cell border in x direction
+                if (tx < ty) { // next cell border in x direction
                     ds = (tx - t) * L;
                     sum += this->m_lut[i + j][indexDimension] * ds;
                     t = tx;
                     tx += dtx;
                     ix0 += sx;
                     i = std::clamp(ix0, 0, this->m_numX - 1) * this->m_numY;
-                }
-                else{ // next cell border in y direction
+                } else { // next cell border in y direction
                     ds = (ty - t) * L;
                     sum += this->m_lut[i + j][indexDimension] * ds;
                     t = ty;
@@ -112,75 +109,73 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
          * @brief A more exact solution of the line integral than @ref LineIntegralForDimension. However, the computational effort is greater. This function does not assume
          * that the cell has a constant value. The four corners of the cell are used to generate a linear interpolated surface. The line integral is then
          * evaluated over that linear interpolated surface.
-         * @tparam T Template parameter must be of type std::array<double,N> with N >= 2.
-         * @tparam U Template parameter must be of type std::array<double,N> with N >= 2.
+         * @tparam Tpoint0 Template parameter must be of type std::array<double,N> with N >= 2.
+         * @tparam Tpoint1 Template parameter must be of type std::array<double,N> with N >= 2.
          * @param p0 Start point of the line from where to start the line integral, given in earth-fixed coordinates (meters).
          * @param p1 End point of the line where to end the line integral, given in earth-fixed coordinates (meters).
          * @param indexDimension The index to the dimension of the multi-dimensional value to be considered. Make sure that this index lies in range [0, Tdim) to prevent access violation.
          * @return Final value of the line integral along a linear line over the look-up table data.
          */
-        template <class T, class U> [[nodiscard]] double LineIntegralLinearInterpolatedForDimension(const T& p0, const U& p1,size_t indexDimension) const noexcept {
-            static_assert(mpsv::is_vec2<T>::value,"Argument {p0} must be of type std::array<double,N> with N >= 2!");
-            static_assert(mpsv::is_vec2<U>::value,"Argument {p1} must be of type std::array<double,N> with N >= 2!");
+        template <class Tpoint0, class Tpoint1> [[nodiscard]] double LineIntegralLinearInterpolatedForDimension(const Tpoint0& p0, const Tpoint1& p1, std::size_t indexDimension) const noexcept {
+            static_assert(mpsv::is_vec2<Tpoint0>::value, "Argument {p0} must be of type std::array<double,N> with N >= 2!");
+            static_assert(mpsv::is_vec2<Tpoint1>::value, "Argument {p1} must be of type std::array<double,N> with N >= 2!");
 
             // Convert to index position ({0,0} indicates origin of lower-left corner of LUT data cell (lut[0]), {0.5,0.5} would be the center of the lower-left cell, all data corresponds to the center of a cell)
-            std::array<double,2> iPos0 = this->ConvertToLUTPosition(p0) / this->m_res;
-            std::array<double,2> iPos1 = this->ConvertToLUTPosition(p1) / this->m_res;
+            std::array<double, 2U> iPos0 = this->ConvertToLUTPosition(p0) / this->m_res;
+            std::array<double, 2U> iPos1 = this->ConvertToLUTPosition(p1) / this->m_res;
 
             // The center of the cell indicates the data, transform index position to the center such that all corners of the new grid cell correspond to true data points
-            iPos0[0] -= 0.5;
-            iPos0[1] -= 0.5;
-            iPos1[0] -= 0.5;
-            iPos1[1] -= 0.5;
+            iPos0[0U] -= 0.5;
+            iPos0[1U] -= 0.5;
+            iPos1[0U] -= 0.5;
+            iPos1[1U] -= 0.5;
 
             // Flooring the fractional index position (iPos) gives the true index
-            int32_t ix0 = static_cast<int32_t>(std::floor(iPos0[0]));
-            int32_t iy0 = static_cast<int32_t>(std::floor(iPos0[1]));
-            int32_t ix1 = static_cast<int32_t>(std::floor(iPos1[0]));
-            int32_t iy1 = static_cast<int32_t>(std::floor(iPos1[1]));
+            std::int32_t ix0{static_cast<std::int32_t>(std::floor(iPos0[0U]))};
+            std::int32_t iy0{static_cast<std::int32_t>(std::floor(iPos0[1U]))};
+            std::int32_t ix1{static_cast<std::int32_t>(std::floor(iPos1[0U]))};
+            std::int32_t iy1{static_cast<std::int32_t>(std::floor(iPos1[1U]))};
 
             // Vector from start to end {vx,vy} (in index position coordinates, 1 cell = 1.0)
-            double vx = iPos1[0] - iPos0[0];
-            double vy = iPos1[1] - iPos0[1];
+            double vx{iPos1[0U] - iPos0[0U]};
+            double vy{iPos1[1U] - iPos0[1U]};
 
             // Find direction for raytracing
-            int32_t sx = 0;    // direction for raytracing in x direction, either -1,0,+1
-            int32_t sy = 0;    // direction for raytracing in y direction, either -1,0,+1
-            double dtx = 0.0;  // amount of path variable t to go one more cell in x direction (ray starts at t=0 and stops at t=1)
-            double dty = 0.0;  // amount of path variable t to go one more cell in y direction (ray starts at t=0 and stops at t=1)
-            double tx = std::numeric_limits<double>::infinity(); // path variable t where the ray intersects with the next cell border in x direction (ray starts at t=0 and stops at t=1)
-            double ty = std::numeric_limits<double>::infinity(); // path variable t where the ray intersects with the next cell border in y direction (ray starts at t=0 and stops at t=1)
-            double x0 = iPos0[0] - static_cast<double>(ix0);     // start position (x) of line segment in a cell
-            double y0 = iPos0[1] - static_cast<double>(iy0);     // start position (y) of line segment in a cell
-            double xe = 0.0;   // end position (x) of line segment in a cell
-            double ye = 0.0;   // end position (y) of line segment in a cell
-            double xs = 0.0;   // initial x position for next cell in x direction during ray tracing
-            double ys = 0.0;   // initial y position for next cell in x direction during ray tracing
-            if(std::fabs(vx) > 0.0){ // ray makes any progress in x direction
-                if(vx > 0.0){
+            std::int32_t sx{0}; // direction for raytracing in x direction, either -1,0,+1
+            std::int32_t sy{0}; // direction for raytracing in y direction, either -1,0,+1
+            double dtx{0.0}; // amount of path variable t to go one more cell in x direction (ray starts at t=0 and stops at t=1)
+            double dty{0.0}; // amount of path variable t to go one more cell in y direction (ray starts at t=0 and stops at t=1)
+            double tx{std::numeric_limits<double>::infinity()}; // path variable t where the ray intersects with the next cell border in x direction (ray starts at t=0 and stops at t=1)
+            double ty{std::numeric_limits<double>::infinity()}; // path variable t where the ray intersects with the next cell border in y direction (ray starts at t=0 and stops at t=1)
+            double x0{iPos0[0U] - static_cast<double>(ix0)}; // start position (x) of line segment in a cell
+            double y0{iPos0[1U] - static_cast<double>(iy0)}; // start position (y) of line segment in a cell
+            double xe{0.0}; // end position (x) of line segment in a cell
+            double ye{0.0}; // end position (y) of line segment in a cell
+            double xs{0.0}; // initial x position for next cell in x direction during ray tracing
+            double ys{0.0}; // initial y position for next cell in x direction during ray tracing
+            if (std::fabs(vx) > 0.0) { // ray makes any progress in x direction
+                if (vx > 0.0) {
                     sx = 1;
-                    tx = std::fabs((1.0 - (iPos0[0] - static_cast<double>(ix0))) / vx);
+                    tx = std::fabs((1.0 - (iPos0[0U] - static_cast<double>(ix0))) / vx);
                     xe = 1.0;
                     xs = 0.0;
-                }
-                else{
+                } else {
                     sx = -1;
-                    tx = std::fabs((static_cast<double>(ix0) - iPos0[0]) / vx);
+                    tx = std::fabs((static_cast<double>(ix0) - iPos0[0U]) / vx);
                     xe = 0.0;
                     xs = 1.0;
                 }
                 dtx = std::fabs(1.0 / vx);
             }
-            if(std::fabs(vy) > 0.0){ // ray makes any progress in y direction
-                if(vy > 0.0){
+            if (std::fabs(vy) > 0.0) { // ray makes any progress in y direction
+                if (vy > 0.0) {
                     sy = 1;
-                    ty = std::fabs((1.0 - (iPos0[1] - static_cast<double>(iy0))) / vy);
+                    ty = std::fabs((1.0 - (iPos0[1U] - static_cast<double>(iy0))) / vy);
                     ye = 1.0;
                     ys = 0.0;
-                }
-                else{
+                } else {
                     sy = -1;
-                    ty = std::fabs((static_cast<double>(iy0) - iPos0[1]) / vy);
+                    ty = std::fabs((static_cast<double>(iy0) - iPos0[1U]) / vy);
                     ye = 0.0;
                     ys = 1.0;
                 }
@@ -188,36 +183,36 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
             }
 
             // Raytracing, start at t=0. The next cell to go is defined by tx,ty (the next intersection cell border is either in x or y direction)
-            double t = 0;
-            double sum = 0.0;
-            int32_t i0 = std::clamp(ix0, 0, this->m_numX - 1) * this->m_numY;   // safe lower border x-index for clamped to valid range, all indices (i0,i1) that are outside the range are clamped to the zero border
-            int32_t j0 = std::clamp(iy0, 0, this->m_numY - 1);                // safe lower border y-index clamped to valid range, all indices (j0,j1) that are outside the range are clamped to the zero border
-            int32_t i1 = std::clamp(ix0+1, 0, this->m_numX - 1) * this->m_numY; // safe lower border x-index for clamped to valid range, all indices (i0,i1) that are outside the range are clamped to the zero border
-            int32_t j1 = std::clamp(iy0+1, 0, this->m_numY - 1);              // safe lower border y-index clamped to valid range, all indices (j0,j1) that are outside the range are clamped to the zero border
-            while(t <= 1.0){
-                if((ix0 == ix1) && (iy0 == iy1)){ // goal cell reached
-                    double x1 = x0 + vx * (1.0 - t);
-                    double y1 = y0 + vy * (1.0 - t);
-                    double L00 = this->m_lut[i0 + j0][indexDimension];
-                    double L01 = this->m_lut[i0 + j1][indexDimension];
-                    double L10 = this->m_lut[i1 + j0][indexDimension];
-                    double L11 = this->m_lut[i1 + j1][indexDimension];
-                    double dx = x1 - x0;
-                    double dy = y1 - y0;
-                    double tmp = (x0*y0 + x1*y1);
+            double t{0};
+            double sum{0.0};
+            std::int32_t i0{std::clamp(ix0, 0, this->m_numX - 1) * this->m_numY}; // safe lower border x-index for clamped to valid range, all indices (i0,i1) that are outside the range are clamped to the zero border
+            std::int32_t j0{std::clamp(iy0, 0, this->m_numY - 1)}; // safe lower border y-index clamped to valid range, all indices (j0,j1) that are outside the range are clamped to the zero border
+            std::int32_t i1{std::clamp(ix0+1, 0, this->m_numX - 1) * this->m_numY}; // safe lower border x-index for clamped to valid range, all indices (i0,i1) that are outside the range are clamped to the zero border
+            std::int32_t j1{std::clamp(iy0+1, 0, this->m_numY - 1)}; // safe lower border y-index clamped to valid range, all indices (j0,j1) that are outside the range are clamped to the zero border
+            while (t <= 1.0) {
+                if ((ix0 == ix1) && (iy0 == iy1)) { // goal cell reached
+                    double x1{x0 + vx * (1.0 - t)};
+                    double y1{y0 + vy * (1.0 - t)};
+                    double L00{this->m_lut[i0 + j0][indexDimension]};
+                    double L01{this->m_lut[i0 + j1][indexDimension]};
+                    double L10{this->m_lut[i1 + j0][indexDimension]};
+                    double L11{this->m_lut[i1 + j1][indexDimension]};
+                    double dx{x1 - x0};
+                    double dy{y1 - y0};
+                    double tmp{(x0*y0 + x1*y1)};
                     sum += std::sqrt(dx*dx + dy*dy)*(3.0*((L00+L00) + ((L10 - L00)*(x0 + x1) + (L01 - L00)*(y0 + y1))) + (L00 + L11 - L01 - L10)*((tmp+tmp) + (x0*y1 + x1*y0)));
                     break;
                 }
-                if(tx < ty){ // next cell border in x direction
-                    double x1 = xe;
-                    double y1 = y0 + vy * (tx - t);
-                    double L00 = this->m_lut[i0 + j0][indexDimension];
-                    double L01 = this->m_lut[i0 + j1][indexDimension];
-                    double L10 = this->m_lut[i1 + j0][indexDimension];
-                    double L11 = this->m_lut[i1 + j1][indexDimension];
-                    double dx = x1 - x0;
-                    double dy = y1 - y0;
-                    double tmp = (x0*y0 + x1*y1);
+                if (tx < ty) { // next cell border in x direction
+                    double x1{xe};
+                    double y1{y0 + vy * (tx - t)};
+                    double L00{this->m_lut[i0 + j0][indexDimension]};
+                    double L01{this->m_lut[i0 + j1][indexDimension]};
+                    double L10{this->m_lut[i1 + j0][indexDimension]};
+                    double L11{this->m_lut[i1 + j1][indexDimension]};
+                    double dx{x1 - x0};
+                    double dy{y1 - y0};
+                    double tmp{(x0*y0 + x1*y1)};
                     sum += std::sqrt(dx*dx + dy*dy)*(3.0*((L00+L00) + ((L10 - L00)*(x0 + x1) + (L01 - L00)*(y0 + y1))) + (L00 + L11 - L01 - L10)*((tmp+tmp) + (x0*y1 + x1*y0)));
                     x0 = xs;
                     y0 = y1;
@@ -226,17 +221,16 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
                     ix0 += sx;
                     i0 = std::clamp(ix0, 0, this->m_numX - 1) * this->m_numY;
                     i1 = std::clamp(ix0+1, 0, this->m_numX - 1) * this->m_numY;
-                }
-                else{ // next cell border in y direction
-                    double x1 = x0 + vx * (ty - t);
-                    double y1 = ye;
-                    double L00 = this->m_lut[i0 + j0][indexDimension];
-                    double L01 = this->m_lut[i0 + j1][indexDimension];
-                    double L10 = this->m_lut[i1 + j0][indexDimension];
-                    double L11 = this->m_lut[i1 + j1][indexDimension];
-                    double dx = x1 - x0;
-                    double dy = y1 - y0;
-                    double tmp = (x0*y0 + x1*y1);
+                } else { // next cell border in y direction
+                    double x1{x0 + vx * (ty - t)};
+                    double y1{ye};
+                    double L00{this->m_lut[i0 + j0][indexDimension]};
+                    double L01{this->m_lut[i0 + j1][indexDimension]};
+                    double L10{this->m_lut[i1 + j0][indexDimension]};
+                    double L11{this->m_lut[i1 + j1][indexDimension]};
+                    double dx{x1 - x0};
+                    double dy{y1 - y0};
+                    double tmp{(x0*y0 + x1*y1)};
                     sum += std::sqrt(dx*dx + dy*dy)*(3.0*((L00+L00) + ((L10 - L00)*(x0 + x1) + (L01 - L00)*(y0 + y1))) + (L00 + L11 - L01 - L10)*((tmp+tmp) + (x0*y1 + x1*y0)));
                     x0 = x1;
                     y0 = ys;
@@ -252,43 +246,43 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
 
         /**
          * @brief Get the linear interpolated value at a specific position for one dimension of the multi-dimensional table data.
-         * @tparam T Template parameter must be of type std::array<double,N> with N >= 2.
+         * @tparam Tposition Template parameter must be of type std::array<double,N> with N >= 2.
          * @param position Position for which to obtain the value.
          * @param indexDimension The index to the dimension of the multi-dimensional value to be considered. Make sure that this index lies in range [0, Tdim) to prevent access violation.
          * @return Linear interpolated value at the given position for the specified dimension. If the specified position is outside the look-up table area, the internal zero-border value is returned.
          */
-        template <class T> [[nodiscard]] double GetLinearInterpolatedValueAtPositionForDimension(const T& position, size_t indexDimension) const noexcept {
-            static_assert(mpsv::is_vec2<T>::value,"Argument {position} must be of type std::array<double,N> with N >= 2!");
+        template <class Tposition> [[nodiscard]] double GetLinearInterpolatedValueAtPositionForDimension(const Tposition& position, std::size_t indexDimension) const noexcept {
+            static_assert(mpsv::is_vec2<Tposition>::value, "Argument {position} must be of type std::array<double,N> with N >= 2!");
 
             // Convert to index position ({0,0} indicates origin of lower-left corner of LUT data cell (lut[0]), {0.5,0.5} would be the center of the lower-left cell, all data corresponds to the center of a cell)
-            std::array<double,2> indexPosition = this->ConvertToLUTPosition(position) / this->m_res;
+            std::array<double, 2U> indexPosition = this->ConvertToLUTPosition(position) / this->m_res;
 
             // The center of the cell indicates the data, transform index position to the center such that all corners of the new grid cell correspond to true data points
-            indexPosition[0] -= 0.5;
-            indexPosition[1] -= 0.5;
+            indexPosition[0U] -= 0.5;
+            indexPosition[1U] -= 0.5;
 
             // Get lower left corner index (ix0,iy0) and upper right corner index (ix1,iy1)
             // Clamp those indices to the valid range of the lut: ix* in [0 ... numX), iy* in [0 ... numY)
-            int32_t ix0 = static_cast<int32_t>(std::floor(indexPosition[0]));
-            int32_t iy0 = static_cast<int32_t>(std::floor(indexPosition[1]));
-            double dx = indexPosition[0] - static_cast<double>(ix0);
-            double dy = indexPosition[1] - static_cast<double>(iy0);
-            int32_t ix1 = std::clamp(ix0 + 1, 0, this->m_numX - 1);
-            int32_t iy1 = std::clamp(iy0 + 1, 0, this->m_numY - 1);
+            std::int32_t ix0{static_cast<std::int32_t>(std::floor(indexPosition[0U]))};
+            std::int32_t iy0{static_cast<std::int32_t>(std::floor(indexPosition[1U]))};
+            double dx{indexPosition[0U] - static_cast<double>(ix0)};
+            double dy{indexPosition[1U] - static_cast<double>(iy0)};
+            std::int32_t ix1{std::clamp(ix0 + 1, 0, this->m_numX - 1)};
+            std::int32_t iy1{std::clamp(iy0 + 1, 0, this->m_numY - 1)};
             ix0 = std::clamp(ix0, 0, this->m_numX - 1);
             iy0 = std::clamp(iy0, 0, this->m_numY - 1);
 
             // Get table data for all four corners
-            int32_t ix0_numY = ix0 * this->m_numY;
-            int32_t ix1_numY = ix1 * this->m_numY;
+            std::int32_t ix0_numY{ix0 * this->m_numY};
+            std::int32_t ix1_numY{ix1 * this->m_numY};
             const double& lut00 = this->m_lut[ix0_numY + iy0][indexDimension];
             const double& lut10 = this->m_lut[ix1_numY + iy0][indexDimension];
             const double& lut01 = this->m_lut[ix0_numY + iy1][indexDimension];
             const double& lut11 = this->m_lut[ix1_numY + iy1][indexDimension];
 
             // Linear interpolation along lower and upper x border followed by linear interpolation in y direction
-            double y0 = lut00 + dx * (lut10 - lut00);
-            double y1 = lut01 + dx * (lut11 - lut01);
+            double y0{lut00 + dx * (lut10 - lut00)};
+            double y1{lut01 + dx * (lut11 - lut01)};
             return y0 + dy * (y1 - y0);
         }
 
@@ -298,18 +292,18 @@ template <class Targ, size_t Tdim> class LookUpTable2DVector: public mpsv::struc
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
-            size_t numCells = static_cast<size_t>(this->m_numX) * static_cast<size_t>(this->m_numY);
-            for(size_t n = 0; n < Tdim; ++n){
+            std::size_t numCells{static_cast<std::size_t>(this->m_numX) * static_cast<std::size_t>(this->m_numY)};
+            for (std::size_t n{0U}; n < Tdim; ++n) {
                 std::vector<double> vecData;
                 vecData.reserve(numCells);
-                for(size_t i = 0; i < numCells; ++i){
+                for (std::size_t i{0U}; i < numCells; ++i) {
                     vecData.push_back(this->m_lut[i][n]);
                 }
-                file.WriteField("double", preString + "data{" + std::to_string(n+1) + "}", {static_cast<uint32_t>(this->m_numY), static_cast<uint32_t>(this->m_numX)}, vecData.data(), sizeof(double) * vecData.size());
+                file.WriteField("double", preString + "data{" + std::to_string(n+1) + "}", {static_cast<std::uint32_t>(this->m_numY), static_cast<std::uint32_t>(this->m_numX)}, vecData.data(), sizeof(double) * vecData.size());
             }
-            file.WriteField("double", preString + "resolution", {1}, &this->m_res, sizeof(double));
-            file.WriteField("double", preString + "position", {2,1}, &this->m_position[0], sizeof(double) * this->m_position.size());
-            file.WriteField("double", preString + "normal", {2,1}, &this->m_normal[0], sizeof(double) * this->m_normal.size());
+            file.WriteField("double", preString + "resolution", {1U}, &this->m_res, sizeof(double));
+            file.WriteField("double", preString + "position", {2U, 1U}, &this->m_position[0U], sizeof(double) * this->m_position.size());
+            file.WriteField("double", preString + "normal", {2U, 1U}, &this->m_normal[0U], sizeof(double) * this->m_normal.size());
         }
 };
 

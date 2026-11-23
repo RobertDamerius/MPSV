@@ -16,10 +16,10 @@ namespace runtime {
 /**
  * @brief The states of a worker thread.
  */
-enum WorkerThreadState : uint8_t {
-    offline = 0,   // Thread has not been started.
-    standby = 1,   // Thread is suspended and waits until it's resumed or stopped.
-    running = 2    // Thread is running and executes the user callback.
+enum WorkerThreadState : std::uint8_t {
+    offline = 0U,  // Thread has not been started.
+    standby = 1U,  // Thread is suspended and waits until it's resumed or stopped.
+    running = 2U   // Thread is running and executes the user callback.
 };
 
 
@@ -31,7 +31,9 @@ class WorkerThread {
         /**
          * @brief Destroy the worker thread object.
          */
-        ~WorkerThread() noexcept { Stop(); }
+        ~WorkerThread() noexcept {
+            Stop();
+        }
 
         /**
          * @brief Start the worker thread with a given priority.
@@ -44,8 +46,8 @@ class WorkerThread {
          * @note The worker thread starts in standby mode. Call @ref Resume to enter the running state.
          * @note Calls to @ref Start and @ref Stop must not run concurrently.
          */
-        template <typename CallbackRun> void Start(CallbackRun callbackRun, int32_t threadPriority, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs) noexcept {
-            if(!m_isStarted){
+        template <typename CallbackRun> void Start(CallbackRun callbackRun, std::int32_t threadPriority, std::int32_t ompNumThreads, std::int32_t ompDynamic, std::vector<std::int32_t> cpuCoreIDs) noexcept {
+            if (!m_isStarted) {
                 // start the worker thread
                 m_isStarted = true;
                 m_workerThread = std::thread(&WorkerThread::WorkerThreadFunction<CallbackRun>, this, callbackRun, ompNumThreads, ompDynamic, cpuCoreIDs);
@@ -53,7 +55,7 @@ class WorkerThread {
                 // set priority and ignore errors
                 struct sched_param param;
                 param.sched_priority = std::clamp(threadPriority, sched_get_priority_min(SCHED_FIFO), sched_get_priority_max(SCHED_FIFO));
-                (void) pthread_setschedparam(m_workerThread.native_handle(), SCHED_FIFO, &param);
+                static_cast<void>(::pthread_setschedparam(m_workerThread.native_handle(), SCHED_FIFO, &param));
             }
         }
 
@@ -61,13 +63,13 @@ class WorkerThread {
          * @brief Stop the worker thread.
          * @note Calls to @ref Start and @ref Stop must not run concurrently. This function must not be called from the worker thread.
          */
-        void Stop(void) noexcept {
+        void Stop() noexcept {
             // set flags to interrupt running thread
             m_stopWorkerThread = true;
             m_eventLeaveStandby.Notify();
 
             // Wait until thread terminates and terminate solver
-            if(m_workerThread.joinable()){
+            if (m_workerThread.joinable()) {
                 m_workerThread.join();
             }
 
@@ -82,14 +84,14 @@ class WorkerThread {
          * @brief Suspend the worker thread.
          * @details A running callback passed to @ref Start cannot be interrupted. After it returns, the worker enters standby mode.
          */
-        void Suspend(void) noexcept {
+        void Suspend() noexcept {
             m_commandedState = mpsv::runtime::WorkerThreadState::standby;
         }
 
         /**
          * @brief Resume a suspended thread and enter the running state.
          */
-        void Resume(void) noexcept {
+        void Resume() noexcept {
             m_commandedState = mpsv::runtime::WorkerThreadState::running;
             m_eventLeaveStandby.Notify();
         }
@@ -98,7 +100,7 @@ class WorkerThread {
          * @brief Get the current state of the worker thread.
          * @return The current state of the worker thread.
          */
-        [[nodiscard]] mpsv::runtime::WorkerThreadState GetState(void) const noexcept {
+        [[nodiscard]] mpsv::runtime::WorkerThreadState GetState() const noexcept {
             return m_state;
         }
 
@@ -117,37 +119,37 @@ class WorkerThread {
          * @param[in] ompDynamic Greater than zero if dynamic adjustment of the number of threads should be enabled for parallel computing or zero to disable dynamic adjustment (OMP_DYNAMIC). If this value is set less than 0, this parameter is ignored.
          * @param[in] cpuCoreIDs (linux-only) List of CPU cores on which the worker thread is eligible to run. Only IDs in range and available to the worker are used.
          */
-        template <typename CallbackRun> void WorkerThreadFunction(CallbackRun callbackRun, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs) noexcept {
-            if(ompNumThreads > 0){
+        template <typename CallbackRun> void WorkerThreadFunction(CallbackRun callbackRun, std::int32_t ompNumThreads, std::int32_t ompDynamic, std::vector<std::int32_t> cpuCoreIDs) noexcept {
+            if (ompNumThreads > 0) {
                 omp_set_num_threads(static_cast<int>(ompNumThreads));
             }
-            if(ompDynamic >= 0){
+            if (ompDynamic >= 0) {
                 omp_set_dynamic(static_cast<int>(ompDynamic));
             }
             #ifdef __linux__
-            if(!cpuCoreIDs.empty()){
+            if (!cpuCoreIDs.empty()) {
                 cpu_set_t availableCores;
                 cpu_set_t cores;
                 CPU_ZERO(&availableCores);
                 CPU_ZERO(&cores);
-                bool hasEligibleCore = false;
-                if(sched_getaffinity(0, sizeof(cpu_set_t), &availableCores) == 0){
-                    for(auto&& i : cpuCoreIDs){
-                        if((i >= 0) && (i < CPU_SETSIZE) && CPU_ISSET(i, &availableCores)){
+                bool hasEligibleCore{false};
+                if (sched_getaffinity(0, sizeof(cpu_set_t), &availableCores) == 0) {
+                    for (auto&& i : cpuCoreIDs) {
+                        if ((i >= 0) && (i < CPU_SETSIZE) && CPU_ISSET(i, &availableCores)) {
                             CPU_SET(i, &cores);
                             hasEligibleCore = true;
                         }
                     }
-                    if(hasEligibleCore){
-                        (void) sched_setaffinity(0, sizeof(cpu_set_t), &cores);
+                    if (hasEligibleCore) {
+                        static_cast<void>(sched_setaffinity(0, sizeof(cpu_set_t), &cores));
                     }
                 }
             }
             #else
-            (void) cpuCoreIDs;
+            static_cast<void>(cpuCoreIDs);
             #endif
-            while(!m_stopWorkerThread){
-                switch(m_commandedState){
+            while (!m_stopWorkerThread) {
+                switch (m_commandedState) {
                     case mpsv::runtime::WorkerThreadState::offline:
                     case mpsv::runtime::WorkerThreadState::standby:
                         m_state = mpsv::runtime::WorkerThreadState::standby;
@@ -173,7 +175,7 @@ class WorkerThread {
  * @return A string holding the converted value.
  */
 inline std::string to_string(mpsv::runtime::WorkerThreadState state) noexcept {
-    switch(state){
+    switch (state) {
         case mpsv::runtime::WorkerThreadState::offline: return std::string("offline");
         case mpsv::runtime::WorkerThreadState::standby: return std::string("standby");
         case mpsv::runtime::WorkerThreadState::running: return std::string("running");

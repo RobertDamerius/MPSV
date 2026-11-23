@@ -2,17 +2,17 @@
 #include <ExampleAsyncOnlinePlanning.hpp>
 
 
-int main(int, char**){
+int main(int, char**) {
     // construct and start the online planner
-    constexpr int16_t pathMaxNumNodes      = 200;
-    constexpr uint32_t pathMaxNumSamples   = 1000000;
-    constexpr int16_t motionMaxNumNodes    = 200;
-    constexpr uint32_t motionMaxNumSamples = 1000000;
-    constexpr uint32_t maxNumCells         = 4096 * 4096;
-    constexpr int32_t threadPriority       = 20;
-    constexpr int32_t ompNumThreads        = -1; // ignore
-    constexpr int32_t ompDynamic           = -1; // ignore
-    std::vector<int32_t> cpuCoreIDs        = {}; // ignore
+    constexpr std::int16_t pathMaxNumNodes      = 200;
+    constexpr std::uint32_t pathMaxNumSamples   = 1000000U;
+    constexpr std::int16_t motionMaxNumNodes    = 200U;
+    constexpr std::uint32_t motionMaxNumSamples = 1000000U;
+    constexpr std::uint32_t maxNumCells         = 4096U * 4096U;
+    constexpr std::int32_t threadPriority       = 20;
+    constexpr std::int32_t ompNumThreads        = -1; // ignore
+    constexpr std::int32_t ompDynamic           = -1; // ignore
+    std::vector<std::int32_t> cpuCoreIDs        = {}; // ignore
     mpsv::planner::AsyncOnlinePlanner planner;
     planner.Start(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells, threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
 
@@ -23,13 +23,13 @@ int main(int, char**){
     planner.SetInput(dataIn, parameter);
 
     // poll the output
-    for(int i = 0; i != 10; ++i){
+    for (int i{0}; i != 10; ++i) {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         mpsv::planner::AsyncOnlinePlannerOutput dataOut = planner.GetOutput();
 
         // print result (at most 10 trajectory points)
         std::cout << "threadState=" << mpsv::to_string(dataOut.threadState) <<
-                     ", errorCode=" << static_cast<int32_t>(dataOut.errorCode) <<
+                     ", errorCode=" << static_cast<std::int32_t>(dataOut.errorCode) <<
                      ", performedReset=" << dataOut.performedReset <<
                      ", timestamp=" << dataOut.timestamp <<
                      ", sampletime=" << dataOut.sampletime <<

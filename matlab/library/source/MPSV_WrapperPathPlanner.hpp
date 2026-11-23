@@ -12,33 +12,33 @@
 struct __attribute__((packed)) serialization_path_planner_input {
     struct __attribute__((packed)) {
         struct __attribute__((packed)) {
-            double resolution;                                          // Resolution (> 1e-3) of the grid map (dimension of one cell).
-            double distanceScale;                                       // Scale factor (>= 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
-            double distanceDecay;                                       // Decay factor (> 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
+            double resolution;                                              // Resolution (> 1e-3) of the grid map (dimension of one cell).
+            double distanceScale;                                           // Scale factor (>= 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
+            double distanceDecay;                                           // Decay factor (> 0) for obstacle distance (d) cost in cost map: scale*exp(-decay*d^2).
         } costMap;
         struct __attribute__((packed)) {
-            double collisionCheckMaxPositionDeviation;                  // Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 meters.
-            double collisionCheckMaxAngleDeviation;                     // Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree.
-            std::array<std::array<float,2>,100> verticesVehicleShape;   // Vertex data of the vehicle shape. Multiple convex polygons are separated by non-finite vertices.
-            std::array<std::array<float,2>,10> skeletalPoints;          // Skeletal points (b-frame) at which the cost map is to be evaluated. Non-finite entries are ignored.
+            double collisionCheckMaxPositionDeviation;                      // Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 meters.
+            double collisionCheckMaxAngleDeviation;                         // Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree.
+            std::array<std::array<float, 2U>, 100U> verticesVehicleShape;   // Vertex data of the vehicle shape. Multiple convex polygons are separated by non-finite vertices.
+            std::array<std::array<float, 2U>, 10U> skeletalPoints;          // Skeletal points (b-frame) at which the cost map is to be evaluated. Non-finite entries are ignored.
         } geometry;
         struct __attribute__((packed)) {
-            double weightPsi;                                           // Weighting for yaw angle in distance metric function.
-            double weightSway;                                          // Weighting for sway movement (heading angle with respect to perpendicular direction of movement).
-            double weightReverseScale;                                  // Weighting for sway and reverse movement (heading angle with respect to line angle).
-            double weightReverseDecay;                                  // Decay factor (> 0) for the weighting function that weights sway and reverse movement.
+            double weightPsi;                                               // Weighting for yaw angle in distance metric function.
+            double weightSway;                                              // Weighting for sway movement (heading angle with respect to perpendicular direction of movement).
+            double weightReverseScale;                                      // Weighting for sway and reverse movement (heading angle with respect to line angle).
+            double weightReverseDecay;                                      // Decay factor (> 0) for the weighting function that weights sway and reverse movement.
         } metric;
         struct __attribute__((packed)) {
-            uint32_t periodGoalSampling;                                // Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
-            double maxComputationTime;                                  // The maximum computation time in seconds allowed before leaving the iteration loop.
+            std::uint32_t periodGoalSampling;                                    // Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
+            double maxComputationTime;                                      // The maximum computation time in seconds allowed before leaving the iteration loop.
         } pathPlanner;
     } parameter;
-    std::array<double,3> initialPose;                                   // Initial pose given as {x,y,psi}.
-    std::array<double,3> finalPose;                                     // Final pose given as {x,y,psi}.
-    std::array<double,2> originOldToNew;                                // Translation between two consecutive problems. If the origin of the previous problem is different to the origin of the new problem, then the tree must be transformed during a warm start. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).
-    std::array<double,3> samplingBoxCenterPose;                         // Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
-    std::array<double,2> samplingBoxDimension;                          // Dimension of the sampling box along major and minor axes of the box.
-    std::array<std::array<float,2>,8000> verticesStaticObstacles;       // Vertex data of the static obstacles. Multiple convex polygons are separated by non-finite vertices.
+    std::array<double, 3U> initialPose;                                     // Initial pose given as {x,y,psi}.
+    std::array<double, 3U> finalPose;                                       // Final pose given as {x,y,psi}.
+    std::array<double, 2U> originOldToNew;                                  // Translation between two consecutive problems. If the origin of the previous problem is different to the origin of the new problem, then the tree must be transformed during a warm start. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).
+    std::array<double, 3U> samplingBoxCenterPose;                           // Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
+    std::array<double, 2U> samplingBoxDimension;                            // Dimension of the sampling box along major and minor axes of the box.
+    std::array<std::array<float, 2U>, 8000U> verticesStaticObstacles;       // Vertex data of the static obstacles. Multiple convex polygons are separated by non-finite vertices.
 };
 
 
@@ -46,15 +46,15 @@ struct __attribute__((packed)) serialization_path_planner_input {
  * @brief This structure defines the output data for the path planner wrapper class.
  */
 struct __attribute__((packed)) serialization_path_planner_output {
-    uint8_t errorCode;                            // Non-zero error code value if input or parameter data is invalid.
-    uint8_t goalReached:1;                        // True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-    uint8_t pathTruncated:1;                      // True if the path was truncated to fit the output buffer.
-    uint8_t reserved:6;                           // Reserved bits, unused, set to zero.
-    uint32_t numberOfPerformedIterations;         // The total number of iterations that have been performed since the latest prepare step.
-    double timestampOfComputationUTC;             // Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
-    double cost;                                  // The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
-    int32_t numPoses;                             // Number of poses included in the output path.
-    std::array<std::array<double,3>,1000> path;   // Resulting path, where each pose is given as {x,y,psi}. The first element always corresponds to the initial pose. If the goal is reached and pathTruncated is false, the final pose corresponds to the desired final pose of the path planning problem.
+    std::uint8_t errorCode;                                // Non-zero error code value if input or parameter data is invalid.
+    std::uint8_t goalReached:1;                            // True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
+    std::uint8_t pathTruncated:1;                          // True if the path was truncated to fit the output buffer.
+    std::uint8_t reserved:6;                               // Reserved bits, unused, set to zero.
+    std::uint32_t numberOfPerformedIterations;             // The total number of iterations that have been performed since the latest prepare step.
+    double timestampOfComputationUTC;                 // Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
+    double cost;                                      // The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
+    std::int32_t numPoses;                                 // Number of poses included in the output path.
+    std::array<std::array<double, 3U>, 1000U> path;   // Resulting path, where each pose is given as {x,y,psi}. The first element always corresponds to the initial pose. If the goal is reached and pathTruncated is false, the final pose corresponds to the desired final pose of the path planning problem.
 };
 
 
@@ -67,7 +67,9 @@ class MPSV_WrapperPathPlanner {
          * @brief Destroy the wrapper object.
          * @details Calls the @ref Terminate member function.
          */
-        ~MPSV_WrapperPathPlanner(){ Terminate(); }
+        ~MPSV_WrapperPathPlanner() {
+            Terminate();
+        }
 
         /**
          * @brief Initialize the wrapper. The memory for the internal path planner is allocated.
@@ -75,12 +77,12 @@ class MPSV_WrapperPathPlanner {
          * @param[in] maxNumSamples Maximum number of random samples to be generated in advance. A circular buffer of random samples is generated for fast sampling. The buffer can be quite large to ensure, that no duplicated samples are drawn within one solve operation.
          * @param[in] maxNumCells Maximum number of cells in the cost map.
          */
-        void Initialize(int16_t maxNumNodes, uint32_t maxNumSamples, uint32_t maxNumCells);
+        void Initialize(std::int16_t maxNumNodes, std::uint32_t maxNumSamples, std::uint32_t maxNumCells);
 
         /**
          * @brief Terminate the wrapper. Internal planner memory is released when the wrapper is destroyed.
          */
-        void Terminate(void);
+        void Terminate();
 
         /**
          * @brief Perform one step of the wrapper. The parameters are applied to the internal path planner and the problem is solved using the input data.

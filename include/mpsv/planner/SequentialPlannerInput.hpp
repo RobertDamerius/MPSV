@@ -19,54 +19,57 @@ namespace planner {
  */
 class SequentialPlannerInput {
     public:
-        std::array<double,12> initialStateAndInput{};                  // Initial state and input given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
-        std::array<double,3> finalPose{};                              // The final pose given as {x,y,psi}.
-        std::array<double,2> originOldToNew{};                         // Translation between two consecutive problems. If the origin of the previous problem is different to the origin of the new problem, then the tree must be transformed during a warm start. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).
-        std::array<double,3> samplingBoxCenterPose{};                  // Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
-        std::array<double,2> samplingBoxDimension{};                   // Dimension of the sampling box along major and minor axes of the box.
+        std::array<double, 12U> initialStateAndInput{};                // Initial state and input given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}.
+        std::array<double, 3U> finalPose{};                            // The final pose given as {x,y,psi}.
+        std::array<double, 2U> originOldToNew{};                       // Translation between two consecutive problems. If the origin of the previous problem is different to the origin of the new problem, then the tree must be transformed during a warm start. This vector specifies the position of the new origin with respect to the old origin (vector from old origin to new origin).
+        std::array<double, 3U> samplingBoxCenterPose{};                // Center pose of the sampling box given as {x,y,psi}. The angle indicates the orientation of the box.
+        std::array<double, 2U> samplingBoxDimension{};                 // Dimension of the sampling box along major and minor axes of the box.
         std::vector<mpsv::geometry::StaticObstacle> staticObstacles;   // List of static obstacles, where each vertex is given as {x,y}.
 
         /**
          * @brief Check whether the attributes are valid.
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        [[nodiscard]] error_code IsValid(void) const noexcept {
-            if(!(std::isfinite(initialStateAndInput[0]) &&
-                 std::isfinite(initialStateAndInput[1]) &&
-                 std::isfinite(initialStateAndInput[2]) &&
-                 std::isfinite(initialStateAndInput[3]) &&
-                 std::isfinite(initialStateAndInput[4]) &&
-                 std::isfinite(initialStateAndInput[5]) &&
-                 std::isfinite(initialStateAndInput[6]) &&
-                 std::isfinite(initialStateAndInput[7]) &&
-                 std::isfinite(initialStateAndInput[8]) &&
-                 std::isfinite(initialStateAndInput[9]) &&
-                 std::isfinite(initialStateAndInput[10]) &&
-                 std::isfinite(initialStateAndInput[11])))
+        [[nodiscard]] error_code IsValid() const noexcept {
+            if (!(std::isfinite(initialStateAndInput[0U]) &&
+                 std::isfinite(initialStateAndInput[1U]) &&
+                 std::isfinite(initialStateAndInput[2U]) &&
+                 std::isfinite(initialStateAndInput[3U]) &&
+                 std::isfinite(initialStateAndInput[4U]) &&
+                 std::isfinite(initialStateAndInput[5U]) &&
+                 std::isfinite(initialStateAndInput[6U]) &&
+                 std::isfinite(initialStateAndInput[7U]) &&
+                 std::isfinite(initialStateAndInput[8U]) &&
+                 std::isfinite(initialStateAndInput[9U]) &&
+                 std::isfinite(initialStateAndInput[10U]) &&
+                 std::isfinite(initialStateAndInput[11U])))
                 return error_code::INPUT_INITIAL_STATE_AND_INPUT;
-            if(!(std::isfinite(finalPose[0]) &&
-                std::isfinite(finalPose[1]) &&
-                std::isfinite(finalPose[2])))
+            if (!(std::isfinite(finalPose[0U]) &&
+                std::isfinite(finalPose[1U]) &&
+                std::isfinite(finalPose[2U])))
                 return error_code::INPUT_FINAL_POSE;
-            if(!(std::isfinite(originOldToNew[0]) &&
-                 std::isfinite(originOldToNew[1])))
+            if (!(std::isfinite(originOldToNew[0U]) &&
+                 std::isfinite(originOldToNew[1U])))
                 return error_code::INPUT_ORIGIN_OLD_TO_NEW;
-            if(!(std::isfinite(samplingBoxCenterPose[0]) &&
-                 std::isfinite(samplingBoxCenterPose[1]) &&
-                 std::isfinite(samplingBoxCenterPose[2])))
+            if (!(std::isfinite(samplingBoxCenterPose[0U]) &&
+                 std::isfinite(samplingBoxCenterPose[1U]) &&
+                 std::isfinite(samplingBoxCenterPose[2U])))
                 return error_code::INPUT_SAMPLING_BOX_CENTER_POSE;
-            if(!(std::isfinite(samplingBoxDimension[0]) &&
-                 std::isfinite(samplingBoxDimension[1])))
+            if (!(std::isfinite(samplingBoxDimension[0U]) &&
+                 std::isfinite(samplingBoxDimension[1U])))
                 return error_code::INPUT_SAMPLING_BOX_DIMENSION;
             mpsv::geometry::OrientedBox box;
             box.Create(samplingBoxCenterPose, samplingBoxDimension);
-            if(!box.IsInside(initialStateAndInput))
+            if (!box.IsInside(initialStateAndInput)) {
                 return error_code::INPUT_INITIAL_STATE_NOT_INSIDE_SAMPLING_BOX;
-            if(!box.IsInside(finalPose))
+            }
+            if (!box.IsInside(finalPose)) {
                 return error_code::INPUT_FINAL_POSE_NOT_INSIDE_SAMPLING_BOX;
-            for(auto&& obstacle : staticObstacles){
-                if(!obstacle.IsValid())
+            }
+            for (auto&& obstacle : staticObstacles) {
+                if (!obstacle.IsValid()) {
                     return error_code::INPUT_STATIC_OBSTACLES;
+                }
             }
             return error_code::NONE;
         }
@@ -77,11 +80,11 @@ class SequentialPlannerInput {
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
-            file.WriteField("double", preString + "initialStateAndInput", {12}, &initialStateAndInput[0], sizeof(initialStateAndInput));
-            file.WriteField("double", preString + "finalPose", {3}, &finalPose[0], sizeof(finalPose));
-            file.WriteField("double", preString + "originOldToNew", {2}, &originOldToNew[0], sizeof(originOldToNew));
-            file.WriteField("double", preString + "samplingBoxCenterPose", {3}, &samplingBoxCenterPose[0], sizeof(samplingBoxCenterPose));
-            file.WriteField("double", preString + "samplingBoxDimension", {2}, &samplingBoxDimension[0], sizeof(samplingBoxDimension));
+            file.WriteField("double", preString + "initialStateAndInput", {12U}, &initialStateAndInput[0U], sizeof(initialStateAndInput));
+            file.WriteField("double", preString + "finalPose", {3U}, &finalPose[0U], sizeof(finalPose));
+            file.WriteField("double", preString + "originOldToNew", {2U}, &originOldToNew[0U], sizeof(originOldToNew));
+            file.WriteField("double", preString + "samplingBoxCenterPose", {3U}, &samplingBoxCenterPose[0U], sizeof(samplingBoxCenterPose));
+            file.WriteField("double", preString + "samplingBoxDimension", {2U}, &samplingBoxDimension[0U], sizeof(samplingBoxDimension));
             file.WriteConvexPolygonsField(preString + "staticObstacles", staticObstacles);
         }
 };

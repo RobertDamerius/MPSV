@@ -14,16 +14,16 @@ namespace runtime {
  * @brief Get the UTC timestamp which is defined to be the current second of the day (UTC, no leap seconds).
  * @return UTC timestamp: seconds of the day.
  */
-[[nodiscard]] inline double GetTimestampUTC(void) noexcept {
+[[nodiscard]] inline double GetTimestampUTC() noexcept {
     const auto timePoint = std::chrono::system_clock::now();
     const auto secondTimePoint = std::chrono::floor<std::chrono::seconds>(timePoint);
     const std::time_t time = std::chrono::system_clock::to_time_t(secondTimePoint);
     std::tm gmTimeBuffer{};
     const std::tm* gmTime = mpsv::gmtime_r(&time, &gmTimeBuffer); // #TODO: use std::gmtime_r when C++26 is fully supported
-    if(!gmTime){
+    if (!gmTime) {
         return 0.0;
     }
-    const double fractionalSeconds = 1e-9 * static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(timePoint - secondTimePoint).count());
+    const double fractionalSeconds{1.0e-9 * static_cast<double>(std::chrono::duration_cast<std::chrono::nanoseconds>(timePoint - secondTimePoint).count())};
     return 3600.0 * static_cast<double>(gmTime->tm_hour) + 60.0 * static_cast<double>(gmTime->tm_min) + static_cast<double>(gmTime->tm_sec) + fractionalSeconds;
 }
 
@@ -57,7 +57,7 @@ namespace runtime {
  * @return Result of (a - b) where the time difference is in range [-43200, 43200).
  */
 [[nodiscard]] inline double DifferenceTimestampUTC(double a, double b) noexcept {
-    double dt = std::fmod(a - b + 86400.0, 86400.0);
+    double dt{std::fmod(a - b + 86400.0, 86400.0)};
     return (dt >= 43200.0) ? (dt - 86400.0) : dt;
 }
 

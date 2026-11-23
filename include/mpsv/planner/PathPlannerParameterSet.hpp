@@ -26,7 +26,7 @@ class PathPlannerParameterSet {
         /**
          * @brief Clear the path planner parameter object and set default values.
          */
-        void Clear(void) noexcept {
+        void Clear() noexcept {
             geometry.Clear();
             costMap.Clear();
             metric.Clear();
@@ -37,14 +37,17 @@ class PathPlannerParameterSet {
          * @brief Check whether this parameter set is valid or not.
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        [[nodiscard]] error_code IsValid(void) const noexcept {
+        [[nodiscard]] error_code IsValid() const noexcept {
             error_code e;
-            if(error_code::NONE != (e = geometry.IsValid()))
+            if (error_code::NONE != (e = geometry.IsValid())) {
                 return e;
-            if(error_code::NONE != (e = costMap.IsValid()))
+            }
+            if (error_code::NONE != (e = costMap.IsValid())) {
                 return e;
-            if(error_code::NONE != (e = metric.IsValid()))
+            }
+            if (error_code::NONE != (e = metric.IsValid())) {
                 return e;
+            }
             return pathPlanner.IsValid();
         }
 

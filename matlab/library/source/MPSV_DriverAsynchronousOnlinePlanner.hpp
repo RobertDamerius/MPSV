@@ -18,7 +18,7 @@
  * @param[in] cpuCoreIDs (linux-only) List of CPU cores on which the worker thread is eligible to run. Only IDs in range and available to the worker are used.
  * @param[in] numCPUCoreIDs The actual number of CPU core IDs in the cpuCoreIDs list.
  */
-extern void MPSV_AsynchronousOnlinePlannerInitialize(void** workVector, int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, uint32_t maxNumCells, int32_t threadPriority, int32_t ompNumThreads, int32_t ompDynamic, int32_t* cpuCoreIDs, uint32_t numCPUCoreIDs);
+extern void MPSV_AsynchronousOnlinePlannerInitialize(void** workVector, std::int16_t pathMaxNumNodes, std::uint32_t pathMaxNumSamples, std::int16_t motionMaxNumNodes, std::uint32_t motionMaxNumSamples, std::uint32_t maxNumCells, std::int32_t threadPriority, std::int32_t ompNumThreads, std::int32_t ompDynamic, std::int32_t* cpuCoreIDs, std::uint32_t numCPUCoreIDs);
 
 /**
  * @brief Terminate the driver.
@@ -33,4 +33,4 @@ extern void MPSV_AsynchronousOnlinePlannerTerminate(void* workVector);
  * @param[in] serializedInput Serialized data (bytes) representing the input data.
  * @param[in] serializedParameter Serialized data (bytes) representing the parameter data.
  */
-extern void MPSV_AsynchronousOnlinePlannerStep(void* workVector, uint8_t* serializedOutput, uint8_t* serializedInput, uint8_t* serializedParameter);
+extern void MPSV_AsynchronousOnlinePlannerStep(void* workVector, std::uint8_t* serializedOutput, std::uint8_t* serializedInput, std::uint8_t* serializedParameter);

@@ -13,27 +13,27 @@ namespace math {
 
 /**
  * @brief Compute the distance metric between two poses in SE2.
- * @tparam T Template parameter must be of type std::array<double,N> with N >= 3.
- * @tparam U Template parameter must be of type std::array<double,N> with N >= 3.
+ * @tparam TposeA Template parameter must be of type std::array<double,N> with N >= 3.
+ * @tparam TposeB Template parameter must be of type std::array<double,N> with N >= 3.
  * @param[in] a The first pose to be used to compute the distance metric between two poses. Array must contain at least three elements {x,y,psi}.
  * @param[in] b The second pose to be used to compute the distance metric between two poses. Array must contain at least three elements {x,y,psi}.
  * @param[in] weightPsi Scalar weighting factor for psi, defaults to 1.0.
  * @return The distance metric between the two given poses, calculated by sqrt(dx^2 + dy^2 + (weightPsi*dpsi)^2).
  */
-template <class T, class U> [[nodiscard]] inline double DistanceMetricSE2(const T& a, const U& b, const double weightPsi = 1.0) noexcept {
-    static_assert(mpsv::is_vec3<T>::value,"Argument {a} must be of type std::array<double,N> with N >= 3!");
-    static_assert(mpsv::is_vec3<U>::value,"Argument {b} must be of type std::array<double,N> with N >= 3!");
-    double dx = b[0] - a[0];
-    double dy = b[1] - a[1];
-    double dpsi = weightPsi * mpsv::math::SymmetricalAngle(b[2] - a[2]);
+template <class TposeA, class TposeB> [[nodiscard]] inline double DistanceMetricSE2(const TposeA& a, const TposeB& b, const double weightPsi = 1.0) noexcept {
+    static_assert(mpsv::is_vec3<TposeA>::value, "Argument {a} must be of type std::array<double,N> with N >= 3!");
+    static_assert(mpsv::is_vec3<TposeB>::value, "Argument {b} must be of type std::array<double,N> with N >= 3!");
+    double dx{b[0U] - a[0U]};
+    double dy{b[1U] - a[1U]};
+    double dpsi{weightPsi * mpsv::math::SymmetricalAngle(b[2U] - a[2U])};
     return std::sqrt(dx*dx + dy*dy + dpsi*dpsi);
 }
 
 
 /**
  * @brief The metric function that weights the the angular deviation of the vehicles heading from the direction of the line along the line, e.g. the sway and/or reverse movement.
- * @tparam T Template parameter must be of type std::array<double,N> with N >= 3.
- * @tparam U Template parameter must be of type std::array<double,N> with N >= 3.
+ * @tparam TposeA Template parameter must be of type std::array<double,N> with N >= 3.
+ * @tparam TposeB Template parameter must be of type std::array<double,N> with N >= 3.
  * @param[in] a The first pose to be used to compute the sway metric between two poses. Array must contain at least three elements {x,y,psi}.
  * @param[in] b The second pose to be used to compute the sway metric between two poses. Array must contain at least three elements {x,y,psi}.
  * @param[in] weightSway A scalar value that weights the sway motion via a squared sine function.
@@ -43,86 +43,78 @@ template <class T, class U> [[nodiscard]] inline double DistanceMetricSE2(const 
  * being the angle of the line and psi0 and psiL being the yaw angle of pose a and b, respectively. Second, the integral of weightReverseScale * (weightReverseDecay*e)^2 / (1 + (weightReverseDecay*e)^2)
  * from s = 0 to L with e(s) = psi0 + (s/L)*(psiL - psi0) - alpha.
  */
-template <class T, class U> [[nodiscard]] inline double SwayMetric(const T& a, const U& b, double weightSway, double weightReverseScale, double weightReverseDecay) noexcept {
-    static_assert(mpsv::is_vec3<T>::value,"Argument {a} must be of type std::array<double,N> with N >= 3!");
-    static_assert(mpsv::is_vec3<U>::value,"Argument {b} must be of type std::array<double,N> with N >= 3!");
-    if((weightSway == 0.0) && (weightReverseScale == 0.0)){
+template <class TposeA, class TposeB> [[nodiscard]] inline double SwayMetric(const TposeA& a, const TposeB& b, double weightSway, double weightReverseScale, double weightReverseDecay) noexcept {
+    static_assert(mpsv::is_vec3<TposeA>::value, "Argument {a} must be of type std::array<double,N> with N >= 3!");
+    static_assert(mpsv::is_vec3<TposeB>::value, "Argument {b} must be of type std::array<double,N> with N >= 3!");
+    if ((weightSway == 0.0) && (weightReverseScale == 0.0)) {
         return 0.0;
     }
-    constexpr double eps = 100.0 * std::numeric_limits<double>::epsilon();
-    constexpr double pi = std::numbers::pi;
-    double dx = b[0] - a[0];
-    double dy = b[1] - a[1];
-    double dpsi = mpsv::math::SymmetricalAngle(b[2] - a[2]);
-    double L = std::sqrt(dx*dx + dy*dy);
-    double alpha = std::atan2(dy,dx);
+    constexpr double eps{100.0 * std::numeric_limits<double>::epsilon()};
+    constexpr double pi{std::numbers::pi};
+    double dx{b[0U] - a[0U]};
+    double dy{b[1U] - a[1U]};
+    double dpsi{mpsv::math::SymmetricalAngle(b[2U] - a[2U])};
+    double L{std::sqrt(dx*dx + dy*dy)};
+    double alpha{std::atan2(dy, dx)};
 
     // symmetric sway metric
-    double result = 0.0;
-    if(weightSway != 0.0){
-        double psiL = a[2] + dpsi;
-        double d = a[2] - psiL;
-        if(std::fabs(d) <= eps){
-            double s = std::sin(a[2] - alpha);
+    double result{0.0};
+    if (weightSway != 0.0) {
+        double psiL{a[2U] + dpsi};
+        double d{a[2U] - psiL};
+        if (std::fabs(d) <= eps) {
+            double s{std::sin(a[2U] - alpha)};
             result += weightSway * s * s * L;
-        }
-        else{
-            result += weightSway * std::fabs((L * (2.0 * d + std::sin(2.0 * (alpha - a[2])) - std::sin(2.0 * (alpha - psiL)))) / (4.0 * d));
+        } else {
+            result += weightSway * std::fabs((L * (2.0 * d + std::sin(2.0 * (alpha - a[2U])) - std::sin(2.0 * (alpha - psiL)))) / (4.0 * d));
         }
     }
 
     // asymmetric sway metric
-    if(weightReverseScale == 0.0){
+    if (weightReverseScale == 0.0) {
         return result;
     }
-    double psiA = mpsv::math::SymmetricalAngle(a[2] - alpha);
-    double bpsiA = weightReverseDecay * psiA;
-    double bpsiAsq = bpsiA * bpsiA;
-    if(std::fabs(dpsi) < eps){
+    double psiA{mpsv::math::SymmetricalAngle(a[2U] - alpha)};
+    double bpsiA{weightReverseDecay * psiA};
+    double bpsiAsq{bpsiA * bpsiA};
+    if (std::fabs(dpsi) < eps) {
         result += weightReverseScale*L*bpsiAsq / (1.0 + bpsiAsq);
-    }
-    else{
-        double psiB = mpsv::math::SymmetricalAngle(b[2] - alpha);
-        double bpsiB = weightReverseDecay * psiB;
-        if((psiA + dpsi) >= pi){
-            double bpi = weightReverseDecay * pi;
-            double bpisq = bpi * bpi;
-            double delta = pi - psiA;
-            double L1 = L * delta / dpsi;
-            if(std::fabs(delta) < eps){
+    } else {
+        double psiB{mpsv::math::SymmetricalAngle(b[2U] - alpha)};
+        double bpsiB{weightReverseDecay * psiB};
+        if ((psiA + dpsi) >= pi) {
+            double bpi{weightReverseDecay * pi};
+            double bpisq{bpi * bpi};
+            double delta{pi - psiA};
+            double L1{L * delta / dpsi};
+            if (std::fabs(delta) < eps) {
                 result += weightReverseScale*L1*bpsiAsq / (1.0 + bpsiAsq);
-            }
-            else{
+            } else {
                 result += weightReverseScale*L1*(1.0 + (std::atan(bpsiA) - std::atan(bpi))/(weightReverseDecay*delta));
             }
             delta = psiB + pi;
-            if(std::fabs(delta) < eps){
+            if (std::fabs(delta) < eps) {
                 result += weightReverseScale*(L - L1)*(bpisq / (1.0 + bpisq));
-            }
-            else{
+            } else {
                 result += weightReverseScale*(L - L1)*(1.0 + (std::atan(-bpi) - std::atan(bpsiB))/(weightReverseDecay*delta));
             }
-        }
-        else if((psiA + dpsi) < -pi){
-            double bpi = weightReverseDecay * pi;
-            double bpisq = bpi * bpi;
-            double delta = -pi - psiA;
-            double L1 = L * delta / dpsi;
-            if(std::fabs(delta) < eps){
+        } else if ((psiA + dpsi) < -pi) {
+            double bpi{weightReverseDecay * pi};
+            double bpisq{bpi * bpi};
+            double delta{-pi - psiA};
+            double L1{L * delta / dpsi};
+            if (std::fabs(delta) < eps) {
                 result += weightReverseScale*L1*bpsiAsq / (1.0 + bpsiAsq);
-            }
-            else{
+            } else {
                 result += weightReverseScale*L1*(1.0 + (std::atan(bpsiA) - std::atan(-bpi))/(weightReverseDecay*delta));
             }
             delta = psiB - pi;
-            if(std::fabs(delta) < eps){
+            if (std::fabs(delta) < eps) {
                 result += weightReverseScale*(L - L1)*(bpisq / (1.0 + bpisq));
-            }
-            else{
+            } else {
                 result += weightReverseScale*(L - L1)*(1.0 + (std::atan(bpi) - std::atan(bpsiB))/(weightReverseDecay*delta));
             }
-        }
-        else{
+        } else {
             result += weightReverseScale*L*(1.0 + (std::atan(bpsiA) - std::atan(bpsiB))/(weightReverseDecay*dpsi));
         }
     }

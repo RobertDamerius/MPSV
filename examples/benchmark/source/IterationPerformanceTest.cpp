@@ -4,32 +4,31 @@
 SceneDataFile IterationPerformanceTest::m_sceneData;
 
 
-void IterationPerformanceTest::Run(void){
-    if(IterationPerformanceTest::LoadSceneData()){
-        for(size_t i = 0; i < m_sceneData.scenes.size(); ++i){
-            std::cout << "solve " << (i + 1) << " / " << m_sceneData.scenes.size() << "\n";
+void IterationPerformanceTest::Run() {
+    if (IterationPerformanceTest::LoadSceneData()) {
+        for (std::size_t i{0U}; i < m_sceneData.scenes.size(); ++i) {
+            std::cout << "solve " << (i + 1U) << " / " << m_sceneData.scenes.size() << "\n";
             IterationPerformanceTest::Solve(m_sceneData.scenes[i], !i);
         }
     }
 }
 
-bool IterationPerformanceTest::LoadSceneData(void){
+bool IterationPerformanceTest::LoadSceneData() {
     printf("Loading sceneData: ");
     bool success = m_sceneData.Read("sceneData");
-    if(success){
+    if (success) {
         printf("OK (number of scenes: %zu)\n", m_sceneData.scenes.size());
-    }
-    else{
+    } else {
         printf("ERROR: Failed to read sceneData from the current working directory!\n");
     }
     bool valid = m_sceneData.IsValid();
-    if(!valid){
+    if (!valid) {
         printf("ERROR: The scene data is not valid!\n");
     }
     return success && valid;
 }
 
-mpsv::planner::SequentialPlannerParameterSet IterationPerformanceTest::GetParameterSet(void){
+mpsv::planner::SequentialPlannerParameterSet IterationPerformanceTest::GetParameterSet() {
     mpsv::planner::SequentialPlannerParameterSet parameterSet;
 
     // cost map
@@ -40,7 +39,7 @@ mpsv::planner::SequentialPlannerParameterSet IterationPerformanceTest::GetParame
     // geometry
     parameterSet.geometry.collisionCheckMaxPositionDeviation           = 0.100000000000000;
     parameterSet.geometry.collisionCheckMaxAngleDeviation              = mpsv::math::deg2rad(5.0);
-    std::vector<std::array<double,2>> vertices                         = {{3.25,1.65},{-3.25,1.65},{-3.25,-1.65},{3.25,-1.65}};
+    std::vector<std::array<double, 2U>> vertices                       = {{3.25, 1.65}, {-3.25, 1.65}, {-3.25, -1.65}, {3.25, -1.65}};
     parameterSet.geometry.vehicleShape.Create(vertices);
     parameterSet.geometry.skeletalPoints.clear();
     parameterSet.geometry.skeletalPoints.push_back({3.0, 0.0});
@@ -53,7 +52,7 @@ mpsv::planner::SequentialPlannerParameterSet IterationPerformanceTest::GetParame
     parameterSet.metric.weightReverseDecay                             = 1.0;
 
     // path planner
-    parameterSet.pathPlanner.periodGoalSampling                        = 50;
+    parameterSet.pathPlanner.periodGoalSampling                        = 50U;
 
     // model
     parameterSet.model.matF                                            = {-0.031604977390302, 0.0, 0.0, 0.233741474945168, 0.0, 0.0, 0.0, 0.0, 0.133462292221887, -0.020792892088185, 0.0, 0.0, 0.0, -0.041708610292712, 0.017242263124379, 0.0, -0.251243228165994, -0.000476044356140, 0.0, 0.0, 0.005297185500344, 0.0, -0.167981638498434, 0.497442136687157, 0.0, 0.000017966020615, -0.023528504195578, 0.0, 0.000108223241795, 0.000649602175186, 0.0, 0.0, -0.000002281767319, 0.0, 0.000072358238719, -0.678801229030825};
@@ -66,7 +65,7 @@ mpsv::planner::SequentialPlannerParameterSet IterationPerformanceTest::GetParame
     // motion planner
     parameterSet.motionPlanner.samplingRangePosition                   = 10.0;
     parameterSet.motionPlanner.samplingRangeAngle                      = 1.0;
-    parameterSet.motionPlanner.periodGoalSampling                      = 50;
+    parameterSet.motionPlanner.periodGoalSampling                      = 50U;
     parameterSet.motionPlanner.sampletime                              = 0.05;
     parameterSet.motionPlanner.maxInputPathLength                      = 50.0;
     parameterSet.motionPlanner.controller.matK                         = {0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35, 0.0, 0.0, 0.0, 0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35, 0.0, 0.0, 0.0, 0.054, 0.0, 0.0, 0.531, 0.0, 0.0, 1.785, 0.0, 0.0, 2.35};
@@ -81,7 +80,7 @@ mpsv::planner::SequentialPlannerParameterSet IterationPerformanceTest::GetParame
     return parameterSet;
 }
 
-mpsv::planner::SequentialPlannerInput IterationPerformanceTest::GetInput(Scene& scene){
+mpsv::planner::SequentialPlannerInput IterationPerformanceTest::GetInput(Scene& scene) {
     mpsv::planner::SequentialPlannerInput dataIn;
     dataIn.initialStateAndInput = scene.initialStateAndInput;
     dataIn.finalPose = scene.finalPose;
@@ -89,21 +88,21 @@ mpsv::planner::SequentialPlannerInput IterationPerformanceTest::GetInput(Scene& 
     mpsv::geometry::OrientedBox box;
     box.CreateFromFocalPoints(dataIn.initialStateAndInput, dataIn.finalPose, {25.0, 50.0});
     auto n = box.GetNormal();
-    dataIn.samplingBoxCenterPose[0] = (dataIn.initialStateAndInput[0] + dataIn.finalPose[0]) / 2.0;
-    dataIn.samplingBoxCenterPose[1] = (dataIn.initialStateAndInput[1] + dataIn.finalPose[1]) / 2.0;
-    dataIn.samplingBoxCenterPose[2] = std::atan2(n[1], n[0]);
+    dataIn.samplingBoxCenterPose[0U] = (dataIn.initialStateAndInput[0U] + dataIn.finalPose[0U]) / 2.0;
+    dataIn.samplingBoxCenterPose[1U] = (dataIn.initialStateAndInput[1U] + dataIn.finalPose[1U]) / 2.0;
+    dataIn.samplingBoxCenterPose[2U] = std::atan2(n[1U], n[0U]);
     dataIn.samplingBoxDimension = box.GetDimension();
     dataIn.staticObstacles = scene.staticObstacles;
     return dataIn;
 }
 
-void IterationPerformanceTest::Solve(Scene& scene, bool recreateFile){
+void IterationPerformanceTest::Solve(Scene& scene, bool recreateFile) {
     // construct sequential planner
-    constexpr int16_t pathMaxNumNodes = 200;
-    constexpr uint32_t pathMaxNumSamples = 1000000;
-    constexpr int16_t motionMaxNumNodes = 200;
-    constexpr uint32_t motionMaxNumSamples = 1000000;
-    constexpr uint32_t maxNumCells = 4096 * 4096;
+    constexpr std::int16_t pathMaxNumNodes{200};
+    constexpr std::uint32_t pathMaxNumSamples{1000000U};
+    constexpr std::int16_t motionMaxNumNodes{200};
+    constexpr std::uint32_t motionMaxNumSamples{1000000U};
+    constexpr std::uint32_t maxNumCells{4096U * 4096U};
     mpsv::planner::SequentialPlanner planner;
     planner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
 
@@ -111,34 +110,33 @@ void IterationPerformanceTest::Solve(Scene& scene, bool recreateFile){
     mpsv::planner::SequentialPlannerInput dataIn = IterationPerformanceTest::GetInput(scene);
     mpsv::planner::SequentialPlannerParameterSet parameter = IterationPerformanceTest::GetParameterSet();
     mpsv::error_code ec = dataIn.IsValid();
-    if(mpsv::error_code::NONE != ec){
+    if (mpsv::error_code::NONE != ec) {
         std::cerr << "ERROR: Input data is invalid (code: " << (int)(ec) << ")!\n";
         return;
     }
     ec = parameter.IsValid();
-    if(mpsv::error_code::NONE != ec){
+    if (mpsv::error_code::NONE != ec) {
         std::cerr << "ERROR: Parameter data is invalid (code: " << (int)(ec) << ")!\n";
         return;
     }
 
     // solve the sequential planning problem
-    constexpr double maxComputationTimePathPlanning = 1.0;
-    constexpr double maxComputationTimeMotionPlanning = 1.0;
+    constexpr double maxComputationTimePathPlanning{1.0};
+    constexpr double maxComputationTimeMotionPlanning{1.0};
     mpsv::planner::SequentialPlannerOutput dataOut;
     planner.Solve(dataOut, dataIn, parameter, maxComputationTimePathPlanning, maxComputationTimeMotionPlanning);
 
     // write results to file
     mpsv::logging::File f;
     std::string filename = "dataIterationPerformanceTest";
-    if(f.Open(filename, !recreateFile)){
+    if (f.Open(filename, !recreateFile)) {
         //parameter.WriteToFile(f, "parameter.");
         //dataIn = IterationPerformanceTest::GetInput(scene);
         //dataIn.WriteToFile(f, "input.");
         dataOut.WriteToFile(f, "output.");
         //planner.WriteToFile(f, "planner.", dataIn.staticObstacles);
         f.Close();
-    }
-    else{
+    } else {
         std::cerr << "Failed to open output file: " << filename << "\n";
     }
 }

@@ -39,7 +39,7 @@ class PathPlanner {
          * @param[in] maxNumSamples Maximum number of random samples to be generated in advance. The default value is 100000.
          * @param[in] maxNumCells Maximum number of cells to be used in the cost map. The default value is 4096*4096.
          */
-        explicit PathPlanner(int16_t maxNumNodes = 200, uint32_t maxNumSamples = 100000, uint32_t maxNumCells = 4096 * 4096) noexcept {
+        explicit PathPlanner(std::int16_t maxNumNodes = 200, std::uint32_t maxNumSamples = 100000U, std::uint32_t maxNumCells = 4096U * 4096U) noexcept {
             Reconfigure(maxNumNodes, maxNumSamples, maxNumCells);
         }
 
@@ -49,15 +49,15 @@ class PathPlanner {
          * @param[in] maxNumSamples Maximum number of random samples to be generated in advance.
          * @param[in] maxNumCells Maximum number of cells to be used in the cost map.
          */
-        void Reconfigure(int16_t maxNumNodes, uint32_t maxNumSamples, uint32_t maxNumCells) noexcept {
+        void Reconfigure(std::int16_t maxNumNodes, std::uint32_t maxNumSamples, std::uint32_t maxNumCells) noexcept {
             m_tree.Resize(maxNumNodes);
             m_boxSampler.Generate(maxNumSamples);
             m_costMap.Resize(maxNumCells);
             m_idxNeighbors.resize(maxNumNodes);
             m_idxNeighbors.shrink_to_fit();
             m_idxNeighbors.clear();
-            m_sampleIteration = 0;
-            m_goalSampleIteration = 0;
+            m_sampleIteration = 0U;
+            m_goalSampleIteration = 0U;
             m_idxSolutionNode = -1;
             m_closestDistanceToGoal = std::numeric_limits<double>::infinity();
             m_epsDistanceMetric = std::numeric_limits<double>::epsilon();
@@ -78,40 +78,39 @@ class PathPlanner {
             // Check validity of parameters and input
             dataOut.Clear();
             dataOut.errorCode = parameter.IsValid();
-            if(error_code::NONE == dataOut.errorCode){
+            if (error_code::NONE == dataOut.errorCode) {
                 dataOut.errorCode = dataIn.IsValid();
             }
 
             // Prepare the planner by checking for feasibility of the initial pose and performing a warm start if possible
-            if(mpsv::error_code::NONE == dataOut.errorCode){
-                if(forceColdStart){
-                    m_sampleIteration = 0;
+            if (mpsv::error_code::NONE == dataOut.errorCode) {
+                if (forceColdStart) {
+                    m_sampleIteration = 0U;
                 }
-                m_goalSampleIteration = 0;
+                m_goalSampleIteration = 0U;
                 mpsv::geometry::OrientedBox samplingArea = SetSamplingArea(dataIn);
                 SetNumericLimits(samplingArea, parameter);
                 m_tree.SetCSpaceVolume(samplingArea.GetVolume(parameter.metric.weightPsi));
                 BuildCostMap(samplingArea, dataIn.staticObstacles, parameter);
                 RemoveObstaclesOutsideAreaOfInterest(dataIn.staticObstacles, samplingArea, parameter);
-                if(parameter.geometry.vehicleShape.CheckCollisionPose(dataIn.staticObstacles, dataIn.initialPose)){
+                if (parameter.geometry.vehicleShape.CheckCollisionPose(dataIn.staticObstacles, dataIn.initialPose)) {
                     dataOut.errorCode = mpsv::error_code::PATHPLANNER_INITIAL_POSE_COLLISION;
                     m_idxSolutionNode = m_tree.Reset(dataIn.initialPose);
                     m_closestDistanceToGoal = mpsv::math::DistanceMetricSE2(dataIn.initialPose, dataIn.finalPose, parameter.metric.weightPsi);
-                }
-                else{
-                    if(forceColdStart || !WarmStart(dataIn, parameter)){
+                } else {
+                    if (forceColdStart || !WarmStart(dataIn, parameter)) {
                         m_idxSolutionNode = m_tree.Reset(dataIn.initialPose);
                         m_closestDistanceToGoal = mpsv::math::DistanceMetricSE2(dataIn.initialPose, dataIn.finalPose, parameter.metric.weightPsi);
                     }
                 }
-                if(m_idxSolutionNode < 0){
+                if (m_idxSolutionNode < 0) {
                     dataOut.errorCode = mpsv::error_code::PATHPLANNER_OUT_OF_NODES;
                 }
             }
 
             // Solve the path planning problem by doing several iterations
-            double maxIterationTime = 0.0;
-            while((!interruptFlag || !interruptFlag->load()) && (mpsv::error_code::NONE == dataOut.errorCode) && ((maxIterationTime + executionCounter.TimeToStart()) < maxComputationTime)){
+            double maxIterationTime{0.0};
+            while ((!interruptFlag || !interruptFlag->load()) && (mpsv::error_code::NONE == dataOut.errorCode) && ((maxIterationTime + executionCounter.TimeToStart()) < maxComputationTime)) {
                 mpsv::runtime::PerformanceCounter iterationCounter;
                 dataOut.errorCode = Iterate(dataIn, parameter);
                 dataOut.numberOfPerformedIterations++;
@@ -119,7 +118,7 @@ class PathPlanner {
             }
 
             // Assign output
-            if((m_idxSolutionNode >= 0) && (mpsv::error_code::NONE == dataOut.errorCode)){
+            if ((m_idxSolutionNode >= 0) && (mpsv::error_code::NONE == dataOut.errorCode)) {
                 dataOut.goalReached = (m_closestDistanceToGoal < m_epsDistanceMetric);
                 dataOut.cost = m_tree[m_idxSolutionNode].cost;
                 m_tree.GetPathFromRootToNode(dataOut.path, m_idxSolutionNode);
@@ -141,10 +140,10 @@ class PathPlanner {
         mpsv::structures::FixedSizeTreeSE2<Node> m_tree;                           // Tree for path planning.
         mpsv::sampler::UniformBoxSamplerSE2 m_boxSampler;                          // The box sampler to be used to draw random samples from SE(2).
         mpsv::structures::CostMap m_costMap;                                       // The cost map to be used as additional cost term in the objective function.
-        std::vector<int16_t> m_idxNeighbors;                                       // Reserved memory for nearest neighbors and warm start.
-        uint32_t m_sampleIteration{0};                                             // Number of iterations since the last random sample was drawn.
-        uint32_t m_goalSampleIteration{0};                                         // Number of iterations since the last goal sample was drawn.
-        int16_t m_idxSolutionNode{-1};                                             // Index to the solution node or negative if no solution node exists.
+        std::vector<std::int16_t> m_idxNeighbors;                                       // Reserved memory for nearest neighbors and warm start.
+        std::uint32_t m_sampleIteration{0U};                                             // Number of iterations since the last random sample was drawn.
+        std::uint32_t m_goalSampleIteration{0U};                                         // Number of iterations since the last goal sample was drawn.
+        std::int16_t m_idxSolutionNode{-1};                                             // Index to the solution node or negative if no solution node exists.
         double m_closestDistanceToGoal{std::numeric_limits<double>::infinity()};   // Closest distance to the goal pose from the current solution node.
         double m_epsDistanceMetric{std::numeric_limits<double>::epsilon()};        // Eps (numeric threshold) for distance metric.
 
@@ -165,11 +164,11 @@ class PathPlanner {
          * @param[in] parameter The parameter set for path planning.
          */
         void SetNumericLimits(const mpsv::geometry::OrientedBox& samplingArea, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
-            constexpr double pi2 = 2.0 * std::numbers::pi;
-            std::array<double,2> dimension = samplingArea.GetDimension();
-            double epsPosition = std::numeric_limits<double>::epsilon() * std::max(1.0, std::max(dimension[0], dimension[1]));
-            double epsAngle = std::numeric_limits<double>::epsilon() * pi2;
-            double epsWeightedAngle = std::max(1.0, parameter.metric.weightPsi) * epsAngle;
+            constexpr double pi2{2.0 * std::numbers::pi};
+            std::array<double, 2U> dimension = samplingArea.GetDimension();
+            double epsPosition{std::numeric_limits<double>::epsilon() * std::max(1.0, std::max(dimension[0U], dimension[1U]))};
+            double epsAngle{std::numeric_limits<double>::epsilon() * pi2};
+            double epsWeightedAngle{std::max(1.0, parameter.metric.weightPsi) * epsAngle};
             m_epsDistanceMetric = std::sqrt(2.0*epsPosition*epsPosition + epsWeightedAngle*epsWeightedAngle);
             m_tree.SetNumericLimit(m_epsDistanceMetric);
         }
@@ -183,7 +182,7 @@ class PathPlanner {
         void RemoveObstaclesOutsideAreaOfInterest(std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, mpsv::geometry::OrientedBox samplingArea, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
             samplingArea.Extend(parameter.geometry.vehicleShape.GetFarthestVertexDistance());
             mpsv::geometry::ConvexPolygon boxPolygon = samplingArea.ExportAsConvexPolygon();
-            staticObstacles.erase(std::remove_if(staticObstacles.begin(), staticObstacles.end(), [&boxPolygon](mpsv::geometry::ConvexPolygon& p){ return !boxPolygon.Overlap(p); } ), staticObstacles.end());
+            staticObstacles.erase(std::remove_if(staticObstacles.begin(), staticObstacles.end(), [&boxPolygon](mpsv::geometry::ConvexPolygon& p) { return !boxPolygon.Overlap(p); } ), staticObstacles.end());
         }
 
         /**
@@ -193,9 +192,9 @@ class PathPlanner {
          * @param[in] parameter The parameter set for path planning.
          */
         void BuildCostMap(mpsv::geometry::OrientedBox samplingArea, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
-            double maxSekeletalPointDistance = 0.0;
-            for(auto&& p : parameter.geometry.skeletalPoints){
-                maxSekeletalPointDistance = std::max(maxSekeletalPointDistance, std::sqrt(p[0]*p[0] + p[1]*p[1]));
+            double maxSekeletalPointDistance{0.0};
+            for (auto&& p : parameter.geometry.skeletalPoints) {
+                maxSekeletalPointDistance = std::max(maxSekeletalPointDistance, std::sqrt(p[0U]*p[0U] + p[1U]*p[1U]));
             }
             samplingArea.Extend(maxSekeletalPointDistance + 2.0 * parameter.costMap.resolution); // extend by the maximum distance of skeletal points and two more cells as safety threshold
             mpsv::structures::CostMapArgument args(parameter.costMap.distanceScale, parameter.costMap.distanceDecay, staticObstacles);
@@ -213,19 +212,21 @@ class PathPlanner {
 
             // Get the current solution branch
             m_idxNeighbors.clear();
-            int16_t node = m_idxSolutionNode;
-            while(node >= 0){
+            std::int16_t node{m_idxSolutionNode};
+            while (node >= 0) {
                 m_idxNeighbors.push_back(node);
                 node = m_tree[node].iParent;
             }
-            if(m_idxNeighbors.size() <= 1) return false; // too few nodes: cold start
+            if (m_idxNeighbors.size() <= 1U) {
+                return false; // too few nodes: cold start
+            }
 
             // Calculate the cummulative cost for all nodes along the given solution path based on the updated costmap
             // m_idxNeighbors starts with the solution node and ends with the root node.
             m_tree[m_idxNeighbors.back()].cost = 0.0;
-            for(size_t k = m_idxNeighbors.size()-1; k > 0; --k){
+            for (std::size_t k{m_idxNeighbors.size() - 1U}; k > 0U; --k) {
                 auto& a = m_tree[m_idxNeighbors[k]];
-                auto& b = m_tree[m_idxNeighbors[k - 1]];
+                auto& b = m_tree[m_idxNeighbors[k - 1U]];
                 double costDistance = mpsv::math::DistanceMetricSE2(a.pose, b.pose, parameter.metric.weightPsi);
                 double costHeading = mpsv::math::SwayMetric(a.pose, b.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                 double costClearance = m_costMap.CostAlongLine(a.pose, b.pose, parameter.geometry.skeletalPoints);
@@ -233,51 +234,54 @@ class PathPlanner {
             }
 
             // Find best collision-free connection from initial pose to solution path: find that connection, that is collision-free and reduces the cost.
-            int16_t idxBestConnection = -1;
-            double bestTotalCost = std::numeric_limits<double>::infinity();
-            for(auto&& i : m_idxNeighbors){
+            std::int16_t idxBestConnection{-1};
+            double bestTotalCost{std::numeric_limits<double>::infinity()};
+            for (auto&& i : m_idxNeighbors) {
                 auto& node = m_tree[i];
-                if(!parameter.geometry.vehicleShape.CheckCollisionLine(dataIn.staticObstacles, node.pose, dataIn.initialPose, parameter.geometry.collisionCheckMaxAngleDeviation)){
+                if (!parameter.geometry.vehicleShape.CheckCollisionLine(dataIn.staticObstacles, node.pose, dataIn.initialPose, parameter.geometry.collisionCheckMaxAngleDeviation)) {
                     // The total cost for this connection is the cost from the initial pose to the connection point added to the cummulative cost from the connection point to the solution (old solution)
                     double costDistance = mpsv::math::DistanceMetricSE2(dataIn.initialPose, node.pose, parameter.metric.weightPsi);
                     double costHeading = mpsv::math::SwayMetric(dataIn.initialPose, node.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                     double costClearance = m_costMap.CostAlongLine(dataIn.initialPose, node.pose, parameter.geometry.skeletalPoints);
-                    double costToGoal = m_tree[m_idxNeighbors[0]].cost - node.cost;
-                    double totalCost = (costDistance + costHeading + costClearance) + costToGoal;
-                    if(totalCost < bestTotalCost){
+                    double costToGoal{m_tree[m_idxNeighbors[0U]].cost - node.cost};
+                    double totalCost{(costDistance + costHeading + costClearance) + costToGoal};
+                    if (totalCost < bestTotalCost) {
                         bestTotalCost = totalCost;
                         idxBestConnection = i;
                     }
                 }
             }
-            if(idxBestConnection < 0) return false; // no connection found: cold start
+            if (idxBestConnection < 0) {
+                return false; // no connection found: cold start
+            }
 
             // The tree starts from initialPose and connects to idxBestConnection
-            int16_t idxRoot = m_tree.ChangeRoot(dataIn.initialPose, idxBestConnection, parameter.metric.weightPsi);
-            if(idxRoot < 0) return false;
+            std::int16_t idxRoot = m_tree.ChangeRoot(dataIn.initialPose, idxBestConnection, parameter.metric.weightPsi);
+            if (idxRoot < 0) {
+                return false;
+            }
 
             // Check feasibility and recalculate cost of all edges and prune the tree (feasible if no collision and inside new sampling area)
             m_idxNeighbors.clear();
             m_idxNeighbors.push_back(idxRoot);
             m_tree[idxRoot].cost = 0.0;
-            while(!m_idxNeighbors.empty()){
-                int16_t current = m_idxNeighbors.back();
+            while (!m_idxNeighbors.empty()) {
+                std::int16_t current{m_idxNeighbors.back()};
                 m_idxNeighbors.pop_back();
-                int16_t child = m_tree[current].iFirstChild;
-                while(child >= 0){
-                    int16_t nextChild = m_tree[child].iNextSibling;
+                std::int16_t child{m_tree[current].iFirstChild};
+                while (child >= 0) {
+                    std::int16_t nextChild{m_tree[child].iNextSibling};
                     auto& a = m_tree[current];
                     auto& b = m_tree[child];
-                    if(m_boxSampler.IsInside(b.pose) && !parameter.geometry.vehicleShape.CheckCollisionLine(dataIn.staticObstacles, b.pose, a.pose, parameter.geometry.collisionCheckMaxAngleDeviation)){
-                        if(m_tree[child].iFirstChild >= 0){
+                    if (m_boxSampler.IsInside(b.pose) && !parameter.geometry.vehicleShape.CheckCollisionLine(dataIn.staticObstacles, b.pose, a.pose, parameter.geometry.collisionCheckMaxAngleDeviation)) {
+                        if (m_tree[child].iFirstChild >= 0) {
                             m_idxNeighbors.push_back(child);
                         }
                         b.cost = a.cost;
                         b.cost += mpsv::math::DistanceMetricSE2(a.pose, b.pose, parameter.metric.weightPsi);
                         b.cost += mpsv::math::SwayMetric(a.pose, b.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
                         b.cost += m_costMap.CostAlongLine(a.pose, b.pose, parameter.geometry.skeletalPoints);
-                    }
-                    else{
+                    } else {
                         m_tree.DeleteSubtree(child);
                     }
                     child = nextChild;
@@ -287,11 +291,11 @@ class PathPlanner {
             // Find node with closest distance to new goal
             m_closestDistanceToGoal = std::numeric_limits<double>::infinity();
             m_idxSolutionNode = idxRoot;
-            const std::vector<int16_t>& indices = m_tree.GetActiveIndices();
+            const std::vector<std::int16_t>& indices = m_tree.GetActiveIndices();
             double distance;
-            for(auto&& i : indices){
+            for (auto&& i : indices) {
                 distance = mpsv::math::DistanceMetricSE2(m_tree[i].pose, dataIn.finalPose, parameter.metric.weightPsi);
-                if(distance < m_closestDistanceToGoal){
+                if (distance < m_closestDistanceToGoal) {
                     m_closestDistanceToGoal = distance;
                     m_idxSolutionNode = i;
                 }
@@ -306,22 +310,22 @@ class PathPlanner {
          * @return mpsv::error_code::NONE if the iteration was successful, a non-zero error code otherwise.
          */
         mpsv::error_code Iterate(const mpsv::planner::PathPlannerInput& dataIn, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
-            if(m_tree.IsFull() && !m_tree.RemoveRandomLeaf(m_idxSolutionNode)){
+            if (m_tree.IsFull() && !m_tree.RemoveRandomLeaf(m_idxSolutionNode)) {
                 return mpsv::error_code::PATHPLANNER_OUT_OF_NODES; // no more nodes available in the tree and no random leaf node could be removed
             }
             Node randomSample = Sampling(dataIn.finalPose, parameter);
-            int16_t idxNearest = m_tree.FindNearestNode(randomSample, parameter.metric.weightPsi);
+            std::int16_t idxNearest = m_tree.FindNearestNode(randomSample, parameter.metric.weightPsi);
             auto [success, newSample] = LocalPlanning(idxNearest, randomSample, dataIn.staticObstacles, parameter);
-            if(success){
-                if(m_tree.FindNearestNeighbors(m_idxNeighbors, newSample, m_tree.GetOptimalRadius(), parameter.metric.weightPsi)){
-                    int16_t idxBestParent = FindBestParent(newSample, idxNearest, dataIn.staticObstacles, parameter); // updates newSample.cost
-                    int16_t idxAddedSample = m_tree.Add(idxBestParent, newSample);
-                    if(idxAddedSample < 0){
+            if (success) {
+                if (m_tree.FindNearestNeighbors(m_idxNeighbors, newSample, m_tree.GetOptimalRadius(), parameter.metric.weightPsi)) {
+                    std::int16_t idxBestParent = FindBestParent(newSample, idxNearest, dataIn.staticObstacles, parameter); // updates newSample.cost
+                    std::int16_t idxAddedSample = m_tree.Add(idxBestParent, newSample);
+                    if (idxAddedSample < 0) {
                         return mpsv::error_code::PATHPLANNER_OUT_OF_NODES;
                     }
                     Rewire(idxAddedSample, dataIn.staticObstacles, parameter);
                     double distanceToGoal = mpsv::math::DistanceMetricSE2(m_tree[idxAddedSample].pose, dataIn.finalPose, parameter.metric.weightPsi);
-                    if(distanceToGoal < m_closestDistanceToGoal){
+                    if (distanceToGoal < m_closestDistanceToGoal) {
                         m_closestDistanceToGoal = distanceToGoal;
                         m_idxSolutionNode = idxAddedSample;
                     }
@@ -336,15 +340,14 @@ class PathPlanner {
          * @param[in] parameter The parameter set for path planning.
          * @return The random sample.
          */
-        Node Sampling(const std::array<double,3>& finalPose, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
+        Node Sampling(const std::array<double, 3U>& finalPose, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
             Node randomSample;
-            if((m_closestDistanceToGoal < m_epsDistanceMetric) || m_goalSampleIteration){
+            if ((m_closestDistanceToGoal < m_epsDistanceMetric) || m_goalSampleIteration) {
                 randomSample.pose = m_boxSampler.Sample(m_sampleIteration++);
-            }
-            else{
+            } else {
                 randomSample.pose = finalPose;
             }
-            m_goalSampleIteration = (m_goalSampleIteration + 1) % parameter.pathPlanner.periodGoalSampling;
+            m_goalSampleIteration = (m_goalSampleIteration + 1U) % parameter.pathPlanner.periodGoalSampling;
             return randomSample;
         }
 
@@ -358,33 +361,33 @@ class PathPlanner {
          * <0> True if local planning succeeded (e.g. no collision), false otherwise.
          * <1> The resulting sample of local planning.
          */
-        std::tuple<bool, Node> LocalPlanning(const int16_t idxSource, const Node& destination, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
+        std::tuple<bool, Node> LocalPlanning(const std::int16_t idxSource, const Node& destination, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
             std::tuple<bool, Node> result{};
             auto& [success, newSample] = result;
             const Node& source = m_tree[idxSource];
 
             // Limit step size to optimal radius of the tree and calculate resulting node
-            std::array<double, 3> direction = mpsv::math::PoseDifference(destination.pose, source.pose);
-            double z = parameter.metric.weightPsi * direction[2];
-            double r = std::sqrt(direction[0]*direction[0] + direction[1]*direction[1] + z*z);
+            std::array<double, 3U> direction = mpsv::math::PoseDifference(destination.pose, source.pose);
+            double z{parameter.metric.weightPsi * direction[2U]};
+            double r{std::sqrt(direction[0U]*direction[0U] + direction[1U]*direction[1U] + z*z)};
             double radius = m_tree.GetOptimalRadius();
-            bool stepLimited = (r > radius);
-            if(stepLimited){
+            bool stepLimited{(r > radius)};
+            if (stepLimited) {
                 radius /= r;
-                direction[0] *= radius;
-                direction[1] *= radius;
-                direction[2] *= radius;
+                direction[0U] *= radius;
+                direction[1U] *= radius;
+                direction[2U] *= radius;
             }
-            newSample.pose[0] = source.pose[0] + direction[0];
-            newSample.pose[1] = source.pose[1] + direction[1];
-            newSample.pose[2] = mpsv::math::SymmetricalAngle(source.pose[2] + direction[2]);
+            newSample.pose[0U] = source.pose[0U] + direction[0U];
+            newSample.pose[1U] = source.pose[1U] + direction[1U];
+            newSample.pose[2U] = mpsv::math::SymmetricalAngle(source.pose[2U] + direction[2U]);
 
             // Check collision and calculate cost
             double costDistance = mpsv::math::DistanceMetricSE2(source.pose, newSample.pose, parameter.metric.weightPsi);
-            if(costDistance <= m_epsDistanceMetric){
+            if (costDistance <= m_epsDistanceMetric) {
                 return result; // do not allow zero movement
             }
-            if(parameter.geometry.vehicleShape.CheckCollisionLine(staticObstacles, newSample.pose, source.pose, parameter.geometry.collisionCheckMaxAngleDeviation)){
+            if (parameter.geometry.vehicleShape.CheckCollisionLine(staticObstacles, newSample.pose, source.pose, parameter.geometry.collisionCheckMaxAngleDeviation)) {
                 return result;
             }
             double costHeading = mpsv::math::SwayMetric(source.pose, newSample.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
@@ -392,7 +395,7 @@ class PathPlanner {
             newSample.cost = source.cost + costDistance + costHeading + costClearance;
 
             // If the step was limited during goal sampling, then continue goal sampling in the next iteration
-            m_goalSampleIteration -= static_cast<uint32_t>(stepLimited && (1 == m_goalSampleIteration));
+            m_goalSampleIteration -= static_cast<std::uint32_t>(stepLimited && (1U == m_goalSampleIteration));
             success = true;
             return result;
         }
@@ -405,23 +408,23 @@ class PathPlanner {
          * @param[in] parameter The parameter set for path planning.
          * @return Index to the best parent node such that the cost for the new sample becomes minimal and the edge from that parent to the new sample is feasible.
          */
-        int16_t FindBestParent(Node& newSample, int16_t idxNearest, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
-            int16_t idxBestParent = idxNearest;
-            for(auto&& index : m_idxNeighbors){
-                if(idxNearest == index){
+        std::int16_t FindBestParent(Node& newSample, std::int16_t idxNearest, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
+            std::int16_t idxBestParent{idxNearest};
+            for (auto&& index : m_idxNeighbors) {
+                if (idxNearest == index) {
                     continue; // the nearest node is already the parent for the new node, check all others
                 }
 
                 // Check if cost reduction is actually possible
                 Node& possibleParent = m_tree[index];
-                double resultCost = possibleParent.cost;
+                double resultCost{possibleParent.cost};
                 resultCost += mpsv::math::DistanceMetricSE2(possibleParent.pose, newSample.pose, parameter.metric.weightPsi);
-                if((resultCost + m_epsDistanceMetric) < newSample.cost){
+                if ((resultCost + m_epsDistanceMetric) < newSample.cost) {
                     resultCost += mpsv::math::SwayMetric(possibleParent.pose, newSample.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
-                    if((resultCost + m_epsDistanceMetric) < newSample.cost){
+                    if ((resultCost + m_epsDistanceMetric) < newSample.cost) {
                         resultCost += m_costMap.CostAlongLine(possibleParent.pose, newSample.pose, parameter.geometry.skeletalPoints);
-                        if((resultCost + m_epsDistanceMetric) < newSample.cost){
-                            if(parameter.geometry.vehicleShape.CheckCollisionLine(staticObstacles, newSample.pose, possibleParent.pose, parameter.geometry.collisionCheckMaxAngleDeviation)){
+                        if ((resultCost + m_epsDistanceMetric) < newSample.cost) {
+                            if (parameter.geometry.vehicleShape.CheckCollisionLine(staticObstacles, newSample.pose, possibleParent.pose, parameter.geometry.collisionCheckMaxAngleDeviation)) {
                                 continue; // collision detected, cannot be a better parent
                             }
                             idxBestParent = index;
@@ -440,26 +443,26 @@ class PathPlanner {
          * @param[in] staticObstacles The set of static obstacles to be used for collision checks.
          * @param[in] parameter The parameter set for path planning.
          */
-        void Rewire(int16_t idxAddedSample, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
+        void Rewire(std::int16_t idxAddedSample, const std::vector<mpsv::geometry::StaticObstacle>& staticObstacles, const mpsv::planner::PathPlannerParameterSet& parameter) noexcept {
             Node& addedSample = m_tree[idxAddedSample];
-            for(auto&& index : m_idxNeighbors){
-                if(m_tree[idxAddedSample].iParent == index){
+            for (auto&& index : m_idxNeighbors) {
+                if (m_tree[idxAddedSample].iParent == index) {
                     continue; // cannot be a better parent for its own parent
                 }
 
                 // Check if cost reduction is actually possible
                 Node& destination = m_tree[index];
-                double resultCost = addedSample.cost;
+                double resultCost{addedSample.cost};
                 resultCost += mpsv::math::DistanceMetricSE2(addedSample.pose, destination.pose, parameter.metric.weightPsi);
-                if((resultCost + m_epsDistanceMetric) < destination.cost){
+                if ((resultCost + m_epsDistanceMetric) < destination.cost) {
                     resultCost += mpsv::math::SwayMetric(addedSample.pose, destination.pose, parameter.metric.weightSway, parameter.metric.weightReverseScale, parameter.metric.weightReverseDecay);
-                    if((resultCost + m_epsDistanceMetric) < destination.cost){
+                    if ((resultCost + m_epsDistanceMetric) < destination.cost) {
                         resultCost += m_costMap.CostAlongLine(addedSample.pose, destination.pose, parameter.geometry.skeletalPoints);
-                        if((resultCost + m_epsDistanceMetric) < destination.cost){
-                            if(parameter.geometry.vehicleShape.CheckCollisionLine(staticObstacles, destination.pose, addedSample.pose, parameter.geometry.collisionCheckMaxAngleDeviation)){
+                        if ((resultCost + m_epsDistanceMetric) < destination.cost) {
+                            if (parameter.geometry.vehicleShape.CheckCollisionLine(staticObstacles, destination.pose, addedSample.pose, parameter.geometry.collisionCheckMaxAngleDeviation)) {
                                 continue; // collision detected, cannot be a better parent
                             }
-                            double deltaCost = resultCost - destination.cost;
+                            double deltaCost{resultCost - destination.cost};
                             m_tree.Rewire(index, idxAddedSample, deltaCost);
                         }
                     }

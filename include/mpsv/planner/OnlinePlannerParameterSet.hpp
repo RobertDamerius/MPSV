@@ -25,7 +25,7 @@ class OnlinePlannerParameterSet {
         /**
          * @brief Clear the sequential planner parameter object and set default values.
          */
-        void Clear(void) noexcept {
+        void Clear() noexcept {
             sequentialPlanner.Clear();
             onlinePlanner.Clear();
         }
@@ -34,18 +34,20 @@ class OnlinePlannerParameterSet {
          * @brief Check whether this parameter set is valid or not.
          * @return mpsv::error_code::NONE if all attributes are valid, a non-zero error code otherwise.
          */
-        [[nodiscard]] error_code IsValid(void) const noexcept {
+        [[nodiscard]] error_code IsValid() const noexcept {
             error_code e;
-            if(error_code::NONE != (e = sequentialPlanner.IsValid()))
+            if (error_code::NONE != (e = sequentialPlanner.IsValid())) {
                 return e;
-            if(error_code::NONE != (e = onlinePlanner.IsValid()))
+            }
+            if (error_code::NONE != (e = onlinePlanner.IsValid())) {
                 return e;
-            double numStepsOnReset = (onlinePlanner.maxComputationTimeMotionOnReset + onlinePlanner.maxComputationTimePathOnReset + onlinePlanner.additionalAheadPlanningTime) / sequentialPlanner.motionPlanner.sampletime;
-            if(!std::isfinite(numStepsOnReset) || (numStepsOnReset >= 0x0000FFFF)){
+            }
+            double numStepsOnReset{(onlinePlanner.maxComputationTimeMotionOnReset + onlinePlanner.maxComputationTimePathOnReset + onlinePlanner.additionalAheadPlanningTime) / sequentialPlanner.motionPlanner.sampletime};
+            if (!std::isfinite(numStepsOnReset) || (numStepsOnReset >= 0x0000FFFFU)) {
                 return error_code::PARAM_ONLINEPLANNER_NUM_SIMULATION_STEPS;
             }
-            double numSteps = (onlinePlanner.maxComputationTimeMotion + onlinePlanner.maxComputationTimePath + onlinePlanner.additionalAheadPlanningTime) / sequentialPlanner.motionPlanner.sampletime;
-            if(!std::isfinite(numSteps) || (numSteps >= 0x0000FFFF)){
+            double numSteps{(onlinePlanner.maxComputationTimeMotion + onlinePlanner.maxComputationTimePath + onlinePlanner.additionalAheadPlanningTime) / sequentialPlanner.motionPlanner.sampletime};
+            if (!std::isfinite(numSteps) || (numSteps >= 0x0000FFFFU)) {
                 return error_code::PARAM_ONLINEPLANNER_NUM_SIMULATION_STEPS;
             }
             return error_code::NONE;

@@ -19,18 +19,18 @@ class PathPlannerOutput {
     public:
         bool goalReached{};                                   // True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
         mpsv::error_code errorCode{mpsv::error_code::NONE};   // Error code indicating the status of the path planning operation.
-        uint32_t numberOfPerformedIterations{};               // The total number of iterations that have been performed since the latest prepare step.
+        std::uint32_t numberOfPerformedIterations{};               // The total number of iterations that have been performed since the latest prepare step.
         double timestampOfComputationUTC{};                   // Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
         double cost{};                                        // The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
-        std::vector<std::array<double,3>> path{};             // Resulting path, where each pose is given as {x,y,psi}. The first element always corresponds to the initial pose. If the goal is reached, then the final pose corresponds to the desired final pose of the path planning problem.
+        std::vector<std::array<double, 3U>> path{};           // Resulting path, where each pose is given as {x,y,psi}. The first element always corresponds to the initial pose. If the goal is reached, then the final pose corresponds to the desired final pose of the path planning problem.
 
         /**
          * @brief Clear the output and set default values.
          */
-        void Clear(void) noexcept {
+        void Clear() noexcept {
             goalReached = false;
             errorCode = mpsv::error_code::NONE;
-            numberOfPerformedIterations = 0;
+            numberOfPerformedIterations = 0U;
             timestampOfComputationUTC = cost = 0.0;
             path.clear();
         }
@@ -54,11 +54,11 @@ class PathPlannerOutput {
          * @param[in] preString A pre-string to be inserted at the beginning of variable names.
          */
         void WriteToFile(mpsv::logging::File& file, std::string preString) noexcept {
-            file.WriteField("bool", preString + "goalReached", {1}, &goalReached, sizeof(goalReached));
-            file.WriteField("uint8_t", preString + "errorCode", {1}, &errorCode, sizeof(errorCode));
-            file.WriteField("uint32_t", preString + "numberOfPerformedIterations", {1}, &numberOfPerformedIterations, sizeof(numberOfPerformedIterations));
-            file.WriteField("double", preString + "timestampOfComputationUTC", {1}, &timestampOfComputationUTC, sizeof(timestampOfComputationUTC));
-            file.WriteField("double", preString + "cost", {1}, &cost, sizeof(cost));
+            file.WriteField("bool", preString + "goalReached", {1U}, &goalReached, sizeof(goalReached));
+            file.WriteField("uint8_t", preString + "errorCode", {1U}, &errorCode, sizeof(errorCode));
+            file.WriteField("uint32_t", preString + "numberOfPerformedIterations", {1U}, &numberOfPerformedIterations, sizeof(numberOfPerformedIterations));
+            file.WriteField("double", preString + "timestampOfComputationUTC", {1U}, &timestampOfComputationUTC, sizeof(timestampOfComputationUTC));
+            file.WriteField("double", preString + "cost", {1U}, &cost, sizeof(cost));
             file.WriteVectorField(preString + "path", path);
         }
 };

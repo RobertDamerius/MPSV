@@ -23,7 +23,7 @@ class AsyncOnlinePlannerOutput: public mpsv::planner::OnlinePlannerOutput {
         /**
          * @brief Clear the output and set default values.
          */
-        void Clear(void) noexcept {
+        void Clear() noexcept {
             mpsv::planner::OnlinePlannerOutput::Clear();
             threadState = mpsv::runtime::WorkerThreadState::offline;
         }

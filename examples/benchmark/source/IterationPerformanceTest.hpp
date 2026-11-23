@@ -12,7 +12,7 @@ class IterationPerformanceTest {
         /**
          * @brief Run the iteration performance test.
          */
-        static void Run(void);
+        static void Run();
 
     private:
         static SceneDataFile m_sceneData;   // Scene data file containing scenarios of realistic planning problems.
@@ -21,12 +21,12 @@ class IterationPerformanceTest {
          * @brief Load scene data file.
          * @return True if success, false otherwise.
          */
-        static bool LoadSceneData(void);
+        static bool LoadSceneData();
 
         /**
          * @brief Get the sequential planner parameter set for testing.
          */
-        static mpsv::planner::SequentialPlannerParameterSet GetParameterSet(void);
+        static mpsv::planner::SequentialPlannerParameterSet GetParameterSet();
 
         /**
          * @brief Get the sequential planner input data based on the current scene data.

@@ -133,15 +133,15 @@ for(...){
 - results are obtained via polling or callback
 
 ```cpp
-constexpr int16_t pathMaxNumNodes      = 200;
-constexpr uint32_t pathMaxNumSamples   = 1000000;
-constexpr int16_t motionMaxNumNodes    = 200;
-constexpr uint32_t motionMaxNumSamples = 1000000;
-constexpr uint32_t maxNumCells         = 4096 * 4096;
-constexpr int32_t threadPriority       = 20;
-constexpr int32_t ompNumThreads        = -1; // ignore
-constexpr int32_t ompDynamic           = -1; // ignore
-std::vector<int32_t> cpuCoreIDs        = {}; // ignore
+constexpr std::int16_t pathMaxNumNodes      = 200;
+constexpr std::uint32_t pathMaxNumSamples   = 1000000;
+constexpr std::int16_t motionMaxNumNodes    = 200;
+constexpr std::uint32_t motionMaxNumSamples = 1000000;
+constexpr std::uint32_t maxNumCells         = 4096 * 4096;
+constexpr std::int32_t threadPriority       = 20;
+constexpr std::int32_t ompNumThreads        = -1; // ignore
+constexpr std::int32_t ompDynamic           = -1; // ignore
+std::vector<std::int32_t> cpuCoreIDs        = {}; // ignore
 
 mpsv::planner::AsyncOnlinePlanner planner;
 planner.Start(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells, threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);

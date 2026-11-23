@@ -15,8 +15,8 @@ namespace sampler {
  * The samples are stored in a look-up table (LUT) and are accessed via indexing the LUT.
  * @tparam Tdimension The number of dimensions to be used. Must be in range [1,16].
  */
-template<size_t Tdimension> class HaltonSequence {
-    static_assert((Tdimension >= 1) && (Tdimension <= 16), "Halton sequence dimension must be in range [1,16]!");
+template<std::size_t Tdimension> class HaltonSequence {
+    static_assert((Tdimension >= 1U) && (Tdimension <= 16U), "Halton sequence dimension must be in range [1,16]!");
 
     public:
         /**
@@ -24,21 +24,21 @@ template<size_t Tdimension> class HaltonSequence {
          * @param[in] maxNumSamples Requested maximum number of samples to be generated. The value is clamped to the safe maximum.
          * @param[in] scale Optional scale value for samples. Samples are to be generated in range [0,scale]. Scale defaults to 1.0.
          */
-        void Generate(size_t maxNumSamples, double scale = 1.0) noexcept {
-            maxNumSamples = std::clamp(maxNumSamples, size_t{1}, m_samples.max_size());
+        void Generate(std::size_t maxNumSamples, double scale = 1.0) noexcept {
+            maxNumSamples = std::clamp(maxNumSamples, std::size_t{1U}, m_samples.max_size());
             m_samples.resize(maxNumSamples);
-            constexpr size_t primes[] = {2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53};
-            #pragma omp parallel for if (maxNumSamples > 100000)
-            for(size_t s = 0; s < maxNumSamples; s++){
-                for (size_t dim = 0; dim < Tdimension; dim++) {
-                    size_t base = primes[dim];
-                    double invBase = 1.0 / static_cast<double>(base);
-                    size_t n = s + 1;
-                    double q = 0.0;
-                    double bk = invBase;
-                    while(n > 0){
+            constexpr std::size_t primes[] = {2U, 3U, 5U, 7U, 11U, 13U, 17U, 19U, 23U, 29U, 31U, 37U, 41U, 43U, 47U, 53U};
+            #pragma omp parallel for if (maxNumSamples > 100000U)
+            for (std::size_t s = 0U; s < maxNumSamples; s++) {
+                for (std::size_t dim{0U}; dim < Tdimension; dim++) {
+                    std::size_t base{primes[dim]};
+                    double invBase{1.0 / static_cast<double>(base)};
+                    std::size_t n{s + 1U};
+                    double q{0.0};
+                    double bk{invBase};
+                    while (n > 0U) {
                         q += bk * static_cast<double>(n % base);
-                        n = size_t(static_cast<double>(n) * invBase);
+                        n = std::size_t(static_cast<double>(n) * invBase);
                         bk *= invBase;
                     }
                     m_samples[s][dim] = scale * q;
@@ -52,9 +52,9 @@ template<size_t Tdimension> class HaltonSequence {
          * @param[in] idxSample Index of the sample.
          * @return The sample values in range [0,scale], where scale is set by the @ref Generate member function.
          */
-        [[nodiscard]] std::array<double, Tdimension> Sample(size_t idxSample) const noexcept {
+        [[nodiscard]] std::array<double, Tdimension> Sample(std::size_t idxSample) const noexcept {
             std::array<double, Tdimension> sample{};
-            if(!m_samples.empty()){
+            if (!m_samples.empty()) {
                 idxSample %= m_samples.size();
                 return m_samples[idxSample];
             }

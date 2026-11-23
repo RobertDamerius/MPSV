@@ -6,8 +6,8 @@
 
 class Scene {
     public:
-        std::array<double,12> initialStateAndInput;                    // Vector containing the initial state {x,y,psi,u,v,r,X,Y,N} and the initial input {Xc,Yc,Nc}.
-        std::array<double,3> finalPose;                                // Final pose given as {x,y,psi}.
+        std::array<double, 12U> initialStateAndInput;                    // Vector containing the initial state {x,y,psi,u,v,r,X,Y,N} and the initial input {Xc,Yc,Nc}.
+        std::array<double, 3U> finalPose;                                // Final pose given as {x,y,psi}.
         std::vector<mpsv::geometry::StaticObstacle> staticObstacles;   // List of static obstacles.
 
         /**
@@ -22,10 +22,10 @@ class Scene {
          * @brief Check whether all attributes are valid.
          * @return True if all attributes are valid, false otherwise.
          */
-        bool IsValid(void) noexcept {
-            bool valid = std::isfinite(initialStateAndInput[0]) && std::isfinite(initialStateAndInput[1]) && std::isfinite(initialStateAndInput[2]) && std::isfinite(initialStateAndInput[3]) && std::isfinite(initialStateAndInput[4]) && std::isfinite(initialStateAndInput[5]) && std::isfinite(initialStateAndInput[6]) && std::isfinite(initialStateAndInput[7]) && std::isfinite(initialStateAndInput[8]) && std::isfinite(initialStateAndInput[9]) && std::isfinite(initialStateAndInput[10]) && std::isfinite(initialStateAndInput[11]);
-            valid &= std::isfinite(finalPose[0]) && std::isfinite(finalPose[1]) && std::isfinite(finalPose[2]);
-            for(auto&& obstacle : staticObstacles){
+        bool IsValid() noexcept {
+            bool valid{std::isfinite(initialStateAndInput[0U]) && std::isfinite(initialStateAndInput[1U]) && std::isfinite(initialStateAndInput[2U]) && std::isfinite(initialStateAndInput[3U]) && std::isfinite(initialStateAndInput[4U]) && std::isfinite(initialStateAndInput[5U]) && std::isfinite(initialStateAndInput[6U]) && std::isfinite(initialStateAndInput[7U]) && std::isfinite(initialStateAndInput[8U]) && std::isfinite(initialStateAndInput[9U]) && std::isfinite(initialStateAndInput[10U]) && std::isfinite(initialStateAndInput[11U])};
+            valid &= std::isfinite(finalPose[0U]) && std::isfinite(finalPose[1U]) && std::isfinite(finalPose[2U]);
+            for (auto&& obstacle : staticObstacles) {
                 valid &= obstacle.IsValid();
             }
             return valid;

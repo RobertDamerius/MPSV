@@ -12,15 +12,15 @@
  */
 struct __attribute__((packed)) serialization_asynchronous_online_planner_input {
     double timestamp;
-    uint8_t enable:1;
-    uint8_t reset:1;
-    uint8_t reserved:6;
-    std::array<double,3> originLLA;
-    std::array<double,12> initialStateAndInput;
-    std::array<double,3> finalPose;
-    std::array<double,3> samplingBoxCenterPose;
-    std::array<double,2> samplingBoxDimension;
-    std::array<std::array<float,2>,8000> verticesStaticObstacles;
+    std::uint8_t enable:1;
+    std::uint8_t reset:1;
+    std::uint8_t reserved:6;
+    std::array<double, 3U> originLLA;
+    std::array<double, 12U> initialStateAndInput;
+    std::array<double, 3U> finalPose;
+    std::array<double, 3U> samplingBoxCenterPose;
+    std::array<double, 2U> samplingBoxDimension;
+    std::array<std::array<float, 2U>, 8000U> verticesStaticObstacles;
 };
 
 
@@ -32,8 +32,8 @@ struct __attribute__((packed)) serialization_asynchronous_online_planner_paramet
         struct __attribute__((packed)) {
             double collisionCheckMaxPositionDeviation;
             double collisionCheckMaxAngleDeviation;
-            std::array<std::array<float,2>,100> verticesVehicleShape;
-            std::array<std::array<float,2>,10> skeletalPoints;
+            std::array<std::array<float, 2U>, 100U> verticesVehicleShape;
+            std::array<std::array<float, 2U>, 10U> skeletalPoints;
         } geometry;
         struct __attribute__((packed)) {
             double resolution;
@@ -47,20 +47,20 @@ struct __attribute__((packed)) serialization_asynchronous_online_planner_paramet
             double weightReverseDecay;
         } metric;
         struct __attribute__((packed)) {
-            std::array<double,36> matF;
-            std::array<double,9> matB;
-            std::array<double,3> vecTimeconstantsXYN;
-            std::array<double,3> vecTimeconstantsInput;
-            std::array<double,3> lowerLimitXYN;
-            std::array<double,3> upperLimitXYN;
+            std::array<double, 36U> matF;
+            std::array<double, 9U> matB;
+            std::array<double, 3U> vecTimeconstantsXYN;
+            std::array<double, 3U> vecTimeconstantsInput;
+            std::array<double, 3U> lowerLimitXYN;
+            std::array<double, 3U> upperLimitXYN;
         } model;
         struct __attribute__((packed)) {
-            uint32_t periodGoalSampling;
+            std::uint32_t periodGoalSampling;
         } pathPlanner;
         struct __attribute__((packed)) {
             double samplingRangePosition;
             double samplingRangeAngle;
-            uint32_t periodGoalSampling;
+            std::uint32_t periodGoalSampling;
             double sampletime;
             double maxInputPathLength;
             struct __attribute__((packed)) {
@@ -68,12 +68,12 @@ struct __attribute__((packed)) serialization_asynchronous_online_planner_paramet
                 double maxRadiusY;
                 double maxRadiusPsi;
                 double minRadiusPosition;
-                std::array<double,36> matK;
+                std::array<double, 36U> matK;
             } controller;
             struct __attribute__((packed)) {
-                std::array<double,3> rangePose;
-                std::array<double,3> rangeUVR;
-                std::array<double,3> rangeXYN;
+                std::array<double, 3U> rangePose;
+                std::array<double, 3U> rangeUVR;
+                std::array<double, 3U> rangeXYN;
             } regionOfAttraction;
         } motionPlanner;
     } sequentialPlanner;
@@ -94,32 +94,32 @@ struct __attribute__((packed)) serialization_asynchronous_online_planner_paramet
  */
 struct __attribute__((packed)) serialization_asynchronous_online_planner_output {
     double timestamp;
-    uint8_t errorCode;
-    uint8_t threadState:2;
-    uint8_t performedReset:1;
-    uint8_t trajectoryTruncated:1;
-    uint8_t reserved:4;
-    std::array<double,3> originLLA;
-    int32_t numTrajectoryPoints;
-    std::array<std::array<double,12>,500> trajectory;
+    std::uint8_t errorCode;
+    std::uint8_t threadState:2;
+    std::uint8_t performedReset:1;
+    std::uint8_t trajectoryTruncated:1;
+    std::uint8_t reserved:4;
+    std::array<double, 3U> originLLA;
+    std::int32_t numTrajectoryPoints;
+    std::array<std::array<double, 12U>, 500U> trajectory;
     double sampletime;
     struct __attribute__((packed)) {
-        int32_t numPoses;
-        std::array<std::array<double,3>,100> path;
-        uint8_t goalReached:1;
-        uint8_t pathTruncated:1;
-        uint8_t reserved:6;
-        uint32_t numberOfPerformedIterations;
+        std::int32_t numPoses;
+        std::array<std::array<double, 3U>, 100U> path;
+        std::uint8_t goalReached:1;
+        std::uint8_t pathTruncated:1;
+        std::uint8_t reserved:6;
+        std::uint32_t numberOfPerformedIterations;
         double timestampOfComputationUTC;
         double cost;
     } pathPlanner;
     struct __attribute__((packed)) {
-        int32_t numPoses;
-        std::array<std::array<double,3>,100> referencePath;
-        uint8_t goalReached:1;
-        uint8_t referencePathTruncated:1;
-        uint8_t reserved:6;
-        uint32_t numberOfPerformedIterations;
+        std::int32_t numPoses;
+        std::array<std::array<double, 3U>, 100U> referencePath;
+        std::uint8_t goalReached:1;
+        std::uint8_t referencePathTruncated:1;
+        std::uint8_t reserved:6;
+        std::uint32_t numberOfPerformedIterations;
         double timestampOfComputationUTC;
         double cost;
     } motionPlanner;
@@ -154,12 +154,12 @@ class MPSV_WrapperAsynchronousOnlinePlanner {
          * @param[in] ompDynamic Greater than zero if dynamic adjustment of the number of threads should be enabled for parallel computing or zero to disable dynamic adjustment (OMP_DYNAMIC). If this value is set less than 0, this parameter is ignored.
          * @param[in] cpuCoreIDs (linux-only) List of CPU cores on which the worker thread is eligible to run. Only IDs in range and available to the worker are used.
          */
-        void Start(int16_t pathMaxNumNodes, uint32_t pathMaxNumSamples, int16_t motionMaxNumNodes, uint32_t motionMaxNumSamples, uint32_t maxNumCells, int32_t threadPriority, int32_t ompNumThreads, int32_t ompDynamic, std::vector<int32_t> cpuCoreIDs);
+        void Start(std::int16_t pathMaxNumNodes, std::uint32_t pathMaxNumSamples, std::int16_t motionMaxNumNodes, std::uint32_t motionMaxNumSamples, std::uint32_t maxNumCells, std::int32_t threadPriority, std::int32_t ompNumThreads, std::int32_t ompDynamic, std::vector<std::int32_t> cpuCoreIDs);
 
         /**
          * @brief Stop the wrapper. The memory for the internal planner is freed.
          */
-        void Stop(void);
+        void Stop();
 
         /**
          * @brief Perform one step of the wrapper. All data is forwarded to a separate thread that manages the actual planning.
