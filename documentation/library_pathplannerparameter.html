@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Default PathPlanner Parameter Bus &middot; MPSV Documentation</title>
+<link rel="icon" type="image/svg+xml" href="img/Logo.svg">
+<link rel="stylesheet" href="assets/design.css">
+<script src="assets/theme.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<header class="site-header">
+  <div class="brand">
+    <a href="index.html" aria-label="MPSV documentation home">
+      <img src="img/Logo.svg" alt="MPSV logo" width="34" height="34">
+      <span class="brand-name">MPSV</span>
+    </a>
+    <span class="version-badge" title="Documentation version">v3.0.0</span>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch theme">
+      <img class="icon-moon" src="assets/icons/moon-light.svg" alt="" width="16" height="16">
+      <img class="icon-sun" src="assets/icons/sun-dark.svg" alt="" width="16" height="16">
+      <span data-theme-label>Dark mode</span>
+    </button>
+  </div>
+</header>
+<div class="layout">
+  <nav class="site-nav" aria-label="Documentation navigation">
+<span class="nav-group-label">Getting Started</span>
+<nav class="nav-group" aria-label="Getting Started">
+<ul class="nav-list">
+  <li><a class="nav-link" href="index.html">Overview</a></li>
+</ul>
+</nav>
+<span class="nav-group-label">Simulink Library</span>
+<nav class="nav-group" aria-label="Simulink Library">
+<ul class="nav-list">
+  <li><a class="nav-link" href="library_pathplanner.html">PathPlanner</a></li>
+  <li><a class="nav-link" href="library_pathplannerinput.html">Default PathPlanner Input Bus</a></li>
+  <li><a class="nav-link active" href="library_pathplannerparameter.html" aria-current="page">Default PathPlanner Parameter Bus</a></li>
+  <li><a class="nav-link" href="library_pathplanneroutput.html">Default PathPlanner Output Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplanner.html">AsyncOnlinePlanner</a></li>
+  <li><a class="nav-link" href="library_asynconlineplannerinput.html">Default AsyncOnlinePlanner Input Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplannerparameter.html">Default AsyncOnlinePlanner Parameter Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplanneroutput.html">Default AsyncOnlinePlanner Output Bus</a></li>
+  <li><a class="nav-link" href="library_autotuneasynconlineplanner.html">AutoTune AsyncOnlinePlanner</a></li>
+  <li><a class="nav-link" href="library_selectcurrentpointontrajectory.html">Select Current Point On Trajectory</a></li>
+</ul>
+</nav>
+<span class="nav-group-label">Reference</span>
+<nav class="nav-group" aria-label="Reference">
+<ul class="nav-list">
+  <li><a class="nav-link" href="error_codes.html">Error Codes</a></li>
+</ul>
+</nav>
+  </nav>
+  <div class="content-main">
+    <main id="main-content">
+      <article>
+
+<span class="api-badge">Simulink block</span>
+<h1>Default PathPlanner Parameter Bus</h1>
+<p class="library-path">MPSV / Default PathPlanner Parameter Bus</p>
+<p>
+  Constructs the default parameter bus for the <a href="library_pathplanner.html">PathPlanner</a> block.
+  All elements are initialized to zero.
+</p>
+
+<h2>Output Ports</h2>
+<h3>pathPlannerParameter</h3>
+<p>Defines the parameters of the path planner. The elements of the bus are listed in the following table.</p>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Element</th><th>Data Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>costMap.resolution</code></td><td><code>double</code></td><td>Resolution of the grid map (dimension of one cell). Must be greater than <code>1.0e-3</code>.</td></tr>
+      <tr><td><code>costMap.distanceScale</code></td><td><code>double</code></td><td>Scale factor (>= 0) for the obstacle distance cost in the cost map, applied as <code>scale*exp(-decay*d^2)</code>, where <code>d</code> is the distance to the obstacle.</td></tr>
+      <tr><td><code>costMap.distanceDecay</code></td><td><code>double</code></td><td>Decay factor (&gt; 0) for the obstacle distance cost in the cost map, applied as <code>scale*exp(-decay*d^2)</code>.</td></tr>
+      <tr><td><code>geometry.collisionCheckMaxPositionDeviation</code></td><td><code>double</code></td><td>Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 m.</td></tr>
+      <tr><td><code>geometry.collisionCheckMaxAngleDeviation</code></td><td><code>double</code></td><td>Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree.</td></tr>
+      <tr><td><code>geometry.verticesVehicleShape</code></td><td><code>float [2][100]</code></td><td>Vertex data of the vehicle shape. Multiple convex polygons are separated by non-finite vertices.</td></tr>
+      <tr><td><code>geometry.skeletalPoints</code></td><td><code>float [2][10]</code></td><td>Skeletal points (body frame) at which the cost map is evaluated. Non-finite entries are ignored.</td></tr>
+      <tr><td><code>metric.weightPsi</code></td><td><code>double</code></td><td>Weighting of the yaw angle in the distance metric.</td></tr>
+      <tr><td><code>metric.weightSway</code></td><td><code>double</code></td><td>Weighting of the sway movement (heading angle with respect to the direction perpendicular to the direction of movement).</td></tr>
+      <tr><td><code>metric.weightReverseScale</code></td><td><code>double</code></td><td>Weighting of the sway and reverse movement (heading angle with respect to the line angle).</td></tr>
+      <tr><td><code>metric.weightReverseDecay</code></td><td><code>double</code></td><td>Decay factor (&gt; 0) of the weighting function that weights the sway and reverse movement.</td></tr>
+      <tr><td><code>pathPlanner.periodGoalSampling</code></td><td><code>uint32</code></td><td>Iteration period for goal sampling; specifies how often the goal is used for sampling.</td></tr>
+      <tr><td><code>pathPlanner.maxComputationTime</code></td><td><code>double</code></td><td>Maximum computation time in seconds allowed before leaving the iteration loop.</td></tr>
+    </tbody>
+  </table>
+</div>
+      </article>
+      <footer class="site-footer">
+        <span>MPSV &mdash; offline documentation</span>
+        <span>Version 3.0.0</span>
+      </footer>
+    </main>
+  </div>
+</div>
+<button id="backToTop" type="button" aria-label="Back to top"><img class="icon-up" src="assets/icons/arrow-up.svg" alt="" width="20" height="20"></button>
+<script src="assets/script.js"></script>
+</body>
+</html>

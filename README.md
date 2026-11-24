@@ -1,6 +1,12 @@
 # MPSV: Motion-Planner for Surface Vehicles
 
-<div align="center"><img src="documentation/img/Logo.svg" alt="MPSV Logo" width="40%"><br><br></div>
+<div align="center">
+  <img src="documentation/img/Logo.svg" alt="MPSV Logo" width="40%">
+  <br><br>
+  <!--<a href="https://github.com/RobertDamerius/MPSV/releases/latest"><img src="https://img.shields.io/github/v/release/RobertDamerius/MPSV?include_prereleases&label=release" alt="Latest release" /></a>-->
+  <a href="https://github.com/RobertDamerius/GenericTarget/blob/main/LICENSE"><img src="https://img.shields.io/github/license/RobertDamerius/GenericTarget" alt="MIT License" /></a>
+  <a href="documentation/index.html"><img src="https://img.shields.io/badge/docs-offline%20HTML-blue" alt="Offline documentation" /></a>
+</div>
 
 The **M**otion-**P**lanner for **S**urface **V**ehicles solves motion planning problems for **fully actuated** surface vehicles with **non-linear dynamics** in an environment with **non-convex non-moving obstacles**.
 The method is based on the **RRT\*** algorithm.

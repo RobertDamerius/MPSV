@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Default PathPlanner Output Bus &middot; MPSV Documentation</title>
+<link rel="icon" type="image/svg+xml" href="img/Logo.svg">
+<link rel="stylesheet" href="assets/design.css">
+<script src="assets/theme.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<header class="site-header">
+  <div class="brand">
+    <a href="index.html" aria-label="MPSV documentation home">
+      <img src="img/Logo.svg" alt="MPSV logo" width="34" height="34">
+      <span class="brand-name">MPSV</span>
+    </a>
+    <span class="version-badge" title="Documentation version">v3.0.0</span>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch theme">
+      <img class="icon-moon" src="assets/icons/moon-light.svg" alt="" width="16" height="16">
+      <img class="icon-sun" src="assets/icons/sun-dark.svg" alt="" width="16" height="16">
+      <span data-theme-label>Dark mode</span>
+    </button>
+  </div>
+</header>
+<div class="layout">
+  <nav class="site-nav" aria-label="Documentation navigation">
+<span class="nav-group-label">Getting Started</span>
+<nav class="nav-group" aria-label="Getting Started">
+<ul class="nav-list">
+  <li><a class="nav-link" href="index.html">Overview</a></li>
+</ul>
+</nav>
+<span class="nav-group-label">Simulink Library</span>
+<nav class="nav-group" aria-label="Simulink Library">
+<ul class="nav-list">
+  <li><a class="nav-link" href="library_pathplanner.html">PathPlanner</a></li>
+  <li><a class="nav-link" href="library_pathplannerinput.html">Default PathPlanner Input Bus</a></li>
+  <li><a class="nav-link" href="library_pathplannerparameter.html">Default PathPlanner Parameter Bus</a></li>
+  <li><a class="nav-link active" href="library_pathplanneroutput.html" aria-current="page">Default PathPlanner Output Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplanner.html">AsyncOnlinePlanner</a></li>
+  <li><a class="nav-link" href="library_asynconlineplannerinput.html">Default AsyncOnlinePlanner Input Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplannerparameter.html">Default AsyncOnlinePlanner Parameter Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplanneroutput.html">Default AsyncOnlinePlanner Output Bus</a></li>
+  <li><a class="nav-link" href="library_autotuneasynconlineplanner.html">AutoTune AsyncOnlinePlanner</a></li>
+  <li><a class="nav-link" href="library_selectcurrentpointontrajectory.html">Select Current Point On Trajectory</a></li>
+</ul>
+</nav>
+<span class="nav-group-label">Reference</span>
+<nav class="nav-group" aria-label="Reference">
+<ul class="nav-list">
+  <li><a class="nav-link" href="error_codes.html">Error Codes</a></li>
+</ul>
+</nav>
+  </nav>
+  <div class="content-main">
+    <main id="main-content">
+      <article>
+
+<span class="api-badge">Simulink block</span>
+<h1>Default PathPlanner Output Bus</h1>
+<p class="library-path">MPSV / Default PathPlanner Output Bus</p>
+<p>
+  Constructs the default output bus for the <a href="library_pathplanner.html">PathPlanner</a> block.
+  All elements are initialized to zero.
+</p>
+
+<h2>Output Ports</h2>
+<h3>pathPlannerOutput</h3>
+<p>Defines the output of the path planner. The elements of the bus are listed in the following table.</p>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Element</th><th>Data Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>errorCode</code></td><td><code>uint8</code></td><td>An <a href="error_codes.html">error code</a> indicating a planner error.</td></tr>
+      <tr><td><code>goalReached</code></td><td><code>bool</code></td><td>True if the goal is reached, false otherwise. The goal is reached when the final pose of the path equals the desired final pose of the planning problem.</td></tr>
+      <tr><td><code>pathTruncated</code></td><td><code>bool</code></td><td>True if the path was truncated to fit the output buffer of 1000 poses.</td></tr>
+      <tr><td><code>numberOfPerformedIterations</code></td><td><code>uint32</code></td><td>Total number of iterations performed since the latest prepare step.</td></tr>
+      <tr><td><code>timestampOfComputationUTC</code></td><td><code>double</code></td><td>Timestamp (seconds of the day, UTC) indicating the time at which the solution was computed.</td></tr>
+      <tr><td><code>cost</code></td><td><code>double</code></td><td>Cost of the current solution: the total cost from the initial node to the final node of the path along the path.</td></tr>
+      <tr><td><code>numPoses</code></td><td><code>int32</code></td><td>Number of poses contained in the output path.</td></tr>
+      <tr><td><code>path</code></td><td><code>double [3][1000]</code></td><td>Resulting path, where each pose is given as <code>{x, y, psi}</code>. The first element always corresponds to the initial pose. If the goal is reached and <code>pathTruncated</code> is false, the final pose corresponds to the desired final pose of the planning problem.</td></tr>
+    </tbody>
+  </table>
+</div>
+      </article>
+      <footer class="site-footer">
+        <span>MPSV &mdash; offline documentation</span>
+        <span>Version 3.0.0</span>
+      </footer>
+    </main>
+  </div>
+</div>
+<button id="backToTop" type="button" aria-label="Back to top"><img class="icon-up" src="assets/icons/arrow-up.svg" alt="" width="20" height="20"></button>
+<script src="assets/script.js"></script>
+</body>
+</html>

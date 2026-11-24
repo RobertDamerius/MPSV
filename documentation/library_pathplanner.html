@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PathPlanner &middot; MPSV Documentation</title>
+<link rel="icon" type="image/svg+xml" href="img/Logo.svg">
+<link rel="stylesheet" href="assets/design.css">
+<script src="assets/theme.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<header class="site-header">
+  <div class="brand">
+    <a href="index.html" aria-label="MPSV documentation home">
+      <img src="img/Logo.svg" alt="MPSV logo" width="34" height="34">
+      <span class="brand-name">MPSV</span>
+    </a>
+    <span class="version-badge" title="Documentation version">v3.0.0</span>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch theme">
+      <img class="icon-moon" src="assets/icons/moon-light.svg" alt="" width="16" height="16">
+      <img class="icon-sun" src="assets/icons/sun-dark.svg" alt="" width="16" height="16">
+      <span data-theme-label>Dark mode</span>
+    </button>
+  </div>
+</header>
+<div class="layout">
+  <nav class="site-nav" aria-label="Documentation navigation">
+<span class="nav-group-label">Getting Started</span>
+<nav class="nav-group" aria-label="Getting Started">
+<ul class="nav-list">
+  <li><a class="nav-link" href="index.html">Overview</a></li>
+</ul>
+</nav>
+<span class="nav-group-label">Simulink Library</span>
+<nav class="nav-group" aria-label="Simulink Library">
+<ul class="nav-list">
+  <li><a class="nav-link active" href="library_pathplanner.html" aria-current="page">PathPlanner</a></li>
+  <li><a class="nav-link" href="library_pathplannerinput.html">Default PathPlanner Input Bus</a></li>
+  <li><a class="nav-link" href="library_pathplannerparameter.html">Default PathPlanner Parameter Bus</a></li>
+  <li><a class="nav-link" href="library_pathplanneroutput.html">Default PathPlanner Output Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplanner.html">AsyncOnlinePlanner</a></li>
+  <li><a class="nav-link" href="library_asynconlineplannerinput.html">Default AsyncOnlinePlanner Input Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplannerparameter.html">Default AsyncOnlinePlanner Parameter Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplanneroutput.html">Default AsyncOnlinePlanner Output Bus</a></li>
+  <li><a class="nav-link" href="library_autotuneasynconlineplanner.html">AutoTune AsyncOnlinePlanner</a></li>
+  <li><a class="nav-link" href="library_selectcurrentpointontrajectory.html">Select Current Point On Trajectory</a></li>
+</ul>
+</nav>
+<span class="nav-group-label">Reference</span>
+<nav class="nav-group" aria-label="Reference">
+<ul class="nav-list">
+  <li><a class="nav-link" href="error_codes.html">Error Codes</a></li>
+</ul>
+</nav>
+  </nav>
+  <div class="content-main">
+    <main id="main-content">
+      <article>
+
+<span class="api-badge">Simulink block</span>
+<h1>PathPlanner</h1>
+<p class="library-path">MPSV / PathPlanner</p>
+<p>
+  Solves the path planning problem between an initial pose and a final pose. The computation time budget that
+  is allocated to the planner is set via the parameter input.
+</p>
+<p>
+  All timestamps may originate from an arbitrary, user-defined time source. However, all times must be
+  specified in seconds and must increase monotonically.
+</p>
+
+<h2>Input Ports</h2>
+<h3>pathPlannerInput</h3>
+<p>
+  The input bus of the path planner, constructed with the
+  <a href="library_pathplannerinput.html">Default PathPlanner Input Bus</a> block.
+</p>
+
+<h3>pathPlannerParameter</h3>
+<p>
+  The parameter bus of the path planner, constructed with the
+  <a href="library_pathplannerparameter.html">Default PathPlanner Parameter Bus</a> block.
+</p>
+
+<h2>Output Ports</h2>
+<h3>pathPlannerOutput</h3>
+<p>
+  The output bus of the path planner, defined by the
+  <a href="library_pathplanneroutput.html">Default PathPlanner Output Bus</a> block.
+</p>
+
+<h2>Block Parameters</h2>
+<p>The following table lists all block parameters.</p>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Parameter Name</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>maxNumNodes</code></td><td>Maximum number of nodes used in the tree.</td></tr>
+      <tr><td><code>maxNumSamples</code></td><td>Maximum number of random samples generated in advance.</td></tr>
+      <tr><td><code>maxNumCells</code></td><td>Maximum number of cells in the cost map (LUT).</td></tr>
+    </tbody>
+  </table>
+</div>
+      </article>
+      <footer class="site-footer">
+        <span>MPSV &mdash; offline documentation</span>
+        <span>Version 3.0.0</span>
+      </footer>
+    </main>
+  </div>
+</div>
+<button id="backToTop" type="button" aria-label="Back to top"><img class="icon-up" src="assets/icons/arrow-up.svg" alt="" width="20" height="20"></button>
+<script src="assets/script.js"></script>
+</body>
+</html>

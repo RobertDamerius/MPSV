@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Default AsyncOnlinePlanner Parameter Bus &middot; MPSV Documentation</title>
+<link rel="icon" type="image/svg+xml" href="img/Logo.svg">
+<link rel="stylesheet" href="assets/design.css">
+<script src="assets/theme.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<header class="site-header">
+  <div class="brand">
+    <a href="index.html" aria-label="MPSV documentation home">
+      <img src="img/Logo.svg" alt="MPSV logo" width="34" height="34">
+      <span class="brand-name">MPSV</span>
+    </a>
+    <span class="version-badge" title="Documentation version">v3.0.0</span>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch theme">
+      <img class="icon-moon" src="assets/icons/moon-light.svg" alt="" width="16" height="16">
+      <img class="icon-sun" src="assets/icons/sun-dark.svg" alt="" width="16" height="16">
+      <span data-theme-label>Dark mode</span>
+    </button>
+  </div>
+</header>
+<div class="layout">
+  <nav class="site-nav" aria-label="Documentation navigation">
+<span class="nav-group-label">Getting Started</span>
+<nav class="nav-group" aria-label="Getting Started">
+<ul class="nav-list">
+  <li><a class="nav-link" href="index.html">Overview</a></li>
+</ul>
+</nav>
+<span class="nav-group-label">Simulink Library</span>
+<nav class="nav-group" aria-label="Simulink Library">
+<ul class="nav-list">
+  <li><a class="nav-link" href="library_pathplanner.html">PathPlanner</a></li>
+  <li><a class="nav-link" href="library_pathplannerinput.html">Default PathPlanner Input Bus</a></li>
+  <li><a class="nav-link" href="library_pathplannerparameter.html">Default PathPlanner Parameter Bus</a></li>
+  <li><a class="nav-link" href="library_pathplanneroutput.html">Default PathPlanner Output Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplanner.html">AsyncOnlinePlanner</a></li>
+  <li><a class="nav-link" href="library_asynconlineplannerinput.html">Default AsyncOnlinePlanner Input Bus</a></li>
+  <li><a class="nav-link active" href="library_asynconlineplannerparameter.html" aria-current="page">Default AsyncOnlinePlanner Parameter Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplanneroutput.html">Default AsyncOnlinePlanner Output Bus</a></li>
+  <li><a class="nav-link" href="library_autotuneasynconlineplanner.html">AutoTune AsyncOnlinePlanner</a></li>
+  <li><a class="nav-link" href="library_selectcurrentpointontrajectory.html">Select Current Point On Trajectory</a></li>
+</ul>
+</nav>
+<span class="nav-group-label">Reference</span>
+<nav class="nav-group" aria-label="Reference">
+<ul class="nav-list">
+  <li><a class="nav-link" href="error_codes.html">Error Codes</a></li>
+</ul>
+</nav>
+  </nav>
+  <div class="content-main">
+    <main id="main-content">
+      <article>
+
+<span class="api-badge">Simulink block</span>
+<h1>Default AsyncOnlinePlanner Parameter Bus</h1>
+<p class="library-path">MPSV / Default AsyncOnlinePlanner Parameter Bus</p>
+<p>
+  Constructs the default parameter bus for the
+  <a href="library_asynconlineplanner.html">AsyncOnlinePlanner</a> block. All elements are initialized to zero.
+</p>
+
+<h2>Output Ports</h2>
+<h3>asyncOnlinePlannerParameter</h3>
+<p>Defines the parameters of the asynchronous online planner. The elements of the bus are listed in the following table.</p>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Element</th><th>Data Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>sequentialPlanner.geometry.collisionCheckMaxPositionDeviation</code></td><td><code>double</code></td><td>Maximum position deviation for path subdivision during collision checking. Must be at least 0.01 m.</td></tr>
+      <tr><td><code>sequentialPlanner.geometry.collisionCheckMaxAngleDeviation</code></td><td><code>double</code></td><td>Maximum angle deviation for path subdivision during collision checking. Must be at least 1 degree.</td></tr>
+      <tr><td><code>sequentialPlanner.geometry.verticesVehicleShape</code></td><td><code>float [2][100]</code></td><td>Vertex data of the vehicle shape. Multiple convex polygons are separated by non-finite vertices.</td></tr>
+      <tr><td><code>sequentialPlanner.geometry.skeletalPoints</code></td><td><code>float [2][10]</code></td><td>Skeletal points (body frame) at which the cost map is evaluated. Non-finite entries are ignored.</td></tr>
+      <tr><td><code>sequentialPlanner.costMap.resolution</code></td><td><code>double</code></td><td>Resolution of the grid map (dimension of one cell). Must be greater than <code>1.0e-3</code>.</td></tr>
+      <tr><td><code>sequentialPlanner.costMap.distanceScale</code></td><td><code>double</code></td><td>Scale factor (>= 0) for the obstacle distance cost in the cost map, applied as <code>scale*exp(-decay*d^2)</code>, where <code>d</code> is the distance to the obstacle.</td></tr>
+      <tr><td><code>sequentialPlanner.costMap.distanceDecay</code></td><td><code>double</code></td><td>Decay factor (&gt; 0) for the obstacle distance cost in the cost map, applied as <code>scale*exp(-decay*d^2)</code>.</td></tr>
+      <tr><td><code>sequentialPlanner.metric.weightPsi</code></td><td><code>double</code></td><td>Weighting of the heading angle (psi) in the distance metric.</td></tr>
+      <tr><td><code>sequentialPlanner.metric.weightSway</code></td><td><code>double</code></td><td>Weighting of the sway movement (heading angle with respect to the direction perpendicular to the direction of movement).</td></tr>
+      <tr><td><code>sequentialPlanner.metric.weightReverseScale</code></td><td><code>double</code></td><td>Weighting of the sway and reverse movement (heading angle with respect to the line angle).</td></tr>
+      <tr><td><code>sequentialPlanner.metric.weightReverseDecay</code></td><td><code>double</code></td><td>Decay factor (&gt; 0) of the weighting function that weights the sway and reverse movement.</td></tr>
+      <tr><td><code>sequentialPlanner.model.matF</code></td><td><code>double [36]</code></td><td>3-by-12 coefficient matrix (row-major order) of the model <code>nu_dot = F*n(nu) + B*tau</code>.</td></tr>
+      <tr><td><code>sequentialPlanner.model.matB</code></td><td><code>double [9]</code></td><td>3-by-3 input matrix (row-major order) of the model <code>nu_dot = F*n(nu) + B*tau</code>.</td></tr>
+      <tr><td><code>sequentialPlanner.model.vecTimeconstantsXYN</code></td><td><code>double [3]</code></td><td>Time constants <code>{TX, TY, TN}</code> for the input force dynamics.</td></tr>
+      <tr><td><code>sequentialPlanner.model.vecTimeconstantsInput</code></td><td><code>double [3]</code></td><td>Time constants <code>{Tf1, Tf2, Tf3}</code> for the input filter dynamics.</td></tr>
+      <tr><td><code>sequentialPlanner.model.lowerLimitXYN</code></td><td><code>double [3]</code></td><td>Lower saturation values for the input vector <code>u</code> of the model <code>nu_dot = F*n(nu) + B*tau</code>.</td></tr>
+      <tr><td><code>sequentialPlanner.model.upperLimitXYN</code></td><td><code>double [3]</code></td><td>Upper saturation values for the input vector <code>u</code> of the model <code>nu_dot = F*n(nu) + B*tau</code>.</td></tr>
+      <tr><td><code>sequentialPlanner.pathPlanner.periodGoalSampling</code></td><td><code>uint32</code></td><td>Iteration period for goal sampling; specifies how often the goal is used for sampling.</td></tr>
+      <tr><td><code>sequentialPlanner.motionPlanner.samplingRangePosition</code></td><td><code>double</code></td><td>Range in meters for sampling the position around a given path.</td></tr>
+      <tr><td><code>sequentialPlanner.motionPlanner.samplingRangeAngle</code></td><td><code>double</code></td><td>Range in radians for sampling the angle around a given path.</td></tr>
+      <tr><td><code>sequentialPlanner.motionPlanner.periodGoalSampling</code></td><td><code>uint32</code></td><td>Iteration period for goal sampling; specifies how often the goal is used for sampling.</td></tr>
+      <tr><td><code>sequentialPlanner.motionPlanner.sampletime</code></td><td><code>double</code></td><td>Sample time used for the fixed-step trajectory simulation.</td></tr>
+      <tr><td><code>sequentialPlanner.motionPlanner.maxInputPathLength</code></td><td><code>double</code></td><td>Maximum length (&gt; 0) of the input path (x, y only). The input path is trimmed to this maximum length; the trimmed pose may be interpolated.</td></tr>
+      <tr><td><code>sequentialPlanner.motionPlanner.controller.maxRadiusX</code></td><td><code>double</code></td><td>Maximum look-ahead distance for the longitudinal distance during pose control.</td></tr>
+      <tr><td><code>sequentialPlanner.motionPlanner.controller.maxRadiusY</code></td><td><code>double</code></td><td>Maximum look-ahead distance for the lateral distance during pose control.</td></tr>
+      <tr><td><code>sequentialPlanner.motionPlanner.controller.maxRadiusPsi</code></td><td><code>double</code></td><td>Maximum look-ahead distance for the angular distance during pose control.</td></tr>
+      <tr><td><code>sequentialPlanner.motionPlanner.controller.minRadiusPosition</code></td><td><code>double</code></td><td>Minimum look-ahead distance for the position during pose control. The guidance law limits the radius according to nearby obstacles, but it never falls below this value.</td></tr>
+      <tr><td><code>sequentialPlanner.motionPlanner.controller.matK</code></td><td><code>double [36]</code></td><td>3-by-12 control gain matrix (row-major order) for pose control.</td></tr>
+      <tr><td><code>sequentialPlanner.motionPlanner.regionOfAttraction.rangePose</code></td><td><code>double [3]</code></td><td>Pose box constraints of the region of attraction.</td></tr>
+      <tr><td><code>sequentialPlanner.motionPlanner.regionOfAttraction.rangeUVR</code></td><td><code>double [3]</code></td><td>Velocity box constraints of the region of attraction.</td></tr>
+      <tr><td><code>sequentialPlanner.motionPlanner.regionOfAttraction.rangeXYN</code></td><td><code>double [3]</code></td><td>Force range <code>{dX, dY, dN}</code>. A given force must lie in the range <code>{[-dX, dX], [-dY, dY], [-dN, dN]}</code> to be inside the region of attraction.</td></tr>
+      <tr><td><code>onlinePlanner.maxComputationTimePathOnReset</code></td><td><code>double</code></td><td>Maximum computation time in seconds for path planning after a reset.</td></tr>
+      <tr><td><code>onlinePlanner.maxComputationTimeMotionOnReset</code></td><td><code>double</code></td><td>Maximum computation time in seconds for motion planning after a reset.</td></tr>
+      <tr><td><code>onlinePlanner.maxComputationTimePath</code></td><td><code>double</code></td><td>Maximum computation time in seconds for path planning.</td></tr>
+      <tr><td><code>onlinePlanner.maxComputationTimeMotion</code></td><td><code>double</code></td><td>Maximum computation time in seconds for motion planning.</td></tr>
+      <tr><td><code>onlinePlanner.additionalAheadPlanningTime</code></td><td><code>double</code></td><td>Additional time in seconds added to the estimated computation time to obtain the future time point from which the next planning problem is started. Must be greater than zero.</td></tr>
+      <tr><td><code>onlinePlanner.additionalTrajectoryDuration</code></td><td><code>double</code></td><td>Additional time added to the ahead planning time (= execution time + additional ahead planning time) to obtain the minimum time duration of a trajectory. Must be greater than zero.</td></tr>
+      <tr><td><code>onlinePlanner.timeKeepPastTrajectory</code></td><td><code>double</code></td><td>Time in seconds to keep from a past trajectory. The past data of the previous trajectory is inserted at the beginning of a new solution. Inserting past data helps to handle imperfect time synchronization between the trajectory generator and the user of the trajectory data.</td></tr>
+    </tbody>
+  </table>
+</div>
+      </article>
+      <footer class="site-footer">
+        <span>MPSV &mdash; offline documentation</span>
+        <span>Version 3.0.0</span>
+      </footer>
+    </main>
+  </div>
+</div>
+<button id="backToTop" type="button" aria-label="Back to top"><img class="icon-up" src="assets/icons/arrow-up.svg" alt="" width="20" height="20"></button>
+<script src="assets/script.js"></script>
+</body>
+</html>

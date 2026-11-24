@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview &middot; MPSV Documentation</title>
+<link rel="icon" type="image/svg+xml" href="img/Logo.svg">
+<link rel="stylesheet" href="assets/design.css">
+<script src="assets/theme.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<header class="site-header">
+  <div class="brand">
+    <a href="index.html" aria-label="MPSV documentation home">
+      <img src="img/Logo.svg" alt="MPSV logo" width="34" height="34">
+      <span class="brand-name">MPSV</span>
+    </a>
+    <span class="version-badge" title="Documentation version">v3.0.0</span>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch theme">
+      <img class="icon-moon" src="assets/icons/moon-light.svg" alt="" width="16" height="16">
+      <img class="icon-sun" src="assets/icons/sun-dark.svg" alt="" width="16" height="16">
+      <span data-theme-label>Dark mode</span>
+    </button>
+  </div>
+</header>
+<div class="layout">
+  <nav class="site-nav" aria-label="Documentation navigation">
+<span class="nav-group-label">Getting Started</span>
+<nav class="nav-group" aria-label="Getting Started">
+<ul class="nav-list">
+  <li><a class="nav-link active" href="index.html" aria-current="page">Overview</a></li>
+</ul>
+</nav>
+<span class="nav-group-label">Simulink Library</span>
+<nav class="nav-group" aria-label="Simulink Library">
+<ul class="nav-list">
+  <li><a class="nav-link" href="library_pathplanner.html">PathPlanner</a></li>
+  <li><a class="nav-link" href="library_pathplannerinput.html">Default PathPlanner Input Bus</a></li>
+  <li><a class="nav-link" href="library_pathplannerparameter.html">Default PathPlanner Parameter Bus</a></li>
+  <li><a class="nav-link" href="library_pathplanneroutput.html">Default PathPlanner Output Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplanner.html">AsyncOnlinePlanner</a></li>
+  <li><a class="nav-link" href="library_asynconlineplannerinput.html">Default AsyncOnlinePlanner Input Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplannerparameter.html">Default AsyncOnlinePlanner Parameter Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplanneroutput.html">Default AsyncOnlinePlanner Output Bus</a></li>
+  <li><a class="nav-link" href="library_autotuneasynconlineplanner.html">AutoTune AsyncOnlinePlanner</a></li>
+  <li><a class="nav-link" href="library_selectcurrentpointontrajectory.html">Select Current Point On Trajectory</a></li>
+</ul>
+</nav>
+<span class="nav-group-label">Reference</span>
+<nav class="nav-group" aria-label="Reference">
+<ul class="nav-list">
+  <li><a class="nav-link" href="error_codes.html">Error Codes</a></li>
+</ul>
+</nav>
+  </nav>
+  <div class="content-main">
+    <main id="main-content">
+      <article>
+
+<h1>Overview</h1>
+<p>
+  <strong>MPSV</strong> (<strong>M</strong>otion <strong>P</strong>lanner for <strong>S</strong>urface <strong>V</strong>ehicles) solves motion planning problems for fully
+  actuated surface vehicles with non-linear dynamics in an environment with non-convex, non-moving obstacles.
+  The method is based on the RRT* algorithm. The overall problem is decomposed into two sequential
+  subproblems: first, a feasible path is searched for; then, a collision-free trajectory is computed based
+  on the path found. An example is shown in the following figure.
+</p>
+<figure class="figure">
+  <img src="img/Overview.svg" alt="Three panels: the given problem with initial state, final pose, and obstacles; the planned path; and the computed trajectory">
+  <figcaption>
+    From the given problem (initial state, final pose, and static obstacles) to path planning and motion planning.
+  </figcaption>
+</figure>
+
+<h2>Planning Levels</h2>
+<p>The MPSV API is organized into several planning levels, as shown in the following figure.</p>
+<figure class="figure">
+  <img src="img/PlanningLevels.svg" alt="Nested planning levels: PathPlanner and MotionPlanner inside SequentialPlanner, which is inside OnlinePlanner, which is inside AsyncOnlinePlanner">
+  <figcaption>The planning levels of the MPSV API and their nesting.</figcaption>
+</figure>
+
+<h3>PathPlanner</h3>
+<ul>
+  <li>Finds a path from the initial pose to the final pose.</li>
+  <li>Uses RRT* with a fixed number of nodes and supports warm starts.</li>
+</ul>
+
+<h3>MotionPlanner</h3>
+<ul>
+  <li>Finds a trajectory from the initial state and input to the final pose around a given path.</li>
+  <li>Uses RRT* with a fixed number of nodes.</li>
+  <li>An internal control system based on feedback linearization and full-state feedback generates a
+  dynamically feasible trajectory.</li>
+</ul>
+
+<h3>SequentialPlanner</h3>
+<ul>
+  <li>Combines the path planner and the motion planner in a sequential manner.</li>
+  <li>The path found by the path planner is used as guidance for the motion planner.</li>
+</ul>
+
+<h3>OnlinePlanner</h3>
+<ul>
+  <li>Continuously solves sequential planning problems for a future time point.</li>
+  <li>Seamlessly merges the new solution trajectory with the previous solution.</li>
+</ul>
+
+<h3>AsyncOnlinePlanner</h3>
+<ul>
+  <li>Runs the online planner in a separate thread.</li>
+  <li>Results are obtained via polling or a callback.</li>
+</ul>
+
+<h2>Simulink Library</h2>
+<p>The MPSV Simulink library provides the following blocks:</p>
+<ul>
+  <li><a href="library_pathplanner.html">PathPlanner</a> &mdash; solves the path planning problem.</li>
+  <li><a href="library_asynconlineplanner.html">AsyncOnlinePlanner</a> &mdash; solves the online sequential
+  motion planning problem in a separate thread.</li>
+  <li><a href="library_autotuneasynconlineplanner.html">AutoTune AsyncOnlinePlanner</a> &mdash; calculates all
+  tuning parameters for the AsyncOnlinePlanner from the vehicle parameters and one intuitive tuning parameter.</li>
+  <li><a href="library_selectcurrentpointontrajectory.html">Select Current Point On Trajectory</a> &mdash;
+  selects the current point on a given trajectory for a given time point.</li>
+</ul>
+<p>
+  For each planner, dedicated blocks construct the default input, parameter, and output buses; the elements of
+  these buses are documented on the corresponding bus pages. The error codes that can be returned by the
+  planners are documented on the <a href="error_codes.html">Error Codes</a> page.
+</p>
+
+      </article>
+      <footer class="site-footer">
+        <span>MPSV &mdash; offline documentation</span>
+        <span>Version 3.0.0</span>
+      </footer>
+    </main>
+  </div>
+</div>
+<button id="backToTop" type="button" aria-label="Back to top"><img class="icon-up" src="assets/icons/arrow-up.svg" alt="" width="20" height="20"></button>
+<script src="assets/script.js"></script>
+</body>
+</html>

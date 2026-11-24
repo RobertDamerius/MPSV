@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Default AsyncOnlinePlanner Output Bus &middot; MPSV Documentation</title>
+<link rel="icon" type="image/svg+xml" href="img/Logo.svg">
+<link rel="stylesheet" href="assets/design.css">
+<script src="assets/theme.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<header class="site-header">
+  <div class="brand">
+    <a href="index.html" aria-label="MPSV documentation home">
+      <img src="img/Logo.svg" alt="MPSV logo" width="34" height="34">
+      <span class="brand-name">MPSV</span>
+    </a>
+    <span class="version-badge" title="Documentation version">v3.0.0</span>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch theme">
+      <img class="icon-moon" src="assets/icons/moon-light.svg" alt="" width="16" height="16">
+      <img class="icon-sun" src="assets/icons/sun-dark.svg" alt="" width="16" height="16">
+      <span data-theme-label>Dark mode</span>
+    </button>
+  </div>
+</header>
+<div class="layout">
+  <nav class="site-nav" aria-label="Documentation navigation">
+<span class="nav-group-label">Getting Started</span>
+<nav class="nav-group" aria-label="Getting Started">
+<ul class="nav-list">
+  <li><a class="nav-link" href="index.html">Overview</a></li>
+</ul>
+</nav>
+<span class="nav-group-label">Simulink Library</span>
+<nav class="nav-group" aria-label="Simulink Library">
+<ul class="nav-list">
+  <li><a class="nav-link" href="library_pathplanner.html">PathPlanner</a></li>
+  <li><a class="nav-link" href="library_pathplannerinput.html">Default PathPlanner Input Bus</a></li>
+  <li><a class="nav-link" href="library_pathplannerparameter.html">Default PathPlanner Parameter Bus</a></li>
+  <li><a class="nav-link" href="library_pathplanneroutput.html">Default PathPlanner Output Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplanner.html">AsyncOnlinePlanner</a></li>
+  <li><a class="nav-link" href="library_asynconlineplannerinput.html">Default AsyncOnlinePlanner Input Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplannerparameter.html">Default AsyncOnlinePlanner Parameter Bus</a></li>
+  <li><a class="nav-link active" href="library_asynconlineplanneroutput.html" aria-current="page">Default AsyncOnlinePlanner Output Bus</a></li>
+  <li><a class="nav-link" href="library_autotuneasynconlineplanner.html">AutoTune AsyncOnlinePlanner</a></li>
+  <li><a class="nav-link" href="library_selectcurrentpointontrajectory.html">Select Current Point On Trajectory</a></li>
+</ul>
+</nav>
+<span class="nav-group-label">Reference</span>
+<nav class="nav-group" aria-label="Reference">
+<ul class="nav-list">
+  <li><a class="nav-link" href="error_codes.html">Error Codes</a></li>
+</ul>
+</nav>
+  </nav>
+  <div class="content-main">
+    <main id="main-content">
+      <article>
+
+<span class="api-badge">Simulink block</span>
+<h1>Default AsyncOnlinePlanner Output Bus</h1>
+<p class="library-path">MPSV / Default AsyncOnlinePlanner Output Bus</p>
+<p>
+  Constructs the default output bus for the
+  <a href="library_asynconlineplanner.html">AsyncOnlinePlanner</a> block. All elements are initialized to zero.
+</p>
+
+<h2>Output Ports</h2>
+<h3>asyncOnlinePlannerOutput</h3>
+<p>Defines the output of the asynchronous online planner. The elements of the bus are listed in the following table.</p>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Element</th><th>Data Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>timestamp</code></td><td><code>double</code></td><td>Monotonically increasing timestamp in seconds (arbitrary time origin defined by the user) indicating the initial time point of the trajectory.</td></tr>
+      <tr><td><code>errorCode</code></td><td><code>uint8</code></td><td>An <a href="error_codes.html">error code</a> indicating a planner error.</td></tr>
+      <tr><td><code>threadState</code></td><td><code>uint8</code></td><td>State of the planning thread (0: offline, 1: standby, 2: running).</td></tr>
+      <tr><td><code>performedReset</code></td><td><code>bool</code></td><td>True if a reset has been performed, false otherwise.</td></tr>
+      <tr><td><code>trajectoryTruncated</code></td><td><code>bool</code></td><td>True if the trajectory was truncated to fit the output buffer.</td></tr>
+      <tr><td><code>originLLA</code></td><td><code>double [3]</code></td><td>Geographical origin to which this output belongs, given as <code>{lat, lon, alt}</code>.</td></tr>
+      <tr><td><code>numTrajectoryPoints</code></td><td><code>int32</code></td><td>Number of points contained in the trajectory.</td></tr>
+      <tr><td><code>trajectory</code></td><td><code>double [12][500]</code></td><td>Resulting trajectory, where each element is given as <code>{x, y, psi, u, v, r, X, Y, N, Xc, Yc, Nc}</code>. The initial state and input is not inserted. The actual length of the trajectory is given by <code>numTrajectoryPoints</code>.</td></tr>
+      <tr><td><code>sampletime</code></td><td><code>double</code></td><td>Sample time of the trajectory data in seconds.</td></tr>
+      <tr><td><code>pathPlanner.numPoses</code></td><td><code>int32</code></td><td>Number of poses representing the path, i.e., the length of the path.</td></tr>
+      <tr><td><code>pathPlanner.path</code></td><td><code>double [3][100]</code></td><td>Resulting path of the internal path planning problem, where each pose is given as <code>{x, y, psi}</code>. The actual length of the path is given by <code>numPoses</code>.</td></tr>
+      <tr><td><code>pathPlanner.goalReached</code></td><td><code>bool</code></td><td>True if the goal is reached, false otherwise. The goal is reached when the final pose of the path equals the desired final pose of the planning problem.</td></tr>
+      <tr><td><code>pathPlanner.pathTruncated</code></td><td><code>bool</code></td><td>True if the path was truncated to fit the output buffer.</td></tr>
+      <tr><td><code>pathPlanner.numberOfPerformedIterations</code></td><td><code>uint32</code></td><td>Total number of iterations performed since the latest prepare step.</td></tr>
+      <tr><td><code>pathPlanner.timestampOfComputationUTC</code></td><td><code>double</code></td><td>Timestamp (seconds of the day, UTC) indicating the time at which the solution was computed.</td></tr>
+      <tr><td><code>pathPlanner.cost</code></td><td><code>double</code></td><td>Cost of the current solution: the total cost from the initial node to the final node of the path along the path.</td></tr>
+      <tr><td><code>motionPlanner.numPoses</code></td><td><code>int32</code></td><td>Number of poses representing the reference path, i.e., the length of the reference path.</td></tr>
+      <tr><td><code>motionPlanner.referencePath</code></td><td><code>double [3][100]</code></td><td>Resulting reference path of the internal motion planning problem, where each pose is given as <code>{x, y, psi}</code>. The actual length of the reference path is given by <code>numPoses</code>.</td></tr>
+      <tr><td><code>motionPlanner.goalReached</code></td><td><code>bool</code></td><td>True if the goal is reached, false otherwise. The goal is reached when the final pose of the reference path equals the desired final pose of the planning problem.</td></tr>
+      <tr><td><code>motionPlanner.referencePathTruncated</code></td><td><code>bool</code></td><td>True if the reference path was truncated to fit the output buffer.</td></tr>
+      <tr><td><code>motionPlanner.numberOfPerformedIterations</code></td><td><code>uint32</code></td><td>Total number of iterations performed since the latest prepare step.</td></tr>
+      <tr><td><code>motionPlanner.timestampOfComputationUTC</code></td><td><code>double</code></td><td>Timestamp (seconds of the day, UTC) indicating the time at which the solution was computed.</td></tr>
+      <tr><td><code>motionPlanner.cost</code></td><td><code>double</code></td><td>Cost of the current solution: the total cost from the initial node to the final node of the reference path along the reference path.</td></tr>
+    </tbody>
+  </table>
+</div>
+      </article>
+      <footer class="site-footer">
+        <span>MPSV &mdash; offline documentation</span>
+        <span>Version 3.0.0</span>
+      </footer>
+    </main>
+  </div>
+</div>
+<button id="backToTop" type="button" aria-label="Back to top"><img class="icon-up" src="assets/icons/arrow-up.svg" alt="" width="20" height="20"></button>
+<script src="assets/script.js"></script>
+</body>
+</html>

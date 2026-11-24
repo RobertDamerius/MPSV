@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Error Codes &middot; MPSV Documentation</title>
+<link rel="icon" type="image/svg+xml" href="img/Logo.svg">
+<link rel="stylesheet" href="assets/design.css">
+<script src="assets/theme.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<header class="site-header">
+  <div class="brand">
+    <a href="index.html" aria-label="MPSV documentation home">
+      <img src="img/Logo.svg" alt="MPSV logo" width="34" height="34">
+      <span class="brand-name">MPSV</span>
+    </a>
+    <span class="version-badge" title="Documentation version">v3.0.0</span>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch theme">
+      <img class="icon-moon" src="assets/icons/moon-light.svg" alt="" width="16" height="16">
+      <img class="icon-sun" src="assets/icons/sun-dark.svg" alt="" width="16" height="16">
+      <span data-theme-label>Dark mode</span>
+    </button>
+  </div>
+</header>
+<div class="layout">
+  <nav class="site-nav" aria-label="Documentation navigation">
+<span class="nav-group-label">Getting Started</span>
+<nav class="nav-group" aria-label="Getting Started">
+<ul class="nav-list">
+  <li><a class="nav-link" href="index.html">Overview</a></li>
+</ul>
+</nav>
+<span class="nav-group-label">Simulink Library</span>
+<nav class="nav-group" aria-label="Simulink Library">
+<ul class="nav-list">
+  <li><a class="nav-link" href="library_pathplanner.html">PathPlanner</a></li>
+  <li><a class="nav-link" href="library_pathplannerinput.html">Default PathPlanner Input Bus</a></li>
+  <li><a class="nav-link" href="library_pathplannerparameter.html">Default PathPlanner Parameter Bus</a></li>
+  <li><a class="nav-link" href="library_pathplanneroutput.html">Default PathPlanner Output Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplanner.html">AsyncOnlinePlanner</a></li>
+  <li><a class="nav-link" href="library_asynconlineplannerinput.html">Default AsyncOnlinePlanner Input Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplannerparameter.html">Default AsyncOnlinePlanner Parameter Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplanneroutput.html">Default AsyncOnlinePlanner Output Bus</a></li>
+  <li><a class="nav-link" href="library_autotuneasynconlineplanner.html">AutoTune AsyncOnlinePlanner</a></li>
+  <li><a class="nav-link" href="library_selectcurrentpointontrajectory.html">Select Current Point On Trajectory</a></li>
+</ul>
+</nav>
+<span class="nav-group-label">Reference</span>
+<nav class="nav-group" aria-label="Reference">
+<ul class="nav-list">
+  <li><a class="nav-link active" href="error_codes.html" aria-current="page">Error Codes</a></li>
+</ul>
+</nav>
+  </nav>
+  <div class="content-main">
+    <main id="main-content">
+      <article>
+
+<h1>Error Codes</h1>
+<p>
+  If invalid input or parameter data is passed to a planner, a non-zero error code is returned. All error codes
+  are listed in the following table.
+</p>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Value</th><th>Name</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>0</td><td><code>NONE</code></td><td>No error.</td></tr>
+      <tr><td>1</td><td><code>INPUT_TIMESTAMP</code></td><td>The input <code>timestamp</code> is not finite.</td></tr>
+      <tr><td>2</td><td><code>INPUT_ORIGIN_LLA</code></td><td>The input <code>originLLA</code> is not finite.</td></tr>
+      <tr><td>3</td><td><code>INPUT_ORIGIN_OLD_TO_NEW</code></td><td>The input <code>originOldToNew</code> is not finite.</td></tr>
+      <tr><td>4</td><td><code>INPUT_INITIAL_POSE</code></td><td>The input <code>initialPose</code> is not finite.</td></tr>
+      <tr><td>5</td><td><code>INPUT_INITIAL_STATE_AND_INPUT</code></td><td>The input <code>initialStateAndInput</code> is not finite.</td></tr>
+      <tr><td>6</td><td><code>INPUT_INITIAL_PATH</code></td><td>The input <code>initialPath</code> is not finite.</td></tr>
+      <tr><td>7</td><td><code>INPUT_FINAL_POSE</code></td><td>The input <code>finalPose</code> is not finite.</td></tr>
+      <tr><td>8</td><td><code>INPUT_SAMPLING_BOX_CENTER_POSE</code></td><td>The input <code>samplingBoxCenterPose</code> is not finite.</td></tr>
+      <tr><td>9</td><td><code>INPUT_SAMPLING_BOX_DIMENSION</code></td><td>The input <code>samplingBoxDimension</code> is not finite.</td></tr>
+      <tr><td>10</td><td><code>INPUT_INITIAL_POSE_NOT_INSIDE_SAMPLING_BOX</code></td><td>The input <code>initialPose</code> is not inside the sampling box.</td></tr>
+      <tr><td>11</td><td><code>INPUT_INITIAL_STATE_NOT_INSIDE_SAMPLING_BOX</code></td><td>The input <code>initialStateAndInput</code> is not inside the sampling box.</td></tr>
+      <tr><td>12</td><td><code>INPUT_FINAL_POSE_NOT_INSIDE_SAMPLING_BOX</code></td><td>The input <code>finalPose</code> is not inside the sampling box.</td></tr>
+      <tr><td>13</td><td><code>INPUT_STATIC_OBSTACLES</code></td><td>The vertices of <code>staticObstacles</code> are not finite, not convex, or the vertex order is inconsistent.</td></tr>
+      <tr><td>14</td><td><code>INPUT_MIN_TRAJECTORY_DURATION</code></td><td>The input <code>minTrajectoryDuration</code> is not finite or is negative.</td></tr>
+      <tr><td>15</td><td><code>PARAM_MODEL_MATF</code></td><td>The parameter <code>matF</code> is not finite.</td></tr>
+      <tr><td>16</td><td><code>PARAM_MODEL_MATB</code></td><td>The parameter <code>matB</code> is not finite.</td></tr>
+      <tr><td>17</td><td><code>PARAM_MODEL_INV_MATB</code></td><td>The parameter <code>matB</code> is not invertible.</td></tr>
+      <tr><td>18</td><td><code>PARAM_MODEL_VEC_TIMECONSTANTS_XYN</code></td><td>The parameter <code>vecTimeconstantsXYN</code> is not finite or not positive.</td></tr>
+      <tr><td>19</td><td><code>PARAM_MODEL_VEC_TIMECONSTANTS_INPUT</code></td><td>The parameter <code>vecTimeconstantsInput</code> is not finite or not positive.</td></tr>
+      <tr><td>20</td><td><code>PARAM_MODEL_LOWER_LIMIT_XYN</code></td><td>The parameter <code>lowerLimitXYN</code> is not finite.</td></tr>
+      <tr><td>21</td><td><code>PARAM_MODEL_UPPER_LIMIT_XYN</code></td><td>The parameter <code>upperLimitXYN</code> is not finite.</td></tr>
+      <tr><td>22</td><td><code>PARAM_MODEL_LOWER_GREATER_UPPER_LIMIT</code></td><td>The parameter <code>lowerLimitXYN</code> is greater than <code>upperLimitXYN</code>.</td></tr>
+      <tr><td>23</td><td><code>PARAM_COSTMAP_RESOLUTION</code></td><td>The parameter <code>resolution</code> is not finite or is too low.</td></tr>
+      <tr><td>24</td><td><code>PARAM_COSTMAP_DISTANCE_SCALE</code></td><td>The parameter <code>distanceScale</code> is not finite or is negative.</td></tr>
+      <tr><td>25</td><td><code>PARAM_COSTMAP_DISTANCE_DECAY</code></td><td>The parameter <code>distanceDecay</code> is not finite or not positive.</td></tr>
+      <tr><td>26</td><td><code>PARAM_METRIC_WEIGHT_PSI</code></td><td>The parameter <code>weightPsi</code> is not finite or not positive.</td></tr>
+      <tr><td>27</td><td><code>PARAM_METRIC_WEIGHT_SWAY</code></td><td>The parameter <code>weightSway</code> is not finite or is negative.</td></tr>
+      <tr><td>28</td><td><code>PARAM_METRIC_WEIGHT_REVERSE_SCALE</code></td><td>The parameter <code>weightReverseScale</code> is not finite or is negative.</td></tr>
+      <tr><td>29</td><td><code>PARAM_METRIC_WEIGHT_REVERSE_DECAY</code></td><td>The parameter <code>weightReverseDecay</code> is not finite or not positive.</td></tr>
+      <tr><td>30</td><td><code>PARAM_GEOMETRY_MAX_POSITION_DEVIATION</code></td><td>The parameter <code>collisionCheckMaxPositionDeviation</code> is not finite or is too low.</td></tr>
+      <tr><td>31</td><td><code>PARAM_GEOMETRY_MAX_ANGLE_DEVIATION</code></td><td>The parameter <code>collisionCheckMaxAngleDeviation</code> is not finite or is too low.</td></tr>
+      <tr><td>32</td><td><code>PARAM_GEOMETRY_VEHICLE_SHAPE</code></td><td>The vertices of <code>vehicleShape</code> are not finite, not convex, or the vertex order is inconsistent.</td></tr>
+      <tr><td>33</td><td><code>PARAM_GEOMETRY_SKELETAL_POINTS</code></td><td>The parameter <code>skeletalPoints</code> is empty or not finite.</td></tr>
+      <tr><td>34</td><td><code>PARAM_PATHPLANNER_PERIOD_GOAL_SAMPLING</code></td><td>The parameter <code>periodGoalSampling</code> of the path planner is not positive.</td></tr>
+      <tr><td>35</td><td><code>PARAM_MOTIONPLANNER_SAMPLING_RANGE_POSITION</code></td><td>The parameter <code>samplingRangePosition</code> is not finite or not positive.</td></tr>
+      <tr><td>36</td><td><code>PARAM_MOTIONPLANNER_SAMPLING_RANGE_ANGLE</code></td><td>The parameter <code>samplingRangeAngle</code> is not finite or not positive.</td></tr>
+      <tr><td>37</td><td><code>PARAM_MOTIONPLANNER_PERIOD_GOAL_SAMPLING</code></td><td>The parameter <code>periodGoalSampling</code> of the motion planner is not positive.</td></tr>
+      <tr><td>38</td><td><code>PARAM_MOTIONPLANNER_SAMPLETIME</code></td><td>The parameter <code>sampletime</code> is not finite or not positive.</td></tr>
+      <tr><td>39</td><td><code>PARAM_MOTIONPLANNER_MAX_INPUT_PATH_LENGTH</code></td><td>The parameter <code>maxInputPathLength</code> is not finite or not positive.</td></tr>
+      <tr><td>40</td><td><code>PARAM_CONTROLLER_MAT_K</code></td><td>The parameter <code>matK</code> is not finite.</td></tr>
+      <tr><td>41</td><td><code>PARAM_CONTROLLER_MAX_RADIUS_X</code></td><td>The parameter <code>maxRadiusX</code> is not finite or not positive.</td></tr>
+      <tr><td>42</td><td><code>PARAM_CONTROLLER_MAX_RADIUS_Y</code></td><td>The parameter <code>maxRadiusY</code> is not finite or not positive.</td></tr>
+      <tr><td>43</td><td><code>PARAM_CONTROLLER_MAX_RADIUS_PSI</code></td><td>The parameter <code>maxRadiusPsi</code> is not finite or not positive.</td></tr>
+      <tr><td>44</td><td><code>PARAM_CONTROLLER_MIN_RADIUS_POSITION</code></td><td>The parameter <code>minRadiusPosition</code> is not finite or not positive.</td></tr>
+      <tr><td>45</td><td><code>PARAM_REGION_OF_ATTRACTION_RANGE_POSE</code></td><td>The parameter <code>rangePose</code> is not finite or not positive.</td></tr>
+      <tr><td>46</td><td><code>PARAM_REGION_OF_ATTRACTION_RANGE_UVR</code></td><td>The parameter <code>rangeUVR</code> is not finite or not positive.</td></tr>
+      <tr><td>47</td><td><code>PARAM_REGION_OF_ATTRACTION_RANGE_XYN</code></td><td>The parameter <code>rangeXYN</code> is not finite or not positive.</td></tr>
+      <tr><td>48</td><td><code>PARAM_ONLINEPLANNER_MAX_COMPUTATION_TIME_PATH_RESET</code></td><td>The parameter <code>maxComputationTimePathOnReset</code> is not finite or not positive.</td></tr>
+      <tr><td>49</td><td><code>PARAM_ONLINEPLANNER_MAX_COMPUTATION_TIME_MOTION_RESET</code></td><td>The parameter <code>maxComputationTimeMotionOnReset</code> is not finite or not positive.</td></tr>
+      <tr><td>50</td><td><code>PARAM_ONLINEPLANNER_MAX_COMPUTATION_TIME_PATH</code></td><td>The parameter <code>maxComputationTimePath</code> is not finite or not positive.</td></tr>
+      <tr><td>51</td><td><code>PARAM_ONLINEPLANNER_MAX_COMPUTATION_TIME_MOTION</code></td><td>The parameter <code>maxComputationTimeMotion</code> is not finite or not positive.</td></tr>
+      <tr><td>52</td><td><code>PARAM_ONLINEPLANNER_ADDITIONAL_AHEAD_PLANNING_TIME</code></td><td>The parameter <code>additionalAheadPlanningTime</code> is not finite or not positive.</td></tr>
+      <tr><td>53</td><td><code>PARAM_ONLINEPLANNER_ADDITIONAL_TRAJECTORY_DURATION</code></td><td>The parameter <code>additionalTrajectoryDuration</code> is not finite or not positive.</td></tr>
+      <tr><td>54</td><td><code>PARAM_ONLINEPLANNER_TIME_KEEP_PAST_TRAJECTORY</code></td><td>The parameter <code>timeKeepPastTrajectory</code> is not finite or is negative.</td></tr>
+      <tr><td>55</td><td><code>PARAM_ONLINEPLANNER_NUM_SIMULATION_STEPS</code></td><td>The number of simulation steps is too high: the planning time is too high and/or the sample time is too low.</td></tr>
+      <tr><td>56</td><td><code>PARAM_ASYNCPLANNER_TIMESTAMP</code></td><td>The input <code>timestamp</code> is not finite.</td></tr>
+      <tr><td>57</td><td><code>PARAM_ASYNCPLANNER_TIMEOUT_INPUT</code></td><td>The input <code>timeoutInput</code> is not finite.</td></tr>
+      <tr><td>58</td><td><code>PATHPLANNER_INITIAL_POSE_COLLISION</code></td><td>The initial pose of the path planner collides with static obstacles.</td></tr>
+      <tr><td>59</td><td><code>PATHPLANNER_OUT_OF_NODES</code></td><td>The path planner has run out of nodes and cannot sample new nodes anymore.</td></tr>
+      <tr><td>60</td><td><code>MOTIONPLANNER_INITIAL_POSE_COLLISION</code></td><td>The initial pose of the motion planner collides with static obstacles.</td></tr>
+      <tr><td>61</td><td><code>MOTIONPLANNER_OUT_OF_NODES</code></td><td>The motion planner has run out of nodes and cannot sample new nodes anymore.</td></tr>
+      <tr><td>62</td><td><code>MOTIONPLANNER_INFEASIBLE_TRAJECTORY</code></td><td>The final trajectory of the motion planner is dynamically infeasible.</td></tr>
+      <tr><td>63</td><td><code>SEQUENTIALPLANNER_INCOMPLETE_MOTION</code></td><td>The motion planner has not been executed, either due to a requested interrupt or because the path planner failed. The motion planner output is empty.</td></tr>
+      <tr><td>64</td><td><code>ONLINEPLANNER_TIMESTAMP_NOT_INCREASING</code></td><td>The input <code>timestamp</code> is not greater than the previous input timestamp for solving sequential problems.</td></tr>
+      <tr><td>65</td><td><code>ASYNCONLINEPLANNER_OUTPUT_NOT_AVAILABLE</code></td><td>The output of the asynchronous online planner does not contain a planning result yet.</td></tr>
+    </tbody>
+  </table>
+</div>
+      </article>
+      <footer class="site-footer">
+        <span>MPSV &mdash; offline documentation</span>
+        <span>Version 3.0.0</span>
+      </footer>
+    </main>
+  </div>
+</div>
+<button id="backToTop" type="button" aria-label="Back to top"><img class="icon-up" src="assets/icons/arrow-up.svg" alt="" width="20" height="20"></button>
+<script src="assets/script.js"></script>
+</body>
+</html>

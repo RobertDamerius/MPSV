@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Select Current Point On Trajectory &middot; MPSV Documentation</title>
+<link rel="icon" type="image/svg+xml" href="img/Logo.svg">
+<link rel="stylesheet" href="assets/design.css">
+<script src="assets/theme.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<header class="site-header">
+  <div class="brand">
+    <a href="index.html" aria-label="MPSV documentation home">
+      <img src="img/Logo.svg" alt="MPSV logo" width="34" height="34">
+      <span class="brand-name">MPSV</span>
+    </a>
+    <span class="version-badge" title="Documentation version">v3.0.0</span>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch theme">
+      <img class="icon-moon" src="assets/icons/moon-light.svg" alt="" width="16" height="16">
+      <img class="icon-sun" src="assets/icons/sun-dark.svg" alt="" width="16" height="16">
+      <span data-theme-label>Dark mode</span>
+    </button>
+  </div>
+</header>
+<div class="layout">
+  <nav class="site-nav" aria-label="Documentation navigation">
+<span class="nav-group-label">Getting Started</span>
+<nav class="nav-group" aria-label="Getting Started">
+<ul class="nav-list">
+  <li><a class="nav-link" href="index.html">Overview</a></li>
+</ul>
+</nav>
+<span class="nav-group-label">Simulink Library</span>
+<nav class="nav-group" aria-label="Simulink Library">
+<ul class="nav-list">
+  <li><a class="nav-link" href="library_pathplanner.html">PathPlanner</a></li>
+  <li><a class="nav-link" href="library_pathplannerinput.html">Default PathPlanner Input Bus</a></li>
+  <li><a class="nav-link" href="library_pathplannerparameter.html">Default PathPlanner Parameter Bus</a></li>
+  <li><a class="nav-link" href="library_pathplanneroutput.html">Default PathPlanner Output Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplanner.html">AsyncOnlinePlanner</a></li>
+  <li><a class="nav-link" href="library_asynconlineplannerinput.html">Default AsyncOnlinePlanner Input Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplannerparameter.html">Default AsyncOnlinePlanner Parameter Bus</a></li>
+  <li><a class="nav-link" href="library_asynconlineplanneroutput.html">Default AsyncOnlinePlanner Output Bus</a></li>
+  <li><a class="nav-link" href="library_autotuneasynconlineplanner.html">AutoTune AsyncOnlinePlanner</a></li>
+  <li><a class="nav-link active" href="library_selectcurrentpointontrajectory.html" aria-current="page">Select Current Point On Trajectory</a></li>
+</ul>
+</nav>
+<span class="nav-group-label">Reference</span>
+<nav class="nav-group" aria-label="Reference">
+<ul class="nav-list">
+  <li><a class="nav-link" href="error_codes.html">Error Codes</a></li>
+</ul>
+</nav>
+  </nav>
+  <div class="content-main">
+    <main id="main-content">
+      <article>
+
+<span class="api-badge">Simulink block</span>
+<h1>Select Current Point On Trajectory</h1>
+<p class="library-path">MPSV / Select Current Point On Trajectory</p>
+<p>
+  Selects the current point on a given trajectory for a given time point. All times may originate from an
+  arbitrary, user-defined time source. However, all times must be specified in seconds and must increase
+  monotonically.
+</p>
+
+<h2>Input Ports</h2>
+<h3>timeNow</h3>
+<p>The current time point used to query the point on the given trajectory.</p>
+
+<h3>trajectoryStartTimepoint</h3>
+<p>The time point that indicates the first data point of the trajectory.</p>
+
+<h3>trajectorySampletime</h3>
+<p>The temporal distance between two consecutive points of the trajectory.</p>
+
+<h3>trajectoryNumPoints</h3>
+<p>The number of points to be considered from the <code>trajectoryData</code> matrix.</p>
+
+<h3>trajectoryData</h3>
+<p>
+  A 12-by-500 matrix containing up to 500 points of the trajectory, where each point represents the
+  state-input vector <code>[x; y; psi; u; v; r; X; Y; N; Xc; Yc; Nc]</code>.
+</p>
+
+<h2>Output Ports</h2>
+<h3>success</h3>
+<p>
+  True if <code>timeNow</code> lies within the temporal range of the trajectory and a point can be selected,
+  false otherwise.
+</p>
+
+<h3>currentPoint</h3>
+<p>
+  A bus containing the linearly interpolated state values and the zero-order-hold input values. The elements of
+  the bus are listed in the following table.
+</p>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Element</th><th>Data Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>stateInterpolated.positionNorth</code></td><td><code>double</code></td><td>The north position (x) in meters.</td></tr>
+      <tr><td><code>stateInterpolated.positionEast</code></td><td><code>double</code></td><td>The east position (y) in meters.</td></tr>
+      <tr><td><code>stateInterpolated.orientationYaw</code></td><td><code>double</code></td><td>The heading angle in radians.</td></tr>
+      <tr><td><code>stateInterpolated.velocityU</code></td><td><code>double</code></td><td>The body-fixed surge velocity in meters per second.</td></tr>
+      <tr><td><code>stateInterpolated.velocityV</code></td><td><code>double</code></td><td>The body-fixed sway velocity in meters per second.</td></tr>
+      <tr><td><code>stateInterpolated.velocityR</code></td><td><code>double</code></td><td>The angular velocity in radians per second.</td></tr>
+      <tr><td><code>stateInterpolated.tauX</code></td><td><code>double</code></td><td>The longitudinal force in the x direction of the body frame in newtons.</td></tr>
+      <tr><td><code>stateInterpolated.tauY</code></td><td><code>double</code></td><td>The lateral force in the y direction of the body frame in newtons.</td></tr>
+      <tr><td><code>stateInterpolated.tauN</code></td><td><code>double</code></td><td>The torque around the z axis of the body frame in newton meters.</td></tr>
+      <tr><td><code>controlInputZeroOrderHold.commandedTauX</code></td><td><code>double</code></td><td>The commanded longitudinal force in the x direction of the body frame in newtons.</td></tr>
+      <tr><td><code>controlInputZeroOrderHold.commandedTauY</code></td><td><code>double</code></td><td>The commanded lateral force in the y direction of the body frame in newtons.</td></tr>
+      <tr><td><code>controlInputZeroOrderHold.commandedTauN</code></td><td><code>double</code></td><td>The commanded torque around the z axis of the body frame in newton meters.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h3>remainingTrajectoryDuration</h3>
+<p>
+  The time from <code>timeNow</code> to the end of the trajectory.
+</p>
+
+      </article>
+      <footer class="site-footer">
+        <span>MPSV &mdash; offline documentation</span>
+        <span>Version 3.0.0</span>
+      </footer>
+    </main>
+  </div>
+</div>
+<button id="backToTop" type="button" aria-label="Back to top"><img class="icon-up" src="assets/icons/arrow-up.svg" alt="" width="20" height="20"></button>
+<script src="assets/script.js"></script>
+</body>
+</html>
