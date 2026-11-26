@@ -121,10 +121,10 @@ class WorkerThread {
          */
         template <typename CallbackRun> void WorkerThreadFunction(CallbackRun callbackRun, std::int32_t ompNumThreads, std::int32_t ompDynamic, std::vector<std::int32_t> cpuCoreIDs) noexcept {
             if (ompNumThreads > 0) {
-                omp_set_num_threads(static_cast<int>(ompNumThreads));
+                ::omp_set_num_threads(static_cast<int>(ompNumThreads));
             }
             if (ompDynamic >= 0) {
-                omp_set_dynamic(static_cast<int>(ompDynamic));
+                ::omp_set_dynamic(static_cast<int>(ompDynamic));
             }
             #ifdef __linux__
             if (!cpuCoreIDs.empty()) {

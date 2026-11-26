@@ -515,9 +515,9 @@ void Benchmark::PrintSystemInfo() {
     #else
     printf("DEBUG:                    0\n");
     #endif
-    printf("OMP_NUM_THREADS:          %d\n", omp_get_max_threads());
-    printf("OMP_DYNAMIC:              %d\n", omp_get_dynamic());
-    printf("OMP_PROC_BIND:            %d\n", static_cast<std::int32_t>(omp_get_proc_bind()));
+    printf("OMP_NUM_THREADS:          %d\n", ::omp_get_max_threads());
+    printf("OMP_DYNAMIC:              %d\n", ::omp_get_dynamic());
+    printf("OMP_PROC_BIND:            %d\n", static_cast<std::int32_t>(::omp_get_proc_bind()));
     printf("\n");
 }
 

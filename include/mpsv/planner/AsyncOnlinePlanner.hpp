@@ -28,10 +28,10 @@ class AsyncOnlinePlanner {
          */
         AsyncOnlinePlanner() noexcept {
             ::pthread_mutexattr_t attr;
-            ::pthread_mutexattr_init(&attr);
-            ::pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT);
-            ::pthread_mutex_init(&m_mtxData, &attr);
-            ::pthread_mutexattr_destroy(&attr);
+            static_cast<void>(::pthread_mutexattr_init(&attr));
+            static_cast<void>(::pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT));
+            static_cast<void>(::pthread_mutex_init(&m_mtxData, &attr));
+            static_cast<void>(::pthread_mutexattr_destroy(&attr));
             m_dataOut.errorCode = mpsv::error_code::ASYNCONLINEPLANNER_OUTPUT_NOT_AVAILABLE;
             m_newInputData = false;
             m_terminate = false;
@@ -44,7 +44,7 @@ class AsyncOnlinePlanner {
          */
         virtual ~AsyncOnlinePlanner() noexcept {
             Stop();
-            ::pthread_mutex_destroy(&m_mtxData);
+            static_cast<void>(::pthread_mutex_destroy(&m_mtxData));
         }
 
         /* Make this class non-copyable */
@@ -67,13 +67,13 @@ class AsyncOnlinePlanner {
         void Start(std::int16_t pathMaxNumNodes, std::uint32_t pathMaxNumSamples, std::int16_t motionMaxNumNodes, std::uint32_t motionMaxNumSamples, std::uint32_t maxNumCells, std::int32_t threadPriority, std::int32_t ompNumThreads, std::int32_t ompDynamic, std::vector<std::int32_t> cpuCoreIDs) noexcept {
             if (!m_started) {
                 m_terminate = false;
-                ::pthread_mutex_lock(&m_mtxData);
+                static_cast<void>(::pthread_mutex_lock(&m_mtxData));
                 m_dataIn.Clear();
                 m_dataParam.Clear();
                 m_dataOut.Clear();
                 m_dataOut.errorCode = mpsv::error_code::ASYNCONLINEPLANNER_OUTPUT_NOT_AVAILABLE;
                 m_newInputData = false;
-                ::pthread_mutex_unlock(&m_mtxData);
+                static_cast<void>(::pthread_mutex_unlock(&m_mtxData));
                 m_onlinePlanner.Reconfigure(pathMaxNumNodes, pathMaxNumSamples, motionMaxNumNodes, motionMaxNumSamples, maxNumCells);
                 m_workerThread.Start(std::bind(&AsyncOnlinePlanner::WorkerThreadRun, this), threadPriority, ompNumThreads, ompDynamic, cpuCoreIDs);
                 m_started = true;
@@ -88,13 +88,13 @@ class AsyncOnlinePlanner {
                 m_terminate = true;
                 m_onlinePlanner.Interrupt();
                 m_workerThread.Stop();
-                ::pthread_mutex_lock(&m_mtxData);
+                static_cast<void>(::pthread_mutex_lock(&m_mtxData));
                 m_dataIn.Clear();
                 m_dataParam.Clear();
                 m_dataOut.Clear();
                 m_dataOut.errorCode = mpsv::error_code::ASYNCONLINEPLANNER_OUTPUT_NOT_AVAILABLE;
                 m_newInputData = false;
-                ::pthread_mutex_unlock(&m_mtxData);
+                static_cast<void>(::pthread_mutex_unlock(&m_mtxData));
                 m_terminate = false;
                 m_started = false;
             }
@@ -110,7 +110,7 @@ class AsyncOnlinePlanner {
          * @note The geographical origin used for planning always relate to the latest input data.
          */
         void SetInput(mpsv::planner::AsyncOnlinePlannerInput& input, mpsv::planner::AsyncOnlinePlannerParameterSet& parameter) noexcept {
-            ::pthread_mutex_lock(&m_mtxData);
+            static_cast<void>(::pthread_mutex_lock(&m_mtxData));
             bool suspendWorkerThread{!input.enable};
             input.reset |= suspendWorkerThread; // reset is required when going into standby and later leaving the standby mode
             input.reset |= m_dataIn.reset; // make sure the reset is not lost if SetInput is called with high frequency
@@ -126,7 +126,7 @@ class AsyncOnlinePlanner {
             if (interruptPlanner) {
                 m_onlinePlanner.Interrupt();
             }
-            ::pthread_mutex_unlock(&m_mtxData);
+            static_cast<void>(::pthread_mutex_unlock(&m_mtxData));
         }
 
         /**
@@ -135,10 +135,10 @@ class AsyncOnlinePlanner {
          */
         [[nodiscard]] mpsv::planner::AsyncOnlinePlannerOutput GetOutput() {
             mpsv::planner::AsyncOnlinePlannerOutput result;
-            ::pthread_mutex_lock(&m_mtxData);
+            static_cast<void>(::pthread_mutex_lock(&m_mtxData));
             result = m_dataOut;
             result.threadState = m_workerThread.GetState();
-            ::pthread_mutex_unlock(&m_mtxData);
+            static_cast<void>(::pthread_mutex_unlock(&m_mtxData));
             return result;
         }
 
@@ -175,12 +175,12 @@ class AsyncOnlinePlanner {
             mpsv::planner::AsyncOnlinePlannerOutput dataOut;
 
             // Copy thread-safe input data to local storage
-            ::pthread_mutex_lock(&m_mtxData);
+            static_cast<void>(::pthread_mutex_lock(&m_mtxData));
             m_dataIn.MoveTo(dataIn);
             m_dataParam.MoveTo(dataParam);
             m_dataIn.reset = !m_dataIn.enable;
             m_newInputData = false;
-            ::pthread_mutex_unlock(&m_mtxData);
+            static_cast<void>(::pthread_mutex_unlock(&m_mtxData));
 
             // Solve the planning problem
             if (dataIn.enable) {
@@ -188,7 +188,7 @@ class AsyncOnlinePlanner {
             }
 
             // Move result to internal database and check for new data and thread suspension
-            ::pthread_mutex_lock(&m_mtxData);
+            static_cast<void>(::pthread_mutex_lock(&m_mtxData));
             bool solveFailed{dataOut.errorCode != mpsv::error_code::NONE};
             bool suspendRequested{!dataIn.enable};
             m_dataIn.reset |= solveFailed || suspendRequested;
@@ -196,7 +196,7 @@ class AsyncOnlinePlanner {
                 m_workerThread.Suspend();
             }
             dataOut.MoveTo(m_dataOut);
-            ::pthread_mutex_unlock(&m_mtxData);
+            static_cast<void>(::pthread_mutex_unlock(&m_mtxData));
             CallbackNewOutputAvailable();
         }
 };

@@ -19,13 +19,13 @@ class Event {
             #if defined(_WIN32)
             m_notified = false;
             #elif defined(__linux__)
-            ::sem_init(&m_sem, 0, 0U);
+            static_cast<void>(::sem_init(&m_sem, 0, 0U));
             #endif
         }
 
         ~Event() noexcept {
             #if defined(__linux__)
-            ::sem_destroy(&m_sem);
+            static_cast<void>(::sem_destroy(&m_sem));
             #endif
         }
 
@@ -39,7 +39,7 @@ class Event {
             m_notified = true;
             m_cv.notify_one();
             #elif defined(__linux__)
-            ::sem_post(&m_sem);
+            static_cast<void>(::sem_post(&m_sem));
             #endif
         }
 
