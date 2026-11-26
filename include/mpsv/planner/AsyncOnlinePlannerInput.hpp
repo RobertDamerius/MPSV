@@ -5,10 +5,7 @@
 #include <mpsv/planner/OnlinePlannerInput.hpp>
 
 
-namespace mpsv {
-
-
-namespace planner {
+namespace mpsv::planner {
 
 
 /**
@@ -40,7 +37,4 @@ class AsyncOnlinePlannerInput: public mpsv::planner::OnlinePlannerInput {
 };
 
 
-} /* namespace: planner */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::planner */

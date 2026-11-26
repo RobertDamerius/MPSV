@@ -4,10 +4,7 @@
 #include <mpsv/common/Common.hpp>
 
 
-namespace mpsv {
-
-
-namespace geometry {
+namespace mpsv::geometry {
 
 
 /**
@@ -118,7 +115,4 @@ class AABB {
 };
 
 
-} /* namespace: geometry */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::geometry */

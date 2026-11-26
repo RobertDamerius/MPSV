@@ -7,10 +7,7 @@
 #include <mpsv/common/ErrorCode.hpp>
 
 
-namespace mpsv {
-
-
-namespace control {
+namespace mpsv::control {
 
 
 /**
@@ -81,7 +78,4 @@ class RegionOfAttraction {
 };
 
 
-} /* namespace: control */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::control */

@@ -5,10 +5,7 @@
 #include <mpsv/math/Additional.hpp>
 
 
-namespace mpsv {
-
-
-namespace geometry {
+namespace mpsv::geometry {
 
 
 /**
@@ -99,7 +96,4 @@ template <class Tpose> [[nodiscard]] inline std::vector<std::size_t> DouglasPeuc
 }
 
 
-} /* namespace: geometry */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::geometry */

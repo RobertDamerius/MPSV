@@ -9,10 +9,7 @@
 #include <mpsv/logging/File.hpp>
 
 
-namespace mpsv {
-
-
-namespace structures {
+namespace mpsv::structures {
 
 
 /**
@@ -21,13 +18,13 @@ namespace structures {
 class FixedSizeTreeSE2Node {
     public:
         std::array<double, 3U> pose{0.0, 0.0, 0.0};   // Pose in SE2 space: {x, y, psi}.
-        double cost{0.0};                            // Cumulative cost.
-        std::int16_t iParent{-1};                         // Index of parent node.
-        std::int16_t iFirstChild{-1};                     // Index of first child node.
-        std::int16_t iPrevSibling{-1};                    // Index of previous sibling node.
-        std::int16_t iNextSibling{-1};                    // Index of next sibling node.
-        std::int16_t iLeafList{-1};                       // Index in leaf list.
-        std::int16_t iActiveList{-1};                     // Index in active list.
+        double cost{0.0};                             // Cumulative cost.
+        std::int16_t iParent{-1};                     // Index of parent node.
+        std::int16_t iFirstChild{-1};                 // Index of first child node.
+        std::int16_t iPrevSibling{-1};                // Index of previous sibling node.
+        std::int16_t iNextSibling{-1};                // Index of next sibling node.
+        std::int16_t iLeafList{-1};                   // Index in leaf list.
+        std::int16_t iActiveList{-1};                 // Index in active list.
 
         /**
          * @brief Create a tree node with default values.
@@ -467,7 +464,7 @@ template <class Tnode> class FixedSizeTreeSE2 {
          */
         void GetPathFromRootToNode(std::vector<std::array<double, 3U>>& path, std::int16_t nodeIndex) noexcept {
             path.clear();
-            if (nodeIndex < 0 || nodeIndex >= static_cast<std::int16_t>(m_nodes.size()) || (m_nodes[nodeIndex].iActiveList < 0)) {
+            if ((nodeIndex < 0) || nodeIndex >= static_cast<std::int16_t>(m_nodes.size()) || (m_nodes[nodeIndex].iActiveList < 0)) {
                 return;
             }
             std::size_t pathSize{0U};
@@ -511,16 +508,16 @@ template <class Tnode> class FixedSizeTreeSE2 {
         }
 
     protected:
-        std::vector<std::int16_t> m_freeIndices;                                   // Stores the indices of free nodes in the tree.
-        std::vector<std::int16_t> m_activeIndices;                                 // Stores the indices of active nodes in the tree.
-        std::vector<std::int16_t> m_leafIndices;                                   // Stores the indices of leaf nodes in the tree.
-        std::vector<std::int16_t> m_traversalStack;                                // Pre-allocated stack for traversing through branches.
+        std::vector<std::int16_t> m_freeIndices;                              // Stores the indices of free nodes in the tree.
+        std::vector<std::int16_t> m_activeIndices;                            // Stores the indices of active nodes in the tree.
+        std::vector<std::int16_t> m_leafIndices;                              // Stores the indices of leaf nodes in the tree.
+        std::vector<std::int16_t> m_traversalStack;                           // Pre-allocated stack for traversing through branches.
         std::vector<Tnode> m_nodes;                                           // Internal storage for all nodes.
         std::vector<double> m_lutR3;                                          // Look-up table containing values to be used to calculate the step-size for the near neighbor search. Optimal radius is given by r = Vc^(1/3) * lutR3[n] with n being the cardinality of the tree and Vc being the volume of the search space.
         std::vector<double> m_lutOptimalRadius;                               // Look-up table containing the optimal radius for nearest neighbors searches based on the current cardinality (number of nodes) of the tree. This value is based on the volume of the search space.
         std::vector<double> m_lutRandom;                                      // A container of precomputed random numbers. Those random numbers are used to remove random leaf nodes from the tree.
-        std::size_t m_idxRandom{0U};                                               // Current index of the random number.
-        std::int16_t m_rootNodeIndex{-1};                                          // Index of the root node.
+        std::size_t m_idxRandom{0U};                                          // Current index of the random number.
+        std::int16_t m_rootNodeIndex{-1};                                     // Index of the root node.
         double m_epsDistanceMetric{std::numeric_limits<double>::epsilon()};   // Numeric limit for distance metric.
 
         /**
@@ -592,7 +589,4 @@ template <class Tnode> class FixedSizeTreeSE2 {
 };
 
 
-} /* namespace: structures */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::structures */

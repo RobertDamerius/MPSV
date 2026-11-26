@@ -8,10 +8,7 @@
 #include <mpsv/common/ErrorCode.hpp>
 
 
-namespace mpsv {
-
-
-namespace planner {
+namespace mpsv::planner {
 
 
 /**
@@ -51,77 +48,77 @@ class ParameterModel {
          */
         [[nodiscard]] error_code IsValid() const noexcept {
             if (!(std::isfinite(matF[0U]) &&
-                 std::isfinite(matF[1U]) &&
-                 std::isfinite(matF[2U]) &&
-                 std::isfinite(matF[3U]) &&
-                 std::isfinite(matF[4U]) &&
-                 std::isfinite(matF[5U]) &&
-                 std::isfinite(matF[6U]) &&
-                 std::isfinite(matF[7U]) &&
-                 std::isfinite(matF[8U]) &&
-                 std::isfinite(matF[9U]) &&
-                 std::isfinite(matF[10U]) &&
-                 std::isfinite(matF[11U]) &&
-                 std::isfinite(matF[12U]) &&
-                 std::isfinite(matF[13U]) &&
-                 std::isfinite(matF[14U]) &&
-                 std::isfinite(matF[15U]) &&
-                 std::isfinite(matF[16U]) &&
-                 std::isfinite(matF[17U]) &&
-                 std::isfinite(matF[18U]) &&
-                 std::isfinite(matF[19U]) &&
-                 std::isfinite(matF[20U]) &&
-                 std::isfinite(matF[21U]) &&
-                 std::isfinite(matF[22U]) &&
-                 std::isfinite(matF[23U]) &&
-                 std::isfinite(matF[24U]) &&
-                 std::isfinite(matF[25U]) &&
-                 std::isfinite(matF[26U]) &&
-                 std::isfinite(matF[27U]) &&
-                 std::isfinite(matF[28U]) &&
-                 std::isfinite(matF[29U]) &&
-                 std::isfinite(matF[30U]) &&
-                 std::isfinite(matF[31U]) &&
-                 std::isfinite(matF[32U]) &&
-                 std::isfinite(matF[33U]) &&
-                 std::isfinite(matF[34U]) &&
-                 std::isfinite(matF[35U])))
+                  std::isfinite(matF[1U]) &&
+                  std::isfinite(matF[2U]) &&
+                  std::isfinite(matF[3U]) &&
+                  std::isfinite(matF[4U]) &&
+                  std::isfinite(matF[5U]) &&
+                  std::isfinite(matF[6U]) &&
+                  std::isfinite(matF[7U]) &&
+                  std::isfinite(matF[8U]) &&
+                  std::isfinite(matF[9U]) &&
+                  std::isfinite(matF[10U]) &&
+                  std::isfinite(matF[11U]) &&
+                  std::isfinite(matF[12U]) &&
+                  std::isfinite(matF[13U]) &&
+                  std::isfinite(matF[14U]) &&
+                  std::isfinite(matF[15U]) &&
+                  std::isfinite(matF[16U]) &&
+                  std::isfinite(matF[17U]) &&
+                  std::isfinite(matF[18U]) &&
+                  std::isfinite(matF[19U]) &&
+                  std::isfinite(matF[20U]) &&
+                  std::isfinite(matF[21U]) &&
+                  std::isfinite(matF[22U]) &&
+                  std::isfinite(matF[23U]) &&
+                  std::isfinite(matF[24U]) &&
+                  std::isfinite(matF[25U]) &&
+                  std::isfinite(matF[26U]) &&
+                  std::isfinite(matF[27U]) &&
+                  std::isfinite(matF[28U]) &&
+                  std::isfinite(matF[29U]) &&
+                  std::isfinite(matF[30U]) &&
+                  std::isfinite(matF[31U]) &&
+                  std::isfinite(matF[32U]) &&
+                  std::isfinite(matF[33U]) &&
+                  std::isfinite(matF[34U]) &&
+                  std::isfinite(matF[35U])))
                 return error_code::PARAM_MODEL_MATF;
             if (!(std::isfinite(matB[0U]) &&
-                 std::isfinite(matB[1U]) &&
-                 std::isfinite(matB[2U]) &&
-                 std::isfinite(matB[3U]) &&
-                 std::isfinite(matB[4U]) &&
-                 std::isfinite(matB[5U]) &&
-                 std::isfinite(matB[6U]) &&
-                 std::isfinite(matB[7U]) &&
-                 std::isfinite(matB[8U])))
+                  std::isfinite(matB[1U]) &&
+                  std::isfinite(matB[2U]) &&
+                  std::isfinite(matB[3U]) &&
+                  std::isfinite(matB[4U]) &&
+                  std::isfinite(matB[5U]) &&
+                  std::isfinite(matB[6U]) &&
+                  std::isfinite(matB[7U]) &&
+                  std::isfinite(matB[8U])))
                 return error_code::PARAM_MODEL_MATB;
             if (!(std::isfinite(vecTimeconstantsXYN[0U]) &&
-                 std::isfinite(vecTimeconstantsXYN[1U]) &&
-                 std::isfinite(vecTimeconstantsXYN[2U]) &&
-                 (vecTimeconstantsXYN[0U] > 0.0) &&
-                 (vecTimeconstantsXYN[1U] > 0.0) &&
-                 (vecTimeconstantsXYN[2U] > 0.0)))
+                  std::isfinite(vecTimeconstantsXYN[1U]) &&
+                  std::isfinite(vecTimeconstantsXYN[2U]) &&
+                  (vecTimeconstantsXYN[0U] > 0.0) &&
+                  (vecTimeconstantsXYN[1U] > 0.0) &&
+                  (vecTimeconstantsXYN[2U] > 0.0)))
                 return error_code::PARAM_MODEL_VEC_TIMECONSTANTS_XYN;
             if (!(std::isfinite(vecTimeconstantsInput[0U]) &&
-                 std::isfinite(vecTimeconstantsInput[1U]) &&
-                 std::isfinite(vecTimeconstantsInput[2U]) &&
-                 (vecTimeconstantsInput[0U] > 0.0) &&
-                 (vecTimeconstantsInput[1U] > 0.0) &&
-                 (vecTimeconstantsInput[2U] > 0.0)))
+                  std::isfinite(vecTimeconstantsInput[1U]) &&
+                  std::isfinite(vecTimeconstantsInput[2U]) &&
+                  (vecTimeconstantsInput[0U] > 0.0) &&
+                  (vecTimeconstantsInput[1U] > 0.0) &&
+                  (vecTimeconstantsInput[2U] > 0.0)))
                 return error_code::PARAM_MODEL_VEC_TIMECONSTANTS_INPUT;
             if (!(std::isfinite(lowerLimitXYN[0U]) &&
-                 std::isfinite(lowerLimitXYN[1U]) &&
-                 std::isfinite(lowerLimitXYN[2U])))
+                  std::isfinite(lowerLimitXYN[1U]) &&
+                  std::isfinite(lowerLimitXYN[2U])))
                 return error_code::PARAM_MODEL_LOWER_LIMIT_XYN;
             if (!(std::isfinite(upperLimitXYN[0U]) &&
-                 std::isfinite(upperLimitXYN[1U]) &&
-                 std::isfinite(upperLimitXYN[2U])))
+                  std::isfinite(upperLimitXYN[1U]) &&
+                  std::isfinite(upperLimitXYN[2U])))
                 return error_code::PARAM_MODEL_UPPER_LIMIT_XYN;
             if (!((upperLimitXYN[0U] >= lowerLimitXYN[0U]) &&
-                 (upperLimitXYN[1U] >= lowerLimitXYN[1U]) &&
-                 (upperLimitXYN[2U] >= lowerLimitXYN[2U])))
+                  (upperLimitXYN[1U] >= lowerLimitXYN[1U]) &&
+                  (upperLimitXYN[2U] >= lowerLimitXYN[2U])))
                 return error_code::PARAM_MODEL_LOWER_GREATER_UPPER_LIMIT;
             return error_code::NONE;
         }
@@ -365,10 +362,10 @@ class ParameterPathPlanner {
  */
 class ParameterController {
     public:
-        double maxRadiusX;            // Maximum look-ahead distance for longitudinal distance during pose control.
-        double maxRadiusY;            // Maximum look-ahead distance for lateral distance during pose control.
-        double maxRadiusPsi;          // Maximum look-ahead distance for angular distance during pose control.
-        double minRadiusPosition;     // Minimum look-ahead distance for position during pose control. The radius is limited by the guidance law according to nearby obstacles but is never lower than this value.
+        double maxRadiusX;              // Maximum look-ahead distance for longitudinal distance during pose control.
+        double maxRadiusY;              // Maximum look-ahead distance for lateral distance during pose control.
+        double maxRadiusPsi;            // Maximum look-ahead distance for angular distance during pose control.
+        double minRadiusPosition;       // Minimum look-ahead distance for position during pose control. The radius is limited by the guidance law according to nearby obstacles but is never lower than this value.
         std::array<double, 36U> matK;   // 3-by-12 control gain matrix (row-major order) for pose control.
 
         /**
@@ -395,41 +392,41 @@ class ParameterController {
          */
         [[nodiscard]] error_code IsValid() const noexcept {
             if (!(std::isfinite(matK[0U]) &&
-                 std::isfinite(matK[1U]) &&
-                 std::isfinite(matK[2U]) &&
-                 std::isfinite(matK[3U]) &&
-                 std::isfinite(matK[4U]) &&
-                 std::isfinite(matK[5U]) &&
-                 std::isfinite(matK[6U]) &&
-                 std::isfinite(matK[7U]) &&
-                 std::isfinite(matK[8U]) &&
-                 std::isfinite(matK[9U]) &&
-                 std::isfinite(matK[10U]) &&
-                 std::isfinite(matK[11U]) &&
-                 std::isfinite(matK[12U]) &&
-                 std::isfinite(matK[13U]) &&
-                 std::isfinite(matK[14U]) &&
-                 std::isfinite(matK[15U]) &&
-                 std::isfinite(matK[16U]) &&
-                 std::isfinite(matK[17U]) &&
-                 std::isfinite(matK[18U]) &&
-                 std::isfinite(matK[19U]) &&
-                 std::isfinite(matK[20U]) &&
-                 std::isfinite(matK[21U]) &&
-                 std::isfinite(matK[22U]) &&
-                 std::isfinite(matK[23U]) &&
-                 std::isfinite(matK[24U]) &&
-                 std::isfinite(matK[25U]) &&
-                 std::isfinite(matK[26U]) &&
-                 std::isfinite(matK[27U]) &&
-                 std::isfinite(matK[28U]) &&
-                 std::isfinite(matK[29U]) &&
-                 std::isfinite(matK[30U]) &&
-                 std::isfinite(matK[31U]) &&
-                 std::isfinite(matK[32U]) &&
-                 std::isfinite(matK[33U]) &&
-                 std::isfinite(matK[34U]) &&
-                 std::isfinite(matK[35U])))
+                  std::isfinite(matK[1U]) &&
+                  std::isfinite(matK[2U]) &&
+                  std::isfinite(matK[3U]) &&
+                  std::isfinite(matK[4U]) &&
+                  std::isfinite(matK[5U]) &&
+                  std::isfinite(matK[6U]) &&
+                  std::isfinite(matK[7U]) &&
+                  std::isfinite(matK[8U]) &&
+                  std::isfinite(matK[9U]) &&
+                  std::isfinite(matK[10U]) &&
+                  std::isfinite(matK[11U]) &&
+                  std::isfinite(matK[12U]) &&
+                  std::isfinite(matK[13U]) &&
+                  std::isfinite(matK[14U]) &&
+                  std::isfinite(matK[15U]) &&
+                  std::isfinite(matK[16U]) &&
+                  std::isfinite(matK[17U]) &&
+                  std::isfinite(matK[18U]) &&
+                  std::isfinite(matK[19U]) &&
+                  std::isfinite(matK[20U]) &&
+                  std::isfinite(matK[21U]) &&
+                  std::isfinite(matK[22U]) &&
+                  std::isfinite(matK[23U]) &&
+                  std::isfinite(matK[24U]) &&
+                  std::isfinite(matK[25U]) &&
+                  std::isfinite(matK[26U]) &&
+                  std::isfinite(matK[27U]) &&
+                  std::isfinite(matK[28U]) &&
+                  std::isfinite(matK[29U]) &&
+                  std::isfinite(matK[30U]) &&
+                  std::isfinite(matK[31U]) &&
+                  std::isfinite(matK[32U]) &&
+                  std::isfinite(matK[33U]) &&
+                  std::isfinite(matK[34U]) &&
+                  std::isfinite(matK[35U])))
                 return error_code::PARAM_CONTROLLER_MAT_K;
             if (!(std::isfinite(maxRadiusX) && (maxRadiusX > 0.0))) {
                 return error_code::PARAM_CONTROLLER_MAX_RADIUS_X;
@@ -498,25 +495,25 @@ class ParameterRegionOfAttraction {
          */
         [[nodiscard]] error_code IsValid() const noexcept {
             if (!(std::isfinite(rangePose[0U]) &&
-                 std::isfinite(rangePose[1U]) &&
-                 std::isfinite(rangePose[2U]) &&
-                 (rangePose[0U] > 0.0) &&
-                 (rangePose[1U] > 0.0) &&
-                 (rangePose[2U] > 0.0)))
+                  std::isfinite(rangePose[1U]) &&
+                  std::isfinite(rangePose[2U]) &&
+                  (rangePose[0U] > 0.0) &&
+                  (rangePose[1U] > 0.0) &&
+                  (rangePose[2U] > 0.0)))
                 return error_code::PARAM_REGION_OF_ATTRACTION_RANGE_POSE;
             if (!(std::isfinite(rangeUVR[0U]) &&
-                 std::isfinite(rangeUVR[1U]) &&
-                 std::isfinite(rangeUVR[2U]) &&
-                 (rangeUVR[0U] > 0.0) &&
-                 (rangeUVR[1U] > 0.0) &&
-                 (rangeUVR[2U] > 0.0)))
+                  std::isfinite(rangeUVR[1U]) &&
+                  std::isfinite(rangeUVR[2U]) &&
+                  (rangeUVR[0U] > 0.0) &&
+                  (rangeUVR[1U] > 0.0) &&
+                  (rangeUVR[2U] > 0.0)))
                 return error_code::PARAM_REGION_OF_ATTRACTION_RANGE_UVR;
             if (!(std::isfinite(rangeXYN[0U]) &&
-                 std::isfinite(rangeXYN[1U]) &&
-                 std::isfinite(rangeXYN[2U]) &&
-                 (rangeXYN[0U] > 0.0) &&
-                 (rangeXYN[1U] > 0.0) &&
-                 (rangeXYN[2U] > 0.0)))
+                  std::isfinite(rangeXYN[1U]) &&
+                  std::isfinite(rangeXYN[2U]) &&
+                  (rangeXYN[0U] > 0.0) &&
+                  (rangeXYN[1U] > 0.0) &&
+                  (rangeXYN[2U] > 0.0)))
                 return error_code::PARAM_REGION_OF_ATTRACTION_RANGE_XYN;
             return error_code::NONE;
         }
@@ -541,7 +538,7 @@ class ParameterMotionPlanner {
     public:
         double samplingRangePosition{10.0};               // Range in meters for sampling the position around a given path.
         double samplingRangeAngle{1.0};                   // Range in radians for sampling the angle around a given path.
-        std::uint32_t periodGoalSampling{50U};                  // Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
+        std::uint32_t periodGoalSampling{50U};            // Iteration period for goal sampling. Specifies how often the goal value should be used for sampling.
         double sampletime{0.05};                          // Sampletime to be used for fixed-step trajectory simulation.
         double maxInputPathLength{50.0};                  // Maximum length (> 0) of the input path (x,y only). The input path is trimmed to ensure this maximum length. The trimmed pose may be interpolated.
         ParameterController controller;                   // Controller parameters for vehicle simulation.
@@ -676,7 +673,4 @@ class ParameterOnlinePlanner {
 };
 
 
-} /* namespace: planner */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::planner */

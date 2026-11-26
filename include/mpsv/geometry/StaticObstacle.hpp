@@ -5,10 +5,7 @@
 #include <mpsv/geometry/ConvexPolygon.hpp>
 
 
-namespace mpsv {
-
-
-namespace geometry {
+namespace mpsv::geometry {
 
 
 /**
@@ -29,7 +26,4 @@ class StaticObstacle : public mpsv::geometry::ConvexPolygon {
 };
 
 
-} /* namespace: geometry */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::geometry */

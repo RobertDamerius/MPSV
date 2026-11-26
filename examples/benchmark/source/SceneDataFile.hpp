@@ -32,9 +32,9 @@ class SceneDataFile {
                     return false;
                 }
                 std::streamoff fileSize = endPosition;
-                if (fileSize < 0 ||
-                   static_cast<std::uintmax_t>(fileSize) > std::numeric_limits<std::size_t>::max() ||
-                   static_cast<std::uintmax_t>(fileSize) > std::numeric_limits<std::streamsize>::max()) {
+                if ((fileSize < 0) ||
+                     static_cast<std::uintmax_t>(fileSize) > std::numeric_limits<std::size_t>::max() ||
+                     static_cast<std::uintmax_t>(fileSize) > std::numeric_limits<std::streamsize>::max()) {
                     return false;
                 }
                 std::size_t length{static_cast<std::size_t>(fileSize)};

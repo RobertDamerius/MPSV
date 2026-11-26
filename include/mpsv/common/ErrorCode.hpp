@@ -90,7 +90,7 @@ enum class error_code : std::uint8_t {
     ONLINEPLANNER_TIMESTAMP_NOT_INCREASING                = 64U,   // timestamp is not greater than the previous input timestamp for solving sequential problems.
 
     // asynchronous online planner
-    ASYNCONLINEPLANNER_OUTPUT_NOT_AVAILABLE               = 65U   // The output does not contain a planning result yet.
+    ASYNCONLINEPLANNER_OUTPUT_NOT_AVAILABLE               = 65U    // The output does not contain a planning result yet.
 };
 
 

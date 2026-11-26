@@ -6,10 +6,7 @@
 #include <mpsv/math/Additional.hpp>
 
 
-namespace mpsv {
-
-
-namespace geometry {
+namespace mpsv::geometry {
 
 
 /* Forward declaration */
@@ -329,8 +326,8 @@ class ConvexPolygon {
     protected:
         std::vector<std::array<double, 2U>> m_vertices;   // Container of vertices. One data point indicates vertex coordinates (x, y).
         std::vector<std::array<double, 3U>> m_edges;      // Container of edges. One data point (a,b,c) indicates edge parameters (function coefficient a of implicit equation a*x + b*y + c = 0). The size of this container is equal to that of @ref m_vertices. Edge [i] goes from vertex [i] to vertex [i+1].
-        mpsv::geometry::AABB m_aabb;                     // The 2D axis-aligned bounding box of the polygon.
-        double m_farthestVertexDistance;                 // Distance to the farthest vertex from the origin. The distance is calculated, if the vertex data is changed, e.g. during @ref Create, @ref Translate, @ref Transform, ...
+        mpsv::geometry::AABB m_aabb;                      // The 2D axis-aligned bounding box of the polygon.
+        double m_farthestVertexDistance;                  // Distance to the farthest vertex from the origin. The distance is calculated, if the vertex data is changed, e.g. during @ref Create, @ref Translate, @ref Transform, ...
 
         /**
          * @brief Rebuild edge parameters based on vertex indices.
@@ -349,7 +346,4 @@ class ConvexPolygon {
 };
 
 
-} /* namespace: geometry */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::geometry */

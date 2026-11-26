@@ -7,10 +7,7 @@
 #include <mpsv/geometry/OrientedBox.hpp>
 
 
-namespace mpsv {
-
-
-namespace sampler {
+namespace mpsv::sampler {
 
 
 /**
@@ -89,7 +86,4 @@ class UniformBoxSamplerSE2 {
 };
 
 
-} /* namespace: sampler */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::sampler */

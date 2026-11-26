@@ -11,10 +11,7 @@
 #include <mpsv/planner/AsyncOnlinePlannerParameterSet.hpp>
 
 
-namespace mpsv {
-
-
-namespace planner {
+namespace mpsv::planner {
 
 
 /**
@@ -162,7 +159,7 @@ class AsyncOnlinePlanner {
         mpsv::planner::AsyncOnlinePlannerInput m_dataIn;             // Thread-safe input data storage.
         mpsv::planner::AsyncOnlinePlannerParameterSet m_dataParam;   // Thread-safe parameter data storage.
         mpsv::planner::AsyncOnlinePlannerOutput m_dataOut;           // Thread-safe output data storage.
-        ::pthread_mutex_t m_mtxData;                                   // Protect @ref m_newInputData, @ref m_dataIn, @ref m_dataParam and @ref m_dataOut.
+        ::pthread_mutex_t m_mtxData;                                 // Protect @ref m_newInputData, @ref m_dataIn, @ref m_dataParam and @ref m_dataOut.
 
         /**
          * @brief The callback function that is executed if the next asynchronous step calculation is performed by the worker thread.
@@ -205,7 +202,4 @@ class AsyncOnlinePlanner {
 };
 
 
-} /* namespace: planner */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::planner */

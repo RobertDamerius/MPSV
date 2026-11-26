@@ -5,13 +5,7 @@
 #include <mpsv/math/Additional.hpp>
 
 
-namespace mpsv {
-
-
-namespace math {
-
-
-namespace wgs84 {
+namespace mpsv::math::wgs84 {
 
 
 /**
@@ -216,10 +210,4 @@ template <class TNED, class ToriginLLA> [[nodiscard]] inline std::array<double, 
 }
 
 
-} /* namespace: wgs84 */
-
-
-} /* namespace: math */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::math::wgs84 */

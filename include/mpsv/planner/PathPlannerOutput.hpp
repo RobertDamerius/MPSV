@@ -6,10 +6,7 @@
 #include <mpsv/common/ErrorCode.hpp>
 
 
-namespace mpsv {
-
-
-namespace planner {
+namespace mpsv::planner {
 
 
 /**
@@ -19,7 +16,7 @@ class PathPlannerOutput {
     public:
         bool goalReached{};                                   // True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
         mpsv::error_code errorCode{mpsv::error_code::NONE};   // Error code indicating the status of the path planning operation.
-        std::uint32_t numberOfPerformedIterations{};               // The total number of iterations that have been performed since the latest prepare step.
+        std::uint32_t numberOfPerformedIterations{};          // The total number of iterations that have been performed since the latest prepare step.
         double timestampOfComputationUTC{};                   // Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
         double cost{};                                        // The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
         std::vector<std::array<double, 3U>> path{};           // Resulting path, where each pose is given as {x,y,psi}. The first element always corresponds to the initial pose. If the goal is reached, then the final pose corresponds to the desired final pose of the path planning problem.
@@ -64,7 +61,4 @@ class PathPlannerOutput {
 };
 
 
-} /* namespace: planner */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::planner */

@@ -19,10 +19,7 @@
 #include <mpsv/geometry/StaticObstacle.hpp>
 
 
-namespace mpsv {
-
-
-namespace planner {
+namespace mpsv::planner {
 
 
 /**
@@ -128,7 +125,4 @@ class SequentialPlanner {
 };
 
 
-} /* namespace: planner */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::planner */

@@ -6,10 +6,7 @@
 #include <mpsv/common/ErrorCode.hpp>
 
 
-namespace mpsv {
-
-
-namespace planner {
+namespace mpsv::planner {
 
 
 /**
@@ -18,7 +15,4 @@ namespace planner {
 class AsyncOnlinePlannerParameterSet: public mpsv::planner::OnlinePlannerParameterSet {};
 
 
-} /* namespace: planner */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::planner */

@@ -6,10 +6,7 @@
 #include <mpsv/structures/FixedSizeTreeSE2.hpp>
 
 
-namespace mpsv {
-
-
-namespace planner {
+namespace mpsv::planner {
 
 
 /**
@@ -82,7 +79,4 @@ class MotionPlannerTree: public mpsv::structures::FixedSizeTreeSE2<mpsv::planner
 };
 
 
-} /* namespace: planner */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::planner */

@@ -4,10 +4,7 @@
 #include <mpsv/common/Common.hpp>
 
 
-namespace mpsv {
-
-
-namespace sampler {
+namespace mpsv::sampler {
 
 
 /**
@@ -66,7 +63,4 @@ template<std::size_t Tdimension> class HaltonSequence {
 };
 
 
-} /* namespace: sampler */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::sampler */

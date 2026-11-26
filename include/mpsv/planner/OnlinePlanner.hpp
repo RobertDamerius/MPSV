@@ -18,10 +18,7 @@
 #include <mpsv/math/WGS84.hpp>
 
 
-namespace mpsv {
-
-
-namespace planner {
+namespace mpsv::planner {
 
 
 /**
@@ -112,7 +109,7 @@ class OnlinePlanner {
         mpsv::planner::SequentialPlanner m_sequentialPlanner;               // Internal sequential planning solver.
         mpsv::runtime::PerformanceCounter m_performanceCounter;             // Performance counter used to measure execution time.
         mpsv::control::VehicleSimulator m_vehicleSimulator;                 // Simulator used for predicting the initial state on reset.
-        std::vector<std::array<double, 12U>> m_predictionTrajectory;          // Reusable buffer for predicted reset trajectories.
+        std::vector<std::array<double, 12U>> m_predictionTrajectory;        // Reusable buffer for predicted reset trajectories.
 
         /**
          * @brief Get the state/input vector from the latest solution trajectory (@ref m_state) for a given absolute timestamp.
@@ -282,7 +279,4 @@ class OnlinePlanner {
 };
 
 
-} /* namespace: planner */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::planner */

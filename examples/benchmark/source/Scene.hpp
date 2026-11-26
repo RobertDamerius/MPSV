@@ -6,8 +6,8 @@
 
 class Scene {
     public:
-        std::array<double, 12U> initialStateAndInput;                    // Vector containing the initial state {x,y,psi,u,v,r,X,Y,N} and the initial input {Xc,Yc,Nc}.
-        std::array<double, 3U> finalPose;                                // Final pose given as {x,y,psi}.
+        std::array<double, 12U> initialStateAndInput;                  // Vector containing the initial state {x,y,psi,u,v,r,X,Y,N} and the initial input {Xc,Yc,Nc}.
+        std::array<double, 3U> finalPose;                              // Final pose given as {x,y,psi}.
         std::vector<mpsv::geometry::StaticObstacle> staticObstacles;   // List of static obstacles.
 
         /**

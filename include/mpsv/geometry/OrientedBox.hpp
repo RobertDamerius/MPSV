@@ -6,10 +6,7 @@
 #include <mpsv/geometry/QuickHull2D.hpp>
 
 
-namespace mpsv {
-
-
-namespace geometry {
+namespace mpsv::geometry {
 
 
 /**
@@ -336,7 +333,4 @@ class OrientedBox {
 };
 
 
-} /* namespace: geometry */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::geometry */

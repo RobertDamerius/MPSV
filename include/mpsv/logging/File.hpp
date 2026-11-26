@@ -5,10 +5,7 @@
 #include <mpsv/geometry/ConvexPolygon.hpp>
 
 
-namespace mpsv {
-
-
-namespace logging {
+namespace mpsv::logging {
 
 
 /**
@@ -210,7 +207,4 @@ class File {
 };
 
 
-} /* namespace: core */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::logging */

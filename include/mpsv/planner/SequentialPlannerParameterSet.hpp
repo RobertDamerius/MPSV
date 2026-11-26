@@ -7,10 +7,7 @@
 #include <mpsv/common/ErrorCode.hpp>
 
 
-namespace mpsv {
-
-
-namespace planner {
+namespace mpsv::planner {
 
 
 /**
@@ -77,7 +74,4 @@ class SequentialPlannerParameterSet {
 };
 
 
-} /* namespace: planner */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::planner */

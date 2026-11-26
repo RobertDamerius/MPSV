@@ -6,10 +6,7 @@
 #include <mpsv/common/ErrorCode.hpp>
 
 
-namespace mpsv {
-
-
-namespace planner {
+namespace mpsv::planner {
 
 
 /**
@@ -26,7 +23,7 @@ class OnlinePlannerOutput {
         struct {
             std::vector<std::array<double, 3U>> path{};            // [PathPlanner] Resulting path of the internal path planning problem, where each pose is given as {x,y,psi}.
             bool goalReached{};                                    // [PathPlanner] True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-            std::uint32_t numberOfPerformedIterations{};                // [PathPlanner] The total number of iterations that have been performed since the latest prepare step.
+            std::uint32_t numberOfPerformedIterations{};           // [PathPlanner] The total number of iterations that have been performed since the latest prepare step.
             double timestampOfComputationUTC{};                    // [PathPlanner] Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
             double cost{};                                         // [PathPlanner] The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
         } pathPlanner{};
@@ -35,7 +32,7 @@ class OnlinePlannerOutput {
             std::vector<std::array<double, 12U>> trajectory{};     // [MotionPlanner] Resulting trajectory of the internal motion planning problem, where each element is given as {x,y,psi,u,v,r,X,Y,N,Xc,Yc,Nc}. The initial state and input is not inserted.
             double startingTimepoint{};                            // [MotionPlanner] The starting timepoint of the internal motion planner trajectory (arbitrary time origin defined by the user, same as @ref timestamp).
             bool goalReached{};                                    // [MotionPlanner] True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-            std::uint32_t numberOfPerformedIterations{};                // [MotionPlanner] The total number of iterations that have been performed since the latest prepare step.
+            std::uint32_t numberOfPerformedIterations{};           // [MotionPlanner] The total number of iterations that have been performed since the latest prepare step.
             double timestampOfComputationUTC{};                    // [MotionPlanner] Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
             double cost{};                                         // [MotionPlanner] The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
         } motionPlanner{};
@@ -114,7 +111,4 @@ class OnlinePlannerOutput {
 };
 
 
-} /* namespace: planner */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::planner */

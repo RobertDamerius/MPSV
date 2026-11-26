@@ -5,10 +5,7 @@
 #include <mpsv/geometry/ConvexPolygon.hpp>
 
 
-namespace mpsv {
-
-
-namespace geometry {
+namespace mpsv::geometry {
 
 
 /**
@@ -207,7 +204,4 @@ template <class Tpoint> [[nodiscard]] inline mpsv::geometry::ConvexPolygon Quick
 }
 
 
-} /* namespace: geometry */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::geometry */

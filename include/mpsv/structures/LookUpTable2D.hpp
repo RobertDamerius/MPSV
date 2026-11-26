@@ -6,10 +6,7 @@
 #include <mpsv/logging/File.hpp>
 
 
-namespace mpsv {
-
-
-namespace structures {
+namespace mpsv::structures {
 
 
 /**
@@ -270,8 +267,8 @@ template <class Targ, class Tdata> class LookUpTable2D {
         std::array<double, 2U> m_position{0.0, 0.0};   // Corner position (lower left corner) of the actual LUT (without zero-border: corner of data cell [0,0] == corner of lut[1,1]).
         std::array<double, 2U> m_normal{1.0, 0.0};     // Normal vector in longitudinal direction of the LUT.
         double m_res{1.0};                             // Resolution of the grid map (dimension of one cell).
-        std::int32_t m_numX{0};                             // Number of grid cells in X (longitudinal) direction.
-        std::int32_t m_numY{0};                             // Number of grid cells in Y (lateral) direction.
+        std::int32_t m_numX{0};                        // Number of grid cells in X (longitudinal) direction.
+        std::int32_t m_numY{0};                        // Number of grid cells in Y (lateral) direction.
         std::vector<Tdata> m_lut{Tdata{0.0}};          // Table data that also contains a zero-border (index = ix*numY + iy). ix and iy indicate the lower-left index position of the cell, however, the actual data of that cell has been evaluated for the center of the cell.
 
         /**
@@ -301,7 +298,4 @@ template <class Targ, class Tdata> class LookUpTable2D {
 };
 
 
-} /* namespace: structures */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::structures */

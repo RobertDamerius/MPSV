@@ -9,10 +9,7 @@
 #include <mpsv/common/ErrorCode.hpp>
 
 
-namespace mpsv {
-
-
-namespace control {
+namespace mpsv::control {
 
 
 /**
@@ -59,15 +56,15 @@ class VehicleSimulator {
             // Calculate and check matrix inverse
             auto [success, invMatB] = mpsv::math::MatrixInverse3x3(modelParameter.matB);
             if (!(success &&
-                 std::isfinite(invMatB[0U]) &&
-                 std::isfinite(invMatB[1U]) &&
-                 std::isfinite(invMatB[2U]) &&
-                 std::isfinite(invMatB[3U]) &&
-                 std::isfinite(invMatB[4U]) &&
-                 std::isfinite(invMatB[5U]) &&
-                 std::isfinite(invMatB[6U]) &&
-                 std::isfinite(invMatB[7U]) &&
-                 std::isfinite(invMatB[8U]))) {
+                  std::isfinite(invMatB[0U]) &&
+                  std::isfinite(invMatB[1U]) &&
+                  std::isfinite(invMatB[2U]) &&
+                  std::isfinite(invMatB[3U]) &&
+                  std::isfinite(invMatB[4U]) &&
+                  std::isfinite(invMatB[5U]) &&
+                  std::isfinite(invMatB[6U]) &&
+                  std::isfinite(invMatB[7U]) &&
+                  std::isfinite(invMatB[8U]))) {
                 return error_code::PARAM_MODEL_INV_MATB;
             }
 
@@ -1082,7 +1079,4 @@ class VehicleSimulator {
 };
 
 
-} /* namespace: control */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::control */

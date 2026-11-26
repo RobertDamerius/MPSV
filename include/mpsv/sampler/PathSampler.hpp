@@ -6,10 +6,7 @@
 #include <mpsv/math/Additional.hpp>
 
 
-namespace mpsv {
-
-
-namespace sampler {
+namespace mpsv::sampler {
 
 
 /**
@@ -177,18 +174,15 @@ class PathSampler {
 
     protected:
         struct Segment {
-            double ratio;                                    // Ratio of the volume of this path segment compared to the volume of all segments in range [0, 1].
-            std::array<double, 9U> A;                          // Matrix (row-major order) for sampling of this path segment according to A*s + b.
-            std::array<double, 3U> b;                          // Vector for sampling of this path segment according to A*s + b.
-            std::array<double, 9U> invA;                       // Inverse matrix (row-major order) of @ref A.
+            double ratio;                                     // Ratio of the volume of this path segment compared to the volume of all segments in range [0, 1].
+            std::array<double, 9U> A;                         // Matrix (row-major order) for sampling of this path segment according to A*s + b.
+            std::array<double, 3U> b;                         // Vector for sampling of this path segment according to A*s + b.
+            std::array<double, 9U> invA;                      // Inverse matrix (row-major order) of @ref A.
         };
-        double m_volume;                                     // Volume of the whole sampling area.
-        std::vector<Segment> m_segments;                     // List of path segments.
+        double m_volume;                                      // Volume of the whole sampling area.
+        std::vector<Segment> m_segments;                      // List of path segments.
         mpsv::sampler::HaltonSequence<4U> m_haltonSequence;   // The internal halton sequence used to sample poses from path segments.
 };
 
 
-} /* namespace: sampler */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::sampler */

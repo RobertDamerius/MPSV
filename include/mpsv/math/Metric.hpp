@@ -5,10 +5,7 @@
 #include <mpsv/math/Additional.hpp>
 
 
-namespace mpsv {
-
-
-namespace math {
+namespace mpsv::math {
 
 
 /**
@@ -122,7 +119,4 @@ template <class TposeA, class TposeB> [[nodiscard]] inline double SwayMetric(con
 }
 
 
-} /* namespace: math */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::math */

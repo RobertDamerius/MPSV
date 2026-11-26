@@ -4,10 +4,7 @@
 #include <mpsv/common/Common.hpp>
 
 
-namespace mpsv {
-
-
-namespace runtime {
+namespace mpsv::runtime {
 
 
 /**
@@ -51,7 +48,4 @@ class PerformanceCounter {
 };
 
 
-} /* namespace: runtime */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::runtime */

@@ -9,10 +9,7 @@
 #include <mpsv/geometry/DouglasPeucker.hpp>
 
 
-namespace mpsv {
-
-
-namespace geometry {
+namespace mpsv::geometry {
 
 
 /**
@@ -190,7 +187,4 @@ class ConvexVehicleShape : public mpsv::geometry::ConvexPolygon {
 };
 
 
-} /* namespace: geometry */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::geometry */

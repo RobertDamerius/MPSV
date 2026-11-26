@@ -4,10 +4,7 @@
 #include <mpsv/common/Common.hpp>
 
 
-namespace mpsv {
-
-
-namespace math {
+namespace mpsv::math {
 
 
 /**
@@ -136,7 +133,4 @@ template <class TposeA, class TposeB> [[nodiscard]] inline std::array<double, 3U
 }
 
 
-} /* namespace: math */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::math */

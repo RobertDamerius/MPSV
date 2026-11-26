@@ -6,10 +6,7 @@
 #include <mpsv/geometry/StaticObstacle.hpp>
 
 
-namespace mpsv {
-
-
-namespace structures {
+namespace mpsv::structures {
 
 
 /**
@@ -99,7 +96,4 @@ class CostMap: public mpsv::structures::LookUpTable2DScalar<mpsv::structures::Co
 };
 
 
-} /* namespace: structures */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::structures */

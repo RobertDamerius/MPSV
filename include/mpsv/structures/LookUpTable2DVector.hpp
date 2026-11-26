@@ -6,10 +6,7 @@
 #include <mpsv/logging/File.hpp>
 
 
-namespace mpsv {
-
-
-namespace structures {
+namespace mpsv::structures {
 
 
 /**
@@ -308,7 +305,4 @@ template <class Targ, std::size_t Tdim> class LookUpTable2DVector: public mpsv::
 };
 
 
-} /* namespace: structures */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::structures */

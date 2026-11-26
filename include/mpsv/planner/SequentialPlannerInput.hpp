@@ -8,10 +8,7 @@
 #include <mpsv/common/ErrorCode.hpp>
 
 
-namespace mpsv {
-
-
-namespace planner {
+namespace mpsv::planner {
 
 
 /**
@@ -32,31 +29,31 @@ class SequentialPlannerInput {
          */
         [[nodiscard]] error_code IsValid() const noexcept {
             if (!(std::isfinite(initialStateAndInput[0U]) &&
-                 std::isfinite(initialStateAndInput[1U]) &&
-                 std::isfinite(initialStateAndInput[2U]) &&
-                 std::isfinite(initialStateAndInput[3U]) &&
-                 std::isfinite(initialStateAndInput[4U]) &&
-                 std::isfinite(initialStateAndInput[5U]) &&
-                 std::isfinite(initialStateAndInput[6U]) &&
-                 std::isfinite(initialStateAndInput[7U]) &&
-                 std::isfinite(initialStateAndInput[8U]) &&
-                 std::isfinite(initialStateAndInput[9U]) &&
-                 std::isfinite(initialStateAndInput[10U]) &&
-                 std::isfinite(initialStateAndInput[11U])))
+                  std::isfinite(initialStateAndInput[1U]) &&
+                  std::isfinite(initialStateAndInput[2U]) &&
+                  std::isfinite(initialStateAndInput[3U]) &&
+                  std::isfinite(initialStateAndInput[4U]) &&
+                  std::isfinite(initialStateAndInput[5U]) &&
+                  std::isfinite(initialStateAndInput[6U]) &&
+                  std::isfinite(initialStateAndInput[7U]) &&
+                  std::isfinite(initialStateAndInput[8U]) &&
+                  std::isfinite(initialStateAndInput[9U]) &&
+                  std::isfinite(initialStateAndInput[10U]) &&
+                  std::isfinite(initialStateAndInput[11U])))
                 return error_code::INPUT_INITIAL_STATE_AND_INPUT;
             if (!(std::isfinite(finalPose[0U]) &&
-                std::isfinite(finalPose[1U]) &&
-                std::isfinite(finalPose[2U])))
+                  std::isfinite(finalPose[1U]) &&
+                  std::isfinite(finalPose[2U])))
                 return error_code::INPUT_FINAL_POSE;
             if (!(std::isfinite(originOldToNew[0U]) &&
-                 std::isfinite(originOldToNew[1U])))
+                  std::isfinite(originOldToNew[1U])))
                 return error_code::INPUT_ORIGIN_OLD_TO_NEW;
             if (!(std::isfinite(samplingBoxCenterPose[0U]) &&
-                 std::isfinite(samplingBoxCenterPose[1U]) &&
-                 std::isfinite(samplingBoxCenterPose[2U])))
+                  std::isfinite(samplingBoxCenterPose[1U]) &&
+                  std::isfinite(samplingBoxCenterPose[2U])))
                 return error_code::INPUT_SAMPLING_BOX_CENTER_POSE;
             if (!(std::isfinite(samplingBoxDimension[0U]) &&
-                 std::isfinite(samplingBoxDimension[1U])))
+                  std::isfinite(samplingBoxDimension[1U])))
                 return error_code::INPUT_SAMPLING_BOX_DIMENSION;
             mpsv::geometry::OrientedBox box;
             box.Create(samplingBoxCenterPose, samplingBoxDimension);
@@ -90,7 +87,4 @@ class SequentialPlannerInput {
 };
 
 
-} /* namespace: planner */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::planner */

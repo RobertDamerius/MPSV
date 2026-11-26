@@ -5,10 +5,7 @@
 #include <mpsv/geometry/ConvexVehicleShape.hpp>
 
 
-namespace mpsv {
-
-
-namespace geometry {
+namespace mpsv::geometry {
 
 
 /**
@@ -160,7 +157,4 @@ class VehicleShape {
 };
 
 
-} /* namespace: geometry */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::geometry */

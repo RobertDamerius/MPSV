@@ -18,10 +18,7 @@
 #include <mpsv/math/Metric.hpp>
 
 
-namespace mpsv {
-
-
-namespace planner {
+namespace mpsv::planner {
 
 
 /**
@@ -140,10 +137,10 @@ class PathPlanner {
         mpsv::structures::FixedSizeTreeSE2<Node> m_tree;                           // Tree for path planning.
         mpsv::sampler::UniformBoxSamplerSE2 m_boxSampler;                          // The box sampler to be used to draw random samples from SE(2).
         mpsv::structures::CostMap m_costMap;                                       // The cost map to be used as additional cost term in the objective function.
-        std::vector<std::int16_t> m_idxNeighbors;                                       // Reserved memory for nearest neighbors and warm start.
-        std::uint32_t m_sampleIteration{0U};                                             // Number of iterations since the last random sample was drawn.
-        std::uint32_t m_goalSampleIteration{0U};                                         // Number of iterations since the last goal sample was drawn.
-        std::int16_t m_idxSolutionNode{-1};                                             // Index to the solution node or negative if no solution node exists.
+        std::vector<std::int16_t> m_idxNeighbors;                                  // Reserved memory for nearest neighbors and warm start.
+        std::uint32_t m_sampleIteration{0U};                                       // Number of iterations since the last random sample was drawn.
+        std::uint32_t m_goalSampleIteration{0U};                                   // Number of iterations since the last goal sample was drawn.
+        std::int16_t m_idxSolutionNode{-1};                                        // Index to the solution node or negative if no solution node exists.
         double m_closestDistanceToGoal{std::numeric_limits<double>::infinity()};   // Closest distance to the goal pose from the current solution node.
         double m_epsDistanceMetric{std::numeric_limits<double>::epsilon()};        // Eps (numeric threshold) for distance metric.
 
@@ -472,7 +469,4 @@ class PathPlanner {
 };
 
 
-} /* namespace: planner */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::planner */

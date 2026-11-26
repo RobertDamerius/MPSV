@@ -6,10 +6,7 @@
 #include <mpsv/logging/File.hpp>
 
 
-namespace mpsv {
-
-
-namespace structures {
+namespace mpsv::structures {
 
 
 /**
@@ -176,7 +173,4 @@ template <class Targ> class LookUpTable2DScalar: public mpsv::structures::LookUp
 };
 
 
-} /* namespace: structures */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::structures */

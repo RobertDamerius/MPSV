@@ -22,10 +22,7 @@
 #include <mpsv/math/Additional.hpp>
 
 
-namespace mpsv {
-
-
-namespace planner {
+namespace mpsv::planner {
 
 
 /**
@@ -170,14 +167,14 @@ class MotionPlanner {
         mpsv::planner::MotionPlannerTree m_tree;                                   // Tree for motion planning.
         mpsv::sampler::PathSampler m_pathSampler;                                  // The path sampler to be used to draw random samples from SE(2).
         mpsv::structures::CostMap m_costMap;                                       // The cost map to be used as additional cost term in the objective function.
-        std::vector<std::int16_t> m_idxNeighbors;                                       // Reserved memory for nearest neighbors.
-        std::uint32_t m_sampleIteration{0U};                                            // Index of the next random sample.
-        std::uint32_t m_goalSampleIteration{0U};                                        // Goal-sampling iteration counter.
-        std::int16_t m_idxSolutionNode{-1};                                             // Index to the solution node or negative if no solution node exists.
+        std::vector<std::int16_t> m_idxNeighbors;                                  // Reserved memory for nearest neighbors.
+        std::uint32_t m_sampleIteration{0U};                                       // Index of the next random sample.
+        std::uint32_t m_goalSampleIteration{0U};                                   // Goal-sampling iteration counter.
+        std::int16_t m_idxSolutionNode{-1};                                        // Index to the solution node or negative if no solution node exists.
         double m_closestDistanceToGoal{std::numeric_limits<double>::infinity()};   // Distance from the solution to the goal.
         double m_epsDistanceMetric{std::numeric_limits<double>::epsilon()};        // Eps (numeric threshold) for distance metric.
         std::vector<std::array<double, 3U>> m_initialSamplesReversed;              // Initial samples, in reverse sampling order.
-        std::vector<std::int16_t> m_idxLeafNodes;                                       // Pre-allocated memory for leaf nodes during rewiring.
+        std::vector<std::int16_t> m_idxLeafNodes;                                  // Pre-allocated memory for leaf nodes during rewiring.
         mpsv::control::VehicleSimulator m_vehicleSimulator;                        // The vehicle simulator to be used for generating dynamically feasible trajectories.
         mpsv::control::RegionOfAttraction m_regionOfAttraction;                    // The region of attraction to be used to check if a state enters the region around a pose.
 
@@ -538,7 +535,4 @@ class MotionPlanner {
 };
 
 
-} /* namespace: planner */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::planner */

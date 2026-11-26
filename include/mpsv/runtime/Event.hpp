@@ -4,10 +4,7 @@
 #include <mpsv/common/Common.hpp>
 
 
-namespace mpsv {
-
-
-namespace runtime {
+namespace mpsv::runtime {
 
 
 /**
@@ -125,12 +122,9 @@ class Event {
         std::condition_variable m_cv;   // The condition variable used for event notification.
         bool m_notified;                // A boolean flag to prevent spurious wakeups.
         #elif defined(__linux__)
-        ::sem_t m_sem;                    // The semaphore used for event notification.
+        ::sem_t m_sem;                  // The semaphore used for event notification.
         #endif
 };
 
 
-} /* namespace: runtime */
-
-
-} /* namespace: mpsv */
+} /* namespace: mpsv::runtime */
