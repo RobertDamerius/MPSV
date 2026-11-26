@@ -18,13 +18,13 @@
  * @param[in] cpuCoreIDs (linux-only) List of CPU cores on which the worker thread is eligible to run. Only IDs in range and available to the worker are used.
  * @param[in] numCPUCoreIDs The actual number of CPU core IDs in the cpuCoreIDs list.
  */
-extern void MPSV_AsynchronousOnlinePlannerInitialize(void** workVector, std::int16_t pathMaxNumNodes, std::uint32_t pathMaxNumSamples, std::int16_t motionMaxNumNodes, std::uint32_t motionMaxNumSamples, std::uint32_t maxNumCells, std::int32_t threadPriority, std::int32_t ompNumThreads, std::int32_t ompDynamic, std::int32_t* cpuCoreIDs, std::uint32_t numCPUCoreIDs);
+extern void MPSV_AsynchronousOnlinePlannerInitialize(void** const workVector, const std::int16_t pathMaxNumNodes, const std::uint32_t pathMaxNumSamples, const std::int16_t motionMaxNumNodes, const std::uint32_t motionMaxNumSamples, const std::uint32_t maxNumCells, const std::int32_t threadPriority, const std::int32_t ompNumThreads, const std::int32_t ompDynamic, const std::int32_t* const cpuCoreIDs, const std::uint32_t numCPUCoreIDs);
 
 /**
  * @brief Terminate the driver.
  * @param[in] workVector The simulink work vector storing the pointer to the actual planner object.
  */
-extern void MPSV_AsynchronousOnlinePlannerTerminate(void* workVector);
+extern void MPSV_AsynchronousOnlinePlannerTerminate(void* const workVector);
 
 /**
  * @brief Perform one step of the driver.
@@ -33,4 +33,4 @@ extern void MPSV_AsynchronousOnlinePlannerTerminate(void* workVector);
  * @param[in] serializedInput Serialized data (bytes) representing the input data.
  * @param[in] serializedParameter Serialized data (bytes) representing the parameter data.
  */
-extern void MPSV_AsynchronousOnlinePlannerStep(void* workVector, std::uint8_t* serializedOutput, std::uint8_t* serializedInput, std::uint8_t* serializedParameter);
+extern void MPSV_AsynchronousOnlinePlannerStep(void* const workVector, std::uint8_t* const serializedOutput, const std::uint8_t* const serializedInput, const std::uint8_t* const serializedParameter) noexcept;

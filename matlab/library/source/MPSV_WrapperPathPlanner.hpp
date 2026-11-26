@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <array>
+#include <type_traits>
 #include <mpsv_mpsv.hpp>
 
 
@@ -46,14 +47,14 @@ struct __attribute__((packed)) serialization_path_planner_input {
  * @brief This structure defines the output data for the path planner wrapper class.
  */
 struct __attribute__((packed)) serialization_path_planner_output {
-    std::uint8_t errorCode;                                // Non-zero error code value if input or parameter data is invalid.
-    std::uint8_t goalReached:1;                            // True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
-    std::uint8_t pathTruncated:1;                          // True if the path was truncated to fit the output buffer.
-    std::uint8_t reserved:6;                               // Reserved bits, unused, set to zero.
-    std::uint32_t numberOfPerformedIterations;             // The total number of iterations that have been performed since the latest prepare step.
+    std::uint8_t errorCode;                           // Non-zero error code value if input or parameter data is invalid.
+    std::uint8_t goalReached:1;                       // True if goal is reached, false otherwise. The goal is reached, if the final pose of the path is equal to the desired final pose of the path planning problem.
+    std::uint8_t pathTruncated:1;                     // True if the path was truncated to fit the output buffer.
+    std::uint8_t reserved:6;                          // Reserved bits, unused, set to zero.
+    std::uint32_t numberOfPerformedIterations;        // The total number of iterations that have been performed since the latest prepare step.
     double timestampOfComputationUTC;                 // Timestamp that indicates the time (seconds of the day, UTC) when the solution was computed.
     double cost;                                      // The cost of the current solution, given as the total cost from the initial node to the final node of the path along the path.
-    std::int32_t numPoses;                                 // Number of poses included in the output path.
+    std::int32_t numPoses;                            // Number of poses included in the output path.
     std::array<std::array<double, 3U>, 1000U> path;   // Resulting path, where each pose is given as {x,y,psi}. The first element always corresponds to the initial pose. If the goal is reached and pathTruncated is false, the final pose corresponds to the desired final pose of the path planning problem.
 };
 
@@ -62,6 +63,10 @@ struct __attribute__((packed)) serialization_path_planner_output {
  * @brief This class represents a wrapper for the path planner. It uses a custom IO data structure that is used to exchange data to simulink.
  */
 class MPSV_WrapperPathPlanner {
+        /* strctures must be an implicit-lifetime type (trivially copyable structs qualify) */
+        static_assert(std::is_trivially_copyable_v<serialization_path_planner_input>);
+        static_assert(std::is_trivially_copyable_v<serialization_path_planner_output>);
+
     public:
         /**
          * @brief Destroy the wrapper object.
@@ -89,7 +94,7 @@ class MPSV_WrapperPathPlanner {
          * @param[out] output Output where to store the results of the solved path planning problem.
          * @param[in] input Input data defining the path planning problem to be solved.
          */
-        void Step(serialization_path_planner_output* output, serialization_path_planner_input* input);
+        void Step(serialization_path_planner_output* const output, const serialization_path_planner_input* const input) noexcept;
 
     protected:
         mpsv::planner::PathPlanner m_pathPlanner;                        // The internal path planner.
@@ -101,11 +106,11 @@ class MPSV_WrapperPathPlanner {
          * @brief Deserialize the input data to the internal path planner data.
          * @param[in] input Input data to be deserialized.
          */
-        void DeserializeInput(serialization_path_planner_input* input);
+        void DeserializeInput(const serialization_path_planner_input* const input) noexcept;
 
         /**
          * @brief Serialize the output data from the internal path planner data.
          * @param[out] output Output where to store the serialized results.
          */
-        void SerializeOutput(serialization_path_planner_output* output);
+        void SerializeOutput(serialization_path_planner_output* const output) noexcept;
 };

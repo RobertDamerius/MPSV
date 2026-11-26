@@ -8,7 +8,7 @@ void MPSV_WrapperPathPlanner::Initialize(std::int16_t maxNumNodes, std::uint32_t
 void MPSV_WrapperPathPlanner::Terminate() {
 }
 
-void MPSV_WrapperPathPlanner::Step(serialization_path_planner_output* output, serialization_path_planner_input* input) {
+void MPSV_WrapperPathPlanner::Step(serialization_path_planner_output* const output, const serialization_path_planner_input* const input) noexcept {
     DeserializeInput(input);
     double maxComputationTime{std::max(0.0, input->parameter.pathPlanner.maxComputationTime)};
     if (!std::isfinite(maxComputationTime)) {
@@ -18,7 +18,7 @@ void MPSV_WrapperPathPlanner::Step(serialization_path_planner_output* output, se
     SerializeOutput(output);
 }
 
-void MPSV_WrapperPathPlanner::DeserializeInput(serialization_path_planner_input* input) {
+void MPSV_WrapperPathPlanner::DeserializeInput(const serialization_path_planner_input* const input) noexcept {
     // Assign parameters
     m_pathPlannerParameter.costMap.resolution                          = input->parameter.costMap.resolution;
     m_pathPlannerParameter.costMap.distanceScale                       = input->parameter.costMap.distanceScale;
@@ -91,7 +91,7 @@ void MPSV_WrapperPathPlanner::DeserializeInput(serialization_path_planner_input*
     }
 }
 
-void MPSV_WrapperPathPlanner::SerializeOutput(serialization_path_planner_output* output) {
+void MPSV_WrapperPathPlanner::SerializeOutput(serialization_path_planner_output* const output) noexcept {
     // Copy planning results to the output
     output->errorCode                   = static_cast<std::uint8_t>(m_pathPlannerOutput.errorCode);
     output->cost                        = m_pathPlannerOutput.cost;

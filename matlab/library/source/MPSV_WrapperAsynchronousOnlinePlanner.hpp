@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <array>
 #include <vector>
+#include <type_traits>
 #include <mpsv_mpsv.hpp>
 
 
@@ -130,6 +131,11 @@ struct __attribute__((packed)) serialization_asynchronous_online_planner_output 
  * @brief This class represents a wrapper for the asynchronous online planner. It uses a custom IO data structure that is used to exchange data to simulink.
  */
 class MPSV_WrapperAsynchronousOnlinePlanner {
+        /* strctures must be an implicit-lifetime type (trivially copyable structs qualify) */
+        static_assert(std::is_trivially_copyable_v<serialization_asynchronous_online_planner_input>);
+        static_assert(std::is_trivially_copyable_v<serialization_asynchronous_online_planner_parameter>);
+        static_assert(std::is_trivially_copyable_v<serialization_asynchronous_online_planner_output>);
+
     public:
         /**
          * @brief Construct a new wrapper object.
@@ -167,7 +173,7 @@ class MPSV_WrapperAsynchronousOnlinePlanner {
          * @param[in] input Input data defining the motion planning problem to be solved.
          * @param[in] parameter Parameter data to be set for the asynchronous online planner.
          */
-        void Step(serialization_asynchronous_online_planner_output* output, serialization_asynchronous_online_planner_input* input, serialization_asynchronous_online_planner_parameter* parameter);
+        void Step(serialization_asynchronous_online_planner_output* const output, const serialization_asynchronous_online_planner_input* const input, const serialization_asynchronous_online_planner_parameter* const parameter) noexcept;
 
     protected:
         mpsv::planner::AsyncOnlinePlanner m_planner;                        // The internal asynchronous online planner.
@@ -179,17 +185,17 @@ class MPSV_WrapperAsynchronousOnlinePlanner {
          * @brief Deserialize parameter data for the internal asynchronous online planner.
          * @param[in] parameter Serialized parameter data.
          */
-        void DeserializeParameter(serialization_asynchronous_online_planner_parameter* parameter);
+        void DeserializeParameter(const serialization_asynchronous_online_planner_parameter* const parameter) noexcept;
 
         /**
          * @brief Deserialize input data for the internal asynchronous online planner.
          * @param[in] input Serialized input data.
          */
-        void DeserializeInput(serialization_asynchronous_online_planner_input* input);
+        void DeserializeInput(const serialization_asynchronous_online_planner_input* const input) noexcept;
 
         /**
          * @brief Serialize the current output of the internal asynchronous online planner.
          * @param[out] output Serialized output data.
          */
-        void SerializeOutput(serialization_asynchronous_online_planner_output* output);
+        void SerializeOutput(serialization_asynchronous_online_planner_output* const output) noexcept;
 };

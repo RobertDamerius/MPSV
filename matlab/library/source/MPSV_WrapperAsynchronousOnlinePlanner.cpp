@@ -18,7 +18,7 @@ void MPSV_WrapperAsynchronousOnlinePlanner::Stop() {
     m_planner.Stop();
 }
 
-void MPSV_WrapperAsynchronousOnlinePlanner::Step(serialization_asynchronous_online_planner_output* output, serialization_asynchronous_online_planner_input* input, serialization_asynchronous_online_planner_parameter* parameter) {
+void MPSV_WrapperAsynchronousOnlinePlanner::Step(serialization_asynchronous_online_planner_output* const output, const serialization_asynchronous_online_planner_input* const input, const serialization_asynchronous_online_planner_parameter* const parameter) noexcept {
     DeserializeParameter(parameter);
     DeserializeInput(input);
     m_planner.SetInput(m_plannerInput, m_plannerParameter);
@@ -26,7 +26,7 @@ void MPSV_WrapperAsynchronousOnlinePlanner::Step(serialization_asynchronous_onli
     SerializeOutput(output);
 }
 
-void MPSV_WrapperAsynchronousOnlinePlanner::DeserializeParameter(serialization_asynchronous_online_planner_parameter* parameter) {
+void MPSV_WrapperAsynchronousOnlinePlanner::DeserializeParameter(const serialization_asynchronous_online_planner_parameter* const parameter) noexcept {
     m_plannerParameter.sequentialPlanner.geometry.collisionCheckMaxPositionDeviation = parameter->sequentialPlanner.geometry.collisionCheckMaxPositionDeviation;
     m_plannerParameter.sequentialPlanner.geometry.collisionCheckMaxAngleDeviation    = parameter->sequentialPlanner.geometry.collisionCheckMaxAngleDeviation;
 
@@ -105,7 +105,7 @@ void MPSV_WrapperAsynchronousOnlinePlanner::DeserializeParameter(serialization_a
     m_plannerParameter.onlinePlanner.timeKeepPastTrajectory                         = parameter->onlinePlanner.timeKeepPastTrajectory;
 }
 
-void MPSV_WrapperAsynchronousOnlinePlanner::DeserializeInput(serialization_asynchronous_online_planner_input* input) {
+void MPSV_WrapperAsynchronousOnlinePlanner::DeserializeInput(const serialization_asynchronous_online_planner_input* const input) noexcept {
     m_plannerInput.enable                = input->enable;
     m_plannerInput.reset                 = input->reset;
     m_plannerInput.timestamp             = input->timestamp;
@@ -139,7 +139,7 @@ void MPSV_WrapperAsynchronousOnlinePlanner::DeserializeInput(serialization_async
     }
 }
 
-void MPSV_WrapperAsynchronousOnlinePlanner::SerializeOutput(serialization_asynchronous_online_planner_output* output) {
+void MPSV_WrapperAsynchronousOnlinePlanner::SerializeOutput(serialization_asynchronous_online_planner_output* const output) noexcept {
     output->timestamp           = m_plannerOutput.timestamp;
     output->errorCode           = static_cast<std::uint8_t>(m_plannerOutput.errorCode);
     output->threadState         = static_cast<std::uint8_t>(m_plannerOutput.threadState);

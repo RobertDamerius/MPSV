@@ -11,13 +11,13 @@
  * @param[in] maxNumSamples Maximum number of random samples to be generated in advance. A circular buffer of random samples is generated for fast sampling. The buffer can be quite large to ensure, that no duplicated samples are drawn within one solve operation.
  * @param[in] maxNumCells Maximum number of cells in the cost map.
  */
-extern void MPSV_PathPlannerInitialize(void** workVector, std::int16_t maxNumNodes, std::uint32_t maxNumSamples, std::uint32_t maxNumCells);
+extern void MPSV_PathPlannerInitialize(void** const workVector, const std::int16_t maxNumNodes, const std::uint32_t maxNumSamples, const std::uint32_t maxNumCells);
 
 /**
  * @brief Terminate the driver.
  * @param[in] workVector The simulink work vector storing the pointer to the actual path planner object.
  */
-extern void MPSV_PathPlannerTerminate(void* workVector);
+extern void MPSV_PathPlannerTerminate(void* const workVector);
 
 /**
  * @brief Perform one step of the driver.
@@ -25,4 +25,4 @@ extern void MPSV_PathPlannerTerminate(void* workVector);
  * @param[out] serializedDataOut Serialized data (bytes) representing the output data.
  * @param[in] serializedDataIn Serialized data (bytes) representing the input data.
  */
-extern void MPSV_PathPlannerStep(void* workVector, std::uint8_t* serializedDataOut, std::uint8_t* serializedDataIn);
+extern void MPSV_PathPlannerStep(void* const workVector, std::uint8_t* const serializedDataOut, const std::uint8_t* const serializedDataIn) noexcept;

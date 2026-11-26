@@ -32,7 +32,7 @@ For references, see [below](#-citation).
 
 ## 📦 Header-only Library (C++)
 
-The MPSV solver is implemented as a header-only C++ library and requires a compiler with C++23 support.
+The MPSV solver is implemented as a header-only C++ library and requires a G++ (>= 16) compiler with C++23 support.
 Include the header as follows:
 
 ```cpp
